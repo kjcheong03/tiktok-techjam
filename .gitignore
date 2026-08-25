@@ -2,9 +2,11 @@ __pycache__/
 *.py[cod]
 .DS_Store
 .env
+.venv/
 results.json
 data/catalog.jsonl
 data/releases/
+artifacts/cache/
 # Organizer-only code, private evaluation data, manifests, and build reports.
 organizer/
 secure/
