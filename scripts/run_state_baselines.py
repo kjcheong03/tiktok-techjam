@@ -44,6 +44,12 @@ from baseline.question_policy import (
 
 AgentFactory: TypeAlias = Callable[[Path, Any, QuestionPolicy], Any]
 
+DEFAULT_COMPARISON_EDGES = (
+    ("v1_keyword_state", "v2_state_only"),
+    ("v2_state_only", "v2_raw_history_query"),
+    ("raw_history_no_state", "v2_raw_history_query"),
+)
+
 
 @dataclass(frozen=True)
 class VariantSpec:
@@ -169,10 +175,12 @@ def default_variant_registry() -> dict[str, VariantSpec]:
 
     v1 = VariantSpec("v1_keyword_state", _policy_aware_v1_agent)
     state_only = VariantSpec("v2_state_only", _state_only_v2_agent)
+    raw_control = VariantSpec("raw_history_no_state", _raw_history_control_agent)
     raw_history = VariantSpec("v2_raw_history_query", _raw_history_v2_agent)
     return {
         v1.name: v1,
         state_only.name: state_only,
+        raw_control.name: raw_control,
         raw_history.name: raw_history,
     }
 
@@ -215,6 +223,18 @@ def _raw_history_v2_agent(
         state_factory=RawHistorySessionState,
         question_policy=policy,
     )
+
+
+def _raw_history_control_agent(
+    catalog_path: Path,
+    keyword: Any,
+    policy: QuestionPolicy,
+) -> Any:
+    """Build the lossless-history control without managed constraints."""
+
+    from baseline.raw_history_control import RawHistoryNoManagedStateAgent
+
+    return RawHistoryNoManagedStateAgent(keyword, policy)
 
 
 def register_variant(registry: dict[str, VariantSpec], spec: VariantSpec) -> None:
@@ -354,14 +374,14 @@ def compare_paired_sessions(
 
 def _paired_variant_results(
     variant_results: Mapping[str, Mapping[str, Mapping[str, Any]]],
-    variant_order: Sequence[str],
+    comparison_edges: Sequence[tuple[str, str]],
     policy_order: Sequence[str],
 ) -> dict[str, dict[str, dict[str, Any]]]:
     comparisons: dict[str, dict[str, dict[str, Any]]] = {
         policy_name: {} for policy_name in policy_order
     }
     for policy_name in policy_order:
-        for before_name, after_name in zip(variant_order, variant_order[1:]):
+        for before_name, after_name in comparison_edges:
             before = variant_results[before_name][policy_name]
             after = variant_results[after_name][policy_name]
             comparisons[policy_name][f"{before_name} -> {after_name}"] = compare_paired_sessions(
@@ -429,7 +449,11 @@ def run_state_baselines(
         "variants": variant_results,
         "paired_comparisons": _paired_variant_results(
             variant_results,
-            variant_order,
+            (
+                DEFAULT_COMPARISON_EDGES
+                if variants is None
+                else tuple(zip(variant_order, variant_order[1:]))
+            ),
             policy_order,
         ),
     }

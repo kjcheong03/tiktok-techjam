@@ -5,6 +5,7 @@ import unittest
 from baseline.question_policy import current_order, fixed_other
 from baseline.state import SessionState
 from scripts.run_state_baselines import (
+    DEFAULT_COMPARISON_EDGES,
     _V1PolicyAdapter,
     compare_paired_sessions,
     default_variant_registry,
@@ -48,7 +49,16 @@ class PairedComparisonTest(unittest.TestCase):
     def test_default_registry_orders_cumulative_variants(self) -> None:
         self.assertEqual(
             list(default_variant_registry()),
-            ["v1_keyword_state", "v2_state_only", "v2_raw_history_query"],
+            [
+                "v1_keyword_state",
+                "v2_state_only",
+                "raw_history_no_state",
+                "v2_raw_history_query",
+            ],
+        )
+        self.assertIn(
+            ("raw_history_no_state", "v2_raw_history_query"),
+            DEFAULT_COMPARISON_EDGES,
         )
 
     def test_reports_conversion_turn_and_rank_deltas(self) -> None:
