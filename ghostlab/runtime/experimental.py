@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Literal
+from typing import Literal, Protocol
 
 from baseline.retrieval import DenseRetriever, KeywordRetriever, reciprocal_rank_fusion
 from baseline.state import SessionState, fixed_question_for_turn
@@ -12,7 +12,6 @@ from ghostlab.policy.adaptive_questions import (
 from ghostlab.policy.signals import retrieval_signals
 from ghostlab.retrieval.filters import CoverageAwareFilter
 from ghostlab.retrieval.fusion import weighted_fuse_ids
-from ghostlab.retrieval.learned import LearnedLinearReranker
 from ghostlab.retrieval.profile import ProfilePriorReranker
 from ghostlab.retrieval.quality import CatalogQualityReranker
 from ghostlab.retrieval.rerank import LinearLexicalReranker
@@ -32,6 +31,12 @@ QuestionVariant = Literal[
     "adaptive",
 ]
 FEATURE_FIRST = ("feature", "use_case", "material", "style", "color", "budget", "size")
+
+
+class CandidateReranker(Protocol):
+    def rerank(
+        self, query: str, ranking: list[str], *, rerank_k: int = 50
+    ) -> list[str]: ...
 
 
 class ExperimentalAgent:
@@ -57,7 +62,8 @@ class ExperimentalAgent:
         profile_prior_weight: float = 0.0,
         quality_prior_weight: float = 0.0,
         sparse_weights: tuple[float, float, float, float, float, float] | None = None,
-        learned_reranker: LearnedLinearReranker | None = None,
+        learned_reranker: CandidateReranker | None = None,
+        quality_prior: CatalogQualityReranker | None = None,
     ) -> None:
         self.state_variant = state_variant
         self.question_variant = question_variant
@@ -102,7 +108,9 @@ class ExperimentalAgent:
         )
         self.quality_prior_weight = quality_prior_weight
         self.quality_prior = (
-            CatalogQualityReranker(catalog_path) if quality_prior_weight > 0.0 else None
+            quality_prior or CatalogQualityReranker(catalog_path)
+            if quality_prior_weight > 0.0
+            else None
         )
         self.learned_reranker = learned_reranker
         self.sessions: dict[str, ConversationState | SessionState] = {}

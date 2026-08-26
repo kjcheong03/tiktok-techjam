@@ -6,6 +6,7 @@ requires-python = ">=3.10,<3.14"
 dependencies = [
   "numpy>=1.26,<3",
   "pydantic>=2.10,<3",
+  "scikit-learn>=1.7,<2",
   "sentence-transformers>=6,<7",
 ]
 
