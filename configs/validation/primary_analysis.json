@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "candidate_policy_id": "ghostlab_multi_other_v1",
+  "compiled_policy_sha256": "1c3ace2bfe5f34722f44c44610230a16b7b8f5db954d5c5f29f3ebcd24420274",
+  "baseline_policy_id": "manual_strong_multi_fixed_v1",
+  "primary_metric": "recommended_technical_score",
+  "minimum_delta": 0.0,
+  "confidence_level": 0.95,
+  "bootstrap_resamples": 10000,
+  "randomization_resamples": 10000,
+  "selection_basis": "five-fold nested adaptive evidence",
+  "post_access_policy_changes_allowed": false
+}

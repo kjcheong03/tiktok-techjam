@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "policy_id": "manual_strong_multi_fixed_v1",
+  "techniques": {
+    "retrieval_route": "keyword",
+    "state_mode": "multi",
+    "question_policy": "fixed",
+    "retrieval_k": 200,
+    "negative_evidence": true,
+    "provenance": true,
+    "override_invalidation": true
+  },
+  "fallback_policy_id": "keyword_current_turn",
+  "trace_enabled": false
+}

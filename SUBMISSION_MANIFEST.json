@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "entrypoint": "starter.agent:Agent",
+  "compiled_policy": "configs/compiled_policy.json",
+  "fallback_policy": "keyword_current_turn",
+  "network_required": false,
+  "external_api_calls": false,
+  "token_usage": 0,
+  "optional_model_assets_enabled": false,
+  "selection_split": "adaptive_v1 with five-fold cross-fitted validation",
+  "checkpoint_report": "artifacts/reports/phase23_champion_checkpoint.json",
+  "holdout_status": "sealed_not_accessed",
+  "guarded_confirmation": null,
+  "official_evaluator_modified": false
+}

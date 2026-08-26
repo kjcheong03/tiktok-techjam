@@ -1,0 +1,100 @@
+{
+  "conditional_delta": 0.0,
+  "conditional_oof_reward": 0.679729,
+  "constant_keyword_reward": 0.679729,
+  "feature_names": [
+    "active_slots",
+    "average_prior_rating",
+    "candidate_count",
+    "critical_rater",
+    "dense_top10_mean",
+    "dense_top1_margin",
+    "dense_top1_score",
+    "normalized_entropy",
+    "preference_tag_count",
+    "query_characters",
+    "query_terms",
+    "sparse_dense_top10_overlap",
+    "top1_margin"
+  ],
+  "folds": [
+    {
+      "outer_fold": 0,
+      "outer_reward": 0.67629,
+      "route_counts": {
+        "keyword": 31
+      },
+      "stump": {
+        "default_route": "keyword",
+        "feature": null,
+        "lower_route": null,
+        "threshold": null,
+        "upper_route": null
+      }
+    },
+    {
+      "outer_fold": 1,
+      "outer_reward": 0.700645,
+      "route_counts": {
+        "keyword": 31
+      },
+      "stump": {
+        "default_route": "keyword",
+        "feature": null,
+        "lower_route": null,
+        "threshold": null,
+        "upper_route": null
+      }
+    },
+    {
+      "outer_fold": 2,
+      "outer_reward": 0.676512,
+      "route_counts": {
+        "keyword": 30
+      },
+      "stump": {
+        "default_route": "keyword",
+        "feature": null,
+        "lower_route": null,
+        "threshold": null,
+        "upper_route": null
+      }
+    },
+    {
+      "outer_fold": 3,
+      "outer_reward": 0.672697,
+      "route_counts": {
+        "keyword": 29
+      },
+      "stump": {
+        "default_route": "keyword",
+        "feature": null,
+        "lower_route": null,
+        "threshold": null,
+        "upper_route": null
+      }
+    },
+    {
+      "outer_fold": 4,
+      "outer_reward": 0.671408,
+      "route_counts": {
+        "keyword": 29
+      },
+      "stump": {
+        "default_route": "keyword",
+        "feature": null,
+        "lower_route": null,
+        "threshold": null,
+        "upper_route": null
+      }
+    }
+  ],
+  "gate": "observable_conditional_route_stump",
+  "holdout_accessed": false,
+  "phase": 14,
+  "route_counts": {
+    "keyword": 150
+  },
+  "sample_count": 150,
+  "split": "nested_v1_oof"
+}

@@ -1,0 +1,2264 @@
+{
+  "actions": [
+    null,
+    "material",
+    "color",
+    "style",
+    "use_case",
+    "feature",
+    "budget",
+    "size",
+    "other"
+  ],
+  "cache_hits": 2,
+  "deterministic_repeat": true,
+  "mean_oracle_reward": 0.712903,
+  "mean_reward_by_action": {
+    "None": 0.515753,
+    "budget": 0.442942,
+    "color": 0.444232,
+    "feature": 0.548011,
+    "material": 0.67629,
+    "other": 0.694462,
+    "size": 0.442942,
+    "style": 0.522849,
+    "use_case": 0.511559
+  },
+  "outcomes": [
+    {
+      "action": null,
+      "best_rank": 1,
+      "first_hit_turn": 6,
+      "hit": true,
+      "reward": 0.9,
+      "sample_id": "public_0001"
+    },
+    {
+      "action": "material",
+      "best_rank": 1,
+      "first_hit_turn": 6,
+      "hit": true,
+      "reward": 0.9,
+      "sample_id": "public_0001"
+    },
+    {
+      "action": "color",
+      "best_rank": 1,
+      "first_hit_turn": 6,
+      "hit": true,
+      "reward": 0.9,
+      "sample_id": "public_0001"
+    },
+    {
+      "action": "style",
+      "best_rank": 1,
+      "first_hit_turn": 6,
+      "hit": true,
+      "reward": 0.9,
+      "sample_id": "public_0001"
+    },
+    {
+      "action": "use_case",
+      "best_rank": 1,
+      "first_hit_turn": 6,
+      "hit": true,
+      "reward": 0.9,
+      "sample_id": "public_0001"
+    },
+    {
+      "action": "feature",
+      "best_rank": 1,
+      "first_hit_turn": 2,
+      "hit": true,
+      "reward": 0.9800000000000001,
+      "sample_id": "public_0001"
+    },
+    {
+      "action": "budget",
+      "best_rank": 1,
+      "first_hit_turn": 6,
+      "hit": true,
+      "reward": 0.9,
+      "sample_id": "public_0001"
+    },
+    {
+      "action": "size",
+      "best_rank": 1,
+      "first_hit_turn": 6,
+      "hit": true,
+      "reward": 0.9,
+      "sample_id": "public_0001"
+    },
+    {
+      "action": "other",
+      "best_rank": 1,
+      "first_hit_turn": 2,
+      "hit": true,
+      "reward": 0.9800000000000001,
+      "sample_id": "public_0001"
+    },
+    {
+      "action": null,
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0011"
+    },
+    {
+      "action": "material",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0011"
+    },
+    {
+      "action": "color",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0011"
+    },
+    {
+      "action": "style",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0011"
+    },
+    {
+      "action": "use_case",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0011"
+    },
+    {
+      "action": "feature",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0011"
+    },
+    {
+      "action": "budget",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0011"
+    },
+    {
+      "action": "size",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0011"
+    },
+    {
+      "action": "other",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0011"
+    },
+    {
+      "action": null,
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0027"
+    },
+    {
+      "action": "material",
+      "best_rank": 6,
+      "first_hit_turn": 2,
+      "hit": true,
+      "reward": 0.7300000000000001,
+      "sample_id": "public_0027"
+    },
+    {
+      "action": "color",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0027"
+    },
+    {
+      "action": "style",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0027"
+    },
+    {
+      "action": "use_case",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0027"
+    },
+    {
+      "action": "feature",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0027"
+    },
+    {
+      "action": "budget",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0027"
+    },
+    {
+      "action": "size",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0027"
+    },
+    {
+      "action": "other",
+      "best_rank": 6,
+      "first_hit_turn": 2,
+      "hit": true,
+      "reward": 0.7300000000000001,
+      "sample_id": "public_0027"
+    },
+    {
+      "action": null,
+      "best_rank": 2,
+      "first_hit_turn": 6,
+      "hit": true,
+      "reward": 0.75,
+      "sample_id": "public_0032"
+    },
+    {
+      "action": "material",
+      "best_rank": 1,
+      "first_hit_turn": 6,
+      "hit": true,
+      "reward": 0.9,
+      "sample_id": "public_0032"
+    },
+    {
+      "action": "color",
+      "best_rank": 7,
+      "first_hit_turn": 6,
+      "hit": true,
+      "reward": 0.6428571428571428,
+      "sample_id": "public_0032"
+    },
+    {
+      "action": "style",
+      "best_rank": 2,
+      "first_hit_turn": 6,
+      "hit": true,
+      "reward": 0.75,
+      "sample_id": "public_0032"
+    },
+    {
+      "action": "use_case",
+      "best_rank": 2,
+      "first_hit_turn": 6,
+      "hit": true,
+      "reward": 0.75,
+      "sample_id": "public_0032"
+    },
+    {
+      "action": "feature",
+      "best_rank": 2,
+      "first_hit_turn": 2,
+      "hit": true,
+      "reward": 0.8300000000000001,
+      "sample_id": "public_0032"
+    },
+    {
+      "action": "budget",
+      "best_rank": 7,
+      "first_hit_turn": 6,
+      "hit": true,
+      "reward": 0.6428571428571428,
+      "sample_id": "public_0032"
+    },
+    {
+      "action": "size",
+      "best_rank": 7,
+      "first_hit_turn": 6,
+      "hit": true,
+      "reward": 0.6428571428571428,
+      "sample_id": "public_0032"
+    },
+    {
+      "action": "other",
+      "best_rank": 6,
+      "first_hit_turn": 2,
+      "hit": true,
+      "reward": 0.7300000000000001,
+      "sample_id": "public_0032"
+    },
+    {
+      "action": null,
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0035"
+    },
+    {
+      "action": "material",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0035"
+    },
+    {
+      "action": "color",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0035"
+    },
+    {
+      "action": "style",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0035"
+    },
+    {
+      "action": "use_case",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0035"
+    },
+    {
+      "action": "feature",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0035"
+    },
+    {
+      "action": "budget",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0035"
+    },
+    {
+      "action": "size",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0035"
+    },
+    {
+      "action": "other",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0035"
+    },
+    {
+      "action": null,
+      "best_rank": 1,
+      "first_hit_turn": 4,
+      "hit": true,
+      "reward": 0.9400000000000001,
+      "sample_id": "public_0042"
+    },
+    {
+      "action": "material",
+      "best_rank": 6,
+      "first_hit_turn": 3,
+      "hit": true,
+      "reward": 0.7100000000000001,
+      "sample_id": "public_0042"
+    },
+    {
+      "action": "color",
+      "best_rank": 6,
+      "first_hit_turn": 2,
+      "hit": true,
+      "reward": 0.7300000000000001,
+      "sample_id": "public_0042"
+    },
+    {
+      "action": "style",
+      "best_rank": 1,
+      "first_hit_turn": 2,
+      "hit": true,
+      "reward": 0.9800000000000001,
+      "sample_id": "public_0042"
+    },
+    {
+      "action": "use_case",
+      "best_rank": 6,
+      "first_hit_turn": 3,
+      "hit": true,
+      "reward": 0.7100000000000001,
+      "sample_id": "public_0042"
+    },
+    {
+      "action": "feature",
+      "best_rank": 1,
+      "first_hit_turn": 2,
+      "hit": true,
+      "reward": 0.9800000000000001,
+      "sample_id": "public_0042"
+    },
+    {
+      "action": "budget",
+      "best_rank": 6,
+      "first_hit_turn": 3,
+      "hit": true,
+      "reward": 0.7100000000000001,
+      "sample_id": "public_0042"
+    },
+    {
+      "action": "size",
+      "best_rank": 6,
+      "first_hit_turn": 3,
+      "hit": true,
+      "reward": 0.7100000000000001,
+      "sample_id": "public_0042"
+    },
+    {
+      "action": "other",
+      "best_rank": 1,
+      "first_hit_turn": 2,
+      "hit": true,
+      "reward": 0.9800000000000001,
+      "sample_id": "public_0042"
+    },
+    {
+      "action": null,
+      "best_rank": 1,
+      "first_hit_turn": 4,
+      "hit": true,
+      "reward": 0.9400000000000001,
+      "sample_id": "public_0046"
+    },
+    {
+      "action": "material",
+      "best_rank": 1,
+      "first_hit_turn": 4,
+      "hit": true,
+      "reward": 0.9400000000000001,
+      "sample_id": "public_0046"
+    },
+    {
+      "action": "color",
+      "best_rank": 1,
+      "first_hit_turn": 4,
+      "hit": true,
+      "reward": 0.9400000000000001,
+      "sample_id": "public_0046"
+    },
+    {
+      "action": "style",
+      "best_rank": 1,
+      "first_hit_turn": 4,
+      "hit": true,
+      "reward": 0.9400000000000001,
+      "sample_id": "public_0046"
+    },
+    {
+      "action": "use_case",
+      "best_rank": 1,
+      "first_hit_turn": 4,
+      "hit": true,
+      "reward": 0.9400000000000001,
+      "sample_id": "public_0046"
+    },
+    {
+      "action": "feature",
+      "best_rank": 1,
+      "first_hit_turn": 4,
+      "hit": true,
+      "reward": 0.9400000000000001,
+      "sample_id": "public_0046"
+    },
+    {
+      "action": "budget",
+      "best_rank": 1,
+      "first_hit_turn": 4,
+      "hit": true,
+      "reward": 0.9400000000000001,
+      "sample_id": "public_0046"
+    },
+    {
+      "action": "size",
+      "best_rank": 1,
+      "first_hit_turn": 4,
+      "hit": true,
+      "reward": 0.9400000000000001,
+      "sample_id": "public_0046"
+    },
+    {
+      "action": "other",
+      "best_rank": 1,
+      "first_hit_turn": 4,
+      "hit": true,
+      "reward": 0.9400000000000001,
+      "sample_id": "public_0046"
+    },
+    {
+      "action": null,
+      "best_rank": 1,
+      "first_hit_turn": 4,
+      "hit": true,
+      "reward": 0.9400000000000001,
+      "sample_id": "public_0048"
+    },
+    {
+      "action": "material",
+      "best_rank": 1,
+      "first_hit_turn": 4,
+      "hit": true,
+      "reward": 0.9400000000000001,
+      "sample_id": "public_0048"
+    },
+    {
+      "action": "color",
+      "best_rank": 1,
+      "first_hit_turn": 4,
+      "hit": true,
+      "reward": 0.9400000000000001,
+      "sample_id": "public_0048"
+    },
+    {
+      "action": "style",
+      "best_rank": 1,
+      "first_hit_turn": 2,
+      "hit": true,
+      "reward": 0.9800000000000001,
+      "sample_id": "public_0048"
+    },
+    {
+      "action": "use_case",
+      "best_rank": 1,
+      "first_hit_turn": 2,
+      "hit": true,
+      "reward": 0.9800000000000001,
+      "sample_id": "public_0048"
+    },
+    {
+      "action": "feature",
+      "best_rank": 1,
+      "first_hit_turn": 4,
+      "hit": true,
+      "reward": 0.9400000000000001,
+      "sample_id": "public_0048"
+    },
+    {
+      "action": "budget",
+      "best_rank": 1,
+      "first_hit_turn": 4,
+      "hit": true,
+      "reward": 0.9400000000000001,
+      "sample_id": "public_0048"
+    },
+    {
+      "action": "size",
+      "best_rank": 1,
+      "first_hit_turn": 4,
+      "hit": true,
+      "reward": 0.9400000000000001,
+      "sample_id": "public_0048"
+    },
+    {
+      "action": "other",
+      "best_rank": 1,
+      "first_hit_turn": 4,
+      "hit": true,
+      "reward": 0.9400000000000001,
+      "sample_id": "public_0048"
+    },
+    {
+      "action": null,
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0052"
+    },
+    {
+      "action": "material",
+      "best_rank": 3,
+      "first_hit_turn": 3,
+      "hit": true,
+      "reward": 0.76,
+      "sample_id": "public_0052"
+    },
+    {
+      "action": "color",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0052"
+    },
+    {
+      "action": "style",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0052"
+    },
+    {
+      "action": "use_case",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0052"
+    },
+    {
+      "action": "feature",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0052"
+    },
+    {
+      "action": "budget",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0052"
+    },
+    {
+      "action": "size",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0052"
+    },
+    {
+      "action": "other",
+      "best_rank": 3,
+      "first_hit_turn": 3,
+      "hit": true,
+      "reward": 0.76,
+      "sample_id": "public_0052"
+    },
+    {
+      "action": null,
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0066"
+    },
+    {
+      "action": "material",
+      "best_rank": 3,
+      "first_hit_turn": 2,
+      "hit": true,
+      "reward": 0.78,
+      "sample_id": "public_0066"
+    },
+    {
+      "action": "color",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0066"
+    },
+    {
+      "action": "style",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0066"
+    },
+    {
+      "action": "use_case",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0066"
+    },
+    {
+      "action": "feature",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0066"
+    },
+    {
+      "action": "budget",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0066"
+    },
+    {
+      "action": "size",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0066"
+    },
+    {
+      "action": "other",
+      "best_rank": 3,
+      "first_hit_turn": 2,
+      "hit": true,
+      "reward": 0.78,
+      "sample_id": "public_0066"
+    },
+    {
+      "action": null,
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0075"
+    },
+    {
+      "action": "material",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0075"
+    },
+    {
+      "action": "color",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0075"
+    },
+    {
+      "action": "style",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0075"
+    },
+    {
+      "action": "use_case",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0075"
+    },
+    {
+      "action": "feature",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0075"
+    },
+    {
+      "action": "budget",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0075"
+    },
+    {
+      "action": "size",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0075"
+    },
+    {
+      "action": "other",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0075"
+    },
+    {
+      "action": null,
+      "best_rank": 1,
+      "first_hit_turn": 4,
+      "hit": true,
+      "reward": 0.9400000000000001,
+      "sample_id": "public_0085"
+    },
+    {
+      "action": "material",
+      "best_rank": 1,
+      "first_hit_turn": 4,
+      "hit": true,
+      "reward": 0.9400000000000001,
+      "sample_id": "public_0085"
+    },
+    {
+      "action": "color",
+      "best_rank": 1,
+      "first_hit_turn": 4,
+      "hit": true,
+      "reward": 0.9400000000000001,
+      "sample_id": "public_0085"
+    },
+    {
+      "action": "style",
+      "best_rank": 1,
+      "first_hit_turn": 2,
+      "hit": true,
+      "reward": 0.9800000000000001,
+      "sample_id": "public_0085"
+    },
+    {
+      "action": "use_case",
+      "best_rank": 1,
+      "first_hit_turn": 4,
+      "hit": true,
+      "reward": 0.9400000000000001,
+      "sample_id": "public_0085"
+    },
+    {
+      "action": "feature",
+      "best_rank": 1,
+      "first_hit_turn": 2,
+      "hit": true,
+      "reward": 0.9800000000000001,
+      "sample_id": "public_0085"
+    },
+    {
+      "action": "budget",
+      "best_rank": 1,
+      "first_hit_turn": 4,
+      "hit": true,
+      "reward": 0.9400000000000001,
+      "sample_id": "public_0085"
+    },
+    {
+      "action": "size",
+      "best_rank": 1,
+      "first_hit_turn": 4,
+      "hit": true,
+      "reward": 0.9400000000000001,
+      "sample_id": "public_0085"
+    },
+    {
+      "action": "other",
+      "best_rank": 1,
+      "first_hit_turn": 2,
+      "hit": true,
+      "reward": 0.9800000000000001,
+      "sample_id": "public_0085"
+    },
+    {
+      "action": null,
+      "best_rank": 1,
+      "first_hit_turn": 6,
+      "hit": true,
+      "reward": 0.9,
+      "sample_id": "public_0086"
+    },
+    {
+      "action": "material",
+      "best_rank": 1,
+      "first_hit_turn": 6,
+      "hit": true,
+      "reward": 0.9,
+      "sample_id": "public_0086"
+    },
+    {
+      "action": "color",
+      "best_rank": 1,
+      "first_hit_turn": 6,
+      "hit": true,
+      "reward": 0.9,
+      "sample_id": "public_0086"
+    },
+    {
+      "action": "style",
+      "best_rank": 1,
+      "first_hit_turn": 6,
+      "hit": true,
+      "reward": 0.9,
+      "sample_id": "public_0086"
+    },
+    {
+      "action": "use_case",
+      "best_rank": 1,
+      "first_hit_turn": 6,
+      "hit": true,
+      "reward": 0.9,
+      "sample_id": "public_0086"
+    },
+    {
+      "action": "feature",
+      "best_rank": 1,
+      "first_hit_turn": 2,
+      "hit": true,
+      "reward": 0.9800000000000001,
+      "sample_id": "public_0086"
+    },
+    {
+      "action": "budget",
+      "best_rank": 1,
+      "first_hit_turn": 6,
+      "hit": true,
+      "reward": 0.9,
+      "sample_id": "public_0086"
+    },
+    {
+      "action": "size",
+      "best_rank": 1,
+      "first_hit_turn": 6,
+      "hit": true,
+      "reward": 0.9,
+      "sample_id": "public_0086"
+    },
+    {
+      "action": "other",
+      "best_rank": 1,
+      "first_hit_turn": 2,
+      "hit": true,
+      "reward": 0.9800000000000001,
+      "sample_id": "public_0086"
+    },
+    {
+      "action": null,
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0092"
+    },
+    {
+      "action": "material",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0092"
+    },
+    {
+      "action": "color",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0092"
+    },
+    {
+      "action": "style",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0092"
+    },
+    {
+      "action": "use_case",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0092"
+    },
+    {
+      "action": "feature",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0092"
+    },
+    {
+      "action": "budget",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0092"
+    },
+    {
+      "action": "size",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0092"
+    },
+    {
+      "action": "other",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0092"
+    },
+    {
+      "action": null,
+      "best_rank": 2,
+      "first_hit_turn": 6,
+      "hit": true,
+      "reward": 0.75,
+      "sample_id": "public_0116"
+    },
+    {
+      "action": "material",
+      "best_rank": 1,
+      "first_hit_turn": 6,
+      "hit": true,
+      "reward": 0.9,
+      "sample_id": "public_0116"
+    },
+    {
+      "action": "color",
+      "best_rank": 1,
+      "first_hit_turn": 6,
+      "hit": true,
+      "reward": 0.9,
+      "sample_id": "public_0116"
+    },
+    {
+      "action": "style",
+      "best_rank": 1,
+      "first_hit_turn": 6,
+      "hit": true,
+      "reward": 0.9,
+      "sample_id": "public_0116"
+    },
+    {
+      "action": "use_case",
+      "best_rank": 1,
+      "first_hit_turn": 6,
+      "hit": true,
+      "reward": 0.9,
+      "sample_id": "public_0116"
+    },
+    {
+      "action": "feature",
+      "best_rank": 1,
+      "first_hit_turn": 2,
+      "hit": true,
+      "reward": 0.9800000000000001,
+      "sample_id": "public_0116"
+    },
+    {
+      "action": "budget",
+      "best_rank": 1,
+      "first_hit_turn": 6,
+      "hit": true,
+      "reward": 0.9,
+      "sample_id": "public_0116"
+    },
+    {
+      "action": "size",
+      "best_rank": 1,
+      "first_hit_turn": 6,
+      "hit": true,
+      "reward": 0.9,
+      "sample_id": "public_0116"
+    },
+    {
+      "action": "other",
+      "best_rank": 1,
+      "first_hit_turn": 2,
+      "hit": true,
+      "reward": 0.9800000000000001,
+      "sample_id": "public_0116"
+    },
+    {
+      "action": null,
+      "best_rank": 4,
+      "first_hit_turn": 1,
+      "hit": true,
+      "reward": 0.7749999999999999,
+      "sample_id": "public_0134"
+    },
+    {
+      "action": "material",
+      "best_rank": 4,
+      "first_hit_turn": 1,
+      "hit": true,
+      "reward": 0.7749999999999999,
+      "sample_id": "public_0134"
+    },
+    {
+      "action": "color",
+      "best_rank": 4,
+      "first_hit_turn": 1,
+      "hit": true,
+      "reward": 0.7749999999999999,
+      "sample_id": "public_0134"
+    },
+    {
+      "action": "style",
+      "best_rank": 4,
+      "first_hit_turn": 1,
+      "hit": true,
+      "reward": 0.7749999999999999,
+      "sample_id": "public_0134"
+    },
+    {
+      "action": "use_case",
+      "best_rank": 4,
+      "first_hit_turn": 1,
+      "hit": true,
+      "reward": 0.7749999999999999,
+      "sample_id": "public_0134"
+    },
+    {
+      "action": "feature",
+      "best_rank": 4,
+      "first_hit_turn": 1,
+      "hit": true,
+      "reward": 0.7749999999999999,
+      "sample_id": "public_0134"
+    },
+    {
+      "action": "budget",
+      "best_rank": 4,
+      "first_hit_turn": 1,
+      "hit": true,
+      "reward": 0.7749999999999999,
+      "sample_id": "public_0134"
+    },
+    {
+      "action": "size",
+      "best_rank": 4,
+      "first_hit_turn": 1,
+      "hit": true,
+      "reward": 0.7749999999999999,
+      "sample_id": "public_0134"
+    },
+    {
+      "action": "other",
+      "best_rank": 4,
+      "first_hit_turn": 1,
+      "hit": true,
+      "reward": 0.7749999999999999,
+      "sample_id": "public_0134"
+    },
+    {
+      "action": null,
+      "best_rank": 1,
+      "first_hit_turn": 4,
+      "hit": true,
+      "reward": 0.9400000000000001,
+      "sample_id": "public_0139"
+    },
+    {
+      "action": "material",
+      "best_rank": 2,
+      "first_hit_turn": 2,
+      "hit": true,
+      "reward": 0.8300000000000001,
+      "sample_id": "public_0139"
+    },
+    {
+      "action": "color",
+      "best_rank": 1,
+      "first_hit_turn": 4,
+      "hit": true,
+      "reward": 0.9400000000000001,
+      "sample_id": "public_0139"
+    },
+    {
+      "action": "style",
+      "best_rank": 1,
+      "first_hit_turn": 2,
+      "hit": true,
+      "reward": 0.9800000000000001,
+      "sample_id": "public_0139"
+    },
+    {
+      "action": "use_case",
+      "best_rank": 1,
+      "first_hit_turn": 4,
+      "hit": true,
+      "reward": 0.9400000000000001,
+      "sample_id": "public_0139"
+    },
+    {
+      "action": "feature",
+      "best_rank": 1,
+      "first_hit_turn": 2,
+      "hit": true,
+      "reward": 0.9800000000000001,
+      "sample_id": "public_0139"
+    },
+    {
+      "action": "budget",
+      "best_rank": 1,
+      "first_hit_turn": 4,
+      "hit": true,
+      "reward": 0.9400000000000001,
+      "sample_id": "public_0139"
+    },
+    {
+      "action": "size",
+      "best_rank": 1,
+      "first_hit_turn": 4,
+      "hit": true,
+      "reward": 0.9400000000000001,
+      "sample_id": "public_0139"
+    },
+    {
+      "action": "other",
+      "best_rank": 2,
+      "first_hit_turn": 2,
+      "hit": true,
+      "reward": 0.8300000000000001,
+      "sample_id": "public_0139"
+    },
+    {
+      "action": null,
+      "best_rank": 1,
+      "first_hit_turn": 4,
+      "hit": true,
+      "reward": 0.9400000000000001,
+      "sample_id": "public_0142"
+    },
+    {
+      "action": "material",
+      "best_rank": 1,
+      "first_hit_turn": 4,
+      "hit": true,
+      "reward": 0.9400000000000001,
+      "sample_id": "public_0142"
+    },
+    {
+      "action": "color",
+      "best_rank": 1,
+      "first_hit_turn": 4,
+      "hit": true,
+      "reward": 0.9400000000000001,
+      "sample_id": "public_0142"
+    },
+    {
+      "action": "style",
+      "best_rank": 1,
+      "first_hit_turn": 4,
+      "hit": true,
+      "reward": 0.9400000000000001,
+      "sample_id": "public_0142"
+    },
+    {
+      "action": "use_case",
+      "best_rank": 1,
+      "first_hit_turn": 4,
+      "hit": true,
+      "reward": 0.9400000000000001,
+      "sample_id": "public_0142"
+    },
+    {
+      "action": "feature",
+      "best_rank": 1,
+      "first_hit_turn": 4,
+      "hit": true,
+      "reward": 0.9400000000000001,
+      "sample_id": "public_0142"
+    },
+    {
+      "action": "budget",
+      "best_rank": 1,
+      "first_hit_turn": 4,
+      "hit": true,
+      "reward": 0.9400000000000001,
+      "sample_id": "public_0142"
+    },
+    {
+      "action": "size",
+      "best_rank": 1,
+      "first_hit_turn": 4,
+      "hit": true,
+      "reward": 0.9400000000000001,
+      "sample_id": "public_0142"
+    },
+    {
+      "action": "other",
+      "best_rank": 1,
+      "first_hit_turn": 4,
+      "hit": true,
+      "reward": 0.9400000000000001,
+      "sample_id": "public_0142"
+    },
+    {
+      "action": null,
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0144"
+    },
+    {
+      "action": "material",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0144"
+    },
+    {
+      "action": "color",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0144"
+    },
+    {
+      "action": "style",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0144"
+    },
+    {
+      "action": "use_case",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0144"
+    },
+    {
+      "action": "feature",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0144"
+    },
+    {
+      "action": "budget",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0144"
+    },
+    {
+      "action": "size",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0144"
+    },
+    {
+      "action": "other",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0144"
+    },
+    {
+      "action": null,
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0145"
+    },
+    {
+      "action": "material",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0145"
+    },
+    {
+      "action": "color",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0145"
+    },
+    {
+      "action": "style",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0145"
+    },
+    {
+      "action": "use_case",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0145"
+    },
+    {
+      "action": "feature",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0145"
+    },
+    {
+      "action": "budget",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0145"
+    },
+    {
+      "action": "size",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0145"
+    },
+    {
+      "action": "other",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0145"
+    },
+    {
+      "action": null,
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0146"
+    },
+    {
+      "action": "material",
+      "best_rank": 1,
+      "first_hit_turn": 2,
+      "hit": true,
+      "reward": 0.9800000000000001,
+      "sample_id": "public_0146"
+    },
+    {
+      "action": "color",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0146"
+    },
+    {
+      "action": "style",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0146"
+    },
+    {
+      "action": "use_case",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0146"
+    },
+    {
+      "action": "feature",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0146"
+    },
+    {
+      "action": "budget",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0146"
+    },
+    {
+      "action": "size",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0146"
+    },
+    {
+      "action": "other",
+      "best_rank": 1,
+      "first_hit_turn": 2,
+      "hit": true,
+      "reward": 0.9800000000000001,
+      "sample_id": "public_0146"
+    },
+    {
+      "action": null,
+      "best_rank": 1,
+      "first_hit_turn": 6,
+      "hit": true,
+      "reward": 0.9,
+      "sample_id": "public_0157"
+    },
+    {
+      "action": "material",
+      "best_rank": 1,
+      "first_hit_turn": 6,
+      "hit": true,
+      "reward": 0.9,
+      "sample_id": "public_0157"
+    },
+    {
+      "action": "color",
+      "best_rank": 1,
+      "first_hit_turn": 6,
+      "hit": true,
+      "reward": 0.9,
+      "sample_id": "public_0157"
+    },
+    {
+      "action": "style",
+      "best_rank": 1,
+      "first_hit_turn": 6,
+      "hit": true,
+      "reward": 0.9,
+      "sample_id": "public_0157"
+    },
+    {
+      "action": "use_case",
+      "best_rank": 1,
+      "first_hit_turn": 6,
+      "hit": true,
+      "reward": 0.9,
+      "sample_id": "public_0157"
+    },
+    {
+      "action": "feature",
+      "best_rank": 1,
+      "first_hit_turn": 2,
+      "hit": true,
+      "reward": 0.9800000000000001,
+      "sample_id": "public_0157"
+    },
+    {
+      "action": "budget",
+      "best_rank": 1,
+      "first_hit_turn": 6,
+      "hit": true,
+      "reward": 0.9,
+      "sample_id": "public_0157"
+    },
+    {
+      "action": "size",
+      "best_rank": 1,
+      "first_hit_turn": 6,
+      "hit": true,
+      "reward": 0.9,
+      "sample_id": "public_0157"
+    },
+    {
+      "action": "other",
+      "best_rank": 1,
+      "first_hit_turn": 6,
+      "hit": true,
+      "reward": 0.9,
+      "sample_id": "public_0157"
+    },
+    {
+      "action": null,
+      "best_rank": 10,
+      "first_hit_turn": 6,
+      "hit": true,
+      "reward": 0.63,
+      "sample_id": "public_0162"
+    },
+    {
+      "action": "material",
+      "best_rank": 10,
+      "first_hit_turn": 2,
+      "hit": true,
+      "reward": 0.7100000000000001,
+      "sample_id": "public_0162"
+    },
+    {
+      "action": "color",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0162"
+    },
+    {
+      "action": "style",
+      "best_rank": 10,
+      "first_hit_turn": 6,
+      "hit": true,
+      "reward": 0.63,
+      "sample_id": "public_0162"
+    },
+    {
+      "action": "use_case",
+      "best_rank": 10,
+      "first_hit_turn": 6,
+      "hit": true,
+      "reward": 0.63,
+      "sample_id": "public_0162"
+    },
+    {
+      "action": "feature",
+      "best_rank": 10,
+      "first_hit_turn": 2,
+      "hit": true,
+      "reward": 0.7100000000000001,
+      "sample_id": "public_0162"
+    },
+    {
+      "action": "budget",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0162"
+    },
+    {
+      "action": "size",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0162"
+    },
+    {
+      "action": "other",
+      "best_rank": 4,
+      "first_hit_turn": 2,
+      "hit": true,
+      "reward": 0.755,
+      "sample_id": "public_0162"
+    },
+    {
+      "action": null,
+      "best_rank": 1,
+      "first_hit_turn": 6,
+      "hit": true,
+      "reward": 0.9,
+      "sample_id": "public_0163"
+    },
+    {
+      "action": "material",
+      "best_rank": 1,
+      "first_hit_turn": 2,
+      "hit": true,
+      "reward": 0.9800000000000001,
+      "sample_id": "public_0163"
+    },
+    {
+      "action": "color",
+      "best_rank": 1,
+      "first_hit_turn": 6,
+      "hit": true,
+      "reward": 0.9,
+      "sample_id": "public_0163"
+    },
+    {
+      "action": "style",
+      "best_rank": 1,
+      "first_hit_turn": 6,
+      "hit": true,
+      "reward": 0.9,
+      "sample_id": "public_0163"
+    },
+    {
+      "action": "use_case",
+      "best_rank": 1,
+      "first_hit_turn": 6,
+      "hit": true,
+      "reward": 0.9,
+      "sample_id": "public_0163"
+    },
+    {
+      "action": "feature",
+      "best_rank": 1,
+      "first_hit_turn": 2,
+      "hit": true,
+      "reward": 0.9800000000000001,
+      "sample_id": "public_0163"
+    },
+    {
+      "action": "budget",
+      "best_rank": 1,
+      "first_hit_turn": 6,
+      "hit": true,
+      "reward": 0.9,
+      "sample_id": "public_0163"
+    },
+    {
+      "action": "size",
+      "best_rank": 1,
+      "first_hit_turn": 6,
+      "hit": true,
+      "reward": 0.9,
+      "sample_id": "public_0163"
+    },
+    {
+      "action": "other",
+      "best_rank": 1,
+      "first_hit_turn": 2,
+      "hit": true,
+      "reward": 0.9800000000000001,
+      "sample_id": "public_0163"
+    },
+    {
+      "action": null,
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0175"
+    },
+    {
+      "action": "material",
+      "best_rank": 5,
+      "first_hit_turn": 6,
+      "hit": true,
+      "reward": 0.66,
+      "sample_id": "public_0175"
+    },
+    {
+      "action": "color",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0175"
+    },
+    {
+      "action": "style",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0175"
+    },
+    {
+      "action": "use_case",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0175"
+    },
+    {
+      "action": "feature",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0175"
+    },
+    {
+      "action": "budget",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0175"
+    },
+    {
+      "action": "size",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0175"
+    },
+    {
+      "action": "other",
+      "best_rank": 5,
+      "first_hit_turn": 6,
+      "hit": true,
+      "reward": 0.66,
+      "sample_id": "public_0175"
+    },
+    {
+      "action": null,
+      "best_rank": 9,
+      "first_hit_turn": 6,
+      "hit": true,
+      "reward": 0.6333333333333333,
+      "sample_id": "public_0176"
+    },
+    {
+      "action": "material",
+      "best_rank": 1,
+      "first_hit_turn": 2,
+      "hit": true,
+      "reward": 0.9800000000000001,
+      "sample_id": "public_0176"
+    },
+    {
+      "action": "color",
+      "best_rank": 9,
+      "first_hit_turn": 6,
+      "hit": true,
+      "reward": 0.6333333333333333,
+      "sample_id": "public_0176"
+    },
+    {
+      "action": "style",
+      "best_rank": 9,
+      "first_hit_turn": 6,
+      "hit": true,
+      "reward": 0.6333333333333333,
+      "sample_id": "public_0176"
+    },
+    {
+      "action": "use_case",
+      "best_rank": 9,
+      "first_hit_turn": 6,
+      "hit": true,
+      "reward": 0.6333333333333333,
+      "sample_id": "public_0176"
+    },
+    {
+      "action": "feature",
+      "best_rank": 9,
+      "first_hit_turn": 2,
+      "hit": true,
+      "reward": 0.7133333333333334,
+      "sample_id": "public_0176"
+    },
+    {
+      "action": "budget",
+      "best_rank": 9,
+      "first_hit_turn": 6,
+      "hit": true,
+      "reward": 0.6333333333333333,
+      "sample_id": "public_0176"
+    },
+    {
+      "action": "size",
+      "best_rank": 9,
+      "first_hit_turn": 6,
+      "hit": true,
+      "reward": 0.6333333333333333,
+      "sample_id": "public_0176"
+    },
+    {
+      "action": "other",
+      "best_rank": 1,
+      "first_hit_turn": 2,
+      "hit": true,
+      "reward": 0.9800000000000001,
+      "sample_id": "public_0176"
+    },
+    {
+      "action": null,
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0177"
+    },
+    {
+      "action": "material",
+      "best_rank": 6,
+      "first_hit_turn": 4,
+      "hit": true,
+      "reward": 0.6900000000000001,
+      "sample_id": "public_0177"
+    },
+    {
+      "action": "color",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0177"
+    },
+    {
+      "action": "style",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0177"
+    },
+    {
+      "action": "use_case",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0177"
+    },
+    {
+      "action": "feature",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0177"
+    },
+    {
+      "action": "budget",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0177"
+    },
+    {
+      "action": "size",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0177"
+    },
+    {
+      "action": "other",
+      "best_rank": 6,
+      "first_hit_turn": 4,
+      "hit": true,
+      "reward": 0.6900000000000001,
+      "sample_id": "public_0177"
+    },
+    {
+      "action": null,
+      "best_rank": 4,
+      "first_hit_turn": 6,
+      "hit": true,
+      "reward": 0.6749999999999999,
+      "sample_id": "public_0179"
+    },
+    {
+      "action": "material",
+      "best_rank": 4,
+      "first_hit_turn": 6,
+      "hit": true,
+      "reward": 0.6749999999999999,
+      "sample_id": "public_0179"
+    },
+    {
+      "action": "color",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0179"
+    },
+    {
+      "action": "style",
+      "best_rank": 4,
+      "first_hit_turn": 6,
+      "hit": true,
+      "reward": 0.6749999999999999,
+      "sample_id": "public_0179"
+    },
+    {
+      "action": "use_case",
+      "best_rank": 4,
+      "first_hit_turn": 6,
+      "hit": true,
+      "reward": 0.6749999999999999,
+      "sample_id": "public_0179"
+    },
+    {
+      "action": "feature",
+      "best_rank": 4,
+      "first_hit_turn": 2,
+      "hit": true,
+      "reward": 0.755,
+      "sample_id": "public_0179"
+    },
+    {
+      "action": "budget",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0179"
+    },
+    {
+      "action": "size",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0179"
+    },
+    {
+      "action": "other",
+      "best_rank": 9,
+      "first_hit_turn": 2,
+      "hit": true,
+      "reward": 0.7133333333333334,
+      "sample_id": "public_0179"
+    },
+    {
+      "action": null,
+      "best_rank": 4,
+      "first_hit_turn": 6,
+      "hit": true,
+      "reward": 0.6749999999999999,
+      "sample_id": "public_0191"
+    },
+    {
+      "action": "material",
+      "best_rank": 4,
+      "first_hit_turn": 6,
+      "hit": true,
+      "reward": 0.6749999999999999,
+      "sample_id": "public_0191"
+    },
+    {
+      "action": "color",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0191"
+    },
+    {
+      "action": "style",
+      "best_rank": 4,
+      "first_hit_turn": 6,
+      "hit": true,
+      "reward": 0.6749999999999999,
+      "sample_id": "public_0191"
+    },
+    {
+      "action": "use_case",
+      "best_rank": 4,
+      "first_hit_turn": 6,
+      "hit": true,
+      "reward": 0.6749999999999999,
+      "sample_id": "public_0191"
+    },
+    {
+      "action": "feature",
+      "best_rank": 4,
+      "first_hit_turn": 2,
+      "hit": true,
+      "reward": 0.755,
+      "sample_id": "public_0191"
+    },
+    {
+      "action": "budget",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0191"
+    },
+    {
+      "action": "size",
+      "best_rank": null,
+      "first_hit_turn": null,
+      "hit": false,
+      "reward": 0.0,
+      "sample_id": "public_0191"
+    },
+    {
+      "action": "other",
+      "best_rank": 4,
+      "first_hit_turn": 2,
+      "hit": true,
+      "reward": 0.755,
+      "sample_id": "public_0191"
+    },
+    {
+      "action": null,
+      "best_rank": 1,
+      "first_hit_turn": 6,
+      "hit": true,
+      "reward": 0.9,
+      "sample_id": "public_0192"
+    },
+    {
+      "action": "material",
+      "best_rank": 2,
+      "first_hit_turn": 3,
+      "hit": true,
+      "reward": 0.81,
+      "sample_id": "public_0192"
+    },
+    {
+      "action": "color",
+      "best_rank": 2,
+      "first_hit_turn": 3,
+      "hit": true,
+      "reward": 0.81,
+      "sample_id": "public_0192"
+    },
+    {
+      "action": "style",
+      "best_rank": 2,
+      "first_hit_turn": 3,
+      "hit": true,
+      "reward": 0.81,
+      "sample_id": "public_0192"
+    },
+    {
+      "action": "use_case",
+      "best_rank": 2,
+      "first_hit_turn": 3,
+      "hit": true,
+      "reward": 0.81,
+      "sample_id": "public_0192"
+    },
+    {
+      "action": "feature",
+      "best_rank": 2,
+      "first_hit_turn": 3,
+      "hit": true,
+      "reward": 0.81,
+      "sample_id": "public_0192"
+    },
+    {
+      "action": "budget",
+      "best_rank": 2,
+      "first_hit_turn": 3,
+      "hit": true,
+      "reward": 0.81,
+      "sample_id": "public_0192"
+    },
+    {
+      "action": "size",
+      "best_rank": 2,
+      "first_hit_turn": 3,
+      "hit": true,
+      "reward": 0.81,
+      "sample_id": "public_0192"
+    },
+    {
+      "action": "other",
+      "best_rank": 2,
+      "first_hit_turn": 3,
+      "hit": true,
+      "reward": 0.81,
+      "sample_id": "public_0192"
+    },
+    {
+      "action": null,
+      "best_rank": 1,
+      "first_hit_turn": 3,
+      "hit": true,
+      "reward": 0.9600000000000001,
+      "sample_id": "public_0200"
+    },
+    {
+      "action": "material",
+      "best_rank": 1,
+      "first_hit_turn": 3,
+      "hit": true,
+      "reward": 0.9600000000000001,
+      "sample_id": "public_0200"
+    },
+    {
+      "action": "color",
+      "best_rank": 1,
+      "first_hit_turn": 2,
+      "hit": true,
+      "reward": 0.9800000000000001,
+      "sample_id": "public_0200"
+    },
+    {
+      "action": "style",
+      "best_rank": 1,
+      "first_hit_turn": 3,
+      "hit": true,
+      "reward": 0.9600000000000001,
+      "sample_id": "public_0200"
+    },
+    {
+      "action": "use_case",
+      "best_rank": 1,
+      "first_hit_turn": 3,
+      "hit": true,
+      "reward": 0.9600000000000001,
+      "sample_id": "public_0200"
+    },
+    {
+      "action": "feature",
+      "best_rank": 1,
+      "first_hit_turn": 2,
+      "hit": true,
+      "reward": 0.9800000000000001,
+      "sample_id": "public_0200"
+    },
+    {
+      "action": "budget",
+      "best_rank": 1,
+      "first_hit_turn": 3,
+      "hit": true,
+      "reward": 0.9600000000000001,
+      "sample_id": "public_0200"
+    },
+    {
+      "action": "size",
+      "best_rank": 1,
+      "first_hit_turn": 3,
+      "hit": true,
+      "reward": 0.9600000000000001,
+      "sample_id": "public_0200"
+    },
+    {
+      "action": "other",
+      "best_rank": 1,
+      "first_hit_turn": 2,
+      "hit": true,
+      "reward": 0.9800000000000001,
+      "sample_id": "public_0200"
+    }
+  ],
+  "phase": 7,
+  "sample_count": 31,
+  "split": "adaptive_v1_outer_fold_0_screen"
+}

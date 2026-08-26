@@ -1,0 +1,74 @@
+{
+  "compressed_missing": {
+    "hit_rate_at_10": 0.7,
+    "mrr": 0.439701,
+    "mttc": 5.94,
+    "recommended_technical_score": 0.58311
+  },
+  "current_fixed": {
+    "hit_rate_at_10": 0.513333,
+    "mrr": 0.345728,
+    "mttc": 7.14,
+    "recommended_technical_score": 0.437585
+  },
+  "multi_feature_first": {
+    "hit_rate_at_10": 0.686667,
+    "mrr": 0.441823,
+    "mttc": 5.6,
+    "recommended_technical_score": 0.58388
+  },
+  "multi_fixed": {
+    "hit_rate_at_10": 0.806667,
+    "mrr": 0.51732,
+    "mttc": 4.94,
+    "recommended_technical_score": 0.679729
+  },
+  "multi_missing": {
+    "hit_rate_at_10": 0.7,
+    "mrr": 0.439701,
+    "mttc": 5.94,
+    "recommended_technical_score": 0.58311
+  },
+  "multi_no_negative": {
+    "hit_rate_at_10": 0.666667,
+    "mrr": 0.418868,
+    "mttc": 6.006667,
+    "recommended_technical_score": 0.558861
+  },
+  "multi_no_override": {
+    "hit_rate_at_10": 0.7,
+    "mrr": 0.439701,
+    "mttc": 5.94,
+    "recommended_technical_score": 0.58311
+  },
+  "multi_no_question": {
+    "hit_rate_at_10": 0.146667,
+    "mrr": 0.093979,
+    "mttc": 9.713333,
+    "recommended_technical_score": 0.127261
+  },
+  "multi_other_always": {
+    "hit_rate_at_10": 0.86,
+    "mrr": 0.542302,
+    "mttc": 3.6,
+    "recommended_technical_score": 0.740691
+  },
+  "multi_uncertainty": {
+    "hit_rate_at_10": 0.54,
+    "mrr": 0.350812,
+    "mttc": 6.64,
+    "recommended_technical_score": 0.462444
+  },
+  "raw_history_fixed": {
+    "hit_rate_at_10": 0.793333,
+    "mrr": 0.482206,
+    "mttc": 4.946667,
+    "recommended_technical_score": 0.662395
+  },
+  "single_missing": {
+    "hit_rate_at_10": 0.573333,
+    "mrr": 0.351881,
+    "mttc": 6.586667,
+    "recommended_technical_score": 0.480497
+  }
+}

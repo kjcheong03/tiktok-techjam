@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "upstream": {
+    "repository": "https://github.com/TechJam2026/techjam-conversational-search",
+    "commit": "9a35be51780ff1caf89eceaabca34259e946f40f",
+    "tree": "44aaf093c96c880912e264e841dcc1964c5f3d58",
+    "release_tag": "participant-kit",
+    "release_published_at": "2026-08-24T08:49:52Z",
+    "release_url": "https://github.com/TechJam2026/techjam-conversational-search/releases/tag/participant-kit",
+    "release_assets": {
+      "SHA256SUMS": "cd04b5f52cc06b61b0bd54ad93dc89bab6b0f2ec33d0725c79ed3c193e4de9e9",
+      "catalog.jsonl.gz": "07fd142631fd6b03e2b4d09988c3eb7d53720e9d57010c79db48eeaada50a8f8",
+      "techjam-participant-kit.zip": "b3d7e283b835343b42c4919ea2ca90f2fb5a2aa2b10537f14dcf42f03e5b38ae"
+    }
+  },
+  "protected_files": {
+    "data/catalog.jsonl": "da979b05a68af864cb0dcf9ee6a81c010c7e66a57978ad286c7a2e005fc69a67",
+    "data/public_set.jsonl": "857259f7a438e6188ac63e18995b6ff4489bfcfc4a716a798b9a2aa0ee8f7579",
+    "docs/agent_api_contract.json": "635563741dd71c273d540722913eccdc595b4af9b47ade79f38cd42ae45c8822",
+    "docs/baseline_results.json": "70834f738918191e4108f89ea66bc502db521bccce5ed95d6ccc73563fba5a96",
+    "docs/competition_specification.md": "408e264acbd1e4567b98038d448fd23c9e9b51705149ca7da1bcd1571e10d001",
+    "docs/evaluation_config.json": "8ee0c899ddc68d521754cf9d2f239a8bc09851fb37c5872567160c30d431aa53",
+    "docs/submission_rules.md": "2d312636ceda4576f95e45d5f56f8ac9e106023d3028081a5d59dd274f385b16",
+    "evaluator/__init__.py": "c597e982409b24fe5411298cfe033aeb287eafcf26c33e34b8c43294cff0a917",
+    "evaluator/local_evaluator.py": "79a5ea06f9a1b8c5036f30efa85dc1f36b8f6b06eb8feb8f545dfa767bc45564"
+  },
+  "upstream_reference_files": {
+    "DATA_ATTRIBUTION.md": "23e9f3077536c7e2456fa4df95cd11a8be29e371dd4d102a3afe21ffa3b5db0f",
+    "README.md": "7e80ea0109ee14dce103efdc84cd3c174a75c2a15942cd01f5a66a71f3c1803e",
+    "data/README.md": "a5667489e4b25d473d468ff7a98cfd7ebf301cadb99ad4cb5cd777c3af901049",
+    "starter/__init__.py": "03c49004df458e7fb767d172cc896fb5dd08a2aa00686d322248befdc2d7f5d4",
+    "starter/agent.py": "cd0fdade2d743aaf220b93a6cd3bfa7fb1b9b9065d2fbd174128ed2b0f1b812d",
+    "tests/test_evaluator.py": "e07648ee81b1be0a14a4b13be3c566d17959154fef533f7ef6f4c349ce69d5df"
+  },
+  "starter_reference": {
+    "source_path": "starter/agent.py",
+    "frozen_path": "baseline/official_reference.py",
+    "sha256": "cd0fdade2d743aaf220b93a6cd3bfa7fb1b9b9065d2fbd174128ed2b0f1b812d"
+  },
+  "expected_metrics": {
+    "sample_count": 200,
+    "hit_rate_at_10": 0.125,
+    "mrr": 0.068034,
+    "mttc": 9.81,
+    "efficiency": 0.119,
+    "recommended_technical_score": 0.10671
+  }
+}

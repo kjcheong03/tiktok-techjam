@@ -1,0 +1,40 @@
+{
+  "gate": "compiled_research_parity",
+  "metrics": {
+    "hit_rate_at_10": 0.86,
+    "mrr": 0.542302,
+    "mttc": 3.6,
+    "recommended_technical_score": 0.740691,
+    "scenario_metrics": {
+      "boundary": {
+        "hit_rate_at_10": 0.875,
+        "mrr": 0.765625,
+        "mttc": 4.25,
+        "sample_count": 8
+      },
+      "browsing": {
+        "hit_rate_at_10": 0.866667,
+        "mrr": 0.502149,
+        "mttc": 3.416667,
+        "sample_count": 60
+      },
+      "buying": {
+        "hit_rate_at_10": 0.866667,
+        "mrr": 0.521104,
+        "mttc": 3.166667,
+        "sample_count": 60
+      },
+      "intent_override": {
+        "hit_rate_at_10": 0.818182,
+        "mrr": 0.628409,
+        "mttc": 5.045455,
+        "sample_count": 22
+      }
+    }
+  },
+  "mismatches": {},
+  "passed": true,
+  "phase": 12,
+  "policy_sha256": "1c3ace2bfe5f34722f44c44610230a16b7b8f5db954d5c5f29f3ebcd24420274",
+  "split": "adaptive_v1"
+}

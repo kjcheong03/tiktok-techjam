@@ -3,10 +3,33 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, field
 
-
 ASK_ORDER = ("material", "color", "style", "use_case", "feature", "budget", "size")
-MATERIALS = ("cotton", "polyester", "nylon", "leather", "wool", "spandex", "silk", "rayon", "fabric")
-COLORS = ("black", "white", "blue", "navy", "red", "pink", "green", "brown", "gray", "grey", "purple", "yellow", "orange")
+MATERIALS = (
+    "cotton",
+    "polyester",
+    "nylon",
+    "leather",
+    "wool",
+    "spandex",
+    "silk",
+    "rayon",
+    "fabric",
+)
+COLORS = (
+    "black",
+    "white",
+    "blue",
+    "navy",
+    "red",
+    "pink",
+    "green",
+    "brown",
+    "gray",
+    "grey",
+    "purple",
+    "yellow",
+    "orange",
+)
 
 CATEGORY_RE = re.compile(r"i'm looking for (.+?)(?:\.|,\s*but)", re.IGNORECASE)
 CONSTRAINT_RE = re.compile(
@@ -34,9 +57,14 @@ def classify_constraint(value: str) -> str:
         return "color"
     if any(word in lowered for word in ("size", "sizing", "width", "wide", "narrow")):
         return "size"
-    if any(word in lowered for word in ("department", "style", "fit", "sleeve", "neck")):
+    if any(
+        word in lowered for word in ("department", "style", "fit", "sleeve", "neck")
+    ):
         return "style"
-    if any(word in lowered for word in ("hiking", "running", "gym", "winter", "outdoor", "work")):
+    if any(
+        word in lowered
+        for word in ("hiking", "running", "gym", "winter", "outdoor", "work")
+    ):
         return "use_case"
     return "feature"
 
@@ -82,7 +110,9 @@ class SessionState:
         constraint_match = CONSTRAINT_RE.search(message)
         constraints: list[str] = []
         if constraint_match:
-            constraints = [_clean(value) for value in constraint_match.group(1).split(";")]
+            constraints = [
+                _clean(value) for value in constraint_match.group(1).split(";")
+            ]
         elif category and "." in message and "still exploring" not in message.lower():
             remainder = _clean(message.split(".", 1)[1])
             if remainder and "key requirement" not in remainder.lower():

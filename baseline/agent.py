@@ -5,7 +5,6 @@ from typing import Literal
 from .retrieval import DenseRetriever, KeywordRetriever, reciprocal_rank_fusion
 from .state import SessionState, fixed_question_for_turn
 
-
 RetrievalMode = Literal["keyword", "dense", "hybrid"]
 
 

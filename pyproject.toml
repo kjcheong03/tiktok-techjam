@@ -5,7 +5,17 @@ description = "Reproducible retrieval and conversation-state baselines for TechJ
 requires-python = ">=3.10,<3.14"
 dependencies = [
   "numpy>=1.26,<3",
+  "pydantic>=2.10,<3",
   "sentence-transformers>=6,<7",
+]
+
+[tool.ruff]
+extend-exclude = [
+  "README.md",
+  "docs",
+  "baseline/official_reference.py",
+  "evaluator",
+  "tests/test_evaluator.py",
 ]
 
 [tool.uv]

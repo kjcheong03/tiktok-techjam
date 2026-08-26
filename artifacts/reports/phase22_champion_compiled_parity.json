@@ -1,0 +1,43 @@
+{
+  "gate": "champion_compiled_research_parity",
+  "holdout_accessed": false,
+  "metrics": {
+    "hit_rate_at_10": 0.933333,
+    "mrr": 0.639508,
+    "mttc": 2.94,
+    "recommended_technical_score": 0.819719,
+    "scenario_metrics": {
+      "boundary": {
+        "hit_rate_at_10": 0.875,
+        "mrr": 0.60119,
+        "mttc": 4.5,
+        "sample_count": 8
+      },
+      "browsing": {
+        "hit_rate_at_10": 0.966667,
+        "mrr": 0.655615,
+        "mttc": 2.516667,
+        "sample_count": 60
+      },
+      "buying": {
+        "hit_rate_at_10": 0.933333,
+        "mrr": 0.597163,
+        "mttc": 2.516667,
+        "sample_count": 60
+      },
+      "intent_override": {
+        "hit_rate_at_10": 0.863636,
+        "mrr": 0.725,
+        "mttc": 4.681818,
+        "sample_count": 22
+      }
+    }
+  },
+  "mismatches": {},
+  "passed": true,
+  "phase": 22,
+  "policy_canonical_sha256": "95c1cdde107388d064b5d584393a570a9f220093291f8e7ccee730622ea0af5f",
+  "policy_id": "ghostlab_champion_linear_v1",
+  "policy_sha256": "57857af805256240e3f6d4e51ba164cf9cbe8575174840da981faa4811390b19",
+  "split": "adaptive_v1"
+}

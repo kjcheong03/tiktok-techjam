@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "policy_id": "ghostlab_champion_linear_v1",
+  "techniques": {
+    "retrieval_route": "keyword",
+    "state_mode": "raw_history",
+    "question_policy": "sequence",
+    "question_order": [
+      "other",
+      "other",
+      "use_case",
+      "other",
+      "size",
+      "other",
+      "other",
+      "size"
+    ],
+    "retrieval_k": 200,
+    "sparse_field_weights": [2.0, 8.0, 4.0, 2.5, 1.5, 1.0],
+    "negative_evidence": false,
+    "provenance": true,
+    "override_invalidation": true,
+    "quality_prior_weight": 0.2,
+    "reranker": "learned_linear",
+    "rerank_k": 50,
+    "learned_weights": [
+      0.0,
+      0.0,
+      0.634672535385014,
+      0.0,
+      0.0,
+      0.0,
+      0.4938576967870529
+    ],
+    "learned_l2": 0.1,
+    "learned_training_pairs": 32746
+  },
+  "fallback_policy_id": "keyword_current_turn",
+  "trace_enabled": false
+}

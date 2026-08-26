@@ -1,0 +1,430 @@
+{
+  "counterfactual_cache_hits": 0,
+  "feature_reports": {
+    "no_other:has_initial_constraint": {
+      "action_counts": {
+        "material": 150
+      },
+      "fold_rewards": [
+        0.67629,
+        0.700645,
+        0.676512,
+        0.672697,
+        0.671408
+      ],
+      "fold_tables": [
+        {
+          "cells": {
+            "(False,)": "material",
+            "(True,)": "material"
+          },
+          "default_action": "material",
+          "outer_fold": 0
+        },
+        {
+          "cells": {
+            "(False,)": "material",
+            "(True,)": "material"
+          },
+          "default_action": "material",
+          "outer_fold": 1
+        },
+        {
+          "cells": {
+            "(False,)": "material",
+            "(True,)": "material"
+          },
+          "default_action": "material",
+          "outer_fold": 2
+        },
+        {
+          "cells": {
+            "(False,)": "material",
+            "(True,)": "material"
+          },
+          "default_action": "material",
+          "outer_fold": 3
+        },
+        {
+          "cells": {
+            "(False,)": "material",
+            "(True,)": "material"
+          },
+          "default_action": "material",
+          "outer_fold": 4
+        }
+      ],
+      "mean_oof_reward": 0.679729
+    },
+    "no_other:has_initial_constraint+critical_rater": {
+      "action_counts": {
+        "material": 150
+      },
+      "fold_rewards": [
+        0.67629,
+        0.700645,
+        0.676512,
+        0.672697,
+        0.671408
+      ],
+      "fold_tables": [
+        {
+          "cells": {
+            "(False, False)": "material",
+            "(False, True)": "material",
+            "(True, False)": "material",
+            "(True, True)": "material"
+          },
+          "default_action": "material",
+          "outer_fold": 0
+        },
+        {
+          "cells": {
+            "(False, False)": "material",
+            "(False, True)": "material",
+            "(True, False)": "material",
+            "(True, True)": "material"
+          },
+          "default_action": "material",
+          "outer_fold": 1
+        },
+        {
+          "cells": {
+            "(False, False)": "material",
+            "(False, True)": "material",
+            "(True, False)": "material",
+            "(True, True)": "material"
+          },
+          "default_action": "material",
+          "outer_fold": 2
+        },
+        {
+          "cells": {
+            "(False, False)": "material",
+            "(False, True)": "material",
+            "(True, False)": "material",
+            "(True, True)": "material"
+          },
+          "default_action": "material",
+          "outer_fold": 3
+        },
+        {
+          "cells": {
+            "(False, False)": "material",
+            "(False, True)": "material",
+            "(True, False)": "material",
+            "(True, True)": "material"
+          },
+          "default_action": "material",
+          "outer_fold": 4
+        }
+      ],
+      "mean_oof_reward": 0.679729
+    },
+    "no_other:has_initial_constraint+critical_rater+material_profile_tag": {
+      "action_counts": {
+        "feature": 14,
+        "material": 136
+      },
+      "fold_rewards": [
+        0.67629,
+        0.698065,
+        0.676512,
+        0.673658,
+        0.671408
+      ],
+      "fold_tables": [
+        {
+          "cells": {
+            "(False, False, False)": "feature",
+            "(False, False, True)": "material",
+            "(False, True, True)": "material",
+            "(True, False, False)": "material",
+            "(True, False, True)": "material",
+            "(True, True, True)": "material"
+          },
+          "default_action": "material",
+          "outer_fold": 0
+        },
+        {
+          "cells": {
+            "(False, False, False)": "feature",
+            "(False, False, True)": "material",
+            "(False, True, True)": "material",
+            "(True, False, False)": "material",
+            "(True, False, True)": "material",
+            "(True, True, True)": "material"
+          },
+          "default_action": "material",
+          "outer_fold": 1
+        },
+        {
+          "cells": {
+            "(False, False, False)": "feature",
+            "(False, False, True)": "material",
+            "(False, True, True)": "material",
+            "(True, False, False)": "material",
+            "(True, False, True)": "material",
+            "(True, True, True)": "material"
+          },
+          "default_action": "material",
+          "outer_fold": 2
+        },
+        {
+          "cells": {
+            "(False, False, False)": "feature",
+            "(False, False, True)": "material",
+            "(False, True, True)": "material",
+            "(True, False, False)": "material",
+            "(True, False, True)": "material",
+            "(True, True, True)": "material"
+          },
+          "default_action": "material",
+          "outer_fold": 3
+        },
+        {
+          "cells": {
+            "(False, False, False)": "material",
+            "(False, False, True)": "material",
+            "(False, True, True)": "material",
+            "(True, False, False)": "material",
+            "(True, False, True)": "material",
+            "(True, True, True)": "material"
+          },
+          "default_action": "material",
+          "outer_fold": 4
+        }
+      ],
+      "mean_oof_reward": 0.679382
+    },
+    "with_other:has_initial_constraint": {
+      "action_counts": {
+        "other": 150
+      },
+      "fold_rewards": [
+        0.694462,
+        0.698387,
+        0.666345,
+        0.712295,
+        0.67658
+      ],
+      "fold_tables": [
+        {
+          "cells": {
+            "(False,)": "other",
+            "(True,)": "other"
+          },
+          "default_action": "other",
+          "outer_fold": 0
+        },
+        {
+          "cells": {
+            "(False,)": "other",
+            "(True,)": "other"
+          },
+          "default_action": "other",
+          "outer_fold": 1
+        },
+        {
+          "cells": {
+            "(False,)": "other",
+            "(True,)": "other"
+          },
+          "default_action": "other",
+          "outer_fold": 2
+        },
+        {
+          "cells": {
+            "(False,)": "other",
+            "(True,)": "other"
+          },
+          "default_action": "other",
+          "outer_fold": 3
+        },
+        {
+          "cells": {
+            "(False,)": "other",
+            "(True,)": "other"
+          },
+          "default_action": "other",
+          "outer_fold": 4
+        }
+      ],
+      "mean_oof_reward": 0.68964
+    },
+    "with_other:has_initial_constraint+critical_rater": {
+      "action_counts": {
+        "material": 57,
+        "other": 93
+      },
+      "fold_rewards": [
+        0.68543,
+        0.697097,
+        0.667179,
+        0.67484,
+        0.67658
+      ],
+      "fold_tables": [
+        {
+          "cells": {
+            "(False, False)": "other",
+            "(False, True)": "other",
+            "(True, False)": "material",
+            "(True, True)": "other"
+          },
+          "default_action": "other",
+          "outer_fold": 0
+        },
+        {
+          "cells": {
+            "(False, False)": "other",
+            "(False, True)": "other",
+            "(True, False)": "material",
+            "(True, True)": "other"
+          },
+          "default_action": "other",
+          "outer_fold": 1
+        },
+        {
+          "cells": {
+            "(False, False)": "other",
+            "(False, True)": "other",
+            "(True, False)": "material",
+            "(True, True)": "other"
+          },
+          "default_action": "other",
+          "outer_fold": 2
+        },
+        {
+          "cells": {
+            "(False, False)": "material",
+            "(False, True)": "other",
+            "(True, False)": "material",
+            "(True, True)": "other"
+          },
+          "default_action": "other",
+          "outer_fold": 3
+        },
+        {
+          "cells": {
+            "(False, False)": "other",
+            "(False, True)": "other",
+            "(True, False)": "other",
+            "(True, True)": "other"
+          },
+          "default_action": "other",
+          "outer_fold": 4
+        }
+      ],
+      "mean_oof_reward": 0.680433
+    },
+    "with_other:has_initial_constraint+critical_rater+material_profile_tag": {
+      "action_counts": {
+        "feature": 5,
+        "material": 43,
+        "other": 102
+      },
+      "fold_rewards": [
+        0.688011,
+        0.694194,
+        0.667179,
+        0.679076,
+        0.673822
+      ],
+      "fold_tables": [
+        {
+          "cells": {
+            "(False, False, False)": "other",
+            "(False, False, True)": "other",
+            "(False, True, True)": "other",
+            "(True, False, False)": "other",
+            "(True, False, True)": "material",
+            "(True, True, True)": "other"
+          },
+          "default_action": "other",
+          "outer_fold": 0
+        },
+        {
+          "cells": {
+            "(False, False, False)": "other",
+            "(False, False, True)": "other",
+            "(False, True, True)": "other",
+            "(True, False, False)": "other",
+            "(True, False, True)": "material",
+            "(True, True, True)": "other"
+          },
+          "default_action": "other",
+          "outer_fold": 1
+        },
+        {
+          "cells": {
+            "(False, False, False)": "other",
+            "(False, False, True)": "other",
+            "(False, True, True)": "other",
+            "(True, False, False)": "other",
+            "(True, False, True)": "material",
+            "(True, True, True)": "other"
+          },
+          "default_action": "other",
+          "outer_fold": 2
+        },
+        {
+          "cells": {
+            "(False, False, False)": "feature",
+            "(False, False, True)": "material",
+            "(False, True, True)": "other",
+            "(True, False, False)": "other",
+            "(True, False, True)": "material",
+            "(True, True, True)": "other"
+          },
+          "default_action": "other",
+          "outer_fold": 3
+        },
+        {
+          "cells": {
+            "(False, False, False)": "material",
+            "(False, False, True)": "other",
+            "(False, True, True)": "other",
+            "(True, False, False)": "other",
+            "(True, False, True)": "other",
+            "(True, True, True)": "other"
+          },
+          "default_action": "other",
+          "outer_fold": 4
+        }
+      ],
+      "mean_oof_reward": 0.680652
+    }
+  },
+  "manual_first_action_material_reward": 0.679729,
+  "phase": 9,
+  "sample_count": 150,
+  "selected_tables": {
+    "no_other": {
+      "cells": {
+        "(False,)": "material",
+        "(True,)": "material"
+      },
+      "default_action": "material",
+      "feature_names": [
+        "has_initial_constraint"
+      ],
+      "oof_reward": 0.679729,
+      "selection_rule": "simplest within 0.01 of best OOF"
+    },
+    "with_other": {
+      "cells": {
+        "(False,)": "other",
+        "(True,)": "other"
+      },
+      "default_action": "other",
+      "feature_names": [
+        "has_initial_constraint"
+      ],
+      "oof_reward": 0.68964,
+      "selection_rule": "simplest within 0.01 of best OOF"
+    }
+  },
+  "split": "nested_v1_oof",
+  "training_session_hash": "389e716f8e62536967bb29b4200e12fac086b0a49a9f3610d7c262d534abcb2a"
+}

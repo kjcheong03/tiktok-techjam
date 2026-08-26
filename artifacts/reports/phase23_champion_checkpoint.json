@@ -1,0 +1,59 @@
+{
+  "budgets": {
+    "cold_start_seconds": 30.0,
+    "local_asset_mb": 500.0,
+    "peak_memory_mb": 4096.0,
+    "warm_turn_p95_ms": 500.0
+  },
+  "catalog_sha256": "da979b05a68af864cb0dcf9ee6a81c010c7e66a57978ad286c7a2e005fc69a67",
+  "checks": {
+    "cold_start": true,
+    "local_assets": true,
+    "peak_memory": true,
+    "valid_top_10": true,
+    "warm_turn_p95": true,
+    "zero_external_calls": true
+  },
+  "external_calls_per_turn": 0,
+  "gate": "champion_checkpoint_performance_and_packaging",
+  "holdout_accessed": false,
+  "latency": {
+    "max_ms": 57.97525,
+    "mean_ms": 23.546735,
+    "p50_ms": 22.835208,
+    "p95_ms": 44.304333,
+    "turn_count": 431
+  },
+  "measurements": {
+    "bundled_model_asset_mb": 0.0,
+    "catalog_input_mb": 57.741477,
+    "cold_start_seconds": 4.035942,
+    "memory_after_init_mb": 756.812,
+    "memory_before_init_mb": 41.0,
+    "peak_process_memory_mb": 932.266,
+    "runtime_source_and_config_mb": 0.039492,
+    "warm_turn_p95_ms": 44.304333
+  },
+  "metrics": {
+    "hit_rate_at_10": 0.933333,
+    "mrr": 0.639508,
+    "mttc": 2.94,
+    "recommended_technical_score": 0.819719
+  },
+  "passed": true,
+  "phase": 23,
+  "runtime_files": {
+    "configs/compiled_policy.json": "57857af805256240e3f6d4e51ba164cf9cbe8575174840da981faa4811390b19",
+    "ghostlab/competition/contract.py": "e84fecfbbf3f290a636730dd92666cceede04426c2aa2b188ddaac218761a19a",
+    "ghostlab/policy/models.py": "24ab9e7435e578fcfac557ce088ff43589b1f41a436d0654af07681a7358a121",
+    "ghostlab/retrieval/learned.py": "246521bad8888a70026aac9c6aecf9304fbac0f0a94e96ceed3e023e5983071a",
+    "ghostlab/retrieval/quality.py": "b03efe3a79ad7bb675b35e209d01f1a9dcaf48f278ef32567e06c2d3d97d4a88",
+    "ghostlab/retrieval/sparse.py": "ca690aff33d102fa8629779562fe069e928d2726c2cc6417bc816099cca20e17",
+    "ghostlab/runtime/agent.py": "75054441d04a3d7c21cd5db46425967ef8359af829d55d1c7614f53c1e13f588",
+    "ghostlab/runtime/compiled.py": "ed38ba94af70a749303f2e6d32660c2f24cd0b65ba2ce611f82aa20c5d44be94",
+    "ghostlab/runtime/normalizer.py": "0d6a7d2c3f2075ca2bd263b44f4c1212e3ae2e544ee605136fddbc200f6b3f22",
+    "ghostlab/state/memory.py": "57fe4468f1f578e93646ffd4041a042460f7616689286ad15327186fdbad461b",
+    "starter/agent.py": "ae13cb8157ced6204e34e835f99791b4213f95a718dd42a20be4569295cfed06"
+  },
+  "split": "adaptive_v1"
+}

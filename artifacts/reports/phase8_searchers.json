@@ -1,0 +1,5635 @@
+{
+  "candidate_budget": 12,
+  "outer_folds": 5,
+  "phase": 8,
+  "runs": [
+    {
+      "evaluations": [
+        {
+          "candidate": "raw_history_fixed",
+          "candidate_hash": "4e56264a86a31b79df46b9aa4355fd33fb7b6a7e034fd12418fb0a74ef50a3d6",
+          "fidelity": "f2",
+          "ordinal": 1,
+          "score": 0.6648679471788717
+        },
+        {
+          "candidate": "multi_fixed",
+          "candidate_hash": "6f9cbf3bc9c07acf9daf1a78a3fa2add4463128fe1a00dd7e5034852213e9902",
+          "fidelity": "f2",
+          "ordinal": 2,
+          "score": 0.68062525010004
+        },
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f2",
+          "ordinal": 3,
+          "score": 0.5832903161264507
+        },
+        {
+          "candidate": "multi_feature_first",
+          "candidate_hash": "42fdc347d9b90153f003df4c1fa50c4570379ae1777ab85fc1011555b78aac11",
+          "fidelity": "f2",
+          "ordinal": 4,
+          "score": 0.5863335334133654
+        },
+        {
+          "candidate": "multi_no_question",
+          "candidate_hash": "3e5f63832672694b24a3c1426375a1484f20c227df76f67c34b2c9b9fdcf7c14",
+          "fidelity": "f2",
+          "ordinal": 5,
+          "score": 0.13810124049619849
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f2",
+          "ordinal": 6,
+          "score": 0.49159063625450183
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f2",
+          "ordinal": 7,
+          "score": 0.4310704281712685
+        },
+        {
+          "candidate": "multi_uncertainty",
+          "candidate_hash": "961fa77895915af179b2a0b2150ba0192385a4aa4a638ecede23b37ecdee6a8c",
+          "fidelity": "f2",
+          "ordinal": 8,
+          "score": 0.46282813125250105
+        },
+        {
+          "candidate": "multi_no_negative",
+          "candidate_hash": "6ac9f8aed7c1fe0ff402e3d4585dcfbb8aded4fbcd2199fa9f352ccc44be52f8",
+          "fidelity": "f2",
+          "ordinal": 9,
+          "score": 0.5655802320928371
+        },
+        {
+          "candidate": "multi_missing",
+          "candidate_hash": "e00a53be2c527896e7bd349efc0b4ed89e5e6f3b371a280ade3386b3ffe02ed4",
+          "fidelity": "f2",
+          "ordinal": 10,
+          "score": 0.5832903161264507
+        },
+        {
+          "candidate": "multi_no_override",
+          "candidate_hash": "8e88a3b260ecd168340cff48f1d07e2ecc191b2a0a2eb79e14a241979be44d4b",
+          "fidelity": "f2",
+          "ordinal": 11,
+          "score": 0.5832903161264507
+        },
+        {
+          "candidate": "multi_other_always",
+          "candidate_hash": "ba23c80be8b78bae6750dc09fa3a7f2ba56726abec29d79b41432772d995f8ad",
+          "fidelity": "f2",
+          "ordinal": 12,
+          "score": 0.7421448579431773
+        }
+      ],
+      "outer_fold": 0,
+      "seed": 17,
+      "strategy": "random",
+      "training_score": 0.7421448579431773,
+      "winner": "multi_other_always"
+    },
+    {
+      "evaluations": [
+        {
+          "candidate": "multi_no_question",
+          "candidate_hash": "3e5f63832672694b24a3c1426375a1484f20c227df76f67c34b2c9b9fdcf7c14",
+          "fidelity": "f2",
+          "ordinal": 1,
+          "score": 0.13810124049619849
+        },
+        {
+          "candidate": "multi_uncertainty",
+          "candidate_hash": "961fa77895915af179b2a0b2150ba0192385a4aa4a638ecede23b37ecdee6a8c",
+          "fidelity": "f2",
+          "ordinal": 2,
+          "score": 0.46282813125250105
+        },
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f2",
+          "ordinal": 3,
+          "score": 0.5832903161264507
+        },
+        {
+          "candidate": "multi_no_override",
+          "candidate_hash": "8e88a3b260ecd168340cff48f1d07e2ecc191b2a0a2eb79e14a241979be44d4b",
+          "fidelity": "f2",
+          "ordinal": 4,
+          "score": 0.5832903161264507
+        },
+        {
+          "candidate": "multi_fixed",
+          "candidate_hash": "6f9cbf3bc9c07acf9daf1a78a3fa2add4463128fe1a00dd7e5034852213e9902",
+          "fidelity": "f2",
+          "ordinal": 5,
+          "score": 0.68062525010004
+        },
+        {
+          "candidate": "multi_feature_first",
+          "candidate_hash": "42fdc347d9b90153f003df4c1fa50c4570379ae1777ab85fc1011555b78aac11",
+          "fidelity": "f2",
+          "ordinal": 6,
+          "score": 0.5863335334133654
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f2",
+          "ordinal": 7,
+          "score": 0.49159063625450183
+        },
+        {
+          "candidate": "raw_history_fixed",
+          "candidate_hash": "4e56264a86a31b79df46b9aa4355fd33fb7b6a7e034fd12418fb0a74ef50a3d6",
+          "fidelity": "f2",
+          "ordinal": 8,
+          "score": 0.6648679471788717
+        },
+        {
+          "candidate": "multi_missing",
+          "candidate_hash": "e00a53be2c527896e7bd349efc0b4ed89e5e6f3b371a280ade3386b3ffe02ed4",
+          "fidelity": "f2",
+          "ordinal": 9,
+          "score": 0.5832903161264507
+        },
+        {
+          "candidate": "multi_no_negative",
+          "candidate_hash": "6ac9f8aed7c1fe0ff402e3d4585dcfbb8aded4fbcd2199fa9f352ccc44be52f8",
+          "fidelity": "f2",
+          "ordinal": 10,
+          "score": 0.5655802320928371
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f2",
+          "ordinal": 11,
+          "score": 0.4310704281712685
+        },
+        {
+          "candidate": "multi_other_always",
+          "candidate_hash": "ba23c80be8b78bae6750dc09fa3a7f2ba56726abec29d79b41432772d995f8ad",
+          "fidelity": "f2",
+          "ordinal": 12,
+          "score": 0.7421448579431773
+        }
+      ],
+      "outer_fold": 0,
+      "seed": 29,
+      "strategy": "random",
+      "training_score": 0.7421448579431773,
+      "winner": "multi_other_always"
+    },
+    {
+      "evaluations": [
+        {
+          "candidate": "raw_history_fixed",
+          "candidate_hash": "4e56264a86a31b79df46b9aa4355fd33fb7b6a7e034fd12418fb0a74ef50a3d6",
+          "fidelity": "f2",
+          "ordinal": 1,
+          "score": 0.6648679471788717
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f2",
+          "ordinal": 2,
+          "score": 0.4310704281712685
+        },
+        {
+          "candidate": "multi_uncertainty",
+          "candidate_hash": "961fa77895915af179b2a0b2150ba0192385a4aa4a638ecede23b37ecdee6a8c",
+          "fidelity": "f2",
+          "ordinal": 3,
+          "score": 0.46282813125250105
+        },
+        {
+          "candidate": "multi_fixed",
+          "candidate_hash": "6f9cbf3bc9c07acf9daf1a78a3fa2add4463128fe1a00dd7e5034852213e9902",
+          "fidelity": "f2",
+          "ordinal": 4,
+          "score": 0.68062525010004
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f2",
+          "ordinal": 5,
+          "score": 0.49159063625450183
+        },
+        {
+          "candidate": "multi_no_override",
+          "candidate_hash": "8e88a3b260ecd168340cff48f1d07e2ecc191b2a0a2eb79e14a241979be44d4b",
+          "fidelity": "f2",
+          "ordinal": 6,
+          "score": 0.5832903161264507
+        },
+        {
+          "candidate": "multi_other_always",
+          "candidate_hash": "ba23c80be8b78bae6750dc09fa3a7f2ba56726abec29d79b41432772d995f8ad",
+          "fidelity": "f2",
+          "ordinal": 7,
+          "score": 0.7421448579431773
+        },
+        {
+          "candidate": "multi_no_negative",
+          "candidate_hash": "6ac9f8aed7c1fe0ff402e3d4585dcfbb8aded4fbcd2199fa9f352ccc44be52f8",
+          "fidelity": "f2",
+          "ordinal": 8,
+          "score": 0.5655802320928371
+        },
+        {
+          "candidate": "multi_no_question",
+          "candidate_hash": "3e5f63832672694b24a3c1426375a1484f20c227df76f67c34b2c9b9fdcf7c14",
+          "fidelity": "f2",
+          "ordinal": 9,
+          "score": 0.13810124049619849
+        },
+        {
+          "candidate": "multi_feature_first",
+          "candidate_hash": "42fdc347d9b90153f003df4c1fa50c4570379ae1777ab85fc1011555b78aac11",
+          "fidelity": "f2",
+          "ordinal": 10,
+          "score": 0.5863335334133654
+        },
+        {
+          "candidate": "multi_missing",
+          "candidate_hash": "e00a53be2c527896e7bd349efc0b4ed89e5e6f3b371a280ade3386b3ffe02ed4",
+          "fidelity": "f2",
+          "ordinal": 11,
+          "score": 0.5832903161264507
+        },
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f2",
+          "ordinal": 12,
+          "score": 0.5832903161264507
+        }
+      ],
+      "outer_fold": 0,
+      "seed": 43,
+      "strategy": "random",
+      "training_score": 0.7421448579431773,
+      "winner": "multi_other_always"
+    },
+    {
+      "evaluations": [
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f2",
+          "ordinal": 1,
+          "score": 0.5832903161264507
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f2",
+          "ordinal": 2,
+          "score": 0.4310704281712685
+        },
+        {
+          "candidate": "multi_feature_first",
+          "candidate_hash": "42fdc347d9b90153f003df4c1fa50c4570379ae1777ab85fc1011555b78aac11",
+          "fidelity": "f2",
+          "ordinal": 3,
+          "score": 0.5863335334133654
+        },
+        {
+          "candidate": "multi_fixed",
+          "candidate_hash": "6f9cbf3bc9c07acf9daf1a78a3fa2add4463128fe1a00dd7e5034852213e9902",
+          "fidelity": "f2",
+          "ordinal": 4,
+          "score": 0.68062525010004
+        },
+        {
+          "candidate": "multi_missing",
+          "candidate_hash": "e00a53be2c527896e7bd349efc0b4ed89e5e6f3b371a280ade3386b3ffe02ed4",
+          "fidelity": "f2",
+          "ordinal": 5,
+          "score": 0.5832903161264507
+        },
+        {
+          "candidate": "multi_no_negative",
+          "candidate_hash": "6ac9f8aed7c1fe0ff402e3d4585dcfbb8aded4fbcd2199fa9f352ccc44be52f8",
+          "fidelity": "f2",
+          "ordinal": 6,
+          "score": 0.5655802320928371
+        },
+        {
+          "candidate": "multi_no_override",
+          "candidate_hash": "8e88a3b260ecd168340cff48f1d07e2ecc191b2a0a2eb79e14a241979be44d4b",
+          "fidelity": "f2",
+          "ordinal": 7,
+          "score": 0.5832903161264507
+        },
+        {
+          "candidate": "multi_no_question",
+          "candidate_hash": "3e5f63832672694b24a3c1426375a1484f20c227df76f67c34b2c9b9fdcf7c14",
+          "fidelity": "f2",
+          "ordinal": 8,
+          "score": 0.13810124049619849
+        },
+        {
+          "candidate": "multi_other_always",
+          "candidate_hash": "ba23c80be8b78bae6750dc09fa3a7f2ba56726abec29d79b41432772d995f8ad",
+          "fidelity": "f2",
+          "ordinal": 9,
+          "score": 0.7421448579431773
+        },
+        {
+          "candidate": "multi_uncertainty",
+          "candidate_hash": "961fa77895915af179b2a0b2150ba0192385a4aa4a638ecede23b37ecdee6a8c",
+          "fidelity": "f2",
+          "ordinal": 10,
+          "score": 0.46282813125250105
+        },
+        {
+          "candidate": "raw_history_fixed",
+          "candidate_hash": "4e56264a86a31b79df46b9aa4355fd33fb7b6a7e034fd12418fb0a74ef50a3d6",
+          "fidelity": "f2",
+          "ordinal": 11,
+          "score": 0.6648679471788717
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f2",
+          "ordinal": 12,
+          "score": 0.49159063625450183
+        }
+      ],
+      "outer_fold": 0,
+      "seed": 17,
+      "strategy": "grid",
+      "training_score": 0.7421448579431773,
+      "winner": "multi_other_always"
+    },
+    {
+      "evaluations": [
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f2",
+          "ordinal": 1,
+          "score": 0.5832903161264507
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f2",
+          "ordinal": 2,
+          "score": 0.4310704281712685
+        },
+        {
+          "candidate": "multi_feature_first",
+          "candidate_hash": "42fdc347d9b90153f003df4c1fa50c4570379ae1777ab85fc1011555b78aac11",
+          "fidelity": "f2",
+          "ordinal": 3,
+          "score": 0.5863335334133654
+        },
+        {
+          "candidate": "multi_fixed",
+          "candidate_hash": "6f9cbf3bc9c07acf9daf1a78a3fa2add4463128fe1a00dd7e5034852213e9902",
+          "fidelity": "f2",
+          "ordinal": 4,
+          "score": 0.68062525010004
+        },
+        {
+          "candidate": "multi_missing",
+          "candidate_hash": "e00a53be2c527896e7bd349efc0b4ed89e5e6f3b371a280ade3386b3ffe02ed4",
+          "fidelity": "f2",
+          "ordinal": 5,
+          "score": 0.5832903161264507
+        },
+        {
+          "candidate": "multi_no_negative",
+          "candidate_hash": "6ac9f8aed7c1fe0ff402e3d4585dcfbb8aded4fbcd2199fa9f352ccc44be52f8",
+          "fidelity": "f2",
+          "ordinal": 6,
+          "score": 0.5655802320928371
+        },
+        {
+          "candidate": "multi_no_override",
+          "candidate_hash": "8e88a3b260ecd168340cff48f1d07e2ecc191b2a0a2eb79e14a241979be44d4b",
+          "fidelity": "f2",
+          "ordinal": 7,
+          "score": 0.5832903161264507
+        },
+        {
+          "candidate": "multi_no_question",
+          "candidate_hash": "3e5f63832672694b24a3c1426375a1484f20c227df76f67c34b2c9b9fdcf7c14",
+          "fidelity": "f2",
+          "ordinal": 8,
+          "score": 0.13810124049619849
+        },
+        {
+          "candidate": "multi_other_always",
+          "candidate_hash": "ba23c80be8b78bae6750dc09fa3a7f2ba56726abec29d79b41432772d995f8ad",
+          "fidelity": "f2",
+          "ordinal": 9,
+          "score": 0.7421448579431773
+        },
+        {
+          "candidate": "multi_uncertainty",
+          "candidate_hash": "961fa77895915af179b2a0b2150ba0192385a4aa4a638ecede23b37ecdee6a8c",
+          "fidelity": "f2",
+          "ordinal": 10,
+          "score": 0.46282813125250105
+        },
+        {
+          "candidate": "raw_history_fixed",
+          "candidate_hash": "4e56264a86a31b79df46b9aa4355fd33fb7b6a7e034fd12418fb0a74ef50a3d6",
+          "fidelity": "f2",
+          "ordinal": 11,
+          "score": 0.6648679471788717
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f2",
+          "ordinal": 12,
+          "score": 0.49159063625450183
+        }
+      ],
+      "outer_fold": 0,
+      "seed": 29,
+      "strategy": "grid",
+      "training_score": 0.7421448579431773,
+      "winner": "multi_other_always"
+    },
+    {
+      "evaluations": [
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f2",
+          "ordinal": 1,
+          "score": 0.5832903161264507
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f2",
+          "ordinal": 2,
+          "score": 0.4310704281712685
+        },
+        {
+          "candidate": "multi_feature_first",
+          "candidate_hash": "42fdc347d9b90153f003df4c1fa50c4570379ae1777ab85fc1011555b78aac11",
+          "fidelity": "f2",
+          "ordinal": 3,
+          "score": 0.5863335334133654
+        },
+        {
+          "candidate": "multi_fixed",
+          "candidate_hash": "6f9cbf3bc9c07acf9daf1a78a3fa2add4463128fe1a00dd7e5034852213e9902",
+          "fidelity": "f2",
+          "ordinal": 4,
+          "score": 0.68062525010004
+        },
+        {
+          "candidate": "multi_missing",
+          "candidate_hash": "e00a53be2c527896e7bd349efc0b4ed89e5e6f3b371a280ade3386b3ffe02ed4",
+          "fidelity": "f2",
+          "ordinal": 5,
+          "score": 0.5832903161264507
+        },
+        {
+          "candidate": "multi_no_negative",
+          "candidate_hash": "6ac9f8aed7c1fe0ff402e3d4585dcfbb8aded4fbcd2199fa9f352ccc44be52f8",
+          "fidelity": "f2",
+          "ordinal": 6,
+          "score": 0.5655802320928371
+        },
+        {
+          "candidate": "multi_no_override",
+          "candidate_hash": "8e88a3b260ecd168340cff48f1d07e2ecc191b2a0a2eb79e14a241979be44d4b",
+          "fidelity": "f2",
+          "ordinal": 7,
+          "score": 0.5832903161264507
+        },
+        {
+          "candidate": "multi_no_question",
+          "candidate_hash": "3e5f63832672694b24a3c1426375a1484f20c227df76f67c34b2c9b9fdcf7c14",
+          "fidelity": "f2",
+          "ordinal": 8,
+          "score": 0.13810124049619849
+        },
+        {
+          "candidate": "multi_other_always",
+          "candidate_hash": "ba23c80be8b78bae6750dc09fa3a7f2ba56726abec29d79b41432772d995f8ad",
+          "fidelity": "f2",
+          "ordinal": 9,
+          "score": 0.7421448579431773
+        },
+        {
+          "candidate": "multi_uncertainty",
+          "candidate_hash": "961fa77895915af179b2a0b2150ba0192385a4aa4a638ecede23b37ecdee6a8c",
+          "fidelity": "f2",
+          "ordinal": 10,
+          "score": 0.46282813125250105
+        },
+        {
+          "candidate": "raw_history_fixed",
+          "candidate_hash": "4e56264a86a31b79df46b9aa4355fd33fb7b6a7e034fd12418fb0a74ef50a3d6",
+          "fidelity": "f2",
+          "ordinal": 11,
+          "score": 0.6648679471788717
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f2",
+          "ordinal": 12,
+          "score": 0.49159063625450183
+        }
+      ],
+      "outer_fold": 0,
+      "seed": 43,
+      "strategy": "grid",
+      "training_score": 0.7421448579431773,
+      "winner": "multi_other_always"
+    },
+    {
+      "evaluations": [
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f0",
+          "ordinal": 1,
+          "score": 0.5937096774193549
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f0",
+          "ordinal": 2,
+          "score": 0.4974731182795699
+        },
+        {
+          "candidate": "multi_fixed",
+          "candidate_hash": "6f9cbf3bc9c07acf9daf1a78a3fa2add4463128fe1a00dd7e5034852213e9902",
+          "fidelity": "f0",
+          "ordinal": 3,
+          "score": 0.7006451612903226
+        },
+        {
+          "candidate": "multi_missing",
+          "candidate_hash": "e00a53be2c527896e7bd349efc0b4ed89e5e6f3b371a280ade3386b3ffe02ed4",
+          "fidelity": "f0",
+          "ordinal": 4,
+          "score": 0.5937096774193549
+        },
+        {
+          "candidate": "multi_uncertainty",
+          "candidate_hash": "961fa77895915af179b2a0b2150ba0192385a4aa4a638ecede23b37ecdee6a8c",
+          "fidelity": "f0",
+          "ordinal": 5,
+          "score": 0.5731451612903227
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f0",
+          "ordinal": 6,
+          "score": 0.5411405529953917
+        },
+        {
+          "candidate": "multi_fixed",
+          "candidate_hash": "6f9cbf3bc9c07acf9daf1a78a3fa2add4463128fe1a00dd7e5034852213e9902",
+          "fidelity": "f2",
+          "ordinal": 7,
+          "score": 0.68062525010004
+        },
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f2",
+          "ordinal": 8,
+          "score": 0.5832903161264507
+        },
+        {
+          "candidate": "multi_missing",
+          "candidate_hash": "e00a53be2c527896e7bd349efc0b4ed89e5e6f3b371a280ade3386b3ffe02ed4",
+          "fidelity": "f2",
+          "ordinal": 9,
+          "score": 0.5832903161264507
+        },
+        {
+          "candidate": "multi_uncertainty",
+          "candidate_hash": "961fa77895915af179b2a0b2150ba0192385a4aa4a638ecede23b37ecdee6a8c",
+          "fidelity": "f2",
+          "ordinal": 10,
+          "score": 0.46282813125250105
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f2",
+          "ordinal": 11,
+          "score": 0.49159063625450183
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f2",
+          "ordinal": 12,
+          "score": 0.4310704281712685
+        }
+      ],
+      "outer_fold": 0,
+      "seed": 17,
+      "strategy": "beam",
+      "training_score": 0.68062525010004,
+      "winner": "multi_fixed"
+    },
+    {
+      "evaluations": [
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f0",
+          "ordinal": 1,
+          "score": 0.5937096774193549
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f0",
+          "ordinal": 2,
+          "score": 0.4974731182795699
+        },
+        {
+          "candidate": "multi_fixed",
+          "candidate_hash": "6f9cbf3bc9c07acf9daf1a78a3fa2add4463128fe1a00dd7e5034852213e9902",
+          "fidelity": "f0",
+          "ordinal": 3,
+          "score": 0.7006451612903226
+        },
+        {
+          "candidate": "multi_missing",
+          "candidate_hash": "e00a53be2c527896e7bd349efc0b4ed89e5e6f3b371a280ade3386b3ffe02ed4",
+          "fidelity": "f0",
+          "ordinal": 4,
+          "score": 0.5937096774193549
+        },
+        {
+          "candidate": "multi_uncertainty",
+          "candidate_hash": "961fa77895915af179b2a0b2150ba0192385a4aa4a638ecede23b37ecdee6a8c",
+          "fidelity": "f0",
+          "ordinal": 5,
+          "score": 0.5731451612903227
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f0",
+          "ordinal": 6,
+          "score": 0.5411405529953917
+        },
+        {
+          "candidate": "multi_fixed",
+          "candidate_hash": "6f9cbf3bc9c07acf9daf1a78a3fa2add4463128fe1a00dd7e5034852213e9902",
+          "fidelity": "f2",
+          "ordinal": 7,
+          "score": 0.68062525010004
+        },
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f2",
+          "ordinal": 8,
+          "score": 0.5832903161264507
+        },
+        {
+          "candidate": "multi_missing",
+          "candidate_hash": "e00a53be2c527896e7bd349efc0b4ed89e5e6f3b371a280ade3386b3ffe02ed4",
+          "fidelity": "f2",
+          "ordinal": 9,
+          "score": 0.5832903161264507
+        },
+        {
+          "candidate": "multi_uncertainty",
+          "candidate_hash": "961fa77895915af179b2a0b2150ba0192385a4aa4a638ecede23b37ecdee6a8c",
+          "fidelity": "f2",
+          "ordinal": 10,
+          "score": 0.46282813125250105
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f2",
+          "ordinal": 11,
+          "score": 0.49159063625450183
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f2",
+          "ordinal": 12,
+          "score": 0.4310704281712685
+        }
+      ],
+      "outer_fold": 0,
+      "seed": 29,
+      "strategy": "beam",
+      "training_score": 0.68062525010004,
+      "winner": "multi_fixed"
+    },
+    {
+      "evaluations": [
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f0",
+          "ordinal": 1,
+          "score": 0.5937096774193549
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f0",
+          "ordinal": 2,
+          "score": 0.4974731182795699
+        },
+        {
+          "candidate": "multi_fixed",
+          "candidate_hash": "6f9cbf3bc9c07acf9daf1a78a3fa2add4463128fe1a00dd7e5034852213e9902",
+          "fidelity": "f0",
+          "ordinal": 3,
+          "score": 0.7006451612903226
+        },
+        {
+          "candidate": "multi_missing",
+          "candidate_hash": "e00a53be2c527896e7bd349efc0b4ed89e5e6f3b371a280ade3386b3ffe02ed4",
+          "fidelity": "f0",
+          "ordinal": 4,
+          "score": 0.5937096774193549
+        },
+        {
+          "candidate": "multi_uncertainty",
+          "candidate_hash": "961fa77895915af179b2a0b2150ba0192385a4aa4a638ecede23b37ecdee6a8c",
+          "fidelity": "f0",
+          "ordinal": 5,
+          "score": 0.5731451612903227
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f0",
+          "ordinal": 6,
+          "score": 0.5411405529953917
+        },
+        {
+          "candidate": "multi_fixed",
+          "candidate_hash": "6f9cbf3bc9c07acf9daf1a78a3fa2add4463128fe1a00dd7e5034852213e9902",
+          "fidelity": "f2",
+          "ordinal": 7,
+          "score": 0.68062525010004
+        },
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f2",
+          "ordinal": 8,
+          "score": 0.5832903161264507
+        },
+        {
+          "candidate": "multi_missing",
+          "candidate_hash": "e00a53be2c527896e7bd349efc0b4ed89e5e6f3b371a280ade3386b3ffe02ed4",
+          "fidelity": "f2",
+          "ordinal": 9,
+          "score": 0.5832903161264507
+        },
+        {
+          "candidate": "multi_uncertainty",
+          "candidate_hash": "961fa77895915af179b2a0b2150ba0192385a4aa4a638ecede23b37ecdee6a8c",
+          "fidelity": "f2",
+          "ordinal": 10,
+          "score": 0.46282813125250105
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f2",
+          "ordinal": 11,
+          "score": 0.49159063625450183
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f2",
+          "ordinal": 12,
+          "score": 0.4310704281712685
+        }
+      ],
+      "outer_fold": 0,
+      "seed": 43,
+      "strategy": "beam",
+      "training_score": 0.68062525010004,
+      "winner": "multi_fixed"
+    },
+    {
+      "evaluations": [
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f0",
+          "ordinal": 1,
+          "score": 0.5937096774193549
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f0",
+          "ordinal": 2,
+          "score": 0.4974731182795699
+        },
+        {
+          "candidate": "multi_feature_first",
+          "candidate_hash": "42fdc347d9b90153f003df4c1fa50c4570379ae1777ab85fc1011555b78aac11",
+          "fidelity": "f0",
+          "ordinal": 3,
+          "score": 0.5888709677419356
+        },
+        {
+          "candidate": "multi_other_always",
+          "candidate_hash": "ba23c80be8b78bae6750dc09fa3a7f2ba56726abec29d79b41432772d995f8ad",
+          "fidelity": "f0",
+          "ordinal": 4,
+          "score": 0.7698387096774194
+        },
+        {
+          "candidate": "raw_history_fixed",
+          "candidate_hash": "4e56264a86a31b79df46b9aa4355fd33fb7b6a7e034fd12418fb0a74ef50a3d6",
+          "fidelity": "f0",
+          "ordinal": 5,
+          "score": 0.6841935483870968
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f0",
+          "ordinal": 6,
+          "score": 0.5411405529953917
+        },
+        {
+          "candidate": "multi_other_always",
+          "candidate_hash": "ba23c80be8b78bae6750dc09fa3a7f2ba56726abec29d79b41432772d995f8ad",
+          "fidelity": "f2",
+          "ordinal": 7,
+          "score": 0.7421448579431773
+        },
+        {
+          "candidate": "raw_history_fixed",
+          "candidate_hash": "4e56264a86a31b79df46b9aa4355fd33fb7b6a7e034fd12418fb0a74ef50a3d6",
+          "fidelity": "f2",
+          "ordinal": 8,
+          "score": 0.6648679471788717
+        },
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f2",
+          "ordinal": 9,
+          "score": 0.5832903161264507
+        },
+        {
+          "candidate": "multi_feature_first",
+          "candidate_hash": "42fdc347d9b90153f003df4c1fa50c4570379ae1777ab85fc1011555b78aac11",
+          "fidelity": "f2",
+          "ordinal": 10,
+          "score": 0.5863335334133654
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f2",
+          "ordinal": 11,
+          "score": 0.49159063625450183
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f2",
+          "ordinal": 12,
+          "score": 0.4310704281712685
+        }
+      ],
+      "outer_fold": 0,
+      "seed": 17,
+      "strategy": "allocated",
+      "training_score": 0.7421448579431773,
+      "winner": "multi_other_always"
+    },
+    {
+      "evaluations": [
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f0",
+          "ordinal": 1,
+          "score": 0.5937096774193549
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f0",
+          "ordinal": 2,
+          "score": 0.4974731182795699
+        },
+        {
+          "candidate": "multi_feature_first",
+          "candidate_hash": "42fdc347d9b90153f003df4c1fa50c4570379ae1777ab85fc1011555b78aac11",
+          "fidelity": "f0",
+          "ordinal": 3,
+          "score": 0.5888709677419356
+        },
+        {
+          "candidate": "multi_other_always",
+          "candidate_hash": "ba23c80be8b78bae6750dc09fa3a7f2ba56726abec29d79b41432772d995f8ad",
+          "fidelity": "f0",
+          "ordinal": 4,
+          "score": 0.7698387096774194
+        },
+        {
+          "candidate": "raw_history_fixed",
+          "candidate_hash": "4e56264a86a31b79df46b9aa4355fd33fb7b6a7e034fd12418fb0a74ef50a3d6",
+          "fidelity": "f0",
+          "ordinal": 5,
+          "score": 0.6841935483870968
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f0",
+          "ordinal": 6,
+          "score": 0.5411405529953917
+        },
+        {
+          "candidate": "multi_other_always",
+          "candidate_hash": "ba23c80be8b78bae6750dc09fa3a7f2ba56726abec29d79b41432772d995f8ad",
+          "fidelity": "f2",
+          "ordinal": 7,
+          "score": 0.7421448579431773
+        },
+        {
+          "candidate": "raw_history_fixed",
+          "candidate_hash": "4e56264a86a31b79df46b9aa4355fd33fb7b6a7e034fd12418fb0a74ef50a3d6",
+          "fidelity": "f2",
+          "ordinal": 8,
+          "score": 0.6648679471788717
+        },
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f2",
+          "ordinal": 9,
+          "score": 0.5832903161264507
+        },
+        {
+          "candidate": "multi_feature_first",
+          "candidate_hash": "42fdc347d9b90153f003df4c1fa50c4570379ae1777ab85fc1011555b78aac11",
+          "fidelity": "f2",
+          "ordinal": 10,
+          "score": 0.5863335334133654
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f2",
+          "ordinal": 11,
+          "score": 0.49159063625450183
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f2",
+          "ordinal": 12,
+          "score": 0.4310704281712685
+        }
+      ],
+      "outer_fold": 0,
+      "seed": 29,
+      "strategy": "allocated",
+      "training_score": 0.7421448579431773,
+      "winner": "multi_other_always"
+    },
+    {
+      "evaluations": [
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f0",
+          "ordinal": 1,
+          "score": 0.5937096774193549
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f0",
+          "ordinal": 2,
+          "score": 0.4974731182795699
+        },
+        {
+          "candidate": "multi_feature_first",
+          "candidate_hash": "42fdc347d9b90153f003df4c1fa50c4570379ae1777ab85fc1011555b78aac11",
+          "fidelity": "f0",
+          "ordinal": 3,
+          "score": 0.5888709677419356
+        },
+        {
+          "candidate": "multi_other_always",
+          "candidate_hash": "ba23c80be8b78bae6750dc09fa3a7f2ba56726abec29d79b41432772d995f8ad",
+          "fidelity": "f0",
+          "ordinal": 4,
+          "score": 0.7698387096774194
+        },
+        {
+          "candidate": "raw_history_fixed",
+          "candidate_hash": "4e56264a86a31b79df46b9aa4355fd33fb7b6a7e034fd12418fb0a74ef50a3d6",
+          "fidelity": "f0",
+          "ordinal": 5,
+          "score": 0.6841935483870968
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f0",
+          "ordinal": 6,
+          "score": 0.5411405529953917
+        },
+        {
+          "candidate": "multi_other_always",
+          "candidate_hash": "ba23c80be8b78bae6750dc09fa3a7f2ba56726abec29d79b41432772d995f8ad",
+          "fidelity": "f2",
+          "ordinal": 7,
+          "score": 0.7421448579431773
+        },
+        {
+          "candidate": "raw_history_fixed",
+          "candidate_hash": "4e56264a86a31b79df46b9aa4355fd33fb7b6a7e034fd12418fb0a74ef50a3d6",
+          "fidelity": "f2",
+          "ordinal": 8,
+          "score": 0.6648679471788717
+        },
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f2",
+          "ordinal": 9,
+          "score": 0.5832903161264507
+        },
+        {
+          "candidate": "multi_feature_first",
+          "candidate_hash": "42fdc347d9b90153f003df4c1fa50c4570379ae1777ab85fc1011555b78aac11",
+          "fidelity": "f2",
+          "ordinal": 10,
+          "score": 0.5863335334133654
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f2",
+          "ordinal": 11,
+          "score": 0.49159063625450183
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f2",
+          "ordinal": 12,
+          "score": 0.4310704281712685
+        }
+      ],
+      "outer_fold": 0,
+      "seed": 43,
+      "strategy": "allocated",
+      "training_score": 0.7421448579431773,
+      "winner": "multi_other_always"
+    },
+    {
+      "evaluations": [
+        {
+          "candidate": "raw_history_fixed",
+          "candidate_hash": "4e56264a86a31b79df46b9aa4355fd33fb7b6a7e034fd12418fb0a74ef50a3d6",
+          "fidelity": "f2",
+          "ordinal": 1,
+          "score": 0.65671668667467
+        },
+        {
+          "candidate": "multi_fixed",
+          "candidate_hash": "6f9cbf3bc9c07acf9daf1a78a3fa2add4463128fe1a00dd7e5034852213e9902",
+          "fidelity": "f2",
+          "ordinal": 2,
+          "score": 0.674280712284914
+        },
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f2",
+          "ordinal": 3,
+          "score": 0.5803491396558623
+        },
+        {
+          "candidate": "multi_feature_first",
+          "candidate_hash": "42fdc347d9b90153f003df4c1fa50c4570379ae1777ab85fc1011555b78aac11",
+          "fidelity": "f2",
+          "ordinal": 4,
+          "score": 0.5825800320128051
+        },
+        {
+          "candidate": "multi_no_question",
+          "candidate_hash": "3e5f63832672694b24a3c1426375a1484f20c227df76f67c34b2c9b9fdcf7c14",
+          "fidelity": "f2",
+          "ordinal": 5,
+          "score": 0.11497098839535816
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f2",
+          "ordinal": 6,
+          "score": 0.4646998799519808
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f2",
+          "ordinal": 7,
+          "score": 0.421983793517407
+        },
+        {
+          "candidate": "multi_uncertainty",
+          "candidate_hash": "961fa77895915af179b2a0b2150ba0192385a4aa4a638ecede23b37ecdee6a8c",
+          "fidelity": "f2",
+          "ordinal": 8,
+          "score": 0.4336054421768708
+        },
+        {
+          "candidate": "multi_no_negative",
+          "candidate_hash": "6ac9f8aed7c1fe0ff402e3d4585dcfbb8aded4fbcd2199fa9f352ccc44be52f8",
+          "fidelity": "f2",
+          "ordinal": 9,
+          "score": 0.5497819127651061
+        },
+        {
+          "candidate": "multi_missing",
+          "candidate_hash": "e00a53be2c527896e7bd349efc0b4ed89e5e6f3b371a280ade3386b3ffe02ed4",
+          "fidelity": "f2",
+          "ordinal": 10,
+          "score": 0.5803491396558623
+        },
+        {
+          "candidate": "multi_no_override",
+          "candidate_hash": "8e88a3b260ecd168340cff48f1d07e2ecc191b2a0a2eb79e14a241979be44d4b",
+          "fidelity": "f2",
+          "ordinal": 11,
+          "score": 0.5803491396558623
+        },
+        {
+          "candidate": "multi_other_always",
+          "candidate_hash": "ba23c80be8b78bae6750dc09fa3a7f2ba56726abec29d79b41432772d995f8ad",
+          "fidelity": "f2",
+          "ordinal": 12,
+          "score": 0.7330972388955582
+        }
+      ],
+      "outer_fold": 1,
+      "seed": 17,
+      "strategy": "random",
+      "training_score": 0.7330972388955582,
+      "winner": "multi_other_always"
+    },
+    {
+      "evaluations": [
+        {
+          "candidate": "multi_no_question",
+          "candidate_hash": "3e5f63832672694b24a3c1426375a1484f20c227df76f67c34b2c9b9fdcf7c14",
+          "fidelity": "f2",
+          "ordinal": 1,
+          "score": 0.11497098839535816
+        },
+        {
+          "candidate": "multi_uncertainty",
+          "candidate_hash": "961fa77895915af179b2a0b2150ba0192385a4aa4a638ecede23b37ecdee6a8c",
+          "fidelity": "f2",
+          "ordinal": 2,
+          "score": 0.4336054421768708
+        },
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f2",
+          "ordinal": 3,
+          "score": 0.5803491396558623
+        },
+        {
+          "candidate": "multi_no_override",
+          "candidate_hash": "8e88a3b260ecd168340cff48f1d07e2ecc191b2a0a2eb79e14a241979be44d4b",
+          "fidelity": "f2",
+          "ordinal": 4,
+          "score": 0.5803491396558623
+        },
+        {
+          "candidate": "multi_fixed",
+          "candidate_hash": "6f9cbf3bc9c07acf9daf1a78a3fa2add4463128fe1a00dd7e5034852213e9902",
+          "fidelity": "f2",
+          "ordinal": 5,
+          "score": 0.674280712284914
+        },
+        {
+          "candidate": "multi_feature_first",
+          "candidate_hash": "42fdc347d9b90153f003df4c1fa50c4570379ae1777ab85fc1011555b78aac11",
+          "fidelity": "f2",
+          "ordinal": 6,
+          "score": 0.5825800320128051
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f2",
+          "ordinal": 7,
+          "score": 0.4646998799519808
+        },
+        {
+          "candidate": "raw_history_fixed",
+          "candidate_hash": "4e56264a86a31b79df46b9aa4355fd33fb7b6a7e034fd12418fb0a74ef50a3d6",
+          "fidelity": "f2",
+          "ordinal": 8,
+          "score": 0.65671668667467
+        },
+        {
+          "candidate": "multi_missing",
+          "candidate_hash": "e00a53be2c527896e7bd349efc0b4ed89e5e6f3b371a280ade3386b3ffe02ed4",
+          "fidelity": "f2",
+          "ordinal": 9,
+          "score": 0.5803491396558623
+        },
+        {
+          "candidate": "multi_no_negative",
+          "candidate_hash": "6ac9f8aed7c1fe0ff402e3d4585dcfbb8aded4fbcd2199fa9f352ccc44be52f8",
+          "fidelity": "f2",
+          "ordinal": 10,
+          "score": 0.5497819127651061
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f2",
+          "ordinal": 11,
+          "score": 0.421983793517407
+        },
+        {
+          "candidate": "multi_other_always",
+          "candidate_hash": "ba23c80be8b78bae6750dc09fa3a7f2ba56726abec29d79b41432772d995f8ad",
+          "fidelity": "f2",
+          "ordinal": 12,
+          "score": 0.7330972388955582
+        }
+      ],
+      "outer_fold": 1,
+      "seed": 29,
+      "strategy": "random",
+      "training_score": 0.7330972388955582,
+      "winner": "multi_other_always"
+    },
+    {
+      "evaluations": [
+        {
+          "candidate": "raw_history_fixed",
+          "candidate_hash": "4e56264a86a31b79df46b9aa4355fd33fb7b6a7e034fd12418fb0a74ef50a3d6",
+          "fidelity": "f2",
+          "ordinal": 1,
+          "score": 0.65671668667467
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f2",
+          "ordinal": 2,
+          "score": 0.421983793517407
+        },
+        {
+          "candidate": "multi_uncertainty",
+          "candidate_hash": "961fa77895915af179b2a0b2150ba0192385a4aa4a638ecede23b37ecdee6a8c",
+          "fidelity": "f2",
+          "ordinal": 3,
+          "score": 0.4336054421768708
+        },
+        {
+          "candidate": "multi_fixed",
+          "candidate_hash": "6f9cbf3bc9c07acf9daf1a78a3fa2add4463128fe1a00dd7e5034852213e9902",
+          "fidelity": "f2",
+          "ordinal": 4,
+          "score": 0.674280712284914
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f2",
+          "ordinal": 5,
+          "score": 0.4646998799519808
+        },
+        {
+          "candidate": "multi_no_override",
+          "candidate_hash": "8e88a3b260ecd168340cff48f1d07e2ecc191b2a0a2eb79e14a241979be44d4b",
+          "fidelity": "f2",
+          "ordinal": 6,
+          "score": 0.5803491396558623
+        },
+        {
+          "candidate": "multi_other_always",
+          "candidate_hash": "ba23c80be8b78bae6750dc09fa3a7f2ba56726abec29d79b41432772d995f8ad",
+          "fidelity": "f2",
+          "ordinal": 7,
+          "score": 0.7330972388955582
+        },
+        {
+          "candidate": "multi_no_negative",
+          "candidate_hash": "6ac9f8aed7c1fe0ff402e3d4585dcfbb8aded4fbcd2199fa9f352ccc44be52f8",
+          "fidelity": "f2",
+          "ordinal": 8,
+          "score": 0.5497819127651061
+        },
+        {
+          "candidate": "multi_no_question",
+          "candidate_hash": "3e5f63832672694b24a3c1426375a1484f20c227df76f67c34b2c9b9fdcf7c14",
+          "fidelity": "f2",
+          "ordinal": 9,
+          "score": 0.11497098839535816
+        },
+        {
+          "candidate": "multi_feature_first",
+          "candidate_hash": "42fdc347d9b90153f003df4c1fa50c4570379ae1777ab85fc1011555b78aac11",
+          "fidelity": "f2",
+          "ordinal": 10,
+          "score": 0.5825800320128051
+        },
+        {
+          "candidate": "multi_missing",
+          "candidate_hash": "e00a53be2c527896e7bd349efc0b4ed89e5e6f3b371a280ade3386b3ffe02ed4",
+          "fidelity": "f2",
+          "ordinal": 11,
+          "score": 0.5803491396558623
+        },
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f2",
+          "ordinal": 12,
+          "score": 0.5803491396558623
+        }
+      ],
+      "outer_fold": 1,
+      "seed": 43,
+      "strategy": "random",
+      "training_score": 0.7330972388955582,
+      "winner": "multi_other_always"
+    },
+    {
+      "evaluations": [
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f2",
+          "ordinal": 1,
+          "score": 0.5803491396558623
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f2",
+          "ordinal": 2,
+          "score": 0.421983793517407
+        },
+        {
+          "candidate": "multi_feature_first",
+          "candidate_hash": "42fdc347d9b90153f003df4c1fa50c4570379ae1777ab85fc1011555b78aac11",
+          "fidelity": "f2",
+          "ordinal": 3,
+          "score": 0.5825800320128051
+        },
+        {
+          "candidate": "multi_fixed",
+          "candidate_hash": "6f9cbf3bc9c07acf9daf1a78a3fa2add4463128fe1a00dd7e5034852213e9902",
+          "fidelity": "f2",
+          "ordinal": 4,
+          "score": 0.674280712284914
+        },
+        {
+          "candidate": "multi_missing",
+          "candidate_hash": "e00a53be2c527896e7bd349efc0b4ed89e5e6f3b371a280ade3386b3ffe02ed4",
+          "fidelity": "f2",
+          "ordinal": 5,
+          "score": 0.5803491396558623
+        },
+        {
+          "candidate": "multi_no_negative",
+          "candidate_hash": "6ac9f8aed7c1fe0ff402e3d4585dcfbb8aded4fbcd2199fa9f352ccc44be52f8",
+          "fidelity": "f2",
+          "ordinal": 6,
+          "score": 0.5497819127651061
+        },
+        {
+          "candidate": "multi_no_override",
+          "candidate_hash": "8e88a3b260ecd168340cff48f1d07e2ecc191b2a0a2eb79e14a241979be44d4b",
+          "fidelity": "f2",
+          "ordinal": 7,
+          "score": 0.5803491396558623
+        },
+        {
+          "candidate": "multi_no_question",
+          "candidate_hash": "3e5f63832672694b24a3c1426375a1484f20c227df76f67c34b2c9b9fdcf7c14",
+          "fidelity": "f2",
+          "ordinal": 8,
+          "score": 0.11497098839535816
+        },
+        {
+          "candidate": "multi_other_always",
+          "candidate_hash": "ba23c80be8b78bae6750dc09fa3a7f2ba56726abec29d79b41432772d995f8ad",
+          "fidelity": "f2",
+          "ordinal": 9,
+          "score": 0.7330972388955582
+        },
+        {
+          "candidate": "multi_uncertainty",
+          "candidate_hash": "961fa77895915af179b2a0b2150ba0192385a4aa4a638ecede23b37ecdee6a8c",
+          "fidelity": "f2",
+          "ordinal": 10,
+          "score": 0.4336054421768708
+        },
+        {
+          "candidate": "raw_history_fixed",
+          "candidate_hash": "4e56264a86a31b79df46b9aa4355fd33fb7b6a7e034fd12418fb0a74ef50a3d6",
+          "fidelity": "f2",
+          "ordinal": 11,
+          "score": 0.65671668667467
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f2",
+          "ordinal": 12,
+          "score": 0.4646998799519808
+        }
+      ],
+      "outer_fold": 1,
+      "seed": 17,
+      "strategy": "grid",
+      "training_score": 0.7330972388955582,
+      "winner": "multi_other_always"
+    },
+    {
+      "evaluations": [
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f2",
+          "ordinal": 1,
+          "score": 0.5803491396558623
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f2",
+          "ordinal": 2,
+          "score": 0.421983793517407
+        },
+        {
+          "candidate": "multi_feature_first",
+          "candidate_hash": "42fdc347d9b90153f003df4c1fa50c4570379ae1777ab85fc1011555b78aac11",
+          "fidelity": "f2",
+          "ordinal": 3,
+          "score": 0.5825800320128051
+        },
+        {
+          "candidate": "multi_fixed",
+          "candidate_hash": "6f9cbf3bc9c07acf9daf1a78a3fa2add4463128fe1a00dd7e5034852213e9902",
+          "fidelity": "f2",
+          "ordinal": 4,
+          "score": 0.674280712284914
+        },
+        {
+          "candidate": "multi_missing",
+          "candidate_hash": "e00a53be2c527896e7bd349efc0b4ed89e5e6f3b371a280ade3386b3ffe02ed4",
+          "fidelity": "f2",
+          "ordinal": 5,
+          "score": 0.5803491396558623
+        },
+        {
+          "candidate": "multi_no_negative",
+          "candidate_hash": "6ac9f8aed7c1fe0ff402e3d4585dcfbb8aded4fbcd2199fa9f352ccc44be52f8",
+          "fidelity": "f2",
+          "ordinal": 6,
+          "score": 0.5497819127651061
+        },
+        {
+          "candidate": "multi_no_override",
+          "candidate_hash": "8e88a3b260ecd168340cff48f1d07e2ecc191b2a0a2eb79e14a241979be44d4b",
+          "fidelity": "f2",
+          "ordinal": 7,
+          "score": 0.5803491396558623
+        },
+        {
+          "candidate": "multi_no_question",
+          "candidate_hash": "3e5f63832672694b24a3c1426375a1484f20c227df76f67c34b2c9b9fdcf7c14",
+          "fidelity": "f2",
+          "ordinal": 8,
+          "score": 0.11497098839535816
+        },
+        {
+          "candidate": "multi_other_always",
+          "candidate_hash": "ba23c80be8b78bae6750dc09fa3a7f2ba56726abec29d79b41432772d995f8ad",
+          "fidelity": "f2",
+          "ordinal": 9,
+          "score": 0.7330972388955582
+        },
+        {
+          "candidate": "multi_uncertainty",
+          "candidate_hash": "961fa77895915af179b2a0b2150ba0192385a4aa4a638ecede23b37ecdee6a8c",
+          "fidelity": "f2",
+          "ordinal": 10,
+          "score": 0.4336054421768708
+        },
+        {
+          "candidate": "raw_history_fixed",
+          "candidate_hash": "4e56264a86a31b79df46b9aa4355fd33fb7b6a7e034fd12418fb0a74ef50a3d6",
+          "fidelity": "f2",
+          "ordinal": 11,
+          "score": 0.65671668667467
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f2",
+          "ordinal": 12,
+          "score": 0.4646998799519808
+        }
+      ],
+      "outer_fold": 1,
+      "seed": 29,
+      "strategy": "grid",
+      "training_score": 0.7330972388955582,
+      "winner": "multi_other_always"
+    },
+    {
+      "evaluations": [
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f2",
+          "ordinal": 1,
+          "score": 0.5803491396558623
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f2",
+          "ordinal": 2,
+          "score": 0.421983793517407
+        },
+        {
+          "candidate": "multi_feature_first",
+          "candidate_hash": "42fdc347d9b90153f003df4c1fa50c4570379ae1777ab85fc1011555b78aac11",
+          "fidelity": "f2",
+          "ordinal": 3,
+          "score": 0.5825800320128051
+        },
+        {
+          "candidate": "multi_fixed",
+          "candidate_hash": "6f9cbf3bc9c07acf9daf1a78a3fa2add4463128fe1a00dd7e5034852213e9902",
+          "fidelity": "f2",
+          "ordinal": 4,
+          "score": 0.674280712284914
+        },
+        {
+          "candidate": "multi_missing",
+          "candidate_hash": "e00a53be2c527896e7bd349efc0b4ed89e5e6f3b371a280ade3386b3ffe02ed4",
+          "fidelity": "f2",
+          "ordinal": 5,
+          "score": 0.5803491396558623
+        },
+        {
+          "candidate": "multi_no_negative",
+          "candidate_hash": "6ac9f8aed7c1fe0ff402e3d4585dcfbb8aded4fbcd2199fa9f352ccc44be52f8",
+          "fidelity": "f2",
+          "ordinal": 6,
+          "score": 0.5497819127651061
+        },
+        {
+          "candidate": "multi_no_override",
+          "candidate_hash": "8e88a3b260ecd168340cff48f1d07e2ecc191b2a0a2eb79e14a241979be44d4b",
+          "fidelity": "f2",
+          "ordinal": 7,
+          "score": 0.5803491396558623
+        },
+        {
+          "candidate": "multi_no_question",
+          "candidate_hash": "3e5f63832672694b24a3c1426375a1484f20c227df76f67c34b2c9b9fdcf7c14",
+          "fidelity": "f2",
+          "ordinal": 8,
+          "score": 0.11497098839535816
+        },
+        {
+          "candidate": "multi_other_always",
+          "candidate_hash": "ba23c80be8b78bae6750dc09fa3a7f2ba56726abec29d79b41432772d995f8ad",
+          "fidelity": "f2",
+          "ordinal": 9,
+          "score": 0.7330972388955582
+        },
+        {
+          "candidate": "multi_uncertainty",
+          "candidate_hash": "961fa77895915af179b2a0b2150ba0192385a4aa4a638ecede23b37ecdee6a8c",
+          "fidelity": "f2",
+          "ordinal": 10,
+          "score": 0.4336054421768708
+        },
+        {
+          "candidate": "raw_history_fixed",
+          "candidate_hash": "4e56264a86a31b79df46b9aa4355fd33fb7b6a7e034fd12418fb0a74ef50a3d6",
+          "fidelity": "f2",
+          "ordinal": 11,
+          "score": 0.65671668667467
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f2",
+          "ordinal": 12,
+          "score": 0.4646998799519808
+        }
+      ],
+      "outer_fold": 1,
+      "seed": 43,
+      "strategy": "grid",
+      "training_score": 0.7330972388955582,
+      "winner": "multi_other_always"
+    },
+    {
+      "evaluations": [
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f0",
+          "ordinal": 1,
+          "score": 0.5339285714285714
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f0",
+          "ordinal": 2,
+          "score": 0.4125952380952381
+        },
+        {
+          "candidate": "multi_fixed",
+          "candidate_hash": "6f9cbf3bc9c07acf9daf1a78a3fa2add4463128fe1a00dd7e5034852213e9902",
+          "fidelity": "f0",
+          "ordinal": 3,
+          "score": 0.6765119047619047
+        },
+        {
+          "candidate": "multi_missing",
+          "candidate_hash": "e00a53be2c527896e7bd349efc0b4ed89e5e6f3b371a280ade3386b3ffe02ed4",
+          "fidelity": "f0",
+          "ordinal": 4,
+          "score": 0.5339285714285714
+        },
+        {
+          "candidate": "multi_uncertainty",
+          "candidate_hash": "961fa77895915af179b2a0b2150ba0192385a4aa4a638ecede23b37ecdee6a8c",
+          "fidelity": "f0",
+          "ordinal": 5,
+          "score": 0.4064285714285714
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f0",
+          "ordinal": 6,
+          "score": 0.4157857142857143
+        },
+        {
+          "candidate": "multi_fixed",
+          "candidate_hash": "6f9cbf3bc9c07acf9daf1a78a3fa2add4463128fe1a00dd7e5034852213e9902",
+          "fidelity": "f2",
+          "ordinal": 7,
+          "score": 0.674280712284914
+        },
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f2",
+          "ordinal": 8,
+          "score": 0.5803491396558623
+        },
+        {
+          "candidate": "multi_missing",
+          "candidate_hash": "e00a53be2c527896e7bd349efc0b4ed89e5e6f3b371a280ade3386b3ffe02ed4",
+          "fidelity": "f2",
+          "ordinal": 9,
+          "score": 0.5803491396558623
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f2",
+          "ordinal": 10,
+          "score": 0.4646998799519808
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f2",
+          "ordinal": 11,
+          "score": 0.421983793517407
+        },
+        {
+          "candidate": "multi_uncertainty",
+          "candidate_hash": "961fa77895915af179b2a0b2150ba0192385a4aa4a638ecede23b37ecdee6a8c",
+          "fidelity": "f2",
+          "ordinal": 12,
+          "score": 0.4336054421768708
+        }
+      ],
+      "outer_fold": 1,
+      "seed": 17,
+      "strategy": "beam",
+      "training_score": 0.674280712284914,
+      "winner": "multi_fixed"
+    },
+    {
+      "evaluations": [
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f0",
+          "ordinal": 1,
+          "score": 0.5339285714285714
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f0",
+          "ordinal": 2,
+          "score": 0.4125952380952381
+        },
+        {
+          "candidate": "multi_fixed",
+          "candidate_hash": "6f9cbf3bc9c07acf9daf1a78a3fa2add4463128fe1a00dd7e5034852213e9902",
+          "fidelity": "f0",
+          "ordinal": 3,
+          "score": 0.6765119047619047
+        },
+        {
+          "candidate": "multi_missing",
+          "candidate_hash": "e00a53be2c527896e7bd349efc0b4ed89e5e6f3b371a280ade3386b3ffe02ed4",
+          "fidelity": "f0",
+          "ordinal": 4,
+          "score": 0.5339285714285714
+        },
+        {
+          "candidate": "multi_uncertainty",
+          "candidate_hash": "961fa77895915af179b2a0b2150ba0192385a4aa4a638ecede23b37ecdee6a8c",
+          "fidelity": "f0",
+          "ordinal": 5,
+          "score": 0.4064285714285714
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f0",
+          "ordinal": 6,
+          "score": 0.4157857142857143
+        },
+        {
+          "candidate": "multi_fixed",
+          "candidate_hash": "6f9cbf3bc9c07acf9daf1a78a3fa2add4463128fe1a00dd7e5034852213e9902",
+          "fidelity": "f2",
+          "ordinal": 7,
+          "score": 0.674280712284914
+        },
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f2",
+          "ordinal": 8,
+          "score": 0.5803491396558623
+        },
+        {
+          "candidate": "multi_missing",
+          "candidate_hash": "e00a53be2c527896e7bd349efc0b4ed89e5e6f3b371a280ade3386b3ffe02ed4",
+          "fidelity": "f2",
+          "ordinal": 9,
+          "score": 0.5803491396558623
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f2",
+          "ordinal": 10,
+          "score": 0.4646998799519808
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f2",
+          "ordinal": 11,
+          "score": 0.421983793517407
+        },
+        {
+          "candidate": "multi_uncertainty",
+          "candidate_hash": "961fa77895915af179b2a0b2150ba0192385a4aa4a638ecede23b37ecdee6a8c",
+          "fidelity": "f2",
+          "ordinal": 12,
+          "score": 0.4336054421768708
+        }
+      ],
+      "outer_fold": 1,
+      "seed": 29,
+      "strategy": "beam",
+      "training_score": 0.674280712284914,
+      "winner": "multi_fixed"
+    },
+    {
+      "evaluations": [
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f0",
+          "ordinal": 1,
+          "score": 0.5339285714285714
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f0",
+          "ordinal": 2,
+          "score": 0.4125952380952381
+        },
+        {
+          "candidate": "multi_fixed",
+          "candidate_hash": "6f9cbf3bc9c07acf9daf1a78a3fa2add4463128fe1a00dd7e5034852213e9902",
+          "fidelity": "f0",
+          "ordinal": 3,
+          "score": 0.6765119047619047
+        },
+        {
+          "candidate": "multi_missing",
+          "candidate_hash": "e00a53be2c527896e7bd349efc0b4ed89e5e6f3b371a280ade3386b3ffe02ed4",
+          "fidelity": "f0",
+          "ordinal": 4,
+          "score": 0.5339285714285714
+        },
+        {
+          "candidate": "multi_uncertainty",
+          "candidate_hash": "961fa77895915af179b2a0b2150ba0192385a4aa4a638ecede23b37ecdee6a8c",
+          "fidelity": "f0",
+          "ordinal": 5,
+          "score": 0.4064285714285714
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f0",
+          "ordinal": 6,
+          "score": 0.4157857142857143
+        },
+        {
+          "candidate": "multi_fixed",
+          "candidate_hash": "6f9cbf3bc9c07acf9daf1a78a3fa2add4463128fe1a00dd7e5034852213e9902",
+          "fidelity": "f2",
+          "ordinal": 7,
+          "score": 0.674280712284914
+        },
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f2",
+          "ordinal": 8,
+          "score": 0.5803491396558623
+        },
+        {
+          "candidate": "multi_missing",
+          "candidate_hash": "e00a53be2c527896e7bd349efc0b4ed89e5e6f3b371a280ade3386b3ffe02ed4",
+          "fidelity": "f2",
+          "ordinal": 9,
+          "score": 0.5803491396558623
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f2",
+          "ordinal": 10,
+          "score": 0.4646998799519808
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f2",
+          "ordinal": 11,
+          "score": 0.421983793517407
+        },
+        {
+          "candidate": "multi_uncertainty",
+          "candidate_hash": "961fa77895915af179b2a0b2150ba0192385a4aa4a638ecede23b37ecdee6a8c",
+          "fidelity": "f2",
+          "ordinal": 12,
+          "score": 0.4336054421768708
+        }
+      ],
+      "outer_fold": 1,
+      "seed": 43,
+      "strategy": "beam",
+      "training_score": 0.674280712284914,
+      "winner": "multi_fixed"
+    },
+    {
+      "evaluations": [
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f0",
+          "ordinal": 1,
+          "score": 0.5339285714285714
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f0",
+          "ordinal": 2,
+          "score": 0.4125952380952381
+        },
+        {
+          "candidate": "multi_feature_first",
+          "candidate_hash": "42fdc347d9b90153f003df4c1fa50c4570379ae1777ab85fc1011555b78aac11",
+          "fidelity": "f0",
+          "ordinal": 3,
+          "score": 0.5299285714285714
+        },
+        {
+          "candidate": "multi_other_always",
+          "candidate_hash": "ba23c80be8b78bae6750dc09fa3a7f2ba56726abec29d79b41432772d995f8ad",
+          "fidelity": "f0",
+          "ordinal": 4,
+          "score": 0.7408452380952382
+        },
+        {
+          "candidate": "raw_history_fixed",
+          "candidate_hash": "4e56264a86a31b79df46b9aa4355fd33fb7b6a7e034fd12418fb0a74ef50a3d6",
+          "fidelity": "f0",
+          "ordinal": 5,
+          "score": 0.677968253968254
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f0",
+          "ordinal": 6,
+          "score": 0.4157857142857143
+        },
+        {
+          "candidate": "multi_other_always",
+          "candidate_hash": "ba23c80be8b78bae6750dc09fa3a7f2ba56726abec29d79b41432772d995f8ad",
+          "fidelity": "f2",
+          "ordinal": 7,
+          "score": 0.7330972388955582
+        },
+        {
+          "candidate": "raw_history_fixed",
+          "candidate_hash": "4e56264a86a31b79df46b9aa4355fd33fb7b6a7e034fd12418fb0a74ef50a3d6",
+          "fidelity": "f2",
+          "ordinal": 8,
+          "score": 0.65671668667467
+        },
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f2",
+          "ordinal": 9,
+          "score": 0.5803491396558623
+        },
+        {
+          "candidate": "multi_feature_first",
+          "candidate_hash": "42fdc347d9b90153f003df4c1fa50c4570379ae1777ab85fc1011555b78aac11",
+          "fidelity": "f2",
+          "ordinal": 10,
+          "score": 0.5825800320128051
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f2",
+          "ordinal": 11,
+          "score": 0.4646998799519808
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f2",
+          "ordinal": 12,
+          "score": 0.421983793517407
+        }
+      ],
+      "outer_fold": 1,
+      "seed": 17,
+      "strategy": "allocated",
+      "training_score": 0.7330972388955582,
+      "winner": "multi_other_always"
+    },
+    {
+      "evaluations": [
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f0",
+          "ordinal": 1,
+          "score": 0.5339285714285714
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f0",
+          "ordinal": 2,
+          "score": 0.4125952380952381
+        },
+        {
+          "candidate": "multi_feature_first",
+          "candidate_hash": "42fdc347d9b90153f003df4c1fa50c4570379ae1777ab85fc1011555b78aac11",
+          "fidelity": "f0",
+          "ordinal": 3,
+          "score": 0.5299285714285714
+        },
+        {
+          "candidate": "multi_other_always",
+          "candidate_hash": "ba23c80be8b78bae6750dc09fa3a7f2ba56726abec29d79b41432772d995f8ad",
+          "fidelity": "f0",
+          "ordinal": 4,
+          "score": 0.7408452380952382
+        },
+        {
+          "candidate": "raw_history_fixed",
+          "candidate_hash": "4e56264a86a31b79df46b9aa4355fd33fb7b6a7e034fd12418fb0a74ef50a3d6",
+          "fidelity": "f0",
+          "ordinal": 5,
+          "score": 0.677968253968254
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f0",
+          "ordinal": 6,
+          "score": 0.4157857142857143
+        },
+        {
+          "candidate": "multi_other_always",
+          "candidate_hash": "ba23c80be8b78bae6750dc09fa3a7f2ba56726abec29d79b41432772d995f8ad",
+          "fidelity": "f2",
+          "ordinal": 7,
+          "score": 0.7330972388955582
+        },
+        {
+          "candidate": "raw_history_fixed",
+          "candidate_hash": "4e56264a86a31b79df46b9aa4355fd33fb7b6a7e034fd12418fb0a74ef50a3d6",
+          "fidelity": "f2",
+          "ordinal": 8,
+          "score": 0.65671668667467
+        },
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f2",
+          "ordinal": 9,
+          "score": 0.5803491396558623
+        },
+        {
+          "candidate": "multi_feature_first",
+          "candidate_hash": "42fdc347d9b90153f003df4c1fa50c4570379ae1777ab85fc1011555b78aac11",
+          "fidelity": "f2",
+          "ordinal": 10,
+          "score": 0.5825800320128051
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f2",
+          "ordinal": 11,
+          "score": 0.4646998799519808
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f2",
+          "ordinal": 12,
+          "score": 0.421983793517407
+        }
+      ],
+      "outer_fold": 1,
+      "seed": 29,
+      "strategy": "allocated",
+      "training_score": 0.7330972388955582,
+      "winner": "multi_other_always"
+    },
+    {
+      "evaluations": [
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f0",
+          "ordinal": 1,
+          "score": 0.5339285714285714
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f0",
+          "ordinal": 2,
+          "score": 0.4125952380952381
+        },
+        {
+          "candidate": "multi_feature_first",
+          "candidate_hash": "42fdc347d9b90153f003df4c1fa50c4570379ae1777ab85fc1011555b78aac11",
+          "fidelity": "f0",
+          "ordinal": 3,
+          "score": 0.5299285714285714
+        },
+        {
+          "candidate": "multi_other_always",
+          "candidate_hash": "ba23c80be8b78bae6750dc09fa3a7f2ba56726abec29d79b41432772d995f8ad",
+          "fidelity": "f0",
+          "ordinal": 4,
+          "score": 0.7408452380952382
+        },
+        {
+          "candidate": "raw_history_fixed",
+          "candidate_hash": "4e56264a86a31b79df46b9aa4355fd33fb7b6a7e034fd12418fb0a74ef50a3d6",
+          "fidelity": "f0",
+          "ordinal": 5,
+          "score": 0.677968253968254
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f0",
+          "ordinal": 6,
+          "score": 0.4157857142857143
+        },
+        {
+          "candidate": "multi_other_always",
+          "candidate_hash": "ba23c80be8b78bae6750dc09fa3a7f2ba56726abec29d79b41432772d995f8ad",
+          "fidelity": "f2",
+          "ordinal": 7,
+          "score": 0.7330972388955582
+        },
+        {
+          "candidate": "raw_history_fixed",
+          "candidate_hash": "4e56264a86a31b79df46b9aa4355fd33fb7b6a7e034fd12418fb0a74ef50a3d6",
+          "fidelity": "f2",
+          "ordinal": 8,
+          "score": 0.65671668667467
+        },
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f2",
+          "ordinal": 9,
+          "score": 0.5803491396558623
+        },
+        {
+          "candidate": "multi_feature_first",
+          "candidate_hash": "42fdc347d9b90153f003df4c1fa50c4570379ae1777ab85fc1011555b78aac11",
+          "fidelity": "f2",
+          "ordinal": 10,
+          "score": 0.5825800320128051
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f2",
+          "ordinal": 11,
+          "score": 0.4646998799519808
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f2",
+          "ordinal": 12,
+          "score": 0.421983793517407
+        }
+      ],
+      "outer_fold": 1,
+      "seed": 43,
+      "strategy": "allocated",
+      "training_score": 0.7330972388955582,
+      "winner": "multi_other_always"
+    },
+    {
+      "evaluations": [
+        {
+          "candidate": "raw_history_fixed",
+          "candidate_hash": "4e56264a86a31b79df46b9aa4355fd33fb7b6a7e034fd12418fb0a74ef50a3d6",
+          "fidelity": "f2",
+          "ordinal": 1,
+          "score": 0.6585019841269841
+        },
+        {
+          "candidate": "multi_fixed",
+          "candidate_hash": "6f9cbf3bc9c07acf9daf1a78a3fa2add4463128fe1a00dd7e5034852213e9902",
+          "fidelity": "f2",
+          "ordinal": 2,
+          "score": 0.6805337301587302
+        },
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f2",
+          "ordinal": 3,
+          "score": 0.595405753968254
+        },
+        {
+          "candidate": "multi_feature_first",
+          "candidate_hash": "42fdc347d9b90153f003df4c1fa50c4570379ae1777ab85fc1011555b78aac11",
+          "fidelity": "f2",
+          "ordinal": 4,
+          "score": 0.5973680555555556
+        },
+        {
+          "candidate": "multi_no_question",
+          "candidate_hash": "3e5f63832672694b24a3c1426375a1484f20c227df76f67c34b2c9b9fdcf7c14",
+          "fidelity": "f2",
+          "ordinal": 5,
+          "score": 0.1317777777777778
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f2",
+          "ordinal": 6,
+          "score": 0.49667559523809524
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f2",
+          "ordinal": 7,
+          "score": 0.4438323412698413
+        },
+        {
+          "candidate": "multi_uncertainty",
+          "candidate_hash": "961fa77895915af179b2a0b2150ba0192385a4aa4a638ecede23b37ecdee6a8c",
+          "fidelity": "f2",
+          "ordinal": 8,
+          "score": 0.4764474206349207
+        },
+        {
+          "candidate": "multi_no_negative",
+          "candidate_hash": "6ac9f8aed7c1fe0ff402e3d4585dcfbb8aded4fbcd2199fa9f352ccc44be52f8",
+          "fidelity": "f2",
+          "ordinal": 9,
+          "score": 0.572093253968254
+        },
+        {
+          "candidate": "multi_missing",
+          "candidate_hash": "e00a53be2c527896e7bd349efc0b4ed89e5e6f3b371a280ade3386b3ffe02ed4",
+          "fidelity": "f2",
+          "ordinal": 10,
+          "score": 0.595405753968254
+        },
+        {
+          "candidate": "multi_no_override",
+          "candidate_hash": "8e88a3b260ecd168340cff48f1d07e2ecc191b2a0a2eb79e14a241979be44d4b",
+          "fidelity": "f2",
+          "ordinal": 11,
+          "score": 0.595405753968254
+        },
+        {
+          "candidate": "multi_other_always",
+          "candidate_hash": "ba23c80be8b78bae6750dc09fa3a7f2ba56726abec29d79b41432772d995f8ad",
+          "fidelity": "f2",
+          "ordinal": 12,
+          "score": 0.7406517857142858
+        }
+      ],
+      "outer_fold": 2,
+      "seed": 17,
+      "strategy": "random",
+      "training_score": 0.7406517857142858,
+      "winner": "multi_other_always"
+    },
+    {
+      "evaluations": [
+        {
+          "candidate": "multi_no_question",
+          "candidate_hash": "3e5f63832672694b24a3c1426375a1484f20c227df76f67c34b2c9b9fdcf7c14",
+          "fidelity": "f2",
+          "ordinal": 1,
+          "score": 0.1317777777777778
+        },
+        {
+          "candidate": "multi_uncertainty",
+          "candidate_hash": "961fa77895915af179b2a0b2150ba0192385a4aa4a638ecede23b37ecdee6a8c",
+          "fidelity": "f2",
+          "ordinal": 2,
+          "score": 0.4764474206349207
+        },
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f2",
+          "ordinal": 3,
+          "score": 0.595405753968254
+        },
+        {
+          "candidate": "multi_no_override",
+          "candidate_hash": "8e88a3b260ecd168340cff48f1d07e2ecc191b2a0a2eb79e14a241979be44d4b",
+          "fidelity": "f2",
+          "ordinal": 4,
+          "score": 0.595405753968254
+        },
+        {
+          "candidate": "multi_fixed",
+          "candidate_hash": "6f9cbf3bc9c07acf9daf1a78a3fa2add4463128fe1a00dd7e5034852213e9902",
+          "fidelity": "f2",
+          "ordinal": 5,
+          "score": 0.6805337301587302
+        },
+        {
+          "candidate": "multi_feature_first",
+          "candidate_hash": "42fdc347d9b90153f003df4c1fa50c4570379ae1777ab85fc1011555b78aac11",
+          "fidelity": "f2",
+          "ordinal": 6,
+          "score": 0.5973680555555556
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f2",
+          "ordinal": 7,
+          "score": 0.49667559523809524
+        },
+        {
+          "candidate": "raw_history_fixed",
+          "candidate_hash": "4e56264a86a31b79df46b9aa4355fd33fb7b6a7e034fd12418fb0a74ef50a3d6",
+          "fidelity": "f2",
+          "ordinal": 8,
+          "score": 0.6585019841269841
+        },
+        {
+          "candidate": "multi_missing",
+          "candidate_hash": "e00a53be2c527896e7bd349efc0b4ed89e5e6f3b371a280ade3386b3ffe02ed4",
+          "fidelity": "f2",
+          "ordinal": 9,
+          "score": 0.595405753968254
+        },
+        {
+          "candidate": "multi_no_negative",
+          "candidate_hash": "6ac9f8aed7c1fe0ff402e3d4585dcfbb8aded4fbcd2199fa9f352ccc44be52f8",
+          "fidelity": "f2",
+          "ordinal": 10,
+          "score": 0.572093253968254
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f2",
+          "ordinal": 11,
+          "score": 0.4438323412698413
+        },
+        {
+          "candidate": "multi_other_always",
+          "candidate_hash": "ba23c80be8b78bae6750dc09fa3a7f2ba56726abec29d79b41432772d995f8ad",
+          "fidelity": "f2",
+          "ordinal": 12,
+          "score": 0.7406517857142858
+        }
+      ],
+      "outer_fold": 2,
+      "seed": 29,
+      "strategy": "random",
+      "training_score": 0.7406517857142858,
+      "winner": "multi_other_always"
+    },
+    {
+      "evaluations": [
+        {
+          "candidate": "raw_history_fixed",
+          "candidate_hash": "4e56264a86a31b79df46b9aa4355fd33fb7b6a7e034fd12418fb0a74ef50a3d6",
+          "fidelity": "f2",
+          "ordinal": 1,
+          "score": 0.6585019841269841
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f2",
+          "ordinal": 2,
+          "score": 0.4438323412698413
+        },
+        {
+          "candidate": "multi_uncertainty",
+          "candidate_hash": "961fa77895915af179b2a0b2150ba0192385a4aa4a638ecede23b37ecdee6a8c",
+          "fidelity": "f2",
+          "ordinal": 3,
+          "score": 0.4764474206349207
+        },
+        {
+          "candidate": "multi_fixed",
+          "candidate_hash": "6f9cbf3bc9c07acf9daf1a78a3fa2add4463128fe1a00dd7e5034852213e9902",
+          "fidelity": "f2",
+          "ordinal": 4,
+          "score": 0.6805337301587302
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f2",
+          "ordinal": 5,
+          "score": 0.49667559523809524
+        },
+        {
+          "candidate": "multi_no_override",
+          "candidate_hash": "8e88a3b260ecd168340cff48f1d07e2ecc191b2a0a2eb79e14a241979be44d4b",
+          "fidelity": "f2",
+          "ordinal": 6,
+          "score": 0.595405753968254
+        },
+        {
+          "candidate": "multi_other_always",
+          "candidate_hash": "ba23c80be8b78bae6750dc09fa3a7f2ba56726abec29d79b41432772d995f8ad",
+          "fidelity": "f2",
+          "ordinal": 7,
+          "score": 0.7406517857142858
+        },
+        {
+          "candidate": "multi_no_negative",
+          "candidate_hash": "6ac9f8aed7c1fe0ff402e3d4585dcfbb8aded4fbcd2199fa9f352ccc44be52f8",
+          "fidelity": "f2",
+          "ordinal": 8,
+          "score": 0.572093253968254
+        },
+        {
+          "candidate": "multi_no_question",
+          "candidate_hash": "3e5f63832672694b24a3c1426375a1484f20c227df76f67c34b2c9b9fdcf7c14",
+          "fidelity": "f2",
+          "ordinal": 9,
+          "score": 0.1317777777777778
+        },
+        {
+          "candidate": "multi_feature_first",
+          "candidate_hash": "42fdc347d9b90153f003df4c1fa50c4570379ae1777ab85fc1011555b78aac11",
+          "fidelity": "f2",
+          "ordinal": 10,
+          "score": 0.5973680555555556
+        },
+        {
+          "candidate": "multi_missing",
+          "candidate_hash": "e00a53be2c527896e7bd349efc0b4ed89e5e6f3b371a280ade3386b3ffe02ed4",
+          "fidelity": "f2",
+          "ordinal": 11,
+          "score": 0.595405753968254
+        },
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f2",
+          "ordinal": 12,
+          "score": 0.595405753968254
+        }
+      ],
+      "outer_fold": 2,
+      "seed": 43,
+      "strategy": "random",
+      "training_score": 0.7406517857142858,
+      "winner": "multi_other_always"
+    },
+    {
+      "evaluations": [
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f2",
+          "ordinal": 1,
+          "score": 0.595405753968254
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f2",
+          "ordinal": 2,
+          "score": 0.4438323412698413
+        },
+        {
+          "candidate": "multi_feature_first",
+          "candidate_hash": "42fdc347d9b90153f003df4c1fa50c4570379ae1777ab85fc1011555b78aac11",
+          "fidelity": "f2",
+          "ordinal": 3,
+          "score": 0.5973680555555556
+        },
+        {
+          "candidate": "multi_fixed",
+          "candidate_hash": "6f9cbf3bc9c07acf9daf1a78a3fa2add4463128fe1a00dd7e5034852213e9902",
+          "fidelity": "f2",
+          "ordinal": 4,
+          "score": 0.6805337301587302
+        },
+        {
+          "candidate": "multi_missing",
+          "candidate_hash": "e00a53be2c527896e7bd349efc0b4ed89e5e6f3b371a280ade3386b3ffe02ed4",
+          "fidelity": "f2",
+          "ordinal": 5,
+          "score": 0.595405753968254
+        },
+        {
+          "candidate": "multi_no_negative",
+          "candidate_hash": "6ac9f8aed7c1fe0ff402e3d4585dcfbb8aded4fbcd2199fa9f352ccc44be52f8",
+          "fidelity": "f2",
+          "ordinal": 6,
+          "score": 0.572093253968254
+        },
+        {
+          "candidate": "multi_no_override",
+          "candidate_hash": "8e88a3b260ecd168340cff48f1d07e2ecc191b2a0a2eb79e14a241979be44d4b",
+          "fidelity": "f2",
+          "ordinal": 7,
+          "score": 0.595405753968254
+        },
+        {
+          "candidate": "multi_no_question",
+          "candidate_hash": "3e5f63832672694b24a3c1426375a1484f20c227df76f67c34b2c9b9fdcf7c14",
+          "fidelity": "f2",
+          "ordinal": 8,
+          "score": 0.1317777777777778
+        },
+        {
+          "candidate": "multi_other_always",
+          "candidate_hash": "ba23c80be8b78bae6750dc09fa3a7f2ba56726abec29d79b41432772d995f8ad",
+          "fidelity": "f2",
+          "ordinal": 9,
+          "score": 0.7406517857142858
+        },
+        {
+          "candidate": "multi_uncertainty",
+          "candidate_hash": "961fa77895915af179b2a0b2150ba0192385a4aa4a638ecede23b37ecdee6a8c",
+          "fidelity": "f2",
+          "ordinal": 10,
+          "score": 0.4764474206349207
+        },
+        {
+          "candidate": "raw_history_fixed",
+          "candidate_hash": "4e56264a86a31b79df46b9aa4355fd33fb7b6a7e034fd12418fb0a74ef50a3d6",
+          "fidelity": "f2",
+          "ordinal": 11,
+          "score": 0.6585019841269841
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f2",
+          "ordinal": 12,
+          "score": 0.49667559523809524
+        }
+      ],
+      "outer_fold": 2,
+      "seed": 17,
+      "strategy": "grid",
+      "training_score": 0.7406517857142858,
+      "winner": "multi_other_always"
+    },
+    {
+      "evaluations": [
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f2",
+          "ordinal": 1,
+          "score": 0.595405753968254
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f2",
+          "ordinal": 2,
+          "score": 0.4438323412698413
+        },
+        {
+          "candidate": "multi_feature_first",
+          "candidate_hash": "42fdc347d9b90153f003df4c1fa50c4570379ae1777ab85fc1011555b78aac11",
+          "fidelity": "f2",
+          "ordinal": 3,
+          "score": 0.5973680555555556
+        },
+        {
+          "candidate": "multi_fixed",
+          "candidate_hash": "6f9cbf3bc9c07acf9daf1a78a3fa2add4463128fe1a00dd7e5034852213e9902",
+          "fidelity": "f2",
+          "ordinal": 4,
+          "score": 0.6805337301587302
+        },
+        {
+          "candidate": "multi_missing",
+          "candidate_hash": "e00a53be2c527896e7bd349efc0b4ed89e5e6f3b371a280ade3386b3ffe02ed4",
+          "fidelity": "f2",
+          "ordinal": 5,
+          "score": 0.595405753968254
+        },
+        {
+          "candidate": "multi_no_negative",
+          "candidate_hash": "6ac9f8aed7c1fe0ff402e3d4585dcfbb8aded4fbcd2199fa9f352ccc44be52f8",
+          "fidelity": "f2",
+          "ordinal": 6,
+          "score": 0.572093253968254
+        },
+        {
+          "candidate": "multi_no_override",
+          "candidate_hash": "8e88a3b260ecd168340cff48f1d07e2ecc191b2a0a2eb79e14a241979be44d4b",
+          "fidelity": "f2",
+          "ordinal": 7,
+          "score": 0.595405753968254
+        },
+        {
+          "candidate": "multi_no_question",
+          "candidate_hash": "3e5f63832672694b24a3c1426375a1484f20c227df76f67c34b2c9b9fdcf7c14",
+          "fidelity": "f2",
+          "ordinal": 8,
+          "score": 0.1317777777777778
+        },
+        {
+          "candidate": "multi_other_always",
+          "candidate_hash": "ba23c80be8b78bae6750dc09fa3a7f2ba56726abec29d79b41432772d995f8ad",
+          "fidelity": "f2",
+          "ordinal": 9,
+          "score": 0.7406517857142858
+        },
+        {
+          "candidate": "multi_uncertainty",
+          "candidate_hash": "961fa77895915af179b2a0b2150ba0192385a4aa4a638ecede23b37ecdee6a8c",
+          "fidelity": "f2",
+          "ordinal": 10,
+          "score": 0.4764474206349207
+        },
+        {
+          "candidate": "raw_history_fixed",
+          "candidate_hash": "4e56264a86a31b79df46b9aa4355fd33fb7b6a7e034fd12418fb0a74ef50a3d6",
+          "fidelity": "f2",
+          "ordinal": 11,
+          "score": 0.6585019841269841
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f2",
+          "ordinal": 12,
+          "score": 0.49667559523809524
+        }
+      ],
+      "outer_fold": 2,
+      "seed": 29,
+      "strategy": "grid",
+      "training_score": 0.7406517857142858,
+      "winner": "multi_other_always"
+    },
+    {
+      "evaluations": [
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f2",
+          "ordinal": 1,
+          "score": 0.595405753968254
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f2",
+          "ordinal": 2,
+          "score": 0.4438323412698413
+        },
+        {
+          "candidate": "multi_feature_first",
+          "candidate_hash": "42fdc347d9b90153f003df4c1fa50c4570379ae1777ab85fc1011555b78aac11",
+          "fidelity": "f2",
+          "ordinal": 3,
+          "score": 0.5973680555555556
+        },
+        {
+          "candidate": "multi_fixed",
+          "candidate_hash": "6f9cbf3bc9c07acf9daf1a78a3fa2add4463128fe1a00dd7e5034852213e9902",
+          "fidelity": "f2",
+          "ordinal": 4,
+          "score": 0.6805337301587302
+        },
+        {
+          "candidate": "multi_missing",
+          "candidate_hash": "e00a53be2c527896e7bd349efc0b4ed89e5e6f3b371a280ade3386b3ffe02ed4",
+          "fidelity": "f2",
+          "ordinal": 5,
+          "score": 0.595405753968254
+        },
+        {
+          "candidate": "multi_no_negative",
+          "candidate_hash": "6ac9f8aed7c1fe0ff402e3d4585dcfbb8aded4fbcd2199fa9f352ccc44be52f8",
+          "fidelity": "f2",
+          "ordinal": 6,
+          "score": 0.572093253968254
+        },
+        {
+          "candidate": "multi_no_override",
+          "candidate_hash": "8e88a3b260ecd168340cff48f1d07e2ecc191b2a0a2eb79e14a241979be44d4b",
+          "fidelity": "f2",
+          "ordinal": 7,
+          "score": 0.595405753968254
+        },
+        {
+          "candidate": "multi_no_question",
+          "candidate_hash": "3e5f63832672694b24a3c1426375a1484f20c227df76f67c34b2c9b9fdcf7c14",
+          "fidelity": "f2",
+          "ordinal": 8,
+          "score": 0.1317777777777778
+        },
+        {
+          "candidate": "multi_other_always",
+          "candidate_hash": "ba23c80be8b78bae6750dc09fa3a7f2ba56726abec29d79b41432772d995f8ad",
+          "fidelity": "f2",
+          "ordinal": 9,
+          "score": 0.7406517857142858
+        },
+        {
+          "candidate": "multi_uncertainty",
+          "candidate_hash": "961fa77895915af179b2a0b2150ba0192385a4aa4a638ecede23b37ecdee6a8c",
+          "fidelity": "f2",
+          "ordinal": 10,
+          "score": 0.4764474206349207
+        },
+        {
+          "candidate": "raw_history_fixed",
+          "candidate_hash": "4e56264a86a31b79df46b9aa4355fd33fb7b6a7e034fd12418fb0a74ef50a3d6",
+          "fidelity": "f2",
+          "ordinal": 11,
+          "score": 0.6585019841269841
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f2",
+          "ordinal": 12,
+          "score": 0.49667559523809524
+        }
+      ],
+      "outer_fold": 2,
+      "seed": 43,
+      "strategy": "grid",
+      "training_score": 0.7406517857142858,
+      "winner": "multi_other_always"
+    },
+    {
+      "evaluations": [
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f0",
+          "ordinal": 1,
+          "score": 0.6385467980295566
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f0",
+          "ordinal": 2,
+          "score": 0.42173645320197045
+        },
+        {
+          "candidate": "multi_fixed",
+          "candidate_hash": "6f9cbf3bc9c07acf9daf1a78a3fa2add4463128fe1a00dd7e5034852213e9902",
+          "fidelity": "f0",
+          "ordinal": 3,
+          "score": 0.6726970443349753
+        },
+        {
+          "candidate": "multi_missing",
+          "candidate_hash": "e00a53be2c527896e7bd349efc0b4ed89e5e6f3b371a280ade3386b3ffe02ed4",
+          "fidelity": "f0",
+          "ordinal": 4,
+          "score": 0.6385467980295566
+        },
+        {
+          "candidate": "multi_uncertainty",
+          "candidate_hash": "961fa77895915af179b2a0b2150ba0192385a4aa4a638ecede23b37ecdee6a8c",
+          "fidelity": "f0",
+          "ordinal": 5,
+          "score": 0.5371674876847291
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f0",
+          "ordinal": 6,
+          "score": 0.5823399014778325
+        },
+        {
+          "candidate": "multi_fixed",
+          "candidate_hash": "6f9cbf3bc9c07acf9daf1a78a3fa2add4463128fe1a00dd7e5034852213e9902",
+          "fidelity": "f2",
+          "ordinal": 7,
+          "score": 0.6805337301587302
+        },
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f2",
+          "ordinal": 8,
+          "score": 0.595405753968254
+        },
+        {
+          "candidate": "multi_missing",
+          "candidate_hash": "e00a53be2c527896e7bd349efc0b4ed89e5e6f3b371a280ade3386b3ffe02ed4",
+          "fidelity": "f2",
+          "ordinal": 9,
+          "score": 0.595405753968254
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f2",
+          "ordinal": 10,
+          "score": 0.49667559523809524
+        },
+        {
+          "candidate": "multi_uncertainty",
+          "candidate_hash": "961fa77895915af179b2a0b2150ba0192385a4aa4a638ecede23b37ecdee6a8c",
+          "fidelity": "f2",
+          "ordinal": 11,
+          "score": 0.4764474206349207
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f2",
+          "ordinal": 12,
+          "score": 0.4438323412698413
+        }
+      ],
+      "outer_fold": 2,
+      "seed": 17,
+      "strategy": "beam",
+      "training_score": 0.6805337301587302,
+      "winner": "multi_fixed"
+    },
+    {
+      "evaluations": [
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f0",
+          "ordinal": 1,
+          "score": 0.6385467980295566
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f0",
+          "ordinal": 2,
+          "score": 0.42173645320197045
+        },
+        {
+          "candidate": "multi_fixed",
+          "candidate_hash": "6f9cbf3bc9c07acf9daf1a78a3fa2add4463128fe1a00dd7e5034852213e9902",
+          "fidelity": "f0",
+          "ordinal": 3,
+          "score": 0.6726970443349753
+        },
+        {
+          "candidate": "multi_missing",
+          "candidate_hash": "e00a53be2c527896e7bd349efc0b4ed89e5e6f3b371a280ade3386b3ffe02ed4",
+          "fidelity": "f0",
+          "ordinal": 4,
+          "score": 0.6385467980295566
+        },
+        {
+          "candidate": "multi_uncertainty",
+          "candidate_hash": "961fa77895915af179b2a0b2150ba0192385a4aa4a638ecede23b37ecdee6a8c",
+          "fidelity": "f0",
+          "ordinal": 5,
+          "score": 0.5371674876847291
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f0",
+          "ordinal": 6,
+          "score": 0.5823399014778325
+        },
+        {
+          "candidate": "multi_fixed",
+          "candidate_hash": "6f9cbf3bc9c07acf9daf1a78a3fa2add4463128fe1a00dd7e5034852213e9902",
+          "fidelity": "f2",
+          "ordinal": 7,
+          "score": 0.6805337301587302
+        },
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f2",
+          "ordinal": 8,
+          "score": 0.595405753968254
+        },
+        {
+          "candidate": "multi_missing",
+          "candidate_hash": "e00a53be2c527896e7bd349efc0b4ed89e5e6f3b371a280ade3386b3ffe02ed4",
+          "fidelity": "f2",
+          "ordinal": 9,
+          "score": 0.595405753968254
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f2",
+          "ordinal": 10,
+          "score": 0.49667559523809524
+        },
+        {
+          "candidate": "multi_uncertainty",
+          "candidate_hash": "961fa77895915af179b2a0b2150ba0192385a4aa4a638ecede23b37ecdee6a8c",
+          "fidelity": "f2",
+          "ordinal": 11,
+          "score": 0.4764474206349207
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f2",
+          "ordinal": 12,
+          "score": 0.4438323412698413
+        }
+      ],
+      "outer_fold": 2,
+      "seed": 29,
+      "strategy": "beam",
+      "training_score": 0.6805337301587302,
+      "winner": "multi_fixed"
+    },
+    {
+      "evaluations": [
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f0",
+          "ordinal": 1,
+          "score": 0.6385467980295566
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f0",
+          "ordinal": 2,
+          "score": 0.42173645320197045
+        },
+        {
+          "candidate": "multi_fixed",
+          "candidate_hash": "6f9cbf3bc9c07acf9daf1a78a3fa2add4463128fe1a00dd7e5034852213e9902",
+          "fidelity": "f0",
+          "ordinal": 3,
+          "score": 0.6726970443349753
+        },
+        {
+          "candidate": "multi_missing",
+          "candidate_hash": "e00a53be2c527896e7bd349efc0b4ed89e5e6f3b371a280ade3386b3ffe02ed4",
+          "fidelity": "f0",
+          "ordinal": 4,
+          "score": 0.6385467980295566
+        },
+        {
+          "candidate": "multi_uncertainty",
+          "candidate_hash": "961fa77895915af179b2a0b2150ba0192385a4aa4a638ecede23b37ecdee6a8c",
+          "fidelity": "f0",
+          "ordinal": 5,
+          "score": 0.5371674876847291
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f0",
+          "ordinal": 6,
+          "score": 0.5823399014778325
+        },
+        {
+          "candidate": "multi_fixed",
+          "candidate_hash": "6f9cbf3bc9c07acf9daf1a78a3fa2add4463128fe1a00dd7e5034852213e9902",
+          "fidelity": "f2",
+          "ordinal": 7,
+          "score": 0.6805337301587302
+        },
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f2",
+          "ordinal": 8,
+          "score": 0.595405753968254
+        },
+        {
+          "candidate": "multi_missing",
+          "candidate_hash": "e00a53be2c527896e7bd349efc0b4ed89e5e6f3b371a280ade3386b3ffe02ed4",
+          "fidelity": "f2",
+          "ordinal": 9,
+          "score": 0.595405753968254
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f2",
+          "ordinal": 10,
+          "score": 0.49667559523809524
+        },
+        {
+          "candidate": "multi_uncertainty",
+          "candidate_hash": "961fa77895915af179b2a0b2150ba0192385a4aa4a638ecede23b37ecdee6a8c",
+          "fidelity": "f2",
+          "ordinal": 11,
+          "score": 0.4764474206349207
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f2",
+          "ordinal": 12,
+          "score": 0.4438323412698413
+        }
+      ],
+      "outer_fold": 2,
+      "seed": 43,
+      "strategy": "beam",
+      "training_score": 0.6805337301587302,
+      "winner": "multi_fixed"
+    },
+    {
+      "evaluations": [
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f0",
+          "ordinal": 1,
+          "score": 0.6385467980295566
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f0",
+          "ordinal": 2,
+          "score": 0.42173645320197045
+        },
+        {
+          "candidate": "multi_feature_first",
+          "candidate_hash": "42fdc347d9b90153f003df4c1fa50c4570379ae1777ab85fc1011555b78aac11",
+          "fidelity": "f0",
+          "ordinal": 3,
+          "score": 0.6643103448275862
+        },
+        {
+          "candidate": "multi_other_always",
+          "candidate_hash": "ba23c80be8b78bae6750dc09fa3a7f2ba56726abec29d79b41432772d995f8ad",
+          "fidelity": "f0",
+          "ordinal": 4,
+          "score": 0.7108292282430214
+        },
+        {
+          "candidate": "raw_history_fixed",
+          "candidate_hash": "4e56264a86a31b79df46b9aa4355fd33fb7b6a7e034fd12418fb0a74ef50a3d6",
+          "fidelity": "f0",
+          "ordinal": 5,
+          "score": 0.6569663382594417
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f0",
+          "ordinal": 6,
+          "score": 0.5823399014778325
+        },
+        {
+          "candidate": "multi_other_always",
+          "candidate_hash": "ba23c80be8b78bae6750dc09fa3a7f2ba56726abec29d79b41432772d995f8ad",
+          "fidelity": "f2",
+          "ordinal": 7,
+          "score": 0.7406517857142858
+        },
+        {
+          "candidate": "multi_feature_first",
+          "candidate_hash": "42fdc347d9b90153f003df4c1fa50c4570379ae1777ab85fc1011555b78aac11",
+          "fidelity": "f2",
+          "ordinal": 8,
+          "score": 0.5973680555555556
+        },
+        {
+          "candidate": "raw_history_fixed",
+          "candidate_hash": "4e56264a86a31b79df46b9aa4355fd33fb7b6a7e034fd12418fb0a74ef50a3d6",
+          "fidelity": "f2",
+          "ordinal": 9,
+          "score": 0.6585019841269841
+        },
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f2",
+          "ordinal": 10,
+          "score": 0.595405753968254
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f2",
+          "ordinal": 11,
+          "score": 0.49667559523809524
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f2",
+          "ordinal": 12,
+          "score": 0.4438323412698413
+        }
+      ],
+      "outer_fold": 2,
+      "seed": 17,
+      "strategy": "allocated",
+      "training_score": 0.7406517857142858,
+      "winner": "multi_other_always"
+    },
+    {
+      "evaluations": [
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f0",
+          "ordinal": 1,
+          "score": 0.6385467980295566
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f0",
+          "ordinal": 2,
+          "score": 0.42173645320197045
+        },
+        {
+          "candidate": "multi_feature_first",
+          "candidate_hash": "42fdc347d9b90153f003df4c1fa50c4570379ae1777ab85fc1011555b78aac11",
+          "fidelity": "f0",
+          "ordinal": 3,
+          "score": 0.6643103448275862
+        },
+        {
+          "candidate": "multi_other_always",
+          "candidate_hash": "ba23c80be8b78bae6750dc09fa3a7f2ba56726abec29d79b41432772d995f8ad",
+          "fidelity": "f0",
+          "ordinal": 4,
+          "score": 0.7108292282430214
+        },
+        {
+          "candidate": "raw_history_fixed",
+          "candidate_hash": "4e56264a86a31b79df46b9aa4355fd33fb7b6a7e034fd12418fb0a74ef50a3d6",
+          "fidelity": "f0",
+          "ordinal": 5,
+          "score": 0.6569663382594417
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f0",
+          "ordinal": 6,
+          "score": 0.5823399014778325
+        },
+        {
+          "candidate": "multi_other_always",
+          "candidate_hash": "ba23c80be8b78bae6750dc09fa3a7f2ba56726abec29d79b41432772d995f8ad",
+          "fidelity": "f2",
+          "ordinal": 7,
+          "score": 0.7406517857142858
+        },
+        {
+          "candidate": "multi_feature_first",
+          "candidate_hash": "42fdc347d9b90153f003df4c1fa50c4570379ae1777ab85fc1011555b78aac11",
+          "fidelity": "f2",
+          "ordinal": 8,
+          "score": 0.5973680555555556
+        },
+        {
+          "candidate": "raw_history_fixed",
+          "candidate_hash": "4e56264a86a31b79df46b9aa4355fd33fb7b6a7e034fd12418fb0a74ef50a3d6",
+          "fidelity": "f2",
+          "ordinal": 9,
+          "score": 0.6585019841269841
+        },
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f2",
+          "ordinal": 10,
+          "score": 0.595405753968254
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f2",
+          "ordinal": 11,
+          "score": 0.49667559523809524
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f2",
+          "ordinal": 12,
+          "score": 0.4438323412698413
+        }
+      ],
+      "outer_fold": 2,
+      "seed": 29,
+      "strategy": "allocated",
+      "training_score": 0.7406517857142858,
+      "winner": "multi_other_always"
+    },
+    {
+      "evaluations": [
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f0",
+          "ordinal": 1,
+          "score": 0.6385467980295566
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f0",
+          "ordinal": 2,
+          "score": 0.42173645320197045
+        },
+        {
+          "candidate": "multi_feature_first",
+          "candidate_hash": "42fdc347d9b90153f003df4c1fa50c4570379ae1777ab85fc1011555b78aac11",
+          "fidelity": "f0",
+          "ordinal": 3,
+          "score": 0.6643103448275862
+        },
+        {
+          "candidate": "multi_other_always",
+          "candidate_hash": "ba23c80be8b78bae6750dc09fa3a7f2ba56726abec29d79b41432772d995f8ad",
+          "fidelity": "f0",
+          "ordinal": 4,
+          "score": 0.7108292282430214
+        },
+        {
+          "candidate": "raw_history_fixed",
+          "candidate_hash": "4e56264a86a31b79df46b9aa4355fd33fb7b6a7e034fd12418fb0a74ef50a3d6",
+          "fidelity": "f0",
+          "ordinal": 5,
+          "score": 0.6569663382594417
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f0",
+          "ordinal": 6,
+          "score": 0.5823399014778325
+        },
+        {
+          "candidate": "multi_other_always",
+          "candidate_hash": "ba23c80be8b78bae6750dc09fa3a7f2ba56726abec29d79b41432772d995f8ad",
+          "fidelity": "f2",
+          "ordinal": 7,
+          "score": 0.7406517857142858
+        },
+        {
+          "candidate": "multi_feature_first",
+          "candidate_hash": "42fdc347d9b90153f003df4c1fa50c4570379ae1777ab85fc1011555b78aac11",
+          "fidelity": "f2",
+          "ordinal": 8,
+          "score": 0.5973680555555556
+        },
+        {
+          "candidate": "raw_history_fixed",
+          "candidate_hash": "4e56264a86a31b79df46b9aa4355fd33fb7b6a7e034fd12418fb0a74ef50a3d6",
+          "fidelity": "f2",
+          "ordinal": 9,
+          "score": 0.6585019841269841
+        },
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f2",
+          "ordinal": 10,
+          "score": 0.595405753968254
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f2",
+          "ordinal": 11,
+          "score": 0.49667559523809524
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f2",
+          "ordinal": 12,
+          "score": 0.4438323412698413
+        }
+      ],
+      "outer_fold": 2,
+      "seed": 43,
+      "strategy": "allocated",
+      "training_score": 0.7406517857142858,
+      "winner": "multi_other_always"
+    },
+    {
+      "evaluations": [
+        {
+          "candidate": "raw_history_fixed",
+          "candidate_hash": "4e56264a86a31b79df46b9aa4355fd33fb7b6a7e034fd12418fb0a74ef50a3d6",
+          "fidelity": "f2",
+          "ordinal": 1,
+          "score": 0.6636963793781977
+        },
+        {
+          "candidate": "multi_fixed",
+          "candidate_hash": "6f9cbf3bc9c07acf9daf1a78a3fa2add4463128fe1a00dd7e5034852213e9902",
+          "fidelity": "f2",
+          "ordinal": 2,
+          "score": 0.6814147973238882
+        },
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f2",
+          "ordinal": 3,
+          "score": 0.5698238882329791
+        },
+        {
+          "candidate": "multi_feature_first",
+          "candidate_hash": "42fdc347d9b90153f003df4c1fa50c4570379ae1777ab85fc1011555b78aac11",
+          "fidelity": "f2",
+          "ordinal": 4,
+          "score": 0.564603502558048
+        },
+        {
+          "candidate": "multi_no_question",
+          "candidate_hash": "3e5f63832672694b24a3c1426375a1484f20c227df76f67c34b2c9b9fdcf7c14",
+          "fidelity": "f2",
+          "ordinal": 5,
+          "score": 0.12769874065328612
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f2",
+          "ordinal": 6,
+          "score": 0.45608913813459273
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f2",
+          "ordinal": 7,
+          "score": 0.44138331365604094
+        },
+        {
+          "candidate": "multi_uncertainty",
+          "candidate_hash": "961fa77895915af179b2a0b2150ba0192385a4aa4a638ecede23b37ecdee6a8c",
+          "fidelity": "f2",
+          "ordinal": 8,
+          "score": 0.44453463203463206
+        },
+        {
+          "candidate": "multi_no_negative",
+          "candidate_hash": "6ac9f8aed7c1fe0ff402e3d4585dcfbb8aded4fbcd2199fa9f352ccc44be52f8",
+          "fidelity": "f2",
+          "ordinal": 9,
+          "score": 0.5454643841007477
+        },
+        {
+          "candidate": "multi_missing",
+          "candidate_hash": "e00a53be2c527896e7bd349efc0b4ed89e5e6f3b371a280ade3386b3ffe02ed4",
+          "fidelity": "f2",
+          "ordinal": 10,
+          "score": 0.5698238882329791
+        },
+        {
+          "candidate": "multi_no_override",
+          "candidate_hash": "8e88a3b260ecd168340cff48f1d07e2ecc191b2a0a2eb79e14a241979be44d4b",
+          "fidelity": "f2",
+          "ordinal": 11,
+          "score": 0.5698238882329791
+        },
+        {
+          "candidate": "multi_other_always",
+          "candidate_hash": "ba23c80be8b78bae6750dc09fa3a7f2ba56726abec29d79b41432772d995f8ad",
+          "fidelity": "f2",
+          "ordinal": 12,
+          "score": 0.7478473042109406
+        }
+      ],
+      "outer_fold": 3,
+      "seed": 17,
+      "strategy": "random",
+      "training_score": 0.7478473042109406,
+      "winner": "multi_other_always"
+    },
+    {
+      "evaluations": [
+        {
+          "candidate": "multi_no_question",
+          "candidate_hash": "3e5f63832672694b24a3c1426375a1484f20c227df76f67c34b2c9b9fdcf7c14",
+          "fidelity": "f2",
+          "ordinal": 1,
+          "score": 0.12769874065328612
+        },
+        {
+          "candidate": "multi_uncertainty",
+          "candidate_hash": "961fa77895915af179b2a0b2150ba0192385a4aa4a638ecede23b37ecdee6a8c",
+          "fidelity": "f2",
+          "ordinal": 2,
+          "score": 0.44453463203463206
+        },
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f2",
+          "ordinal": 3,
+          "score": 0.5698238882329791
+        },
+        {
+          "candidate": "multi_no_override",
+          "candidate_hash": "8e88a3b260ecd168340cff48f1d07e2ecc191b2a0a2eb79e14a241979be44d4b",
+          "fidelity": "f2",
+          "ordinal": 4,
+          "score": 0.5698238882329791
+        },
+        {
+          "candidate": "multi_fixed",
+          "candidate_hash": "6f9cbf3bc9c07acf9daf1a78a3fa2add4463128fe1a00dd7e5034852213e9902",
+          "fidelity": "f2",
+          "ordinal": 5,
+          "score": 0.6814147973238882
+        },
+        {
+          "candidate": "multi_feature_first",
+          "candidate_hash": "42fdc347d9b90153f003df4c1fa50c4570379ae1777ab85fc1011555b78aac11",
+          "fidelity": "f2",
+          "ordinal": 6,
+          "score": 0.564603502558048
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f2",
+          "ordinal": 7,
+          "score": 0.45608913813459273
+        },
+        {
+          "candidate": "raw_history_fixed",
+          "candidate_hash": "4e56264a86a31b79df46b9aa4355fd33fb7b6a7e034fd12418fb0a74ef50a3d6",
+          "fidelity": "f2",
+          "ordinal": 8,
+          "score": 0.6636963793781977
+        },
+        {
+          "candidate": "multi_missing",
+          "candidate_hash": "e00a53be2c527896e7bd349efc0b4ed89e5e6f3b371a280ade3386b3ffe02ed4",
+          "fidelity": "f2",
+          "ordinal": 9,
+          "score": 0.5698238882329791
+        },
+        {
+          "candidate": "multi_no_negative",
+          "candidate_hash": "6ac9f8aed7c1fe0ff402e3d4585dcfbb8aded4fbcd2199fa9f352ccc44be52f8",
+          "fidelity": "f2",
+          "ordinal": 10,
+          "score": 0.5454643841007477
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f2",
+          "ordinal": 11,
+          "score": 0.44138331365604094
+        },
+        {
+          "candidate": "multi_other_always",
+          "candidate_hash": "ba23c80be8b78bae6750dc09fa3a7f2ba56726abec29d79b41432772d995f8ad",
+          "fidelity": "f2",
+          "ordinal": 12,
+          "score": 0.7478473042109406
+        }
+      ],
+      "outer_fold": 3,
+      "seed": 29,
+      "strategy": "random",
+      "training_score": 0.7478473042109406,
+      "winner": "multi_other_always"
+    },
+    {
+      "evaluations": [
+        {
+          "candidate": "raw_history_fixed",
+          "candidate_hash": "4e56264a86a31b79df46b9aa4355fd33fb7b6a7e034fd12418fb0a74ef50a3d6",
+          "fidelity": "f2",
+          "ordinal": 1,
+          "score": 0.6636963793781977
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f2",
+          "ordinal": 2,
+          "score": 0.44138331365604094
+        },
+        {
+          "candidate": "multi_uncertainty",
+          "candidate_hash": "961fa77895915af179b2a0b2150ba0192385a4aa4a638ecede23b37ecdee6a8c",
+          "fidelity": "f2",
+          "ordinal": 3,
+          "score": 0.44453463203463206
+        },
+        {
+          "candidate": "multi_fixed",
+          "candidate_hash": "6f9cbf3bc9c07acf9daf1a78a3fa2add4463128fe1a00dd7e5034852213e9902",
+          "fidelity": "f2",
+          "ordinal": 4,
+          "score": 0.6814147973238882
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f2",
+          "ordinal": 5,
+          "score": 0.45608913813459273
+        },
+        {
+          "candidate": "multi_no_override",
+          "candidate_hash": "8e88a3b260ecd168340cff48f1d07e2ecc191b2a0a2eb79e14a241979be44d4b",
+          "fidelity": "f2",
+          "ordinal": 6,
+          "score": 0.5698238882329791
+        },
+        {
+          "candidate": "multi_other_always",
+          "candidate_hash": "ba23c80be8b78bae6750dc09fa3a7f2ba56726abec29d79b41432772d995f8ad",
+          "fidelity": "f2",
+          "ordinal": 7,
+          "score": 0.7478473042109406
+        },
+        {
+          "candidate": "multi_no_negative",
+          "candidate_hash": "6ac9f8aed7c1fe0ff402e3d4585dcfbb8aded4fbcd2199fa9f352ccc44be52f8",
+          "fidelity": "f2",
+          "ordinal": 8,
+          "score": 0.5454643841007477
+        },
+        {
+          "candidate": "multi_no_question",
+          "candidate_hash": "3e5f63832672694b24a3c1426375a1484f20c227df76f67c34b2c9b9fdcf7c14",
+          "fidelity": "f2",
+          "ordinal": 9,
+          "score": 0.12769874065328612
+        },
+        {
+          "candidate": "multi_feature_first",
+          "candidate_hash": "42fdc347d9b90153f003df4c1fa50c4570379ae1777ab85fc1011555b78aac11",
+          "fidelity": "f2",
+          "ordinal": 10,
+          "score": 0.564603502558048
+        },
+        {
+          "candidate": "multi_missing",
+          "candidate_hash": "e00a53be2c527896e7bd349efc0b4ed89e5e6f3b371a280ade3386b3ffe02ed4",
+          "fidelity": "f2",
+          "ordinal": 11,
+          "score": 0.5698238882329791
+        },
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f2",
+          "ordinal": 12,
+          "score": 0.5698238882329791
+        }
+      ],
+      "outer_fold": 3,
+      "seed": 43,
+      "strategy": "random",
+      "training_score": 0.7478473042109406,
+      "winner": "multi_other_always"
+    },
+    {
+      "evaluations": [
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f2",
+          "ordinal": 1,
+          "score": 0.5698238882329791
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f2",
+          "ordinal": 2,
+          "score": 0.44138331365604094
+        },
+        {
+          "candidate": "multi_feature_first",
+          "candidate_hash": "42fdc347d9b90153f003df4c1fa50c4570379ae1777ab85fc1011555b78aac11",
+          "fidelity": "f2",
+          "ordinal": 3,
+          "score": 0.564603502558048
+        },
+        {
+          "candidate": "multi_fixed",
+          "candidate_hash": "6f9cbf3bc9c07acf9daf1a78a3fa2add4463128fe1a00dd7e5034852213e9902",
+          "fidelity": "f2",
+          "ordinal": 4,
+          "score": 0.6814147973238882
+        },
+        {
+          "candidate": "multi_missing",
+          "candidate_hash": "e00a53be2c527896e7bd349efc0b4ed89e5e6f3b371a280ade3386b3ffe02ed4",
+          "fidelity": "f2",
+          "ordinal": 5,
+          "score": 0.5698238882329791
+        },
+        {
+          "candidate": "multi_no_negative",
+          "candidate_hash": "6ac9f8aed7c1fe0ff402e3d4585dcfbb8aded4fbcd2199fa9f352ccc44be52f8",
+          "fidelity": "f2",
+          "ordinal": 6,
+          "score": 0.5454643841007477
+        },
+        {
+          "candidate": "multi_no_override",
+          "candidate_hash": "8e88a3b260ecd168340cff48f1d07e2ecc191b2a0a2eb79e14a241979be44d4b",
+          "fidelity": "f2",
+          "ordinal": 7,
+          "score": 0.5698238882329791
+        },
+        {
+          "candidate": "multi_no_question",
+          "candidate_hash": "3e5f63832672694b24a3c1426375a1484f20c227df76f67c34b2c9b9fdcf7c14",
+          "fidelity": "f2",
+          "ordinal": 8,
+          "score": 0.12769874065328612
+        },
+        {
+          "candidate": "multi_other_always",
+          "candidate_hash": "ba23c80be8b78bae6750dc09fa3a7f2ba56726abec29d79b41432772d995f8ad",
+          "fidelity": "f2",
+          "ordinal": 9,
+          "score": 0.7478473042109406
+        },
+        {
+          "candidate": "multi_uncertainty",
+          "candidate_hash": "961fa77895915af179b2a0b2150ba0192385a4aa4a638ecede23b37ecdee6a8c",
+          "fidelity": "f2",
+          "ordinal": 10,
+          "score": 0.44453463203463206
+        },
+        {
+          "candidate": "raw_history_fixed",
+          "candidate_hash": "4e56264a86a31b79df46b9aa4355fd33fb7b6a7e034fd12418fb0a74ef50a3d6",
+          "fidelity": "f2",
+          "ordinal": 11,
+          "score": 0.6636963793781977
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f2",
+          "ordinal": 12,
+          "score": 0.45608913813459273
+        }
+      ],
+      "outer_fold": 3,
+      "seed": 17,
+      "strategy": "grid",
+      "training_score": 0.7478473042109406,
+      "winner": "multi_other_always"
+    },
+    {
+      "evaluations": [
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f2",
+          "ordinal": 1,
+          "score": 0.5698238882329791
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f2",
+          "ordinal": 2,
+          "score": 0.44138331365604094
+        },
+        {
+          "candidate": "multi_feature_first",
+          "candidate_hash": "42fdc347d9b90153f003df4c1fa50c4570379ae1777ab85fc1011555b78aac11",
+          "fidelity": "f2",
+          "ordinal": 3,
+          "score": 0.564603502558048
+        },
+        {
+          "candidate": "multi_fixed",
+          "candidate_hash": "6f9cbf3bc9c07acf9daf1a78a3fa2add4463128fe1a00dd7e5034852213e9902",
+          "fidelity": "f2",
+          "ordinal": 4,
+          "score": 0.6814147973238882
+        },
+        {
+          "candidate": "multi_missing",
+          "candidate_hash": "e00a53be2c527896e7bd349efc0b4ed89e5e6f3b371a280ade3386b3ffe02ed4",
+          "fidelity": "f2",
+          "ordinal": 5,
+          "score": 0.5698238882329791
+        },
+        {
+          "candidate": "multi_no_negative",
+          "candidate_hash": "6ac9f8aed7c1fe0ff402e3d4585dcfbb8aded4fbcd2199fa9f352ccc44be52f8",
+          "fidelity": "f2",
+          "ordinal": 6,
+          "score": 0.5454643841007477
+        },
+        {
+          "candidate": "multi_no_override",
+          "candidate_hash": "8e88a3b260ecd168340cff48f1d07e2ecc191b2a0a2eb79e14a241979be44d4b",
+          "fidelity": "f2",
+          "ordinal": 7,
+          "score": 0.5698238882329791
+        },
+        {
+          "candidate": "multi_no_question",
+          "candidate_hash": "3e5f63832672694b24a3c1426375a1484f20c227df76f67c34b2c9b9fdcf7c14",
+          "fidelity": "f2",
+          "ordinal": 8,
+          "score": 0.12769874065328612
+        },
+        {
+          "candidate": "multi_other_always",
+          "candidate_hash": "ba23c80be8b78bae6750dc09fa3a7f2ba56726abec29d79b41432772d995f8ad",
+          "fidelity": "f2",
+          "ordinal": 9,
+          "score": 0.7478473042109406
+        },
+        {
+          "candidate": "multi_uncertainty",
+          "candidate_hash": "961fa77895915af179b2a0b2150ba0192385a4aa4a638ecede23b37ecdee6a8c",
+          "fidelity": "f2",
+          "ordinal": 10,
+          "score": 0.44453463203463206
+        },
+        {
+          "candidate": "raw_history_fixed",
+          "candidate_hash": "4e56264a86a31b79df46b9aa4355fd33fb7b6a7e034fd12418fb0a74ef50a3d6",
+          "fidelity": "f2",
+          "ordinal": 11,
+          "score": 0.6636963793781977
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f2",
+          "ordinal": 12,
+          "score": 0.45608913813459273
+        }
+      ],
+      "outer_fold": 3,
+      "seed": 29,
+      "strategy": "grid",
+      "training_score": 0.7478473042109406,
+      "winner": "multi_other_always"
+    },
+    {
+      "evaluations": [
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f2",
+          "ordinal": 1,
+          "score": 0.5698238882329791
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f2",
+          "ordinal": 2,
+          "score": 0.44138331365604094
+        },
+        {
+          "candidate": "multi_feature_first",
+          "candidate_hash": "42fdc347d9b90153f003df4c1fa50c4570379ae1777ab85fc1011555b78aac11",
+          "fidelity": "f2",
+          "ordinal": 3,
+          "score": 0.564603502558048
+        },
+        {
+          "candidate": "multi_fixed",
+          "candidate_hash": "6f9cbf3bc9c07acf9daf1a78a3fa2add4463128fe1a00dd7e5034852213e9902",
+          "fidelity": "f2",
+          "ordinal": 4,
+          "score": 0.6814147973238882
+        },
+        {
+          "candidate": "multi_missing",
+          "candidate_hash": "e00a53be2c527896e7bd349efc0b4ed89e5e6f3b371a280ade3386b3ffe02ed4",
+          "fidelity": "f2",
+          "ordinal": 5,
+          "score": 0.5698238882329791
+        },
+        {
+          "candidate": "multi_no_negative",
+          "candidate_hash": "6ac9f8aed7c1fe0ff402e3d4585dcfbb8aded4fbcd2199fa9f352ccc44be52f8",
+          "fidelity": "f2",
+          "ordinal": 6,
+          "score": 0.5454643841007477
+        },
+        {
+          "candidate": "multi_no_override",
+          "candidate_hash": "8e88a3b260ecd168340cff48f1d07e2ecc191b2a0a2eb79e14a241979be44d4b",
+          "fidelity": "f2",
+          "ordinal": 7,
+          "score": 0.5698238882329791
+        },
+        {
+          "candidate": "multi_no_question",
+          "candidate_hash": "3e5f63832672694b24a3c1426375a1484f20c227df76f67c34b2c9b9fdcf7c14",
+          "fidelity": "f2",
+          "ordinal": 8,
+          "score": 0.12769874065328612
+        },
+        {
+          "candidate": "multi_other_always",
+          "candidate_hash": "ba23c80be8b78bae6750dc09fa3a7f2ba56726abec29d79b41432772d995f8ad",
+          "fidelity": "f2",
+          "ordinal": 9,
+          "score": 0.7478473042109406
+        },
+        {
+          "candidate": "multi_uncertainty",
+          "candidate_hash": "961fa77895915af179b2a0b2150ba0192385a4aa4a638ecede23b37ecdee6a8c",
+          "fidelity": "f2",
+          "ordinal": 10,
+          "score": 0.44453463203463206
+        },
+        {
+          "candidate": "raw_history_fixed",
+          "candidate_hash": "4e56264a86a31b79df46b9aa4355fd33fb7b6a7e034fd12418fb0a74ef50a3d6",
+          "fidelity": "f2",
+          "ordinal": 11,
+          "score": 0.6636963793781977
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f2",
+          "ordinal": 12,
+          "score": 0.45608913813459273
+        }
+      ],
+      "outer_fold": 3,
+      "seed": 43,
+      "strategy": "grid",
+      "training_score": 0.7478473042109406,
+      "winner": "multi_other_always"
+    },
+    {
+      "evaluations": [
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f0",
+          "ordinal": 1,
+          "score": 0.5679597701149426
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f0",
+          "ordinal": 2,
+          "score": 0.3885344827586207
+        },
+        {
+          "candidate": "multi_fixed",
+          "candidate_hash": "6f9cbf3bc9c07acf9daf1a78a3fa2add4463128fe1a00dd7e5034852213e9902",
+          "fidelity": "f0",
+          "ordinal": 3,
+          "score": 0.6714080459770115
+        },
+        {
+          "candidate": "multi_missing",
+          "candidate_hash": "e00a53be2c527896e7bd349efc0b4ed89e5e6f3b371a280ade3386b3ffe02ed4",
+          "fidelity": "f0",
+          "ordinal": 4,
+          "score": 0.5679597701149426
+        },
+        {
+          "candidate": "multi_uncertainty",
+          "candidate_hash": "961fa77895915af179b2a0b2150ba0192385a4aa4a638ecede23b37ecdee6a8c",
+          "fidelity": "f0",
+          "ordinal": 5,
+          "score": 0.3289080459770115
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f0",
+          "ordinal": 6,
+          "score": 0.42629310344827587
+        },
+        {
+          "candidate": "multi_fixed",
+          "candidate_hash": "6f9cbf3bc9c07acf9daf1a78a3fa2add4463128fe1a00dd7e5034852213e9902",
+          "fidelity": "f2",
+          "ordinal": 7,
+          "score": 0.6814147973238882
+        },
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f2",
+          "ordinal": 8,
+          "score": 0.5698238882329791
+        },
+        {
+          "candidate": "multi_missing",
+          "candidate_hash": "e00a53be2c527896e7bd349efc0b4ed89e5e6f3b371a280ade3386b3ffe02ed4",
+          "fidelity": "f2",
+          "ordinal": 9,
+          "score": 0.5698238882329791
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f2",
+          "ordinal": 10,
+          "score": 0.45608913813459273
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f2",
+          "ordinal": 11,
+          "score": 0.44138331365604094
+        },
+        {
+          "candidate": "multi_uncertainty",
+          "candidate_hash": "961fa77895915af179b2a0b2150ba0192385a4aa4a638ecede23b37ecdee6a8c",
+          "fidelity": "f2",
+          "ordinal": 12,
+          "score": 0.44453463203463206
+        }
+      ],
+      "outer_fold": 3,
+      "seed": 17,
+      "strategy": "beam",
+      "training_score": 0.6814147973238882,
+      "winner": "multi_fixed"
+    },
+    {
+      "evaluations": [
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f0",
+          "ordinal": 1,
+          "score": 0.5679597701149426
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f0",
+          "ordinal": 2,
+          "score": 0.3885344827586207
+        },
+        {
+          "candidate": "multi_fixed",
+          "candidate_hash": "6f9cbf3bc9c07acf9daf1a78a3fa2add4463128fe1a00dd7e5034852213e9902",
+          "fidelity": "f0",
+          "ordinal": 3,
+          "score": 0.6714080459770115
+        },
+        {
+          "candidate": "multi_missing",
+          "candidate_hash": "e00a53be2c527896e7bd349efc0b4ed89e5e6f3b371a280ade3386b3ffe02ed4",
+          "fidelity": "f0",
+          "ordinal": 4,
+          "score": 0.5679597701149426
+        },
+        {
+          "candidate": "multi_uncertainty",
+          "candidate_hash": "961fa77895915af179b2a0b2150ba0192385a4aa4a638ecede23b37ecdee6a8c",
+          "fidelity": "f0",
+          "ordinal": 5,
+          "score": 0.3289080459770115
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f0",
+          "ordinal": 6,
+          "score": 0.42629310344827587
+        },
+        {
+          "candidate": "multi_fixed",
+          "candidate_hash": "6f9cbf3bc9c07acf9daf1a78a3fa2add4463128fe1a00dd7e5034852213e9902",
+          "fidelity": "f2",
+          "ordinal": 7,
+          "score": 0.6814147973238882
+        },
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f2",
+          "ordinal": 8,
+          "score": 0.5698238882329791
+        },
+        {
+          "candidate": "multi_missing",
+          "candidate_hash": "e00a53be2c527896e7bd349efc0b4ed89e5e6f3b371a280ade3386b3ffe02ed4",
+          "fidelity": "f2",
+          "ordinal": 9,
+          "score": 0.5698238882329791
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f2",
+          "ordinal": 10,
+          "score": 0.45608913813459273
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f2",
+          "ordinal": 11,
+          "score": 0.44138331365604094
+        },
+        {
+          "candidate": "multi_uncertainty",
+          "candidate_hash": "961fa77895915af179b2a0b2150ba0192385a4aa4a638ecede23b37ecdee6a8c",
+          "fidelity": "f2",
+          "ordinal": 12,
+          "score": 0.44453463203463206
+        }
+      ],
+      "outer_fold": 3,
+      "seed": 29,
+      "strategy": "beam",
+      "training_score": 0.6814147973238882,
+      "winner": "multi_fixed"
+    },
+    {
+      "evaluations": [
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f0",
+          "ordinal": 1,
+          "score": 0.5679597701149426
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f0",
+          "ordinal": 2,
+          "score": 0.3885344827586207
+        },
+        {
+          "candidate": "multi_fixed",
+          "candidate_hash": "6f9cbf3bc9c07acf9daf1a78a3fa2add4463128fe1a00dd7e5034852213e9902",
+          "fidelity": "f0",
+          "ordinal": 3,
+          "score": 0.6714080459770115
+        },
+        {
+          "candidate": "multi_missing",
+          "candidate_hash": "e00a53be2c527896e7bd349efc0b4ed89e5e6f3b371a280ade3386b3ffe02ed4",
+          "fidelity": "f0",
+          "ordinal": 4,
+          "score": 0.5679597701149426
+        },
+        {
+          "candidate": "multi_uncertainty",
+          "candidate_hash": "961fa77895915af179b2a0b2150ba0192385a4aa4a638ecede23b37ecdee6a8c",
+          "fidelity": "f0",
+          "ordinal": 5,
+          "score": 0.3289080459770115
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f0",
+          "ordinal": 6,
+          "score": 0.42629310344827587
+        },
+        {
+          "candidate": "multi_fixed",
+          "candidate_hash": "6f9cbf3bc9c07acf9daf1a78a3fa2add4463128fe1a00dd7e5034852213e9902",
+          "fidelity": "f2",
+          "ordinal": 7,
+          "score": 0.6814147973238882
+        },
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f2",
+          "ordinal": 8,
+          "score": 0.5698238882329791
+        },
+        {
+          "candidate": "multi_missing",
+          "candidate_hash": "e00a53be2c527896e7bd349efc0b4ed89e5e6f3b371a280ade3386b3ffe02ed4",
+          "fidelity": "f2",
+          "ordinal": 9,
+          "score": 0.5698238882329791
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f2",
+          "ordinal": 10,
+          "score": 0.45608913813459273
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f2",
+          "ordinal": 11,
+          "score": 0.44138331365604094
+        },
+        {
+          "candidate": "multi_uncertainty",
+          "candidate_hash": "961fa77895915af179b2a0b2150ba0192385a4aa4a638ecede23b37ecdee6a8c",
+          "fidelity": "f2",
+          "ordinal": 12,
+          "score": 0.44453463203463206
+        }
+      ],
+      "outer_fold": 3,
+      "seed": 43,
+      "strategy": "beam",
+      "training_score": 0.6814147973238882,
+      "winner": "multi_fixed"
+    },
+    {
+      "evaluations": [
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f0",
+          "ordinal": 1,
+          "score": 0.5679597701149426
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f0",
+          "ordinal": 2,
+          "score": 0.3885344827586207
+        },
+        {
+          "candidate": "multi_feature_first",
+          "candidate_hash": "42fdc347d9b90153f003df4c1fa50c4570379ae1777ab85fc1011555b78aac11",
+          "fidelity": "f0",
+          "ordinal": 3,
+          "score": 0.5639942528735632
+        },
+        {
+          "candidate": "multi_other_always",
+          "candidate_hash": "ba23c80be8b78bae6750dc09fa3a7f2ba56726abec29d79b41432772d995f8ad",
+          "fidelity": "f0",
+          "ordinal": 4,
+          "score": 0.7452011494252875
+        },
+        {
+          "candidate": "raw_history_fixed",
+          "candidate_hash": "4e56264a86a31b79df46b9aa4355fd33fb7b6a7e034fd12418fb0a74ef50a3d6",
+          "fidelity": "f0",
+          "ordinal": 5,
+          "score": 0.6385591133004926
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f0",
+          "ordinal": 6,
+          "score": 0.42629310344827587
+        },
+        {
+          "candidate": "multi_other_always",
+          "candidate_hash": "ba23c80be8b78bae6750dc09fa3a7f2ba56726abec29d79b41432772d995f8ad",
+          "fidelity": "f2",
+          "ordinal": 7,
+          "score": 0.7478473042109406
+        },
+        {
+          "candidate": "raw_history_fixed",
+          "candidate_hash": "4e56264a86a31b79df46b9aa4355fd33fb7b6a7e034fd12418fb0a74ef50a3d6",
+          "fidelity": "f2",
+          "ordinal": 8,
+          "score": 0.6636963793781977
+        },
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f2",
+          "ordinal": 9,
+          "score": 0.5698238882329791
+        },
+        {
+          "candidate": "multi_feature_first",
+          "candidate_hash": "42fdc347d9b90153f003df4c1fa50c4570379ae1777ab85fc1011555b78aac11",
+          "fidelity": "f2",
+          "ordinal": 10,
+          "score": 0.564603502558048
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f2",
+          "ordinal": 11,
+          "score": 0.45608913813459273
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f2",
+          "ordinal": 12,
+          "score": 0.44138331365604094
+        }
+      ],
+      "outer_fold": 3,
+      "seed": 17,
+      "strategy": "allocated",
+      "training_score": 0.7478473042109406,
+      "winner": "multi_other_always"
+    },
+    {
+      "evaluations": [
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f0",
+          "ordinal": 1,
+          "score": 0.5679597701149426
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f0",
+          "ordinal": 2,
+          "score": 0.3885344827586207
+        },
+        {
+          "candidate": "multi_feature_first",
+          "candidate_hash": "42fdc347d9b90153f003df4c1fa50c4570379ae1777ab85fc1011555b78aac11",
+          "fidelity": "f0",
+          "ordinal": 3,
+          "score": 0.5639942528735632
+        },
+        {
+          "candidate": "multi_other_always",
+          "candidate_hash": "ba23c80be8b78bae6750dc09fa3a7f2ba56726abec29d79b41432772d995f8ad",
+          "fidelity": "f0",
+          "ordinal": 4,
+          "score": 0.7452011494252875
+        },
+        {
+          "candidate": "raw_history_fixed",
+          "candidate_hash": "4e56264a86a31b79df46b9aa4355fd33fb7b6a7e034fd12418fb0a74ef50a3d6",
+          "fidelity": "f0",
+          "ordinal": 5,
+          "score": 0.6385591133004926
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f0",
+          "ordinal": 6,
+          "score": 0.42629310344827587
+        },
+        {
+          "candidate": "multi_other_always",
+          "candidate_hash": "ba23c80be8b78bae6750dc09fa3a7f2ba56726abec29d79b41432772d995f8ad",
+          "fidelity": "f2",
+          "ordinal": 7,
+          "score": 0.7478473042109406
+        },
+        {
+          "candidate": "raw_history_fixed",
+          "candidate_hash": "4e56264a86a31b79df46b9aa4355fd33fb7b6a7e034fd12418fb0a74ef50a3d6",
+          "fidelity": "f2",
+          "ordinal": 8,
+          "score": 0.6636963793781977
+        },
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f2",
+          "ordinal": 9,
+          "score": 0.5698238882329791
+        },
+        {
+          "candidate": "multi_feature_first",
+          "candidate_hash": "42fdc347d9b90153f003df4c1fa50c4570379ae1777ab85fc1011555b78aac11",
+          "fidelity": "f2",
+          "ordinal": 10,
+          "score": 0.564603502558048
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f2",
+          "ordinal": 11,
+          "score": 0.45608913813459273
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f2",
+          "ordinal": 12,
+          "score": 0.44138331365604094
+        }
+      ],
+      "outer_fold": 3,
+      "seed": 29,
+      "strategy": "allocated",
+      "training_score": 0.7478473042109406,
+      "winner": "multi_other_always"
+    },
+    {
+      "evaluations": [
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f0",
+          "ordinal": 1,
+          "score": 0.5679597701149426
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f0",
+          "ordinal": 2,
+          "score": 0.3885344827586207
+        },
+        {
+          "candidate": "multi_feature_first",
+          "candidate_hash": "42fdc347d9b90153f003df4c1fa50c4570379ae1777ab85fc1011555b78aac11",
+          "fidelity": "f0",
+          "ordinal": 3,
+          "score": 0.5639942528735632
+        },
+        {
+          "candidate": "multi_other_always",
+          "candidate_hash": "ba23c80be8b78bae6750dc09fa3a7f2ba56726abec29d79b41432772d995f8ad",
+          "fidelity": "f0",
+          "ordinal": 4,
+          "score": 0.7452011494252875
+        },
+        {
+          "candidate": "raw_history_fixed",
+          "candidate_hash": "4e56264a86a31b79df46b9aa4355fd33fb7b6a7e034fd12418fb0a74ef50a3d6",
+          "fidelity": "f0",
+          "ordinal": 5,
+          "score": 0.6385591133004926
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f0",
+          "ordinal": 6,
+          "score": 0.42629310344827587
+        },
+        {
+          "candidate": "multi_other_always",
+          "candidate_hash": "ba23c80be8b78bae6750dc09fa3a7f2ba56726abec29d79b41432772d995f8ad",
+          "fidelity": "f2",
+          "ordinal": 7,
+          "score": 0.7478473042109406
+        },
+        {
+          "candidate": "raw_history_fixed",
+          "candidate_hash": "4e56264a86a31b79df46b9aa4355fd33fb7b6a7e034fd12418fb0a74ef50a3d6",
+          "fidelity": "f2",
+          "ordinal": 8,
+          "score": 0.6636963793781977
+        },
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f2",
+          "ordinal": 9,
+          "score": 0.5698238882329791
+        },
+        {
+          "candidate": "multi_feature_first",
+          "candidate_hash": "42fdc347d9b90153f003df4c1fa50c4570379ae1777ab85fc1011555b78aac11",
+          "fidelity": "f2",
+          "ordinal": 10,
+          "score": 0.564603502558048
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f2",
+          "ordinal": 11,
+          "score": 0.45608913813459273
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f2",
+          "ordinal": 12,
+          "score": 0.44138331365604094
+        }
+      ],
+      "outer_fold": 3,
+      "seed": 43,
+      "strategy": "allocated",
+      "training_score": 0.7478473042109406,
+      "winner": "multi_other_always"
+    },
+    {
+      "evaluations": [
+        {
+          "candidate": "raw_history_fixed",
+          "candidate_hash": "4e56264a86a31b79df46b9aa4355fd33fb7b6a7e034fd12418fb0a74ef50a3d6",
+          "fidelity": "f2",
+          "ordinal": 1,
+          "score": 0.6681080283353011
+        },
+        {
+          "candidate": "multi_fixed",
+          "candidate_hash": "6f9cbf3bc9c07acf9daf1a78a3fa2add4463128fe1a00dd7e5034852213e9902",
+          "fidelity": "f2",
+          "ordinal": 2,
+          "score": 0.68172373081464
+        },
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f2",
+          "ordinal": 3,
+          "score": 0.586741440377804
+        },
+        {
+          "candidate": "multi_feature_first",
+          "candidate_hash": "42fdc347d9b90153f003df4c1fa50c4570379ae1777ab85fc1011555b78aac11",
+          "fidelity": "f2",
+          "ordinal": 4,
+          "score": 0.5886462022825659
+        },
+        {
+          "candidate": "multi_no_question",
+          "candidate_hash": "3e5f63832672694b24a3c1426375a1484f20c227df76f67c34b2c9b9fdcf7c14",
+          "fidelity": "f2",
+          "ordinal": 5,
+          "score": 0.12376623376623377
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f2",
+          "ordinal": 6,
+          "score": 0.4934887839433294
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f2",
+          "ordinal": 7,
+          "score": 0.4493408107044471
+        },
+        {
+          "candidate": "multi_uncertainty",
+          "candidate_hash": "961fa77895915af179b2a0b2150ba0192385a4aa4a638ecede23b37ecdee6a8c",
+          "fidelity": "f2",
+          "ordinal": 8,
+          "score": 0.49444805194805197
+        },
+        {
+          "candidate": "multi_no_negative",
+          "candidate_hash": "6ac9f8aed7c1fe0ff402e3d4585dcfbb8aded4fbcd2199fa9f352ccc44be52f8",
+          "fidelity": "f2",
+          "ordinal": 9,
+          "score": 0.5614521841794569
+        },
+        {
+          "candidate": "multi_missing",
+          "candidate_hash": "e00a53be2c527896e7bd349efc0b4ed89e5e6f3b371a280ade3386b3ffe02ed4",
+          "fidelity": "f2",
+          "ordinal": 10,
+          "score": 0.586741440377804
+        },
+        {
+          "candidate": "multi_no_override",
+          "candidate_hash": "8e88a3b260ecd168340cff48f1d07e2ecc191b2a0a2eb79e14a241979be44d4b",
+          "fidelity": "f2",
+          "ordinal": 11,
+          "score": 0.586741440377804
+        },
+        {
+          "candidate": "multi_other_always",
+          "candidate_hash": "ba23c80be8b78bae6750dc09fa3a7f2ba56726abec29d79b41432772d995f8ad",
+          "fidelity": "f2",
+          "ordinal": 12,
+          "score": 0.7396094057457694
+        }
+      ],
+      "outer_fold": 4,
+      "seed": 17,
+      "strategy": "random",
+      "training_score": 0.7396094057457694,
+      "winner": "multi_other_always"
+    },
+    {
+      "evaluations": [
+        {
+          "candidate": "multi_no_question",
+          "candidate_hash": "3e5f63832672694b24a3c1426375a1484f20c227df76f67c34b2c9b9fdcf7c14",
+          "fidelity": "f2",
+          "ordinal": 1,
+          "score": 0.12376623376623377
+        },
+        {
+          "candidate": "multi_uncertainty",
+          "candidate_hash": "961fa77895915af179b2a0b2150ba0192385a4aa4a638ecede23b37ecdee6a8c",
+          "fidelity": "f2",
+          "ordinal": 2,
+          "score": 0.49444805194805197
+        },
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f2",
+          "ordinal": 3,
+          "score": 0.586741440377804
+        },
+        {
+          "candidate": "multi_no_override",
+          "candidate_hash": "8e88a3b260ecd168340cff48f1d07e2ecc191b2a0a2eb79e14a241979be44d4b",
+          "fidelity": "f2",
+          "ordinal": 4,
+          "score": 0.586741440377804
+        },
+        {
+          "candidate": "multi_fixed",
+          "candidate_hash": "6f9cbf3bc9c07acf9daf1a78a3fa2add4463128fe1a00dd7e5034852213e9902",
+          "fidelity": "f2",
+          "ordinal": 5,
+          "score": 0.68172373081464
+        },
+        {
+          "candidate": "multi_feature_first",
+          "candidate_hash": "42fdc347d9b90153f003df4c1fa50c4570379ae1777ab85fc1011555b78aac11",
+          "fidelity": "f2",
+          "ordinal": 6,
+          "score": 0.5886462022825659
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f2",
+          "ordinal": 7,
+          "score": 0.4934887839433294
+        },
+        {
+          "candidate": "raw_history_fixed",
+          "candidate_hash": "4e56264a86a31b79df46b9aa4355fd33fb7b6a7e034fd12418fb0a74ef50a3d6",
+          "fidelity": "f2",
+          "ordinal": 8,
+          "score": 0.6681080283353011
+        },
+        {
+          "candidate": "multi_missing",
+          "candidate_hash": "e00a53be2c527896e7bd349efc0b4ed89e5e6f3b371a280ade3386b3ffe02ed4",
+          "fidelity": "f2",
+          "ordinal": 9,
+          "score": 0.586741440377804
+        },
+        {
+          "candidate": "multi_no_negative",
+          "candidate_hash": "6ac9f8aed7c1fe0ff402e3d4585dcfbb8aded4fbcd2199fa9f352ccc44be52f8",
+          "fidelity": "f2",
+          "ordinal": 10,
+          "score": 0.5614521841794569
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f2",
+          "ordinal": 11,
+          "score": 0.4493408107044471
+        },
+        {
+          "candidate": "multi_other_always",
+          "candidate_hash": "ba23c80be8b78bae6750dc09fa3a7f2ba56726abec29d79b41432772d995f8ad",
+          "fidelity": "f2",
+          "ordinal": 12,
+          "score": 0.7396094057457694
+        }
+      ],
+      "outer_fold": 4,
+      "seed": 29,
+      "strategy": "random",
+      "training_score": 0.7396094057457694,
+      "winner": "multi_other_always"
+    },
+    {
+      "evaluations": [
+        {
+          "candidate": "raw_history_fixed",
+          "candidate_hash": "4e56264a86a31b79df46b9aa4355fd33fb7b6a7e034fd12418fb0a74ef50a3d6",
+          "fidelity": "f2",
+          "ordinal": 1,
+          "score": 0.6681080283353011
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f2",
+          "ordinal": 2,
+          "score": 0.4493408107044471
+        },
+        {
+          "candidate": "multi_uncertainty",
+          "candidate_hash": "961fa77895915af179b2a0b2150ba0192385a4aa4a638ecede23b37ecdee6a8c",
+          "fidelity": "f2",
+          "ordinal": 3,
+          "score": 0.49444805194805197
+        },
+        {
+          "candidate": "multi_fixed",
+          "candidate_hash": "6f9cbf3bc9c07acf9daf1a78a3fa2add4463128fe1a00dd7e5034852213e9902",
+          "fidelity": "f2",
+          "ordinal": 4,
+          "score": 0.68172373081464
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f2",
+          "ordinal": 5,
+          "score": 0.4934887839433294
+        },
+        {
+          "candidate": "multi_no_override",
+          "candidate_hash": "8e88a3b260ecd168340cff48f1d07e2ecc191b2a0a2eb79e14a241979be44d4b",
+          "fidelity": "f2",
+          "ordinal": 6,
+          "score": 0.586741440377804
+        },
+        {
+          "candidate": "multi_other_always",
+          "candidate_hash": "ba23c80be8b78bae6750dc09fa3a7f2ba56726abec29d79b41432772d995f8ad",
+          "fidelity": "f2",
+          "ordinal": 7,
+          "score": 0.7396094057457694
+        },
+        {
+          "candidate": "multi_no_negative",
+          "candidate_hash": "6ac9f8aed7c1fe0ff402e3d4585dcfbb8aded4fbcd2199fa9f352ccc44be52f8",
+          "fidelity": "f2",
+          "ordinal": 8,
+          "score": 0.5614521841794569
+        },
+        {
+          "candidate": "multi_no_question",
+          "candidate_hash": "3e5f63832672694b24a3c1426375a1484f20c227df76f67c34b2c9b9fdcf7c14",
+          "fidelity": "f2",
+          "ordinal": 9,
+          "score": 0.12376623376623377
+        },
+        {
+          "candidate": "multi_feature_first",
+          "candidate_hash": "42fdc347d9b90153f003df4c1fa50c4570379ae1777ab85fc1011555b78aac11",
+          "fidelity": "f2",
+          "ordinal": 10,
+          "score": 0.5886462022825659
+        },
+        {
+          "candidate": "multi_missing",
+          "candidate_hash": "e00a53be2c527896e7bd349efc0b4ed89e5e6f3b371a280ade3386b3ffe02ed4",
+          "fidelity": "f2",
+          "ordinal": 11,
+          "score": 0.586741440377804
+        },
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f2",
+          "ordinal": 12,
+          "score": 0.586741440377804
+        }
+      ],
+      "outer_fold": 4,
+      "seed": 43,
+      "strategy": "random",
+      "training_score": 0.7396094057457694,
+      "winner": "multi_other_always"
+    },
+    {
+      "evaluations": [
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f2",
+          "ordinal": 1,
+          "score": 0.586741440377804
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f2",
+          "ordinal": 2,
+          "score": 0.4493408107044471
+        },
+        {
+          "candidate": "multi_feature_first",
+          "candidate_hash": "42fdc347d9b90153f003df4c1fa50c4570379ae1777ab85fc1011555b78aac11",
+          "fidelity": "f2",
+          "ordinal": 3,
+          "score": 0.5886462022825659
+        },
+        {
+          "candidate": "multi_fixed",
+          "candidate_hash": "6f9cbf3bc9c07acf9daf1a78a3fa2add4463128fe1a00dd7e5034852213e9902",
+          "fidelity": "f2",
+          "ordinal": 4,
+          "score": 0.68172373081464
+        },
+        {
+          "candidate": "multi_missing",
+          "candidate_hash": "e00a53be2c527896e7bd349efc0b4ed89e5e6f3b371a280ade3386b3ffe02ed4",
+          "fidelity": "f2",
+          "ordinal": 5,
+          "score": 0.586741440377804
+        },
+        {
+          "candidate": "multi_no_negative",
+          "candidate_hash": "6ac9f8aed7c1fe0ff402e3d4585dcfbb8aded4fbcd2199fa9f352ccc44be52f8",
+          "fidelity": "f2",
+          "ordinal": 6,
+          "score": 0.5614521841794569
+        },
+        {
+          "candidate": "multi_no_override",
+          "candidate_hash": "8e88a3b260ecd168340cff48f1d07e2ecc191b2a0a2eb79e14a241979be44d4b",
+          "fidelity": "f2",
+          "ordinal": 7,
+          "score": 0.586741440377804
+        },
+        {
+          "candidate": "multi_no_question",
+          "candidate_hash": "3e5f63832672694b24a3c1426375a1484f20c227df76f67c34b2c9b9fdcf7c14",
+          "fidelity": "f2",
+          "ordinal": 8,
+          "score": 0.12376623376623377
+        },
+        {
+          "candidate": "multi_other_always",
+          "candidate_hash": "ba23c80be8b78bae6750dc09fa3a7f2ba56726abec29d79b41432772d995f8ad",
+          "fidelity": "f2",
+          "ordinal": 9,
+          "score": 0.7396094057457694
+        },
+        {
+          "candidate": "multi_uncertainty",
+          "candidate_hash": "961fa77895915af179b2a0b2150ba0192385a4aa4a638ecede23b37ecdee6a8c",
+          "fidelity": "f2",
+          "ordinal": 10,
+          "score": 0.49444805194805197
+        },
+        {
+          "candidate": "raw_history_fixed",
+          "candidate_hash": "4e56264a86a31b79df46b9aa4355fd33fb7b6a7e034fd12418fb0a74ef50a3d6",
+          "fidelity": "f2",
+          "ordinal": 11,
+          "score": 0.6681080283353011
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f2",
+          "ordinal": 12,
+          "score": 0.4934887839433294
+        }
+      ],
+      "outer_fold": 4,
+      "seed": 17,
+      "strategy": "grid",
+      "training_score": 0.7396094057457694,
+      "winner": "multi_other_always"
+    },
+    {
+      "evaluations": [
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f2",
+          "ordinal": 1,
+          "score": 0.586741440377804
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f2",
+          "ordinal": 2,
+          "score": 0.4493408107044471
+        },
+        {
+          "candidate": "multi_feature_first",
+          "candidate_hash": "42fdc347d9b90153f003df4c1fa50c4570379ae1777ab85fc1011555b78aac11",
+          "fidelity": "f2",
+          "ordinal": 3,
+          "score": 0.5886462022825659
+        },
+        {
+          "candidate": "multi_fixed",
+          "candidate_hash": "6f9cbf3bc9c07acf9daf1a78a3fa2add4463128fe1a00dd7e5034852213e9902",
+          "fidelity": "f2",
+          "ordinal": 4,
+          "score": 0.68172373081464
+        },
+        {
+          "candidate": "multi_missing",
+          "candidate_hash": "e00a53be2c527896e7bd349efc0b4ed89e5e6f3b371a280ade3386b3ffe02ed4",
+          "fidelity": "f2",
+          "ordinal": 5,
+          "score": 0.586741440377804
+        },
+        {
+          "candidate": "multi_no_negative",
+          "candidate_hash": "6ac9f8aed7c1fe0ff402e3d4585dcfbb8aded4fbcd2199fa9f352ccc44be52f8",
+          "fidelity": "f2",
+          "ordinal": 6,
+          "score": 0.5614521841794569
+        },
+        {
+          "candidate": "multi_no_override",
+          "candidate_hash": "8e88a3b260ecd168340cff48f1d07e2ecc191b2a0a2eb79e14a241979be44d4b",
+          "fidelity": "f2",
+          "ordinal": 7,
+          "score": 0.586741440377804
+        },
+        {
+          "candidate": "multi_no_question",
+          "candidate_hash": "3e5f63832672694b24a3c1426375a1484f20c227df76f67c34b2c9b9fdcf7c14",
+          "fidelity": "f2",
+          "ordinal": 8,
+          "score": 0.12376623376623377
+        },
+        {
+          "candidate": "multi_other_always",
+          "candidate_hash": "ba23c80be8b78bae6750dc09fa3a7f2ba56726abec29d79b41432772d995f8ad",
+          "fidelity": "f2",
+          "ordinal": 9,
+          "score": 0.7396094057457694
+        },
+        {
+          "candidate": "multi_uncertainty",
+          "candidate_hash": "961fa77895915af179b2a0b2150ba0192385a4aa4a638ecede23b37ecdee6a8c",
+          "fidelity": "f2",
+          "ordinal": 10,
+          "score": 0.49444805194805197
+        },
+        {
+          "candidate": "raw_history_fixed",
+          "candidate_hash": "4e56264a86a31b79df46b9aa4355fd33fb7b6a7e034fd12418fb0a74ef50a3d6",
+          "fidelity": "f2",
+          "ordinal": 11,
+          "score": 0.6681080283353011
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f2",
+          "ordinal": 12,
+          "score": 0.4934887839433294
+        }
+      ],
+      "outer_fold": 4,
+      "seed": 29,
+      "strategy": "grid",
+      "training_score": 0.7396094057457694,
+      "winner": "multi_other_always"
+    },
+    {
+      "evaluations": [
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f2",
+          "ordinal": 1,
+          "score": 0.586741440377804
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f2",
+          "ordinal": 2,
+          "score": 0.4493408107044471
+        },
+        {
+          "candidate": "multi_feature_first",
+          "candidate_hash": "42fdc347d9b90153f003df4c1fa50c4570379ae1777ab85fc1011555b78aac11",
+          "fidelity": "f2",
+          "ordinal": 3,
+          "score": 0.5886462022825659
+        },
+        {
+          "candidate": "multi_fixed",
+          "candidate_hash": "6f9cbf3bc9c07acf9daf1a78a3fa2add4463128fe1a00dd7e5034852213e9902",
+          "fidelity": "f2",
+          "ordinal": 4,
+          "score": 0.68172373081464
+        },
+        {
+          "candidate": "multi_missing",
+          "candidate_hash": "e00a53be2c527896e7bd349efc0b4ed89e5e6f3b371a280ade3386b3ffe02ed4",
+          "fidelity": "f2",
+          "ordinal": 5,
+          "score": 0.586741440377804
+        },
+        {
+          "candidate": "multi_no_negative",
+          "candidate_hash": "6ac9f8aed7c1fe0ff402e3d4585dcfbb8aded4fbcd2199fa9f352ccc44be52f8",
+          "fidelity": "f2",
+          "ordinal": 6,
+          "score": 0.5614521841794569
+        },
+        {
+          "candidate": "multi_no_override",
+          "candidate_hash": "8e88a3b260ecd168340cff48f1d07e2ecc191b2a0a2eb79e14a241979be44d4b",
+          "fidelity": "f2",
+          "ordinal": 7,
+          "score": 0.586741440377804
+        },
+        {
+          "candidate": "multi_no_question",
+          "candidate_hash": "3e5f63832672694b24a3c1426375a1484f20c227df76f67c34b2c9b9fdcf7c14",
+          "fidelity": "f2",
+          "ordinal": 8,
+          "score": 0.12376623376623377
+        },
+        {
+          "candidate": "multi_other_always",
+          "candidate_hash": "ba23c80be8b78bae6750dc09fa3a7f2ba56726abec29d79b41432772d995f8ad",
+          "fidelity": "f2",
+          "ordinal": 9,
+          "score": 0.7396094057457694
+        },
+        {
+          "candidate": "multi_uncertainty",
+          "candidate_hash": "961fa77895915af179b2a0b2150ba0192385a4aa4a638ecede23b37ecdee6a8c",
+          "fidelity": "f2",
+          "ordinal": 10,
+          "score": 0.49444805194805197
+        },
+        {
+          "candidate": "raw_history_fixed",
+          "candidate_hash": "4e56264a86a31b79df46b9aa4355fd33fb7b6a7e034fd12418fb0a74ef50a3d6",
+          "fidelity": "f2",
+          "ordinal": 11,
+          "score": 0.6681080283353011
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f2",
+          "ordinal": 12,
+          "score": 0.4934887839433294
+        }
+      ],
+      "outer_fold": 4,
+      "seed": 43,
+      "strategy": "grid",
+      "training_score": 0.7396094057457694,
+      "winner": "multi_other_always"
+    },
+    {
+      "evaluations": [
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f0",
+          "ordinal": 1,
+          "score": 0.5824193548387097
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f0",
+          "ordinal": 2,
+          "score": 0.46259216589861757
+        },
+        {
+          "candidate": "multi_fixed",
+          "candidate_hash": "6f9cbf3bc9c07acf9daf1a78a3fa2add4463128fe1a00dd7e5034852213e9902",
+          "fidelity": "f0",
+          "ordinal": 3,
+          "score": 0.6762903225806451
+        },
+        {
+          "candidate": "multi_missing",
+          "candidate_hash": "e00a53be2c527896e7bd349efc0b4ed89e5e6f3b371a280ade3386b3ffe02ed4",
+          "fidelity": "f0",
+          "ordinal": 4,
+          "score": 0.5824193548387097
+        },
+        {
+          "candidate": "multi_uncertainty",
+          "candidate_hash": "961fa77895915af179b2a0b2150ba0192385a4aa4a638ecede23b37ecdee6a8c",
+          "fidelity": "f0",
+          "ordinal": 5,
+          "score": 0.4609677419354839
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f0",
+          "ordinal": 6,
+          "score": 0.4379147465437788
+        },
+        {
+          "candidate": "multi_fixed",
+          "candidate_hash": "6f9cbf3bc9c07acf9daf1a78a3fa2add4463128fe1a00dd7e5034852213e9902",
+          "fidelity": "f2",
+          "ordinal": 7,
+          "score": 0.68172373081464
+        },
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f2",
+          "ordinal": 8,
+          "score": 0.586741440377804
+        },
+        {
+          "candidate": "multi_missing",
+          "candidate_hash": "e00a53be2c527896e7bd349efc0b4ed89e5e6f3b371a280ade3386b3ffe02ed4",
+          "fidelity": "f2",
+          "ordinal": 9,
+          "score": 0.586741440377804
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f2",
+          "ordinal": 10,
+          "score": 0.4493408107044471
+        },
+        {
+          "candidate": "multi_uncertainty",
+          "candidate_hash": "961fa77895915af179b2a0b2150ba0192385a4aa4a638ecede23b37ecdee6a8c",
+          "fidelity": "f2",
+          "ordinal": 11,
+          "score": 0.49444805194805197
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f2",
+          "ordinal": 12,
+          "score": 0.4934887839433294
+        }
+      ],
+      "outer_fold": 4,
+      "seed": 17,
+      "strategy": "beam",
+      "training_score": 0.68172373081464,
+      "winner": "multi_fixed"
+    },
+    {
+      "evaluations": [
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f0",
+          "ordinal": 1,
+          "score": 0.5824193548387097
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f0",
+          "ordinal": 2,
+          "score": 0.46259216589861757
+        },
+        {
+          "candidate": "multi_fixed",
+          "candidate_hash": "6f9cbf3bc9c07acf9daf1a78a3fa2add4463128fe1a00dd7e5034852213e9902",
+          "fidelity": "f0",
+          "ordinal": 3,
+          "score": 0.6762903225806451
+        },
+        {
+          "candidate": "multi_missing",
+          "candidate_hash": "e00a53be2c527896e7bd349efc0b4ed89e5e6f3b371a280ade3386b3ffe02ed4",
+          "fidelity": "f0",
+          "ordinal": 4,
+          "score": 0.5824193548387097
+        },
+        {
+          "candidate": "multi_uncertainty",
+          "candidate_hash": "961fa77895915af179b2a0b2150ba0192385a4aa4a638ecede23b37ecdee6a8c",
+          "fidelity": "f0",
+          "ordinal": 5,
+          "score": 0.4609677419354839
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f0",
+          "ordinal": 6,
+          "score": 0.4379147465437788
+        },
+        {
+          "candidate": "multi_fixed",
+          "candidate_hash": "6f9cbf3bc9c07acf9daf1a78a3fa2add4463128fe1a00dd7e5034852213e9902",
+          "fidelity": "f2",
+          "ordinal": 7,
+          "score": 0.68172373081464
+        },
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f2",
+          "ordinal": 8,
+          "score": 0.586741440377804
+        },
+        {
+          "candidate": "multi_missing",
+          "candidate_hash": "e00a53be2c527896e7bd349efc0b4ed89e5e6f3b371a280ade3386b3ffe02ed4",
+          "fidelity": "f2",
+          "ordinal": 9,
+          "score": 0.586741440377804
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f2",
+          "ordinal": 10,
+          "score": 0.4493408107044471
+        },
+        {
+          "candidate": "multi_uncertainty",
+          "candidate_hash": "961fa77895915af179b2a0b2150ba0192385a4aa4a638ecede23b37ecdee6a8c",
+          "fidelity": "f2",
+          "ordinal": 11,
+          "score": 0.49444805194805197
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f2",
+          "ordinal": 12,
+          "score": 0.4934887839433294
+        }
+      ],
+      "outer_fold": 4,
+      "seed": 29,
+      "strategy": "beam",
+      "training_score": 0.68172373081464,
+      "winner": "multi_fixed"
+    },
+    {
+      "evaluations": [
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f0",
+          "ordinal": 1,
+          "score": 0.5824193548387097
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f0",
+          "ordinal": 2,
+          "score": 0.46259216589861757
+        },
+        {
+          "candidate": "multi_fixed",
+          "candidate_hash": "6f9cbf3bc9c07acf9daf1a78a3fa2add4463128fe1a00dd7e5034852213e9902",
+          "fidelity": "f0",
+          "ordinal": 3,
+          "score": 0.6762903225806451
+        },
+        {
+          "candidate": "multi_missing",
+          "candidate_hash": "e00a53be2c527896e7bd349efc0b4ed89e5e6f3b371a280ade3386b3ffe02ed4",
+          "fidelity": "f0",
+          "ordinal": 4,
+          "score": 0.5824193548387097
+        },
+        {
+          "candidate": "multi_uncertainty",
+          "candidate_hash": "961fa77895915af179b2a0b2150ba0192385a4aa4a638ecede23b37ecdee6a8c",
+          "fidelity": "f0",
+          "ordinal": 5,
+          "score": 0.4609677419354839
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f0",
+          "ordinal": 6,
+          "score": 0.4379147465437788
+        },
+        {
+          "candidate": "multi_fixed",
+          "candidate_hash": "6f9cbf3bc9c07acf9daf1a78a3fa2add4463128fe1a00dd7e5034852213e9902",
+          "fidelity": "f2",
+          "ordinal": 7,
+          "score": 0.68172373081464
+        },
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f2",
+          "ordinal": 8,
+          "score": 0.586741440377804
+        },
+        {
+          "candidate": "multi_missing",
+          "candidate_hash": "e00a53be2c527896e7bd349efc0b4ed89e5e6f3b371a280ade3386b3ffe02ed4",
+          "fidelity": "f2",
+          "ordinal": 9,
+          "score": 0.586741440377804
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f2",
+          "ordinal": 10,
+          "score": 0.4493408107044471
+        },
+        {
+          "candidate": "multi_uncertainty",
+          "candidate_hash": "961fa77895915af179b2a0b2150ba0192385a4aa4a638ecede23b37ecdee6a8c",
+          "fidelity": "f2",
+          "ordinal": 11,
+          "score": 0.49444805194805197
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f2",
+          "ordinal": 12,
+          "score": 0.4934887839433294
+        }
+      ],
+      "outer_fold": 4,
+      "seed": 43,
+      "strategy": "beam",
+      "training_score": 0.68172373081464,
+      "winner": "multi_fixed"
+    },
+    {
+      "evaluations": [
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f0",
+          "ordinal": 1,
+          "score": 0.5824193548387097
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f0",
+          "ordinal": 2,
+          "score": 0.46259216589861757
+        },
+        {
+          "candidate": "multi_feature_first",
+          "candidate_hash": "42fdc347d9b90153f003df4c1fa50c4570379ae1777ab85fc1011555b78aac11",
+          "fidelity": "f0",
+          "ordinal": 3,
+          "score": 0.5744623655913978
+        },
+        {
+          "candidate": "multi_other_always",
+          "candidate_hash": "ba23c80be8b78bae6750dc09fa3a7f2ba56726abec29d79b41432772d995f8ad",
+          "fidelity": "f0",
+          "ordinal": 4,
+          "score": 0.7351075268817204
+        },
+        {
+          "candidate": "raw_history_fixed",
+          "candidate_hash": "4e56264a86a31b79df46b9aa4355fd33fb7b6a7e034fd12418fb0a74ef50a3d6",
+          "fidelity": "f0",
+          "ordinal": 5,
+          "score": 0.6529032258064517
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f0",
+          "ordinal": 6,
+          "score": 0.4379147465437788
+        },
+        {
+          "candidate": "multi_other_always",
+          "candidate_hash": "ba23c80be8b78bae6750dc09fa3a7f2ba56726abec29d79b41432772d995f8ad",
+          "fidelity": "f2",
+          "ordinal": 7,
+          "score": 0.7396094057457694
+        },
+        {
+          "candidate": "raw_history_fixed",
+          "candidate_hash": "4e56264a86a31b79df46b9aa4355fd33fb7b6a7e034fd12418fb0a74ef50a3d6",
+          "fidelity": "f2",
+          "ordinal": 8,
+          "score": 0.6681080283353011
+        },
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f2",
+          "ordinal": 9,
+          "score": 0.586741440377804
+        },
+        {
+          "candidate": "multi_feature_first",
+          "candidate_hash": "42fdc347d9b90153f003df4c1fa50c4570379ae1777ab85fc1011555b78aac11",
+          "fidelity": "f2",
+          "ordinal": 10,
+          "score": 0.5886462022825659
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f2",
+          "ordinal": 11,
+          "score": 0.4493408107044471
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f2",
+          "ordinal": 12,
+          "score": 0.4934887839433294
+        }
+      ],
+      "outer_fold": 4,
+      "seed": 17,
+      "strategy": "allocated",
+      "training_score": 0.7396094057457694,
+      "winner": "multi_other_always"
+    },
+    {
+      "evaluations": [
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f0",
+          "ordinal": 1,
+          "score": 0.5824193548387097
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f0",
+          "ordinal": 2,
+          "score": 0.46259216589861757
+        },
+        {
+          "candidate": "multi_feature_first",
+          "candidate_hash": "42fdc347d9b90153f003df4c1fa50c4570379ae1777ab85fc1011555b78aac11",
+          "fidelity": "f0",
+          "ordinal": 3,
+          "score": 0.5744623655913978
+        },
+        {
+          "candidate": "multi_other_always",
+          "candidate_hash": "ba23c80be8b78bae6750dc09fa3a7f2ba56726abec29d79b41432772d995f8ad",
+          "fidelity": "f0",
+          "ordinal": 4,
+          "score": 0.7351075268817204
+        },
+        {
+          "candidate": "raw_history_fixed",
+          "candidate_hash": "4e56264a86a31b79df46b9aa4355fd33fb7b6a7e034fd12418fb0a74ef50a3d6",
+          "fidelity": "f0",
+          "ordinal": 5,
+          "score": 0.6529032258064517
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f0",
+          "ordinal": 6,
+          "score": 0.4379147465437788
+        },
+        {
+          "candidate": "multi_other_always",
+          "candidate_hash": "ba23c80be8b78bae6750dc09fa3a7f2ba56726abec29d79b41432772d995f8ad",
+          "fidelity": "f2",
+          "ordinal": 7,
+          "score": 0.7396094057457694
+        },
+        {
+          "candidate": "raw_history_fixed",
+          "candidate_hash": "4e56264a86a31b79df46b9aa4355fd33fb7b6a7e034fd12418fb0a74ef50a3d6",
+          "fidelity": "f2",
+          "ordinal": 8,
+          "score": 0.6681080283353011
+        },
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f2",
+          "ordinal": 9,
+          "score": 0.586741440377804
+        },
+        {
+          "candidate": "multi_feature_first",
+          "candidate_hash": "42fdc347d9b90153f003df4c1fa50c4570379ae1777ab85fc1011555b78aac11",
+          "fidelity": "f2",
+          "ordinal": 10,
+          "score": 0.5886462022825659
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f2",
+          "ordinal": 11,
+          "score": 0.4493408107044471
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f2",
+          "ordinal": 12,
+          "score": 0.4934887839433294
+        }
+      ],
+      "outer_fold": 4,
+      "seed": 29,
+      "strategy": "allocated",
+      "training_score": 0.7396094057457694,
+      "winner": "multi_other_always"
+    },
+    {
+      "evaluations": [
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f0",
+          "ordinal": 1,
+          "score": 0.5824193548387097
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f0",
+          "ordinal": 2,
+          "score": 0.46259216589861757
+        },
+        {
+          "candidate": "multi_feature_first",
+          "candidate_hash": "42fdc347d9b90153f003df4c1fa50c4570379ae1777ab85fc1011555b78aac11",
+          "fidelity": "f0",
+          "ordinal": 3,
+          "score": 0.5744623655913978
+        },
+        {
+          "candidate": "multi_other_always",
+          "candidate_hash": "ba23c80be8b78bae6750dc09fa3a7f2ba56726abec29d79b41432772d995f8ad",
+          "fidelity": "f0",
+          "ordinal": 4,
+          "score": 0.7351075268817204
+        },
+        {
+          "candidate": "raw_history_fixed",
+          "candidate_hash": "4e56264a86a31b79df46b9aa4355fd33fb7b6a7e034fd12418fb0a74ef50a3d6",
+          "fidelity": "f0",
+          "ordinal": 5,
+          "score": 0.6529032258064517
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f0",
+          "ordinal": 6,
+          "score": 0.4379147465437788
+        },
+        {
+          "candidate": "multi_other_always",
+          "candidate_hash": "ba23c80be8b78bae6750dc09fa3a7f2ba56726abec29d79b41432772d995f8ad",
+          "fidelity": "f2",
+          "ordinal": 7,
+          "score": 0.7396094057457694
+        },
+        {
+          "candidate": "raw_history_fixed",
+          "candidate_hash": "4e56264a86a31b79df46b9aa4355fd33fb7b6a7e034fd12418fb0a74ef50a3d6",
+          "fidelity": "f2",
+          "ordinal": 8,
+          "score": 0.6681080283353011
+        },
+        {
+          "candidate": "compressed_missing",
+          "candidate_hash": "03ba12571287bb3b48ab28002c74a7d69572274df7627c3f8cfe117ee64f5801",
+          "fidelity": "f2",
+          "ordinal": 9,
+          "score": 0.586741440377804
+        },
+        {
+          "candidate": "multi_feature_first",
+          "candidate_hash": "42fdc347d9b90153f003df4c1fa50c4570379ae1777ab85fc1011555b78aac11",
+          "fidelity": "f2",
+          "ordinal": 10,
+          "score": 0.5886462022825659
+        },
+        {
+          "candidate": "current_fixed",
+          "candidate_hash": "1283c2d4d92f42de0040ce47382780408e4af2a1351916fa59afcbf5f035b13f",
+          "fidelity": "f2",
+          "ordinal": 11,
+          "score": 0.4493408107044471
+        },
+        {
+          "candidate": "single_missing",
+          "candidate_hash": "80ae89be2deec2e7ece473970254f68607f3dc3a15fb5e0d7dcff43efbee6015",
+          "fidelity": "f2",
+          "ordinal": 12,
+          "score": 0.4934887839433294
+        }
+      ],
+      "outer_fold": 4,
+      "seed": 43,
+      "strategy": "allocated",
+      "training_score": 0.7396094057457694,
+      "winner": "multi_other_always"
+    }
+  ],
+  "seeds": [
+    17,
+    29,
+    43
+  ],
+  "split": "nested_v1",
+  "summary": {
+    "allocated": {
+      "mean_outer_reward": 0.740364,
+      "outer_fold_rewards": [
+        0.735108,
+        0.769839,
+        0.740845,
+        0.710829,
+        0.745201
+      ]
+    },
+    "beam": {
+      "mean_outer_reward": 0.67951,
+      "outer_fold_rewards": [
+        0.67629,
+        0.700645,
+        0.676512,
+        0.672697,
+        0.671408
+      ]
+    },
+    "grid": {
+      "mean_outer_reward": 0.740364,
+      "outer_fold_rewards": [
+        0.735108,
+        0.769839,
+        0.740845,
+        0.710829,
+        0.745201
+      ]
+    },
+    "random": {
+      "mean_outer_reward": 0.740364,
+      "outer_fold_rewards": [
+        0.735108,
+        0.769839,
+        0.740845,
+        0.710829,
+        0.745201
+      ]
+    }
+  }
+}

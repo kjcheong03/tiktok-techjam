@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "campaign": "standard_adaptive_v1",
+  "base_git_commit": "55b3d5585581b18f4ad6473fa5093f70c98c41b3",
+  "max_candidates": 500,
+  "max_minutes": 120,
+  "seeds": [17, 29, 43],
+  "holdout_access": false,
+  "fingerprints": {
+    "experimental_agent": "181b2b76890bf9be0f4406805ef8a9cef77f243a3a4cc72d3c8714018fa16928",
+    "baseline_retrieval": "bcae272b5f3f9b4996b7fa32bb67c42f2ab4806455761ea3e3d58957f440b583",
+    "baseline_state": "7e339fc1db76789fcb15a9f28353d0d100abf96608da48b298d31528bb71a6e2",
+    "official_evaluator": "79a5ea06f9a1b8c5036f30efa85dc1f36b8f6b06eb8feb8f545dfa767bc45564",
+    "catalog": "da979b05a68af864cb0dcf9ee6a81c010c7e66a57978ad286c7a2e005fc69a67",
+    "public_set": "857259f7a438e6188ac63e18995b6ff4489bfcfc4a716a798b9a2aa0ee8f7579",
+    "adaptive_split": "3f3df7cb2402f33f91437df36f5163d0aa4e3e3a868fb6aaf1f10858822d4967",
+    "nested_split": "1c4fed9f5bb228191b0ee8e121cb9694a00f52b78f3f0fade2a041c20dd05cee"
+  }
+}
