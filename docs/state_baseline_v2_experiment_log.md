@@ -167,5 +167,28 @@ improves literal-order TechnicalScore by `0.021431`, and beats the raw-history/n
 control under both policies. The state preservation fixes and coverage-adaptive query are
 retained; the naive term-removal query remains rejected. Because the coverage threshold
 was selected after diagnosing the same public set, these numbers establish the retained
-public baseline but do not by themselves prove that the threshold generalizes. Freeze it
-before evaluating on any unseen set.
+public baseline. The threshold is frozen; further public-set work should use paired
+ablations and resampling rather than choosing another cutoff from the aggregate result.
+
+## Retained recommendation history
+
+The first history candidate filtered every product previously shown in the session. It
+improved Buying and Browsing substantially but failed overall because Intent Override
+sessions do not count a target shown before the correction. All 25 literal-order and all
+26 fixed-`other` hit-to-miss conversions were Intent Override sessions.
+
+The retained design scopes history to an intent epoch. It filters and fills from unseen
+candidates while intent is stable, then clears history when state accepts an explicit
+correction. Ambiguous corrections that change no state do not clear it.
+
+| Variant | Policy | Hit Rate@10 | MRR | MTTC | Efficiency | TechnicalScore | Delta |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Coverage-adaptive state | literal fixed turn order | 0.820 | 0.549690 | 4.705 | 0.6295 | 0.700807 | — |
+| + correction-scoped history | literal fixed turn order | **0.955** | **0.587571** | **3.625** | **0.7375** | **0.801271** | **+0.100464** |
+| Coverage-adaptive state | fixed `other` | 0.870 | 0.559954 | 3.480 | 0.7520 | 0.753386 | — |
+| + correction-scoped history | fixed `other` | **0.990** | **0.610714** | **2.715** | **0.8285** | **0.843914** | **+0.090528** |
+
+Under literal order, history produced 27 miss-to-hit and zero hit-to-miss conversions,
+with 27 earlier and zero later hits. Under fixed `other`, it produced 24 miss-to-hit and
+zero hit-to-miss conversions, with eight earlier and zero later hits. It passes the
+component gate under both policies and is retained.

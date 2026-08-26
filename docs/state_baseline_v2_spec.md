@@ -32,6 +32,12 @@ control under literal order, and `0.753386` versus `0.750401` under fixed `other
 Question selection remains fixed in both comparisons; this is a query-state contribution,
 not an adaptive question policy.
 
+Recommendation-history filtering is also retained. The agent removes products already
+returned during the current intent epoch and fills the response from lower unseen BM25
+candidates. An accepted correction starts a new epoch so products considered under the
+old intent may be shown again. This raises TechnicalScore from `0.700807` to `0.801271`
+under literal order and from `0.753386` to `0.843914` under fixed `other`.
+
 ## Current Baseline
 
 The current stateful baseline stores:
