@@ -1,7 +1,10 @@
 from __future__ import annotations
 
-from collections.abc import Sequence
+from collections.abc import Iterator, Sequence
+from contextlib import contextmanager
+from contextvars import ContextVar
 from dataclasses import dataclass
+from threading import local
 
 import numpy as np
 from numpy.typing import NDArray
@@ -211,30 +214,45 @@ class RuntimeConstraintReranker:
         features: ConstraintGBDTFeatureStore,
         model: LambdaMARTModel,
     ) -> None:
-        self.sparse = SparseIndex(catalog_path)
+        self.catalog_path = catalog_path
+        self._sparse_local = local()
+        self._sparse_local.index = SparseIndex(catalog_path)
         self.sparse_weights = sparse_weights
         self.reranker = ConstraintAwareLambdaMARTReranker(features, model)
-        self.state: ConversationState | None = None
-        self.turn = 0
+        self._invocation: ContextVar[tuple[ConversationState, int] | None] = ContextVar(
+            "constraint_reranker_invocation", default=None
+        )
 
-    def bind(self, state: ConversationState, turn: int) -> None:
-        self.state = state
-        self.turn = turn
+    @contextmanager
+    def invocation(self, state: ConversationState, turn: int) -> Iterator[None]:
+        token = self._invocation.set((state, turn))
+        try:
+            yield
+        finally:
+            self._invocation.reset(token)
 
     def rerank(
         self, query: str, ranking: list[str], *, rerank_k: int = 50
     ) -> list[str]:
-        if self.state is None or self.turn <= 0:
+        invocation = self._invocation.get()
+        if invocation is None:
             raise RuntimeError("runtime constraint reranker was not bound")
-        scored = self.sparse.search(query, 200, self.sparse_weights)
+        state, turn = invocation
+        if turn <= 0:
+            raise ValueError("runtime turn must be positive")
+        sparse = getattr(self._sparse_local, "index", None)
+        if sparse is None:
+            sparse = SparseIndex(self.catalog_path)
+            self._sparse_local.index = sparse
+        scored = sparse.search(query, 200, self.sparse_weights)
         retrieval_scores = [
             float(item.raw_score) for item in scored.items if item.raw_score is not None
         ]
         return self.reranker.rerank_with_context(
             query,
             ranking,
-            state=self.state,
-            turn=self.turn,
+            state=state,
+            turn=turn,
             retrieval_scores=retrieval_scores,
             rerank_k=rerank_k,
         )
@@ -260,5 +278,5 @@ class ConstraintAgentAdapter:
             raise TypeError("constraint agent requires ConversationState")
         # ExperimentalAgent mutates this same object before invoking its normal
         # learned-reranker hook, so the adapter sees the current observation.
-        self.reranker.bind(state, turn)
-        return self.wrapped.respond(session_id, user_message, turn, top_k)
+        with self.reranker.invocation(state, turn):
+            return self.wrapped.respond(session_id, user_message, turn, top_k)

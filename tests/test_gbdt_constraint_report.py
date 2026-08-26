@@ -59,18 +59,17 @@ class GBDTConstraintReportTests(unittest.TestCase):
             -0.005,
         )
 
-    def test_recorded_hashes_match(self) -> None:
+    def test_superseded_artifact_provenance_remains_immutable(self) -> None:
         def digest(path: Path) -> str:
             return hashlib.sha256(path.read_bytes()).hexdigest()
 
-        for relative, expected in self.report["code_hashes"].items():
-            self.assertEqual(digest(ROOT / relative), expected)
         self.assertEqual(
             digest(ROOT / self.report["manifest_path"]),
             self.report["manifest_sha256"],
         )
         refit = self.report["all_development_refit"]
         self.assertEqual(digest(ROOT / refit["model_path"]), refit["model_sha256"])
+        self.assertTrue(self.report["runtime"]["contention_affected"])
 
 
 if __name__ == "__main__":

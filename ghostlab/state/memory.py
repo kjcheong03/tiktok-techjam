@@ -31,6 +31,13 @@ ALT_CATEGORY_RE = re.compile(
     r"\b(?:need|want|looking for)\s+(?:a |an |some )?(.+?)\s+(?:instead|now)(?:[.,]|$)",
     re.IGNORECASE,
 )
+GLOBAL_RESET_RE = re.compile(
+    r"\b(?:start over|ignore (?:everything|all (?:my )?previous requirements?))\b",
+    re.IGNORECASE,
+)
+EARLIER_PREFERENCE_RESET_RE = re.compile(
+    r"\bignore my earlier preference\b", re.IGNORECASE
+)
 
 
 @dataclass
@@ -70,6 +77,28 @@ class ConversationState:
         category = CATEGORY_RE.search(message) or ALT_CATEGORY_RE.search(message)
         category_value = _clean(category.group(1)) if category else None
         current_category = self.active_category
+
+        constraint_match = CONSTRAINT_RE.search(message)
+        constraints: list[str] = []
+        if constraint_match:
+            constraints = [
+                _clean(value) for value in constraint_match.group(1).split(";")
+            ]
+        elif category and "." in message and "still exploring" not in message.lower():
+            remainder = _clean(message.split(".", 1)[1])
+            if remainder and "key requirement" not in remainder.lower():
+                constraints = [remainder]
+
+        if self.override_invalidation and GLOBAL_RESET_RE.search(message):
+            self._invalidate_all("global_override")
+            current_category = None
+        elif (
+            self.override_invalidation
+            and constraints
+            and EARLIER_PREFERENCE_RESET_RE.search(message)
+        ):
+            self._invalidate_non_category("earlier_preference_override")
+
         if (
             category_value
             and category_value.casefold() != (current_category or "").casefold()
@@ -88,17 +117,6 @@ class ConversationState:
                     self._add(
                         attribute, value, turn, message, "explicit", polarity="negative"
                     )
-
-        constraint_match = CONSTRAINT_RE.search(message)
-        constraints: list[str] = []
-        if constraint_match:
-            constraints = [
-                _clean(value) for value in constraint_match.group(1).split(";")
-            ]
-        elif category and "." in message and "still exploring" not in message.lower():
-            remainder = _clean(message.split(".", 1)[1])
-            if remainder and "key requirement" not in remainder.lower():
-                constraints = [remainder]
 
         explicit_override = bool(OVERRIDE_RE.search(message))
         for value in constraints:
@@ -188,6 +206,18 @@ class ConversationState:
             ):
                 item.active = False
                 item.invalidated_reason = "category_override"
+
+    def _invalidate_all(self, reason: str) -> None:
+        for item in self.values:
+            if item.active:
+                item.active = False
+                item.invalidated_reason = reason
+
+    def _invalidate_non_category(self, reason: str) -> None:
+        for item in self.values:
+            if item.active and item.attribute != "category":
+                item.active = False
+                item.invalidated_reason = reason
 
     def active_values(self, polarity: Polarity = "positive") -> list[MemoryValue]:
         return [

@@ -6,6 +6,7 @@ import statistics
 import sys
 import time
 from pathlib import Path
+from typing import cast
 
 from evaluator.local_evaluator import catalog_index, evaluate, load_jsonl
 from ghostlab.retrieval.constraint_gbdt import (
@@ -18,6 +19,7 @@ from ghostlab.retrieval.quality import CatalogQualityReranker
 from ghostlab.runtime.experimental import ExperimentalAgent
 from scripts.measure_gbdt_runtime import TimedAgent, percentile
 from scripts.run_gbdt_reranker import FIELD_WEIGHTS, QUESTION_ORDER
+from starter.agent import Agent
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -59,7 +61,7 @@ def main() -> None:
     wrapped = ConstraintAgentAdapter(base_agent, contextual)
     cold_start = time.perf_counter() - started
     memory_after_init = rss_mb()
-    timed = TimedAgent(wrapped)
+    timed = TimedAgent(cast(ExperimentalAgent, wrapped))
     nested = json.loads((ROOT / "configs/splits/nested_v1.json").read_text())
     adaptive = {str(value) for value in nested["adaptive_sample_ids"]}
     samples = [
@@ -68,7 +70,7 @@ def main() -> None:
         if str(sample["sample_id"]) in adaptive
     ]
     catalog_ids, categories, products = catalog_index(catalog_path)
-    result = evaluate(timed, samples, catalog_ids, categories, products)
+    result = evaluate(cast(Agent, timed), samples, catalog_ids, categories, products)
     latencies = timed.latencies_ms
     output = {
         "measurement_scope": "all-development refit runtime",

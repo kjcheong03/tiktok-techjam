@@ -1,5 +1,10 @@
 # Constraint-aware GBDT interaction report
 
+> **Superseded for promotion decisions.** Independent audit found stale active
+> preferences after scoped intent overrides, duplicate training question bookkeeping,
+> and unsafe shared runtime binding. This original result is preserved for provenance;
+> use `gbdt_constraint_interaction_amendment_1.md` and the corrected v2 report.
+
 Date: 2026-08-26
 
 Audited parent: `cbfd7d5dd595c5637608ba28f46f57777c7e153e`

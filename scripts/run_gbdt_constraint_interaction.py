@@ -7,6 +7,7 @@ import time
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
+from typing import cast
 
 import numpy as np
 from numpy.typing import NDArray
@@ -39,11 +40,15 @@ from scripts.run_gbdt_reranker import (
     stability,
     summarized_metrics,
 )
+from starter.agent import Agent
 
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST_PATH = ROOT / "configs/experiments/gbdt_constraint_interaction_v1.json"
-REPORT_PATH = ROOT / "artifacts/reports/gbdt_constraint_interaction_v1.json"
-MODEL_PATH = ROOT / "artifacts/models/gbdt_constraint_interaction_v1.json"
+AMENDMENT_PATH = (
+    ROOT / "configs/experiments/gbdt_constraint_interaction_v1_amendment_1.json"
+)
+REPORT_PATH = ROOT / "artifacts/reports/gbdt_constraint_interaction_v2.json"
+MODEL_PATH = ROOT / "artifacts/models/gbdt_constraint_interaction_v2.json"
 
 
 @dataclass(frozen=True)
@@ -55,6 +60,21 @@ class ContextRankingGroup:
     labels: tuple[int, ...]
     base_matrix: NDArray[np.float64]
     candidate_matrix: NDArray[np.float64]
+
+
+def record_training_question(state: ConversationState, question: str | None) -> None:
+    """Mirror ExperimentalAgent's consecutive-question deduplication exactly."""
+    if question is not None and (
+        not state.asked_attributes or state.asked_attributes[-1] != question
+    ):
+        state.asked_attributes.append(question)
+    state.last_asked_attribute = question
+
+
+def numeric(value: object) -> float:
+    if not isinstance(value, (int, float)):
+        raise TypeError(f"expected numeric metric, got {type(value).__name__}")
+    return float(value)
 
 
 def collect_groups(
@@ -84,9 +104,7 @@ def collect_groups(
             state.observe(observation.user_message, observation.turn)
             turn = observation.turn
             question = QUESTION_ORDER[turn - 1] if turn <= len(QUESTION_ORDER) else None
-            if question is not None:
-                state.asked_attributes.append(question)
-            state.last_asked_attribute = question
+            record_training_question(state, question)
             query = ". ".join(state.messages)
             scored = sparse.search(query, 200, FIELD_WEIGHTS)
             raw_scores = [
@@ -175,7 +193,7 @@ def train_model(
     return fit_lambdamart(
         *ranking_dataset(groups, training_ids, candidate=candidate),
         candidate_id=(
-            "metadata_depth3_plus_runtime_constraints"
+            "metadata_depth3_plus_runtime_constraints_v2_scoped_override"
             if candidate
             else "shallow_metadata_depth3_matched_control"
         ),
@@ -238,8 +256,14 @@ def scenario_rewards(sessions: list[dict]) -> dict[str, float]:
 def main() -> None:
     started = time.perf_counter()
     manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
+    amendment = json.loads(AMENDMENT_PATH.read_text(encoding="utf-8"))
     if manifest["holdout_accessed"] is not False:
         raise RuntimeError("experiment manifest does not preserve holdout firewall")
+    if (
+        amendment["holdout_accessed"] is not False
+        or amendment["corrected_outcomes_observed"] is not False
+    ):
+        raise RuntimeError("correctness amendment does not preserve the frozen retest")
     config = manifest["candidate"]
     nested_path = ROOT / "configs/splits/nested_v1.json"
     nested = json.loads(nested_path.read_text(encoding="utf-8"))
@@ -286,14 +310,20 @@ def main() -> None:
         for name, count in candidate_model.split_importance().items():
             importance[name] += count
         control_result = evaluate(
-            build_agent(quality, features, control_model, candidate=False),
+            cast(
+                Agent,
+                build_agent(quality, features, control_model, candidate=False),
+            ),
             [samples[sample_id] for sample_id in sorted(outer_ids)],
             catalog_ids,
             categories,
             products,
         )
         candidate_result = evaluate(
-            build_agent(quality, features, candidate_model, candidate=True),
+            cast(
+                Agent,
+                build_agent(quality, features, candidate_model, candidate=True),
+            ),
             [samples[sample_id] for sample_id in sorted(outer_ids)],
             catalog_ids,
             categories,
@@ -330,10 +360,10 @@ def main() -> None:
 
     control_metrics = summarized_metrics(control_sessions)
     candidate_metrics = summarized_metrics(candidate_sessions)
-    required_control = float(manifest["controls"]["required_control_score"])
+    required_control = numeric(manifest["controls"]["required_control_score"])
     control_reproduced = abs(
-        float(control_metrics["recommended_technical_score"]) - required_control
-    ) <= float(manifest["promotion_gates"]["exact_control_reproduction_tolerance"])
+        numeric(control_metrics["recommended_technical_score"]) - required_control
+    ) <= numeric(manifest["promotion_gates"]["exact_control_reproduction_tolerance"])
     paired = paired_evidence(candidate_sessions, control_sessions)
     control_scenarios = scenario_rewards(control_sessions)
     candidate_scenarios = scenario_rewards(candidate_sessions)
@@ -343,8 +373,16 @@ def main() -> None:
     }
     fold_deltas = [
         round(
-            float(candidate["outer_metrics"]["recommended_technical_score"])
-            - float(control["outer_metrics"]["recommended_technical_score"]),
+            numeric(
+                cast(dict[str, object], candidate["outer_metrics"])[
+                    "recommended_technical_score"
+                ]
+            )
+            - numeric(
+                cast(dict[str, object], control["outer_metrics"])[
+                    "recommended_technical_score"
+                ]
+            ),
             6,
         )
         for candidate, control in zip(candidate_folds, control_folds, strict=True)
@@ -378,9 +416,9 @@ def main() -> None:
         text=True,
     )
     runtime = json.loads(runtime_process.stdout.strip().splitlines()[-1])
-    gates = manifest["promotion_gates"]
-    score_delta = float(paired["mean_paired_session_reward_delta"])
-    hit_delta = float(candidate_metrics["hit_rate_at_10"]) - float(
+    gates = amendment["promotion_gates"]
+    score_delta = numeric(paired["mean_paired_session_reward_delta"])
+    hit_delta = numeric(candidate_metrics["hit_rate_at_10"]) - numeric(
         control_metrics["hit_rate_at_10"]
     )
     gate_results = {
@@ -407,10 +445,14 @@ def main() -> None:
     decision = "PROMOTE" if all(gate_results.values()) else "PARK_INTERACTION"
     report = {
         "schema_version": 1,
-        "experiment_id": manifest["experiment_id"],
+        "experiment_id": amendment["amendment_id"],
         "parent_commit": manifest["parent_commit"],
         "manifest_path": str(MANIFEST_PATH.relative_to(ROOT)),
         "manifest_sha256": sha256_file(MANIFEST_PATH),
+        "amendment_path": str(AMENDMENT_PATH.relative_to(ROOT)),
+        "amendment_sha256": sha256_file(AMENDMENT_PATH),
+        "supersedes_report": amendment["superseded_evidence"]["report"],
+        "superseded_reason": amendment["superseded_evidence"]["status"],
         "split": "nested_v1",
         "split_sha256": sha256_file(nested_path),
         "data_sha256": sha256_file(ROOT / "data/public_set.jsonl"),

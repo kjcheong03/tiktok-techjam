@@ -2,14 +2,25 @@ from __future__ import annotations
 
 import json
 import tempfile
+import threading
 import unittest
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 from ghostlab.retrieval.constraint_gbdt import (
+    ConstraintAgentAdapter,
     ConstraintContext,
     ConstraintGBDTFeatureStore,
+    RuntimeConstraintReranker,
 )
+from ghostlab.retrieval.gbdt import LambdaMARTModel
+from ghostlab.runtime.experimental import ExperimentalAgent
 from ghostlab.state.memory import ConversationState
+from scripts.run_gbdt_constraint_interaction import (
+    FIELD_WEIGHTS,
+    QUESTION_ORDER,
+    record_training_question,
+)
 
 
 class ConstraintGBDTTests(unittest.TestCase):
@@ -95,6 +106,113 @@ class ConstraintGBDTTests(unittest.TestCase):
             )
             with self.assertRaisesRegex(ValueError, "unknown constraint GBDT"):
                 store.contextual_matrix("coat", ["wool"], context, ("target",))
+
+    def test_training_question_bookkeeping_matches_runtime_exactly(self) -> None:
+        messages = (
+            "I'm looking for a coat, but I'm still exploring.",
+            "I don't have a preference for other; please use your judgment.",
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            path = self._catalog(directory)
+            agent = ExperimentalAgent(
+                path,
+                state_variant="raw_history",
+                question_variant="sequence",
+                question_order=QUESTION_ORDER,
+            )
+            agent.reset("runtime", {})
+            runtime = agent.sessions["runtime"]
+            self.assertIsInstance(runtime, ConversationState)
+            training = ConversationState("training", {}, multi_value=False)
+            for turn, message in enumerate(messages, 1):
+                assert isinstance(runtime, ConversationState)
+                agent._query_and_question(runtime, message, turn)
+                training.observe(message, turn)
+                question = QUESTION_ORDER[turn - 1]
+                record_training_question(training, question)
+            assert isinstance(runtime, ConversationState)
+            runtime_context = ConstraintContext.from_runtime(
+                runtime, turn=2, retrieval_scores=[4.0, 2.0]
+            )
+            training_context = ConstraintContext.from_runtime(
+                training, turn=2, retrieval_scores=[4.0, 2.0]
+            )
+        self.assertEqual(runtime_context, training_context)
+        self.assertEqual(runtime_context.asked_count, 1)
+        self.assertEqual(runtime_context.no_preference_count, 1)
+
+    def test_runtime_context_is_isolated_across_concurrent_sessions(self) -> None:
+        barrier = threading.Barrier(2)
+        calls: list[tuple[str, int]] = []
+        lock = threading.Lock()
+
+        class CapturingReranker:
+            def rerank_with_context(
+                self,
+                query: str,
+                ranking: list[str],
+                *,
+                state: ConversationState,
+                turn: int,
+                retrieval_scores: list[float],
+                rerank_k: int = 50,
+            ) -> list[str]:
+                del query, retrieval_scores, rerank_k
+                barrier.wait(timeout=5)
+                with lock:
+                    calls.append((state.session_id, turn))
+                return ranking
+
+        class FakeAgent:
+            def __init__(
+                self,
+                runtime: RuntimeConstraintReranker,
+                states: dict[str, ConversationState],
+            ) -> None:
+                self.runtime = runtime
+                self.sessions = states
+
+            def reset(self, session_id: str, user_profile: dict) -> None:
+                self.sessions[session_id] = ConversationState(session_id, user_profile)
+
+            def respond(
+                self, session_id: str, user_message: str, turn: int, top_k: int
+            ) -> dict:
+                del session_id, user_message, turn, top_k
+                ranking = self.runtime.rerank("coat", ["wool", "cotton"])
+                return {"message": "ok", "recommendations": ranking}
+
+        with tempfile.TemporaryDirectory() as directory:
+            path = self._catalog(directory)
+            store = ConstraintGBDTFeatureStore(path)
+            model = LambdaMARTModel(
+                candidate_id="context-test",
+                feature_names=("original_rank",),
+                trees=(),
+                learning_rate=0.03,
+                best_iteration=0,
+                training_groups=0,
+                training_rows=0,
+                seed=20260826,
+            )
+            runtime = RuntimeConstraintReranker(str(path), FIELD_WEIGHTS, store, model)
+            runtime.reranker = CapturingReranker()  # type: ignore[assignment]
+            states = {
+                "first": ConversationState("first", {}),
+                "second": ConversationState("second", {}),
+            }
+            adapter = ConstraintAgentAdapter(
+                FakeAgent(runtime, states),  # type: ignore[arg-type]
+                runtime,
+            )
+            with ThreadPoolExecutor(max_workers=2) as executor:
+                first = executor.submit(adapter.respond, "first", "a", 1, 10)
+                second = executor.submit(adapter.respond, "second", "b", 7, 10)
+                first.result(timeout=10)
+                second.result(timeout=10)
+            with self.assertRaisesRegex(RuntimeError, "was not bound"):
+                runtime.rerank("coat", ["wool", "cotton"])
+        self.assertCountEqual(calls, [("first", 1), ("second", 7)])
 
 
 if __name__ == "__main__":
