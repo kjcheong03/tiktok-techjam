@@ -53,15 +53,15 @@ class PairedComparisonTest(unittest.TestCase):
                 "v1_keyword_state",
                 "v2_state_only",
                 "raw_history_no_state",
-                "v2_state_prioritized_raw_history",
+                "v2_coverage_adaptive_query",
             ],
         )
         self.assertIn(
-            ("raw_history_no_state", "v2_state_prioritized_raw_history"),
+            ("raw_history_no_state", "v2_coverage_adaptive_query"),
             DEFAULT_COMPARISON_EDGES,
         )
         self.assertIn(
-            ("v2_state_only", "v2_state_prioritized_raw_history"),
+            ("v2_state_only", "v2_coverage_adaptive_query"),
             DEFAULT_COMPARISON_EDGES,
         )
 

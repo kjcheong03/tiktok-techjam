@@ -3,6 +3,9 @@ from __future__ import annotations
 from .state_v2 import StructuredSessionState
 
 
+_LOW_COVERAGE_MAX_ACTIVE_CONSTRAINTS = 3
+
+
 class RawHistorySessionState(StructuredSessionState):
     """Structured session state whose query is the complete raw history."""
 
@@ -10,15 +13,19 @@ class RawHistorySessionState(StructuredSessionState):
         return ". ".join(self.messages)
 
 
-class StatePrioritizedRawHistorySessionState(StructuredSessionState):
-    """Prioritize active state evidence while retaining the exact raw history."""
+class CoverageAdaptiveSessionState(StructuredSessionState):
+    """Use raw history for low-coverage corrections and state otherwise."""
 
     def build_query(self) -> str:
         state_query = super().build_query()
         raw_history = ". ".join(self.messages)
-        if state_query and raw_history:
-            return f"{state_query}. {raw_history}"
+        has_superseded = any(not constraint.active for constraint in self.constraints)
+        if (
+            has_superseded
+            and len(self.active_constraints) <= _LOW_COVERAGE_MAX_ACTIVE_CONSTRAINTS
+        ):
+            return raw_history
         return state_query or raw_history
 
 
-__all__ = ["RawHistorySessionState", "StatePrioritizedRawHistorySessionState"]
+__all__ = ["RawHistorySessionState", "CoverageAdaptiveSessionState"]

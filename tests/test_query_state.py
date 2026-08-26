@@ -4,8 +4,8 @@ import unittest
 
 from baseline.constraints import StructuredConstraint
 from baseline.query_state import (
+    CoverageAdaptiveSessionState,
     RawHistorySessionState,
-    StatePrioritizedRawHistorySessionState,
 )
 
 
@@ -64,27 +64,18 @@ class RawHistorySessionStateTest(unittest.TestCase):
         self.assertEqual(state.build_query(), "")
 
 
-class StatePrioritizedRawHistorySessionStateTest(unittest.TestCase):
-    def test_active_state_prefix_and_exact_raw_suffix(self) -> None:
-        state = StatePrioritizedRawHistorySessionState("session", {})
-        messages = ["I need shoes.", "Something durable, please."]
-        for turn, message in enumerate(messages, 1):
-            state.observe(message, turn, parsed_constraints=[])
-        state.apply_constraints(
-            [
-                evidence("category", ["shoes"], 1, messages[0]),
-                evidence("material", ["leather"], 2, "leather"),
-            ]
+class CoverageAdaptiveSessionStateTest(unittest.TestCase):
+    def test_normal_multi_value_state_uses_clean_state_only_query(self) -> None:
+        state = CoverageAdaptiveSessionState("session", {})
+        state.observe(
+            "I'm looking for shirts. A key requirement is: black; navy.",
+            1,
         )
 
-        raw_history = ". ".join(messages)
-        self.assertEqual(
-            state.build_query(),
-            f"shoes. leather. {raw_history}",
-        )
+        self.assertEqual(state.build_query(), "shirts. black. navy")
 
-    def test_correction_prioritizes_replacement_but_keeps_old_raw_value(self) -> None:
-        state = StatePrioritizedRawHistorySessionState("session", {})
+    def test_low_coverage_correction_returns_exact_raw_history(self) -> None:
+        state = CoverageAdaptiveSessionState("session", {})
         messages = [
             "I'm looking for shoes. black.",
             "Actually, ignore my earlier preference. What I need is: navy.",
@@ -92,32 +83,47 @@ class StatePrioritizedRawHistorySessionStateTest(unittest.TestCase):
         for turn, message in enumerate(messages, 1):
             state.observe(message, turn)
 
-        raw_history = ". ".join(messages)
+        self.assertEqual(state.build_query(), ". ".join(messages))
+
+    def test_correction_with_four_active_constraints_stays_state_only(self) -> None:
+        state = CoverageAdaptiveSessionState("session", {})
+        state.apply_constraints(
+            [
+                evidence("category", ["shoes"], 1, "shoes"),
+                evidence("material", ["leather"], 1, "leather"),
+                evidence("color", ["black"], 1, "black"),
+                evidence("style", ["casual"], 1, "casual"),
+            ]
+        )
+        state.observe(
+            "Actually, navy.",
+            2,
+            parsed_constraints=[evidence("color", ["navy"], 2, "Actually, navy.")],
+        )
+
         self.assertEqual(
             state.build_query(),
-            f"shoes. navy. {raw_history}",
+            "shoes. leather. casual. navy",
         )
 
-    def test_no_preference_preserves_query_evidence_and_raw_transcript(self) -> None:
-        state = StatePrioritizedRawHistorySessionState("session", {})
-        state.apply_constraints(
-            [evidence("material", ["leather"], 1, "I need leather.")]
+    def test_ambiguous_correction_with_no_superseded_evidence_stays_state_only(self) -> None:
+        state = CoverageAdaptiveSessionState("session", {})
+        state.observe("I'm looking for shoes. A key requirement is: leather.", 1)
+        state.observe(
+            "Actually, ignore my earlier preference. What I need is: something.",
+            2,
         )
-        no_preference = "I don't have a preference for material; please use your judgment."
-        state.observe(no_preference, 2)
 
-        self.assertIn("leather", state.build_query())
-        self.assertIn(no_preference, state.build_query())
-        self.assertEqual(state.choose_question(), "color")
+        self.assertEqual(state.build_query(), "shoes. leather")
 
     def test_empty_active_state_falls_back_to_raw_history(self) -> None:
-        state = StatePrioritizedRawHistorySessionState("session", {})
+        state = CoverageAdaptiveSessionState("session", {})
         state.observe("I need trail shoes.", 1, parsed_constraints=[])
 
         self.assertEqual(state.build_query(), "I need trail shoes.")
 
     def test_reset_clears_state_and_raw_history(self) -> None:
-        state = StatePrioritizedRawHistorySessionState("session", {})
+        state = CoverageAdaptiveSessionState("session", {})
         state.observe("I need shoes.", 1, parsed_constraints=[])
         state.apply_constraints([evidence("material", ["leather"], 1, "leather")])
 
