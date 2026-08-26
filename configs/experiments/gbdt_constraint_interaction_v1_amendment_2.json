@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "amendment_id": "gbdt_constraint_interaction_v1_amendment_2_override_guard",
+  "experiment_id": "gbdt_constraint_interaction_v1",
+  "parent_result_commit": "238f023",
+  "created_before_guarded_outcomes": true,
+  "guarded_outcomes_observed": false,
+  "holdout_accessed": false,
+  "reason": "Corrected v2 preserved non-override gains but regressed the observable intent-override scenario, so test exactly one mechanism-specific fallback without changing either ranker.",
+  "preserved_evidence": {
+    "v1": "SUPERSEDED_SEMANTIC_DEFECT",
+    "v2": "PARK_INTERACTION",
+    "v2_report": "artifacts/reports/gbdt_constraint_interaction_v2.json"
+  },
+  "single_candidate": {
+    "candidate_id": "constraint_v2_with_observable_override_fallback",
+    "normal_route": "corrected constraint-v2 reranker",
+    "guarded_route": "matched metadata depth-3 GBDT",
+    "guard": "Route to the matched base model when ConversationState contains an inactive value whose invalidated_reason is global_override, earlier_preference_override, category_override, or override_replacement. Do not use scenario, target, profile, future, or hidden fields.",
+    "guard_persistence": "Once an observable override invalidation exists in current session state, use the base route for that and subsequent turns.",
+    "thresholds": [],
+    "new_features": [],
+    "new_fitting": false,
+    "new_hyperparameters": false
+  },
+  "frozen_evaluation": {
+    "split": "nested_v1",
+    "outer_fold_rounds": [100, 4, 56, 98, 34],
+    "all_development_rounds": 56,
+    "max_depth": 3,
+    "num_leaves": 7,
+    "learning_rate": 0.03,
+    "seed": 20260826,
+    "rerank_k": 50,
+    "controls": [
+      "matched metadata GBDT",
+      "corrected unguarded constraint v2"
+    ],
+    "model_reuse": "Within every fold, fit the base and corrected constraint models once using the frozen procedure, then evaluate unguarded and guarded routes with those same model objects.",
+    "required_reports": [
+      "incremental guarded-minus-unguarded attribution",
+      "Hit@10, MRR, MTTC, and technical score",
+      "fold and scenario deltas",
+      "paired bootstrap interval and randomization p-value",
+      "exact routed turn/session counts and reasons",
+      "determinism, failures, and runtime"
+    ]
+  },
+  "promotion_gates": {
+    "minimum_oof_score_delta_vs_base": 0.005,
+    "minimum_nonnegative_outer_folds_vs_base": 4,
+    "minimum_hit_rate_delta_vs_base": -0.005,
+    "minimum_each_scenario_score_delta_vs_base": -0.005,
+    "minimum_incremental_intent_override_delta_vs_unguarded": 0.0,
+    "required_failure_count": 0,
+    "cold_start_seconds_max": 30.0,
+    "warm_turn_p95_ms_max": 500.0,
+    "peak_process_memory_mb_max": 4096.0,
+    "model_asset_mb_max": 500.0,
+    "exact_control_reproduction_tolerance": 0.000001,
+    "required_determinism": true
+  },
+  "stop_rule": "If this single observable guard fails any gate, stop constraint-aware GBDT search. Do not add another guard, threshold, feature, or route.",
+  "guarded_report": "artifacts/reports/gbdt_constraint_override_guard_v1.json"
+}
