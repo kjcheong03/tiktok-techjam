@@ -165,11 +165,16 @@ class _V1PolicyAdapter:
 
 
 def default_variant_registry() -> dict[str, VariantSpec]:
-    """Return the cumulative V1 and state-only contribution variants."""
+    """Return cumulative state and query-representation variants."""
 
     v1 = VariantSpec("v1_keyword_state", _policy_aware_v1_agent)
     state_only = VariantSpec("v2_state_only", _state_only_v2_agent)
-    return {v1.name: v1, state_only.name: state_only}
+    raw_history = VariantSpec("v2_raw_history_query", _raw_history_v2_agent)
+    return {
+        v1.name: v1,
+        state_only.name: state_only,
+        raw_history.name: raw_history,
+    }
 
 
 def _state_only_v2_agent(
@@ -188,6 +193,26 @@ def _state_only_v2_agent(
         keyword=keyword,
         dense=None,
         state_factory=StructuredSessionState,
+        question_policy=policy,
+    )
+
+
+def _raw_history_v2_agent(
+    catalog_path: Path,
+    keyword: Any,
+    policy: QuestionPolicy,
+) -> Any:
+    """Build V2 transitions while preserving raw history for BM25."""
+
+    from baseline.agent import BaselineAgent
+    from baseline.query_state import RawHistorySessionState
+
+    return BaselineAgent(
+        mode="keyword",
+        stateful=True,
+        keyword=keyword,
+        dense=None,
+        state_factory=RawHistorySessionState,
         question_policy=policy,
     )
 

@@ -45,10 +45,10 @@ class QuestionPolicyTest(unittest.TestCase):
 
 
 class PairedComparisonTest(unittest.TestCase):
-    def test_default_registry_orders_v1_before_state_only(self) -> None:
+    def test_default_registry_orders_cumulative_variants(self) -> None:
         self.assertEqual(
             list(default_variant_registry()),
-            ["v1_keyword_state", "v2_state_only"],
+            ["v1_keyword_state", "v2_state_only", "v2_raw_history_query"],
         )
 
     def test_reports_conversion_turn_and_rank_deltas(self) -> None:
