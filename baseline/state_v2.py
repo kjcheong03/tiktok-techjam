@@ -255,8 +255,6 @@ class StructuredSessionState:
                 continue
             if constraint.polarity != "include":
                 continue
-            if constraint.attribute in self.no_preference_attributes:
-                continue
             for value in constraint.values:
                 if value not in values:
                     values.append(value)

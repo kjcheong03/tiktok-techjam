@@ -174,6 +174,9 @@ class LegacyV1ConstraintAdapter:
         legacy = SessionState("v2-legacy-adapter", {})
         legacy.last_asked_attribute = last_asked_attribute
         legacy.observe(message, turn)
+        # V1 marks earlier values for one attribute inactive while parsing a
+        # single message.  Since this adapter creates a fresh state per message,
+        # those statuses are parser artifacts rather than user supersession.
         constraints = tuple(
             StructuredConstraint(
                 attribute=slot.attribute,  # type: ignore[arg-type]
@@ -181,7 +184,7 @@ class LegacyV1ConstraintAdapter:
                 source_turn=slot.source_turn,
                 source_text=slot.source_text,
                 provenance=slot.provenance,  # type: ignore[arg-type]
-                status="active" if slot.active else "superseded",
+                status="active",
             )
             for slot in legacy.slots
         )

@@ -63,8 +63,61 @@ class ConstraintAdapterTest(unittest.TestCase):
         self.assertEqual(constraints[0].attribute, "color")
         self.assertEqual(constraints[0].provenance, "simulator_answer")
 
+    def test_adapter_keeps_all_same_attribute_feature_answer_values_active(self) -> None:
+        message = "For that, what matters is: Imported; Wrap closure."
+        constraints = LegacyV1ConstraintAdapter().parse(
+            message,
+            2,
+            last_asked_attribute="feature",
+        )
+
+        self.assertEqual([item.attribute for item in constraints], ["feature", "feature"])
+        self.assertEqual(
+            [item.values for item in constraints],
+            [["imported"], ["wrap closure"]],
+        )
+        self.assertTrue(all(item.active for item in constraints))
+        self.assertTrue(all(item.provenance == "simulator_answer" for item in constraints))
+
+    def test_adapter_keeps_all_same_attribute_other_answer_values_active(self) -> None:
+        message = "For that, what matters is: 96% Nylon, 4% Spandex; Pull-On closure"
+        constraints = LegacyV1ConstraintAdapter().parse(
+            message,
+            2,
+            last_asked_attribute="other",
+        )
+
+        self.assertEqual([item.attribute for item in constraints], ["other", "other"])
+        self.assertEqual(
+            [item.values for item in constraints],
+            [["96% nylon, 4% spandex"], ["pull-on closure"]],
+        )
+        self.assertTrue(all(item.active for item in constraints))
+        self.assertTrue(all(item.provenance == "simulator_answer" for item in constraints))
+
 
 class StateV2ReplayTest(unittest.TestCase):
+    def test_multi_value_other_answer_survives_no_additional_preference(self) -> None:
+        state = StructuredSessionState("session", {})
+        state.last_asked_attribute = "other"
+        state.observe(
+            "For that, what matters is: 96% Nylon, 4% Spandex; Pull-On closure.",
+            2,
+        )
+        state.last_asked_attribute = "other"
+        state.observe(
+            "I don't have an additional preference for other.",
+            3,
+        )
+
+        self.assertEqual(
+            state.active_values("other"),
+            ["96% nylon, 4% spandex", "pull-on closure"],
+        )
+        query = state.build_query()
+        self.assertIn("96% nylon, 4% spandex", query)
+        self.assertIn("pull-on closure", query)
+
     def test_replay_accumulates_compatible_values_and_deduplicates(self) -> None:
         state = StructuredSessionState("session", {})
         state.observe(
@@ -126,7 +179,7 @@ class StateV2ReplayTest(unittest.TestCase):
         self.assertTrue(all(item.status == "active" for item in state.constraints))
         self.assertEqual(state.messages[-1], ambiguous)
 
-    def test_no_preference_hides_query_value_then_reactivates(self) -> None:
+    def test_no_preference_skips_question_but_keeps_query_value(self) -> None:
         state = StructuredSessionState("session", {})
         state.apply_constraints(
             [evidence("material", ["leather"], 1, "I need leather.", strength="hard")]
@@ -138,7 +191,7 @@ class StateV2ReplayTest(unittest.TestCase):
 
         self.assertIn("material", state.no_preference_attributes)
         self.assertTrue(state.constraints[0].active)
-        self.assertNotIn("leather", state.build_query())
+        self.assertIn("leather", state.build_query())
         self.assertEqual(state.choose_question(), "color")
 
         state.apply_constraints(
