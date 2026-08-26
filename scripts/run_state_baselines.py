@@ -165,10 +165,31 @@ class _V1PolicyAdapter:
 
 
 def default_variant_registry() -> dict[str, VariantSpec]:
-    """Return the initial contribution registry containing only V1."""
+    """Return the cumulative V1 and state-only contribution variants."""
 
-    spec = VariantSpec("v1_keyword_state", _policy_aware_v1_agent)
-    return {spec.name: spec}
+    v1 = VariantSpec("v1_keyword_state", _policy_aware_v1_agent)
+    state_only = VariantSpec("v2_state_only", _state_only_v2_agent)
+    return {v1.name: v1, state_only.name: state_only}
+
+
+def _state_only_v2_agent(
+    catalog_path: Path,
+    keyword: Any,
+    policy: QuestionPolicy,
+) -> Any:
+    """Build V2 transitions with the legacy interpreter and unchanged BM25."""
+
+    from baseline.agent import BaselineAgent
+    from baseline.state_v2 import StructuredSessionState
+
+    return BaselineAgent(
+        mode="keyword",
+        stateful=True,
+        keyword=keyword,
+        dense=None,
+        state_factory=StructuredSessionState,
+        question_policy=policy,
+    )
 
 
 def register_variant(registry: dict[str, VariantSpec], spec: VariantSpec) -> None:

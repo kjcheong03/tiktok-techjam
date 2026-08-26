@@ -1,7 +1,9 @@
 from __future__ import annotations
 
-from typing import Literal
+from collections.abc import Callable
+from typing import Any, Literal
 
+from .question_policy import QuestionPolicy
 from .retrieval import DenseRetriever, KeywordRetriever, reciprocal_rank_fusion
 from .state import SessionState, fixed_question_for_turn
 
@@ -21,6 +23,8 @@ class BaselineAgent:
         dense: DenseRetriever | None,
         retrieval_k: int = 200,
         rrf_constant: int = 60,
+        state_factory: Callable[[str, dict], Any] = SessionState,
+        question_policy: QuestionPolicy | None = None,
     ) -> None:
         if mode in {"dense", "hybrid"} and dense is None:
             raise ValueError(f"{mode} mode requires a dense retriever")
@@ -30,11 +34,13 @@ class BaselineAgent:
         self.dense = dense
         self.retrieval_k = retrieval_k
         self.rrf_constant = rrf_constant
-        self.sessions: dict[str, SessionState] = {}
+        self.state_factory = state_factory
+        self.question_policy = question_policy
+        self.sessions: dict[str, Any] = {}
 
     def reset(self, session_id: str, user_profile: dict) -> None:
         self.keyword.reset(session_id, user_profile)
-        self.sessions[session_id] = SessionState(session_id, user_profile)
+        self.sessions[session_id] = self.state_factory(session_id, user_profile)
 
     def respond(
         self,
@@ -50,7 +56,11 @@ class BaselineAgent:
         if self.stateful:
             state.observe(user_message, turn)
             query = state.build_query()
-            ask_attribute = state.choose_question()
+            if self.question_policy is None:
+                ask_attribute = state.choose_question()
+            else:
+                ask_attribute = self.question_policy(state, turn)
+                state.last_asked_attribute = ask_attribute
         else:
             query = user_message
             ask_attribute = fixed_question_for_turn(turn)

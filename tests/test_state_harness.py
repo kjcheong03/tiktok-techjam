@@ -4,7 +4,11 @@ import unittest
 
 from baseline.question_policy import current_order, fixed_other
 from baseline.state import SessionState
-from scripts.run_state_baselines import _V1PolicyAdapter, compare_paired_sessions
+from scripts.run_state_baselines import (
+    _V1PolicyAdapter,
+    compare_paired_sessions,
+    default_variant_registry,
+)
 
 
 class QuestionPolicyTest(unittest.TestCase):
@@ -41,6 +45,12 @@ class QuestionPolicyTest(unittest.TestCase):
 
 
 class PairedComparisonTest(unittest.TestCase):
+    def test_default_registry_orders_v1_before_state_only(self) -> None:
+        self.assertEqual(
+            list(default_variant_registry()),
+            ["v1_keyword_state", "v2_state_only"],
+        )
+
     def test_reports_conversion_turn_and_rank_deltas(self) -> None:
         before = {
             "sessions": [

@@ -3,6 +3,7 @@ from __future__ import annotations
 import unittest
 
 from baseline.agent import BaselineAgent
+from baseline.question_policy import fixed_other
 from baseline.retrieval import reciprocal_rank_fusion
 from baseline.state import SessionState
 
@@ -53,6 +54,22 @@ class StateTest(unittest.TestCase):
 
 
 class RetrievalTest(unittest.TestCase):
+    def test_agent_accepts_an_injected_question_policy(self) -> None:
+        keyword = FakeKeywordRetriever()
+        agent = BaselineAgent(
+            mode="keyword",
+            stateful=True,
+            keyword=keyword,  # type: ignore[arg-type]
+            dense=None,
+            question_policy=fixed_other,
+        )
+        agent.reset("session", {})
+
+        response = agent.respond("session", "I'm looking for shoes.", 1, 10)
+
+        self.assertEqual(response["ask_attribute"], "other")
+        self.assertEqual(agent.sessions["session"].last_asked_attribute, "other")
+
     def test_rrf_rewards_agreement_and_is_deterministic(self) -> None:
         result = reciprocal_rank_fusion(
             [["A", "B", "C"], ["B", "D", "A"]], rank_constant=60, limit=4
