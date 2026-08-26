@@ -12,24 +12,25 @@ make the effect of state changes measurable independently from question-policy c
 ## Evaluation Status
 
 The original specification below describes candidate components, not assumed wins. The
-factorial evaluation established the following retained control:
+factorial evaluation established the following controls:
 
-- lossless raw user history is the BM25 query;
+- lossless raw user history with no managed state is the retrieval control;
 - the literal fixed turn order is the primary non-diagnostic question control; and
 - fixed `other` remains a simulator-sensitive diagnostic.
 
-Structured state is not yet a retained performance component. With raw-history retrieval,
-storing V2 state while holding the literal fixed order or fixed `other` constant changed
-zero session outcomes. Letting the current state-aware order skip known or rejected
-attributes reduced TechnicalScore from `0.679376` to `0.584233` and caused 21 hit-to-miss
-conversions with no miss-to-hit conversions. The deterministic interpreter was also
-rejected after regressing both policies. A state-consumed raw-history query was then
-tested under identical fixed policies and rejected: it scored `0.608777` versus the
-`0.679376` raw-history control under literal order, and `0.614982` versus `0.750401`
+Structured state is now a retained performance component, but only through the
+coverage-adaptive query consumer. Investigation showed that the first state-only result
+was depressed by two state-transition bugs: same-message compatible values superseded one
+another, and a later no-preference answer hid earlier positive evidence. After fixing
+those transitions, state-only scored `0.676871` under literal fixed order and `0.753386`
 under fixed `other`.
 
-Future state work must therefore beat `raw history + no managed state` under the same
-question policy. A comparison only against the lossy parsed-query baseline is insufficient.
+The retained consumer uses cleaned active state normally and falls back to exact raw
+history when a correction has superseded evidence but state coverage is low (three or
+fewer active constraints). It scores `0.700807` versus the `0.679376` raw-history/no-state
+control under literal order, and `0.753386` versus `0.750401` under fixed `other`.
+Question selection remains fixed in both comparisons; this is a query-state contribution,
+not an adaptive question policy.
 
 ## Current Baseline
 
@@ -197,13 +198,21 @@ candidates remain. `reset()` creates an empty history for the new session.
 
 ## BM25 Query Compilation
 
-The initial active-state query compiler was useful as an ablation but was not retained as
-the primary BM25 query. It discarded lexical evidence that the unchanged OR-style BM25
-retriever uses effectively. The retained query is the exact accumulated user-message
-history in turn order.
+The first state-consumed compiler removed superseded terms from raw history and regressed
+both policies because the unchanged OR-style BM25 retriever still benefited from that
+lexical evidence. A second compiler that prefixed active state to the full raw history had
+no measurable effect because it did not materially change BM25's query terms.
 
-Structured state remains a sidecar representation. If a later retrieval experiment uses
-it, the compiler must preserve the raw evidence and separately demonstrate the value of:
+The retained compiler instead selects its evidence source by correction coverage:
+
+- use exact raw history after a correction when three or fewer active constraints remain;
+- otherwise use the cleaned active-state query; and
+- fall back to raw history when no active-state query is available.
+
+This rule uses only session state. It does not inspect the evaluator scenario, question
+policy, catalog, result labels, or target product. The threshold is intentionally fixed
+and is covered by unit tests. Later retrieval experiments must separately demonstrate the
+value of:
 
 - placing category terms first;
 - ordering active positive values by source turn;
@@ -324,6 +333,7 @@ conditions where applicable:
 | V2 state only | V2 active constraints | V1 adapter | Off | V2 | Off |
 | Raw-history no state | Raw messages | None | Off | None | Off |
 | V2 raw-history query | Raw messages | V1 adapter | Off | V2 | Off |
+| V2 coverage-adaptive query | Active state or raw messages, selected by correction coverage | V1 adapter | Off | V2 | Off |
 | V2 interpreted | Raw messages | V2 | Off | V2 | Off |
 | V2 normalized | Raw messages plus candidate normalized evidence | V2 | On | V2 | Off |
 | V2 full | Raw messages plus retained evidence | V2 | On | V2 | On |
@@ -335,6 +345,8 @@ Use the successive deltas to attribute outcomes:
   holding V2 state constant;
 - `V2 raw-history query - raw-history no state` measures the state contribution while
   holding raw-history retrieval and question policy constant;
+- `V2 coverage-adaptive query - raw-history no state` measures the retained state-query
+  contribution while holding question policy and BM25 constant;
 - `V2 interpreted - V2 raw-history query` measures conversation interpretation;
 - `V2 normalized - V2 interpreted` measures catalog-backed normalization; and
 - `V2 full - V2 normalized` measures recommendation-history filtering.

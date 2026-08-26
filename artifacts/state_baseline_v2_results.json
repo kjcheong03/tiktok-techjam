@@ -1,0 +1,89 @@
+{
+  "catalog_rows": 50000,
+  "dataset_sessions": 200,
+  "retrieval": "unchanged organizer BM25",
+  "variants": {
+    "raw_history_no_state": {
+      "fixed_turn_order": {
+        "hit_rate_at_10": 0.8,
+        "mrr": 0.517585,
+        "mttc": 4.795,
+        "efficiency": 0.6205,
+        "technical_score": 0.679376
+      },
+      "fixed_other": {
+        "hit_rate_at_10": 0.875,
+        "mrr": 0.540002,
+        "mttc": 3.455,
+        "efficiency": 0.7545,
+        "technical_score": 0.750401
+      }
+    },
+    "corrected_state_only": {
+      "fixed_turn_order": {
+        "hit_rate_at_10": 0.795,
+        "mrr": 0.527571,
+        "mttc": 4.945,
+        "efficiency": 0.6055,
+        "technical_score": 0.676871
+      },
+      "fixed_other": {
+        "hit_rate_at_10": 0.87,
+        "mrr": 0.559954,
+        "mttc": 3.48,
+        "efficiency": 0.752,
+        "technical_score": 0.753386
+      }
+    },
+    "coverage_adaptive_state": {
+      "fixed_turn_order": {
+        "hit_rate_at_10": 0.82,
+        "mrr": 0.54969,
+        "mttc": 4.705,
+        "efficiency": 0.6295,
+        "technical_score": 0.700807,
+        "delta_vs_raw": 0.021431,
+        "paired_vs_raw": {
+          "miss_to_hit": 14,
+          "hit_to_miss": 10,
+          "earlier_hit": 5,
+          "later_hit": 11,
+          "better_rank": 31,
+          "worse_rank": 12
+        },
+        "paired_vs_corrected_state": {
+          "miss_to_hit": 5,
+          "hit_to_miss": 0,
+          "earlier_hit": 5,
+          "later_hit": 0,
+          "better_rank": 3,
+          "worse_rank": 2
+        }
+      },
+      "fixed_other": {
+        "hit_rate_at_10": 0.87,
+        "mrr": 0.559954,
+        "mttc": 3.48,
+        "efficiency": 0.752,
+        "technical_score": 0.753386,
+        "delta_vs_raw": 0.002985,
+        "paired_vs_raw": {
+          "miss_to_hit": 3,
+          "hit_to_miss": 4,
+          "earlier_hit": 7,
+          "later_hit": 6,
+          "better_rank": 39,
+          "worse_rank": 14
+        },
+        "paired_vs_corrected_state": {
+          "miss_to_hit": 0,
+          "hit_to_miss": 0,
+          "earlier_hit": 0,
+          "later_hit": 0,
+          "better_rank": 0,
+          "worse_rank": 0
+        }
+      }
+    }
+  }
+}
