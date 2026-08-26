@@ -224,3 +224,27 @@ The state stores products shown during that period. An accepted explicit correct
 the set and begins a new period; an ambiguous correction that changes no state preserves
 it. The full repository suite contains 50 passing tests after adding transcript coverage
 for preference reactivation and explicit category replacement.
+
+### Disable-one transition ablations
+
+Each ablation retains coverage-adaptive querying, correction-scoped recommendation
+history, unchanged BM25, and the same question policy. The delta is `full retained -
+ablated`, so a positive value favors the transition.
+
+| Disabled transition | Literal ablated | Literal delta | Fixed-`other` ablated | Fixed-`other` delta | Strict gate |
+| --- | ---: | ---: | ---: | ---: | --- |
+| Compatible-value accumulation | 0.754617 | **+0.046654** | 0.813179 | **+0.030735** | Pass |
+| Targeted correction | 0.798357 | +0.002914 | 0.844914 | -0.001000 | Fail: small fixed-`other` regression |
+| Ambiguous-correction preservation | 0.801271 | 0.000000 | 0.843914 | 0.000000 | No public-session coverage |
+| No-preference evidence preservation | 0.802821 | -0.001550 | 0.792844 | **+0.051070** | Fail: small literal regression |
+| **Full retained state** | **0.801271** | — | **0.843914** | — | — |
+
+Compatible-value accumulation independently passes. Targeted correction adds one net hit
+under literal order and improves its Intent Override Hit Rate from `0.866667` to `0.900`,
+but loses `0.001000` TechnicalScore under fixed `other`. Ambiguous-correction preservation
+changes no public session because the evaluator emits no matching ambiguous correction.
+No-preference preservation adds 15 net hits under fixed `other`, but loses `0.001550`
+under literal order through small rank tradeoffs. Therefore the ablation does not establish
+that all four satisfy the existing no-regression gate; the latter three remain explicit
+semantic-versus-score retention decisions rather than claimed isolated wins.
+The repository contains 57 passing tests including the seven ablation-isolation tests.
