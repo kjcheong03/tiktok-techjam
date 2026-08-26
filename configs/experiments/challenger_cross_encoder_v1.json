@@ -1,0 +1,54 @@
+{
+  "experiment_id": "challenger_cross_encoder_v1",
+  "parent_commit": "189f0c6338e2d2ec1a795dce543e881ff2037f2a",
+  "family": "cross_encoder",
+  "hypothesis": "A compact zero-shot cross-encoder can improve reciprocal rank within the champion sparse candidate head.",
+  "model": "cross-encoder/ms-marco-MiniLM-L6-v2",
+  "model_revision": "233902d25c440f23af6f7d6e94d2946bac0bee0a",
+  "passage_schema_version": "catalog_fields_v2",
+  "model_runtime_config": {
+    "max_length": 256,
+    "batch_size": 32,
+    "activation": "sigmoid",
+    "device": "cpu",
+    "local_files_only": true
+  },
+  "passage_field_word_budgets": {
+    "title": 32,
+    "category": 24,
+    "price": 8,
+    "store": 16,
+    "features": 50,
+    "details": 35,
+    "description": 15
+  },
+  "passage_token_audit": {
+    "catalog_count": 50000,
+    "document_token_median": 153,
+    "document_token_p95": 216,
+    "documents_over_220_tokens": 1923,
+    "documents_over_220_fraction": 0.03846,
+    "truncation_policy": "The model truncates only tail fields; title, category, price, store, features, and details are ordered before description."
+  },
+  "model_selection_source": "Sentence Transformers official pretrained cross-encoder documentation and the official Hugging Face model card",
+  "primary_metric": "recommended_technical_score",
+  "secondary_metrics": ["hit_rate_at_10", "mrr", "mttc", "p95_turn_ms", "asset_bytes"],
+  "candidate_limit": 5,
+  "wall_clock_limit_seconds": 7200,
+  "seeds": [20260826],
+  "split": "nested_v1",
+  "holdout_accessed": false,
+  "controls": [
+    "fixed_field_quality",
+    "stored_two_feature_linear_champion_oof"
+  ],
+  "predeclared_candidates": [
+    {"rerank_k": 20, "weight": 0.1},
+    {"rerank_k": 20, "weight": 0.25},
+    {"rerank_k": 20, "weight": 0.5},
+    {"rerank_k": 20, "weight": 1.0},
+    {"rerank_k": 50, "weight": 0.25}
+  ],
+  "amendment_before_neural_evaluation": "The candidate set and actual OOF champion control were frozen after an independent audit and before any cross-encoder candidate completed. Top-50 is fixed at weight 0.25 rather than selected from all-development outcomes.",
+  "promotion_rule": "Promote only if grouped nested selection beats the stored two-feature linear champion OOF result, MRR gain is stable, and uncached neural runtime and offline asset gates pass."
+}

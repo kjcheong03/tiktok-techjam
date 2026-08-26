@@ -75,3 +75,12 @@ def weighted_fuse_ids(
     return sorted(scores, key=lambda item: (-scores[item], best_rank[item], item))[
         :limit
     ]
+
+
+def sparse_first_union_ids(
+    sparse: Sequence[str], dense: Sequence[str], *, limit: int = 400
+) -> list[str]:
+    """Preserve sparse order and append only unseen dense candidates."""
+    if limit <= 0:
+        raise ValueError("union limit must be positive")
+    return list(dict.fromkeys([*sparse, *dense]))[:limit]

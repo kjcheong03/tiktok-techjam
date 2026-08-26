@@ -15,6 +15,12 @@ The machine-readable chronological record remains
 fold metrics remain in `artifacts/reports`. This guide adds the practical mapping
 from technique to switch, worktree, commit, report, result, and retest condition.
 
+On `ghostlab/unified-techniques`, reusable source from the isolated challengers is
+also consolidated in this worktree. Installation, asset preparation, unified
+presets, and combination commands are authoritative in
+`docs/unified_technique_operations.md`; the branch/worktree references below
+remain the immutable provenance and raw-evidence locations.
+
 ## Which directory means what
 
 | Directory | Branch | Purpose |
@@ -202,9 +208,12 @@ historical evidence config.
 ### Heavy or incompatible switches
 
 Dense E5, cross-encoder, learned-question research, deep-candidate GBDT, and other
-heavy prototypes remain in isolated branches/worktrees. They are intentionally not
-all imported by the final runtime: a single mega-switch would retain dependencies,
-model assets, initialization cost, and failure modes even while logically disabled.
+The original prototypes remain in isolated branches/worktrees, while their reusable
+modules, tests, manifests, and small evidence are consolidated on
+`ghostlab/unified-techniques`. They are intentionally lazy and optional: disabling
+a heavy component avoids its imports, model assets, initialization cost, and failure
+modes. Fold-local research interactions without a promoted fitted model remain
+dedicated scripts rather than pretending to be deployable runtime toggles.
 
 To resume one, open its preserved worktree, branch from its final commit, declare a
 new versioned manifest, and compare against the current integration control. Do not

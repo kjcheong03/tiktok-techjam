@@ -1,0 +1,136 @@
+{
+  "schema_version": 1,
+  "experiment_id": "gbdt_dense_interaction_v1",
+  "parent_commit": "cbfd7d5dd595c5637608ba28f46f57777c7e153e",
+  "source_evidence": {
+    "audited_gbdt_commit": "cbfd7d5dd595c5637608ba28f46f57777c7e153e",
+    "dense_retrieval_commit": "25d7fc3cb44b49876ee0def075d4ef236abccaf5",
+    "structured_query_commit": "d8cf0542aac9dd5caf5d4201c02b56a6a6240ff2"
+  },
+  "hypothesis": "After isolating deep-rerank effects, fold-nested structured E5 retrieval can add stable Top-10 value beyond both sparse-only deep GBDT and raw-history E5 union GBDT controls.",
+  "candidate_limit": 4,
+  "model_search_performed": false,
+  "query_selection": "nested bounded selection between exactly two predeclared interaction-reserve queries",
+  "split": "nested_v1",
+  "evaluation_label": "outer-fold/out-of-fold",
+  "seed": 20260826,
+  "holdout_accessed": false,
+  "arms": {
+    "A_current_gbdt_top50": {
+      "role": "current audited control",
+      "id": "raw_sparse_metadata_gbdt_top50",
+      "candidate_pool": "raw-history BM25 Top-200",
+      "quality_rerank_k": 50,
+      "gbdt_training_and_rerank_k": 50
+    },
+    "B_sparse_deep_gbdt": {
+      "role": "matched-depth control",
+      "id": "raw_sparse_metadata_gbdt_top200",
+      "candidate_pool": "raw-history BM25 Top-200",
+      "quality_rerank_k": 200,
+      "gbdt_training_and_rerank_k": 200
+    },
+    "C_raw_e5_union_deep_gbdt": {
+      "role": "matched dense control",
+      "id": "raw_sparse_plus_raw_e5_metadata_gbdt_top400",
+      "candidate_pool": "raw-history BM25 Top-200 plus raw-history E5 Top-200 sparse-first union",
+      "quality_rerank_k": 400,
+      "gbdt_training_and_rerank_k": 400
+    },
+    "D_nested_query_e5_union_deep_gbdt": {
+      "role": "only promotable dense/query candidate",
+      "id": "raw_sparse_plus_nested_structured_e5_metadata_gbdt_top400",
+      "candidate_pool": "raw-history BM25 Top-200 plus fold-nested selected E5 Top-200 sparse-first union",
+      "quality_rerank_k": 400,
+      "gbdt_training_and_rerank_k": 400
+    }
+  },
+  "shared_control_policy": {
+    "state": "raw_history",
+    "sparse_query": "raw conversation history",
+    "sparse_field_weights": [2.0, 8.0, 4.0, 2.5, 1.5, 1.0],
+    "sparse_candidates": 200,
+    "quality_weight": 0.2,
+    "quality_rerank_k": 50,
+    "gbdt_rerank_k": 50,
+    "question_sequence": ["other", "other", "use_case", "other", "size", "other", "other", "size"]
+  },
+  "nested_query_candidate": {
+    "id": "raw_sparse_plus_nested_structured_e5_metadata_gbdt",
+    "sparse_head": "the unchanged raw-history BM25 Top-200 is preserved before downstream reranking",
+    "dense_query_candidates": [
+      "raw_plus_active",
+      "negation_safe_structured"
+    ],
+    "dense_query_selection": {
+      "population": "outer-training complement only",
+      "criterion": "highest all-stage sparse-or-dense union Recall@200",
+      "tie_break": [
+        "raw_plus_active",
+        "negation_safe_structured"
+      ],
+      "outer_test_labels_visible_during_selection": false,
+      "fixed_global_choice_from_d8cf0542_treated_as_validated": false
+    },
+    "dense_model": "intfloat/e5-small-v2",
+    "dense_revision": "ffb93f3bd4047442299a41ebb6fa998a38507c52",
+    "dense_candidates": 200,
+    "fusion": "sparse-first deduplicated union",
+    "union_limit": 400,
+    "quality_weight": 0.2,
+    "quality_rerank_k": 400,
+    "gbdt_training_head": 400,
+    "gbdt_rerank_k": 400,
+    "gbdt_feature_query": "unchanged raw history",
+    "question_sequence": ["other", "other", "use_case", "other", "size", "other", "other", "size"]
+  },
+  "frozen_gbdt_family": {
+    "candidate_id": "shallow_metadata_depth3",
+    "feature_set": "metadata",
+    "max_depth": 3,
+    "num_leaves": 7,
+    "learning_rate": 0.03,
+    "max_rounds": 160,
+    "early_stopping_rounds": 20,
+    "min_data_in_leaf": 40,
+    "inner_validation": "next frozen outer fold among the outer-training side",
+    "refit": "refit on the complete outer-training side at the inner-selected round count",
+    "deterministic_threads": 1
+  },
+  "matched_control_reproduction": {
+    "reference_report": "artifacts/reports/gbdt_reranker_v1.json",
+    "reference_candidate": "shallow_metadata_depth3",
+    "technical_score_tolerance": 0.000001,
+    "session_reward_tolerance": 0.000000000001,
+    "action_if_failed": "stop without candidate comparison and diagnose"
+  },
+  "promotion_gate_for_arm_D": {
+    "all_required": {
+      "technical_score_gain_vs_A_min": 0.005,
+      "technical_score_gain_vs_B_min": 0.005,
+      "technical_score_gain_vs_C_min": 0.005,
+      "nonnegative_outer_folds_vs_B_min": 4,
+      "nonnegative_outer_folds_vs_C_min": 4,
+      "hit_rate_regression_vs_B_and_C_max": 0.0,
+      "scenario_technical_score_regression_vs_B_and_C_max": 0.005,
+      "failure_count_max": 0,
+      "warm_turn_p95_ms_max": 500.0,
+      "peak_process_memory_mb_max": 4096.0,
+      "unique_model_and_index_asset_mb_max": 500.0,
+      "external_calls_per_turn_max": 0,
+      "offline_runtime_required": true,
+      "deterministic_replay_required": true,
+      "adapter_parity_required": true
+    },
+    "action_if_failed": "Park the structured dense/query interaction. Report any B-minus-A depth-only gain as a distinct technique and C-minus-B as the incremental raw-dense effect; do not attribute either to structured query construction."
+  },
+  "attribution": {
+    "B_minus_A": "deep-rerank-only increment",
+    "C_minus_B": "raw-history dense-union increment at matched depth",
+    "D_minus_C": "fold-nested structured-query increment at matched depth and model family",
+    "D_minus_B": "complete dense-plus-structured increment beyond sparse deep reranking"
+  },
+  "no_additional_models_or_query_variants": true,
+  "amendment_note": "Before any metric run, the globally selected query from d8cf0542 was replaced with fold-nested query selection and matched-depth A/B/C/D arms were frozen to remove selection optimism and rerank-depth confounding.",
+  "manifest_created_before_evaluation": true
+}

@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "experiment_id": "dense_query_interaction_v1",
+  "parent_commit": "25d7fc3cb44b49876ee0def075d4ef236abccaf5",
+  "family": "dense_query_interaction",
+  "hypothesis": "A non-destructive structured intent channel can make pinned E5's late-stage semantic gains complementary to champion BM25, while a structured-only negation-safe query can avoid embedding rejected preference prose.",
+  "primary_metric": "all_stage_union_recall_at_200",
+  "secondary_metrics": [
+    "first_turn_recall_at_10_50_100_200",
+    "all_stage_recall_at_10_50_100_200",
+    "dense_only_rescues",
+    "sparse_only_losses",
+    "fold_and_scenario_recall",
+    "behavioral_deduplication",
+    "warm_latency_p95_ms"
+  ],
+  "candidate_limit": 3,
+  "wall_clock_limit_seconds": 1200,
+  "seeds": [
+    20260826
+  ],
+  "split": "nested_v1",
+  "evaluation_label": "outer-fold/out-of-fold",
+  "holdout_accessed": false,
+  "model": {
+    "name": "intfloat/e5-small-v2",
+    "revision": "ffb93f3bd4047442299a41ebb6fa998a38507c52",
+    "query_prefix": "query: ",
+    "passage_prefix": "passage: ",
+    "asset_manifest": "configs/assets/e5_small_v2.json",
+    "reuse_required": true,
+    "new_model_search_or_index_build_allowed": false
+  },
+  "query_variants": {
+    "raw_history": "Exact raw-history E5 control from dense_retrieval_v1.",
+    "raw_plus_active": "Raw history retained verbatim, followed by labeled active positive structured values.",
+    "negation_safe_structured": "Only labeled active positive structured values, excluding negative/no-preference prose, with current raw message only as an empty-structure fallback."
+  },
+  "sparse_control": "Champion field-aware BM25 receives unchanged raw history for every variant.",
+  "retrieval_gate": {
+    "selection": "Choose the candidate with highest all-stage union Recall@200; ties prefer raw_plus_active, then negation_safe_structured.",
+    "all_required": [
+      "best candidate all-stage union Recall@200 >= raw-history control + 0.005",
+      "best candidate has at least 3 more all-stage dense-only unique-session rescues at 200 than raw-history control",
+      "best candidate first-turn union Recall@200 >= raw-history control - 0.01",
+      "best candidate all-stage union Recall@200 delta is non-negative in at least 4 of 5 outer folds",
+      "best candidate warm p95 latency <= 500 ms"
+    ],
+    "action_if_pass": "Run only the selected query with the smallest justified sparse-head union complete-policy interaction and compare it with the frozen champion.",
+    "action_if_fail": "Park query+dense interaction without end-to-end work."
+  },
+  "promotion_rule": "Promote only if the retrieval gate passes and the single authorized end-to-end interaction turns unique recall into stable Top-10 technical-score improvement."
+}

@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "experiment_id": "unified_all_composable_v1",
+  "engine": "experimental",
+  "state_variant": "raw_history",
+  "query_variant": "raw_plus_active",
+  "question_variant": "learned",
+  "learned_question_asset": "artifacts/experiments/learned_question_linear_v1/linear_action_value_model.json",
+  "retrieval_route": "sparse_first_union",
+  "dense_backend": "e5_small_v2",
+  "dense_model_path": "artifacts/cache/models/e5-small-v2",
+  "sparse_weights": [2.0, 8.0, 4.0, 2.5, 1.5, 1.0],
+  "quality_prior_weight": 0.2,
+  "reranker": "metadata_gbdt",
+  "reranker_model_asset": "artifacts/models/gbdt_reranker_v2_round56.json",
+  "rerank_k": 50,
+  "cross_encoder_enabled": true,
+  "cross_encoder_model_path": "artifacts/cache/models/ms-marco-MiniLM-L6-v2",
+  "cross_encoder_weight": 0.25,
+  "cross_encoder_rerank_k": 20
+}

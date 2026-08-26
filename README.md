@@ -43,6 +43,15 @@ python3 -m evaluator.local_evaluator
 Edit `starter/agent.py` to implement your system. Do not edit the evaluator or public labels when reporting your local score.
 The command writes per-session results and aggregate metrics to `results.json`.
 
+## GhostLab Unified Techniques
+
+The `ghostlab/unified-techniques` branch consolidates the validated candidate and
+all reusable challenger implementations behind versioned research presets. Start
+with `docs/unified_technique_operations.md` for the folder map, optional
+dependencies, pinned model assets, switches, combination planning, testing, and
+anti-overfitting protocol. The default unified preset preserves the compiled
+guarded-GBDT candidate; experimental presets are not automatic promotions.
+
 The included weak BM25 starter scores Hit Rate@10 `0.125`, MRR `0.068034`, and
 MTTC `9.81` on the released public set. See `docs/baseline_results.json`.
 

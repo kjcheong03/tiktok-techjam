@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "experiment_id": "dense_retrieval_specialized_v1",
+  "parent_commit": "189f0c6338e2d2ec1a795dce543e881ff2037f2a",
+  "family": "dense",
+  "hypothesis": "E5-small-v2 with its required asymmetric prefixes and labeled catalog fields improves target Recall@200 and adds unique BM25 rescues beyond the generic MiniLM control without violating offline packaging budgets.",
+  "primary_metric": "first_turn_union_recall_at_200",
+  "secondary_metrics": [
+    "recall_at_10",
+    "recall_at_50",
+    "recall_at_100",
+    "recall_at_200",
+    "dense_only_target_rescues",
+    "sparse_only_target_losses",
+    "stage_rank_overlap",
+    "warm_latency_p95_ms",
+    "peak_memory_mb",
+    "local_asset_mb"
+  ],
+  "candidate_limit": 2,
+  "wall_clock_limit_seconds": 7200,
+  "seeds": [
+    20260826
+  ],
+  "split": "nested_v1",
+  "holdout_accessed": false,
+  "evaluation_label": "outer-fold/out-of-fold",
+  "controls": {
+    "sparse": "champion field-aware BM25 with weights [2.0, 8.0, 4.0, 2.5, 1.5, 1.0]",
+    "dense": "sentence-transformers/all-MiniLM-L6-v2@1110a243fdf4706b3f48f1d95db1a4f5529b4d41"
+  },
+  "candidate": {
+    "model": "intfloat/e5-small-v2",
+    "revision": "ffb93f3bd4047442299a41ebb6fa998a38507c52",
+    "query_prefix": "query: ",
+    "passage_prefix": "passage: ",
+    "document_format": "labeled_catalog_fields_v1",
+    "embedding_dimension": 384,
+    "license": "MIT",
+    "authoritative_sources": [
+      "https://github.com/microsoft/unilm/tree/master/e5",
+      "https://github.com/microsoft/unilm/blob/master/e5/mteb_beir_eval.py",
+      "https://huggingface.co/intfloat/e5-small-v2"
+    ],
+    "asset_manifest": "configs/assets/e5_small_v2.json",
+    "asset_acquisition_command": "uv run python -m scripts.fetch_dense_assets",
+    "offline_evaluation_command": "HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 uv run python -m scripts.run_dense_retrieval"
+  },
+  "recall_gate": {
+    "all_required": [
+      "candidate first-turn dense Recall@200 >= MiniLM first-turn dense Recall@200 + 0.03",
+      "candidate first-turn BM25+dense union Recall@200 >= MiniLM first-turn union Recall@200 + 0.01",
+      "candidate has at least 5 first-turn dense-only BM25 rescues",
+      "candidate warm p95 <= 500 ms, peak process memory <= 4096 MB, and model assets <= 500 MB"
+    ],
+    "action_if_pass": "Run frozen-fold complete-policy dense, sparse-head union, RRF, calibrated weighted fusion, and conditional fusion/reranking variants.",
+    "action_if_fail": "Park standalone and preserve retrieval diagnostics; do not run end-to-end model selection."
+  },
+  "promotion_rule": "Promote only if the retrieval gate passes and a downstream frozen-fold variant turns the added recall into stable Top-10 technical-score improvement with acceptable resources."
+}
