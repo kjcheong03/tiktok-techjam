@@ -248,3 +248,19 @@ under literal order through small rank tradeoffs. Therefore the ablation does no
 that all four satisfy the existing no-regression gate; the latter three remain explicit
 semantic-versus-score retention decisions rather than claimed isolated wins.
 The repository contains 57 passing tests including the seven ablation-isolation tests.
+
+#### Provisional retention decision and use cases
+
+All four transitions remain in the baseline for now. The mixed results remain visible and
+are not reclassified as strict-gate passes.
+
+| Transition | Customer use case | Evidence and retention reason |
+| --- | --- | --- |
+| Compatible-value accumulation | The customer accepts alternatives or supplies multiple requirements in one answer, such as `nylon; spandex` or `imported; wrap closure`. | Clear isolated win: `+0.046654` literal and `+0.030735` fixed `other`; retain. |
+| Targeted correction | The customer changes one attribute, such as black to navy, while material, budget, and category should remain valid. | Mixed score: `+0.002914` literal and `-0.001000` fixed `other`; adds one net literal-order hit and improves Intent Override Hit Rate from `0.866667` to `0.900`; retain for correction correctness. |
+| Ambiguous-correction preservation | The customer says something vague such as `something different`; uncertain text must not erase known constraints. | Exact `0.000000` delta because no public session exercises this case; retain as a small guard against destructive state loss. |
+| No-preference preservation and reactivation | The customer has no additional preference for an attribute, but earlier explicit evidence remains valid; a later concrete preference reactivates that attribute. | Policy-dependent: `-0.001550` literal and `+0.051070` fixed `other`, including 15 net fixed-`other` hits; retain because the strong gain and semantics outweigh the small literal tradeoff. |
+
+This is a provisional architecture decision, not proof that every transition independently
+improves every fixed policy. Later changes must continue reporting the two policies
+separately so these interactions remain observable.
