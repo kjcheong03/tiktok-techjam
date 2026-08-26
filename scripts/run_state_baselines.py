@@ -46,8 +46,8 @@ AgentFactory: TypeAlias = Callable[[Path, Any, QuestionPolicy], Any]
 
 DEFAULT_COMPARISON_EDGES = (
     ("v1_keyword_state", "v2_state_only"),
-    ("v2_state_only", "v2_state_consumed_raw_history"),
-    ("raw_history_no_state", "v2_state_consumed_raw_history"),
+    ("v2_state_only", "v2_raw_history_query"),
+    ("raw_history_no_state", "v2_raw_history_query"),
 )
 
 
@@ -176,15 +176,12 @@ def default_variant_registry() -> dict[str, VariantSpec]:
     v1 = VariantSpec("v1_keyword_state", _policy_aware_v1_agent)
     state_only = VariantSpec("v2_state_only", _state_only_v2_agent)
     raw_control = VariantSpec("raw_history_no_state", _raw_history_control_agent)
-    state_consumed_raw_history = VariantSpec(
-        "v2_state_consumed_raw_history",
-        _state_consumed_raw_history_v2_agent,
-    )
+    raw_history = VariantSpec("v2_raw_history_query", _raw_history_v2_agent)
     return {
         v1.name: v1,
         state_only.name: state_only,
         raw_control.name: raw_control,
-        state_consumed_raw_history.name: state_consumed_raw_history,
+        raw_history.name: raw_history,
     }
 
 
@@ -208,22 +205,22 @@ def _state_only_v2_agent(
     )
 
 
-def _state_consumed_raw_history_v2_agent(
+def _raw_history_v2_agent(
     catalog_path: Path,
     keyword: Any,
     policy: QuestionPolicy,
 ) -> Any:
-    """Build V2 transitions and consume them when compiling raw-history BM25."""
+    """Build V2 transitions while preserving raw history for BM25."""
 
     from baseline.agent import BaselineAgent
-    from baseline.query_state import StateConsumedRawHistorySessionState
+    from baseline.query_state import RawHistorySessionState
 
     return BaselineAgent(
         mode="keyword",
         stateful=True,
         keyword=keyword,
         dense=None,
-        state_factory=StateConsumedRawHistorySessionState,
+        state_factory=RawHistorySessionState,
         question_policy=policy,
     )
 

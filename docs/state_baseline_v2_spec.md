@@ -23,7 +23,10 @@ storing V2 state while holding the literal fixed order or fixed `other` constant
 zero session outcomes. Letting the current state-aware order skip known or rejected
 attributes reduced TechnicalScore from `0.679376` to `0.584233` and caused 21 hit-to-miss
 conversions with no miss-to-hit conversions. The deterministic interpreter was also
-rejected after regressing both policies.
+rejected after regressing both policies. A state-consumed raw-history query was then
+tested under identical fixed policies and rejected: it scored `0.608777` versus the
+`0.679376` raw-history control under literal order, and `0.614982` versus `0.750401`
+under fixed `other`.
 
 Future state work must therefore beat `raw history + no managed state` under the same
 question policy. A comparison only against the lossy parsed-query baseline is insufficient.

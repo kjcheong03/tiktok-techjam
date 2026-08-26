@@ -83,3 +83,28 @@ conversions relative to raw history with the literal order. Consequently:
 - fixed `other` remains a diagnostic rather than the product policy;
 - the literal fixed turn order is the strongest non-diagnostic control at `0.679376`; and
 - structured state remains experimental until a state consumer beats that control.
+
+## State-consumed raw-history candidate
+
+This candidate kept raw-history lexical evidence but consumed structured state during
+query compilation. It removed terms belonging to superseded, excluded, or no-preference
+constraints and retained or appended active positive terms. Question policy and BM25 were
+held fixed.
+
+| Variant | Policy | Hit Rate@10 | MRR | MTTC | TechnicalScore |
+| --- | --- | ---: | ---: | ---: | ---: |
+| V2 state only, no raw history | literal fixed turn order | 0.725 | 0.481913 | 5.310 | 0.620874 |
+| Raw history, no managed state | literal fixed turn order | 0.800 | 0.517585 | 4.795 | 0.679376 |
+| State-consumed raw history | literal fixed turn order | 0.715 | 0.463591 | 5.390 | 0.608777 |
+| V2 state only, no raw history | fixed `other` | 0.710 | 0.465732 | 4.930 | 0.616120 |
+| Raw history, no managed state | fixed `other` | 0.875 | 0.540002 | 3.455 | 0.750401 |
+| State-consumed raw history | fixed `other` | 0.715 | 0.450607 | 4.885 | 0.614982 |
+
+The candidate failed the contribution gate under both policies. Relative to raw history
+without managed state, it regressed by `0.070599` under literal order, with 3 miss-to-hit
+and 20 hit-to-miss conversions. Under fixed `other`, it regressed by `0.135419`, with no
+miss-to-hit and 32 hit-to-miss conversions. It also failed to beat the previous state-only
+query under either policy.
+
+This proves that state was consumed, but the tested term-removal strategy discarded
+lexical evidence that OR-style BM25 was using successfully. The candidate was reverted.
