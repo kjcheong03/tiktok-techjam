@@ -3,8 +3,6 @@ from __future__ import annotations
 import unittest
 
 from baseline.constraints import LegacyV1ConstraintAdapter, StructuredConstraint
-from baseline.interpreter import parse
-from baseline.state import SessionState
 from baseline.state_v2 import StructuredSessionState
 
 
@@ -174,36 +172,6 @@ class StateV2ReplayTest(unittest.TestCase):
         self.assertEqual(state.user_profile, {"summary": "new profile"})
         self.assertEqual(state.messages, [])
         self.assertEqual(state.constraints, [])
-
-    def test_interpreter_drives_targeted_transcript_correction(self) -> None:
-        state = StructuredSessionState("session", {}, interpreter=parse)
-        state.observe(
-            "I'm looking for jackets. A key requirement is: black leather.",
-            1,
-        )
-        state.observe("Actually, navy instead.", 2)
-
-        self.assertEqual(state.active_values("color"), ["navy"])
-        self.assertEqual(state.active_values("material"), ["leather"])
-        self.assertEqual(state.active_values("category"), ["jackets"])
-        self.assertNotIn("black", state.build_query())
-
-    def test_same_override_transcript_exposes_v1_v2_state_difference(self) -> None:
-        messages = (
-            "I'm looking for jackets. A key requirement is: black leather.",
-            "Actually, ignore my earlier preference. What I need is: navy.",
-        )
-        v1 = SessionState("v1", {})
-        v2 = StructuredSessionState("v2", {}, interpreter=parse)
-        for turn, message in enumerate(messages, start=1):
-            v1.observe(message, turn)
-            v2.observe(message, turn)
-
-        self.assertFalse(
-            any(slot.attribute == "material" and slot.active for slot in v1.slots)
-        )
-        self.assertEqual(v2.active_values("material"), ["leather"])
-        self.assertEqual(v2.active_values("color"), ["navy"])
 
 
 if __name__ == "__main__":

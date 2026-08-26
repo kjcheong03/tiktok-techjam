@@ -9,9 +9,8 @@ constraints directly to ``observe`` or ``apply_constraints``.
 from __future__ import annotations
 
 import re
-from collections.abc import Callable
 from dataclasses import dataclass, field, replace
-from typing import TYPE_CHECKING, Iterable
+from typing import Iterable
 
 from .constraints import (
     ALLOWED_ATTRIBUTES,
@@ -20,9 +19,6 @@ from .constraints import (
     normalize_value,
 )
 from .state import ASK_ORDER
-
-if TYPE_CHECKING:
-    from .interpreter import ParseResult
 
 
 _CORRECTION_RE = re.compile(
@@ -62,11 +58,6 @@ class StructuredSessionState:
     asked_attributes: list[str] = field(default_factory=list)
     no_preference_attributes: set[str] = field(default_factory=set)
     last_asked_attribute: str | None = None
-    interpreter: Callable[[str, int, str | None], "ParseResult"] | None = field(
-        default=None,
-        repr=False,
-        compare=False,
-    )
     _adapter: LegacyV1ConstraintAdapter = field(
         default_factory=LegacyV1ConstraintAdapter,
         repr=False,
@@ -105,17 +96,12 @@ class StructuredSessionState:
             for attribute in (no_preference_attributes or ())
             if _attribute_name(attribute)
         }
-        correction_attributes: set[str] = set()
         if parsed_constraints is None:
-            if self.interpreter is None:
-                parsed = self._adapter.parse_result(
-                    message,
-                    turn,
-                    last_asked_attribute=self.last_asked_attribute,
-                )
-            else:
-                parsed = self.interpreter(message, turn, self.last_asked_attribute)
-                correction_attributes.update(parsed.correction_attributes)
+            parsed = self._adapter.parse_result(
+                message,
+                turn,
+                last_asked_attribute=self.last_asked_attribute,
+            )
             incoming = list(parsed.constraints)
             explicit_no_preference.update(parsed.no_preference_attributes)
         else:
@@ -126,7 +112,6 @@ class StructuredSessionState:
             incoming,
             source_text=message,
             correction=_CORRECTION_RE.search(message) is not None,
-            supersede_attributes=correction_attributes,
         )
 
     def apply_constraints(

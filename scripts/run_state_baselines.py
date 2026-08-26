@@ -32,7 +32,6 @@ import sys
 import time
 from collections.abc import Callable, Iterable, Mapping, Sequence
 from dataclasses import dataclass
-from functools import partial
 from pathlib import Path
 from typing import Any, TypeAlias
 
@@ -170,12 +169,7 @@ def default_variant_registry() -> dict[str, VariantSpec]:
 
     v1 = VariantSpec("v1_keyword_state", _policy_aware_v1_agent)
     state_only = VariantSpec("v2_state_only", _state_only_v2_agent)
-    interpreted = VariantSpec("v2_interpreted", _interpreted_v2_agent)
-    return {
-        v1.name: v1,
-        state_only.name: state_only,
-        interpreted.name: interpreted,
-    }
+    return {v1.name: v1, state_only.name: state_only}
 
 
 def _state_only_v2_agent(
@@ -194,27 +188,6 @@ def _state_only_v2_agent(
         keyword=keyword,
         dense=None,
         state_factory=StructuredSessionState,
-        question_policy=policy,
-    )
-
-
-def _interpreted_v2_agent(
-    catalog_path: Path,
-    keyword: Any,
-    policy: QuestionPolicy,
-) -> Any:
-    """Build V2 state with deterministic, non-catalog interpretation."""
-
-    from baseline.agent import BaselineAgent
-    from baseline.interpreter import parse
-    from baseline.state_v2 import StructuredSessionState
-
-    return BaselineAgent(
-        mode="keyword",
-        stateful=True,
-        keyword=keyword,
-        dense=None,
-        state_factory=partial(StructuredSessionState, interpreter=parse),
         question_policy=policy,
     )
 
