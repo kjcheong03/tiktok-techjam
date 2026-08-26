@@ -205,3 +205,22 @@ Under literal order, history produced 27 miss-to-hit and zero hit-to-miss conver
 with 27 earlier and zero later hits. Under fixed `other`, it produced 24 miss-to-hit and
 zero hit-to-miss conversions, with eight earlier and zero later hits. It passes the
 component gate under both policies and is retained.
+
+## Deterministic transition audit
+
+The transition suite distinguishes semantic correctness from isolated retrieval
+contribution:
+
+| Transition | Transcript/unit evidence | End-to-end contribution evidence |
+| --- | --- | --- |
+| Compatible-value accumulation and deduplication | Pass | Included in the corrected-state bundle; not individually ablated |
+| Targeted and ambiguous correction handling | Pass | Included in state and Intent Override behavior; not individually ablated |
+| No-preference preservation and later explicit reactivation | Pass through the real message adapter | No-preference query preservation was bundled with the corrected-state fix; reactivation is not individually ablated |
+| Intent override and explicit category replacement | Pass through real correction phrases | Intent Override scenario is covered, but transition logic is not separately ablated |
+| Recommendation history and correction-scoped epochs | Pass at state and agent boundaries | Isolated: `+0.100464` literal order and `+0.090528` fixed `other` |
+
+An epoch is the current stable-intent period, not a separate model or persisted object.
+The state stores products shown during that period. An accepted explicit correction clears
+the set and begins a new period; an ambiguous correction that changes no state preserves
+it. The full repository suite contains 50 passing tests after adding transcript coverage
+for preference reactivation and explicit category replacement.

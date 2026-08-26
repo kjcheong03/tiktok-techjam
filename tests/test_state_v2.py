@@ -168,6 +168,18 @@ class StateV2ReplayTest(unittest.TestCase):
         self.assertIn("I'm looking for shoes", state.messages[0])
         self.assertEqual(state.shown_product_ids, set())
 
+    def test_observe_supersedes_category_on_explicit_category_correction(self) -> None:
+        state = StructuredSessionState("session", {})
+
+        state.observe("I'm looking for shoes.", 1)
+        state.observe("Actually, I'm looking for boots.", 2)
+
+        categories = [item for item in state.constraints if item.attribute == "category"]
+        self.assertEqual([item.values for item in categories], [["shoes"], ["boots"]])
+        self.assertEqual(categories[0].status, "superseded")
+        self.assertEqual(categories[1].status, "active")
+        self.assertEqual(state.build_query(), "boots")
+
     def test_ambiguous_correction_preserves_state_and_raw_message(self) -> None:
         state = StructuredSessionState("session", {})
         state.observe(
@@ -203,6 +215,22 @@ class StateV2ReplayTest(unittest.TestCase):
         )
         self.assertNotIn("material", state.no_preference_attributes)
         self.assertIn("leather", state.build_query())
+        self.assertIn("cotton", state.build_query())
+
+    def test_observe_reactivates_material_after_no_preference_answer(self) -> None:
+        state = StructuredSessionState("session", {})
+
+        state.observe(
+            "I don't have a preference for material; please use your judgment.",
+            1,
+        )
+        self.assertIn("material", state.no_preference_attributes)
+
+        state.last_asked_attribute = "material"
+        state.observe("For that, what matters is: cotton.", 2)
+
+        self.assertNotIn("material", state.no_preference_attributes)
+        self.assertEqual(state.active_values("material"), ["cotton"])
         self.assertIn("cotton", state.build_query())
 
     def test_query_order_and_omissions_are_deterministic(self) -> None:
