@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "amendment_id": "gbdt_reranker_v1_deployable_round_rule_a1",
+  "experiment_id": "gbdt_reranker_v1",
+  "parent_manifest": "configs/experiments/gbdt_reranker_v1.json",
+  "parent_evidence_report": "artifacts/reports/gbdt_reranker_v1.json",
+  "reason": "Resolve the independent deployment audit without reusing all-development outcomes to choose a stopping-round aggregation.",
+  "created_before_amended_deployment_evaluation": true,
+  "outer_selected_rounds_in_frozen_fold_order": [
+    100,
+    4,
+    56,
+    98,
+    34
+  ],
+  "frozen_deployable_round_rule": {
+    "rule": "median of the five previously selected outer-fold stopping rounds",
+    "sorted_rounds": [
+      4,
+      34,
+      56,
+      98,
+      100
+    ],
+    "rounds": 56,
+    "alternative_aggregations_may_be_compared_against_all_development_outcomes": false
+  },
+  "selected_candidate_id": "shallow_metadata_depth3",
+  "selected_feature_set": "metadata",
+  "refit_population": "all 150 adaptive_v1 sessions",
+  "holdout_accessed": false,
+  "immutable_outer_oof": {
+    "recommended_technical_score": 0.861417,
+    "hit_rate_at_10": 0.973333,
+    "mrr": 0.680278,
+    "mttc": 2.466667
+  },
+  "executable_gates": {
+    "fold": "selected candidate technical score exceeds the matched linear control in every frozen outer fold",
+    "scenario": "selected candidate Hit@10 is no lower than the linear control in every aggregate scenario and no scenario technical-score delta is below -0.005",
+    "determinism": "two independent all-development 56-round refits serialize byte-identically and return identical per-session outcomes",
+    "parity": "research deployment-fit and isolated runtime metrics match exactly",
+    "packaging": {
+      "cold_start_seconds_max": 30.0,
+      "warm_turn_p95_ms_max": 500.0,
+      "peak_process_memory_mb_max": 4096.0,
+      "model_asset_mb_max": 500.0,
+      "external_calls_per_turn_max": 0,
+      "response_failure_count_max": 0
+    }
+  },
+  "decision_rule": "The OOF family decision remains unchanged. The 56-round artifact is integration-ready only if every executable fold, scenario, determinism, parity, and packaging gate passes; otherwise retain the linear compiled champion and mark deployment blocked without revising OOF evidence."
+}
