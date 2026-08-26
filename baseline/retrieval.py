@@ -3,9 +3,10 @@ from __future__ import annotations
 import hashlib
 import json
 from pathlib import Path
-from typing import Iterable, Sequence
+from typing import TYPE_CHECKING, Iterable, Sequence
 
-import numpy as np
+if TYPE_CHECKING:
+    import numpy as np
 
 from starter.agent import Agent as OfficialKeywordAgent
 
@@ -93,6 +94,8 @@ class DenseRetriever:
         return f"{model_key}-{digest.hexdigest()[:12]}"
 
     def _load_or_build_embeddings(self, documents: Sequence[str]) -> np.ndarray:
+        import numpy as np
+
         stem = self._cache_stem()
         embedding_path = self.cache_dir / f"{stem}.npy"
         ids_path = self.cache_dir / f"{stem}.ids.json"
@@ -113,6 +116,8 @@ class DenseRetriever:
         return np.load(embedding_path, mmap_mode="r")
 
     def search(self, query: str, limit: int) -> list[str]:
+        import numpy as np
+
         query = query.strip()
         if not query:
             return []
