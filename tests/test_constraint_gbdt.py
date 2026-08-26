@@ -214,6 +214,75 @@ class ConstraintGBDTTests(unittest.TestCase):
                 runtime.rerank("coat", ["wool", "cotton"])
         self.assertCountEqual(calls, [("first", 1), ("second", 7)])
 
+    def test_override_guard_ignores_ordinary_replacement_and_routes_override(
+        self,
+    ) -> None:
+        class FakeRoute:
+            def __init__(self, label: str) -> None:
+                self.label = label
+                self.calls = 0
+
+            def rerank(
+                self, query: str, ranking: list[str], *, rerank_k: int = 50
+            ) -> list[str]:
+                del query, rerank_k
+                self.calls += 1
+                return ranking
+
+            def rerank_with_context(
+                self,
+                query: str,
+                ranking: list[str],
+                *,
+                state: ConversationState,
+                turn: int,
+                retrieval_scores: list[float],
+                rerank_k: int = 50,
+            ) -> list[str]:
+                del query, state, turn, retrieval_scores, rerank_k
+                self.calls += 1
+                return ranking
+
+        state = ConversationState("guard", {})
+        state.observe("I'm looking for shoes. What I need is: black.", 1)
+        state.observe("What I need is: navy.", 2)
+        with tempfile.TemporaryDirectory() as directory:
+            path = self._catalog(directory)
+            store = ConstraintGBDTFeatureStore(path)
+            model = LambdaMARTModel(
+                candidate_id="guard-test",
+                feature_names=("original_rank",),
+                trees=(),
+                learning_rate=0.03,
+                best_iteration=0,
+                training_groups=0,
+                training_rows=0,
+                seed=20260826,
+            )
+            fallback = FakeRoute("base")
+            runtime = RuntimeConstraintReranker(
+                str(path),
+                FIELD_WEIGHTS,
+                store,
+                model,
+                fallback=fallback,  # type: ignore[arg-type]
+            )
+            candidate = FakeRoute("constraint")
+            runtime.reranker = candidate  # type: ignore[assignment]
+            with runtime.invocation(state, 2):
+                runtime.rerank("shoes", ["wool", "cotton"])
+            self.assertEqual(candidate.calls, 1)
+            self.assertEqual(fallback.calls, 0)
+            state.observe("Actually, what I need is: red.", 3)
+            with runtime.invocation(state, 3):
+                runtime.rerank("shoes", ["wool", "cotton"])
+        self.assertEqual(candidate.calls, 1)
+        self.assertEqual(fallback.calls, 1)
+        self.assertEqual(
+            [item["route"] for item in runtime.routing_trace],
+            ["constraint", "base_override_fallback"],
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

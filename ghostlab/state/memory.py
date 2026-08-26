@@ -136,7 +136,17 @@ class ConversationState:
                 or attribute in EXCLUSIVE_ATTRIBUTES
                 or not self.multi_value
             )
-            self._add(attribute, value, turn, message, provenance, replace=replace)
+            self._add(
+                attribute,
+                value,
+                turn,
+                message,
+                provenance,
+                replace=replace,
+                replace_reason=(
+                    "override_replacement" if explicit_override else "replacement"
+                ),
+            )
 
     @property
     def active_category(self) -> str | None:
@@ -159,6 +169,7 @@ class ConversationState:
         *,
         polarity: Polarity = "positive",
         replace: bool = True,
+        replace_reason: str = "replacement",
     ) -> None:
         normalized = value.casefold()
         for item in self.values:
@@ -171,7 +182,7 @@ class ConversationState:
                 return
             if item.active and item.attribute == attribute and replace:
                 item.active = False
-                item.invalidated_reason = "replacement"
+                item.invalidated_reason = replace_reason
         scope = (
             self.active_category if attribute in CATEGORY_SCOPED_ATTRIBUTES else None
         )

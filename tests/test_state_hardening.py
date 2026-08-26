@@ -66,6 +66,8 @@ class HardenedStateTest(unittest.TestCase):
         self.assertIn("waterproof", active)
         self.assertIn("navy", active)
         self.assertNotIn("black", active)
+        invalidated = [item for item in state.values if not item.active]
+        self.assertEqual(invalidated[-1].invalidated_reason, "override_replacement")
 
     def test_ambiguous_actually_preserves_unrelated_state(self) -> None:
         state = self.state()

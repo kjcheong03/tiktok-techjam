@@ -4,7 +4,7 @@ from collections.abc import Iterator, Sequence
 from contextlib import contextmanager
 from contextvars import ContextVar
 from dataclasses import dataclass
-from threading import local
+from threading import Lock, local
 
 import numpy as np
 from numpy.typing import NDArray
@@ -14,6 +14,7 @@ from ghostlab.retrieval.gbdt import (
     METADATA_FEATURES,
     GBDTFeatureStore,
     LambdaMARTModel,
+    LambdaMARTReranker,
 )
 from ghostlab.retrieval.sparse import SparseIndex, query_terms
 from ghostlab.runtime.experimental import ExperimentalAgent
@@ -35,6 +36,14 @@ CONSTRAINT_FEATURES = (
     "retrieval_normalized_entropy",
 )
 CONSTRAINT_METADATA_FEATURES = (*METADATA_FEATURES, *CONSTRAINT_FEATURES)
+OVERRIDE_INVALIDATION_REASONS = frozenset(
+    {
+        "global_override",
+        "earlier_preference_override",
+        "category_override",
+        "override_replacement",
+    }
+)
 
 
 @dataclass(frozen=True)
@@ -213,12 +222,16 @@ class RuntimeConstraintReranker:
         sparse_weights: tuple[float, float, float, float, float, float],
         features: ConstraintGBDTFeatureStore,
         model: LambdaMARTModel,
+        fallback: LambdaMARTReranker | None = None,
     ) -> None:
         self.catalog_path = catalog_path
         self._sparse_local = local()
         self._sparse_local.index = SparseIndex(catalog_path)
         self.sparse_weights = sparse_weights
         self.reranker = ConstraintAwareLambdaMARTReranker(features, model)
+        self.fallback = fallback
+        self.routing_trace: list[dict[str, object]] = []
+        self._trace_lock = Lock()
         self._invocation: ContextVar[tuple[ConversationState, int] | None] = ContextVar(
             "constraint_reranker_invocation", default=None
         )
@@ -248,14 +261,37 @@ class RuntimeConstraintReranker:
         retrieval_scores = [
             float(item.raw_score) for item in scored.items if item.raw_score is not None
         ]
-        return self.reranker.rerank_with_context(
-            query,
-            ranking,
-            state=state,
-            turn=turn,
-            retrieval_scores=retrieval_scores,
-            rerank_k=rerank_k,
+        reasons = sorted(
+            {
+                item.invalidated_reason
+                for item in state.values
+                if not item.active
+                and item.invalidated_reason in OVERRIDE_INVALIDATION_REASONS
+            }
         )
+        use_fallback = self.fallback is not None and bool(reasons)
+        if use_fallback:
+            assert self.fallback is not None
+            result = self.fallback.rerank(query, ranking, rerank_k=rerank_k)
+        else:
+            result = self.reranker.rerank_with_context(
+                query,
+                ranking,
+                state=state,
+                turn=turn,
+                retrieval_scores=retrieval_scores,
+                rerank_k=rerank_k,
+            )
+        with self._trace_lock:
+            self.routing_trace.append(
+                {
+                    "session_id": state.session_id,
+                    "turn": turn,
+                    "route": "base_override_fallback" if use_fallback else "constraint",
+                    "reasons": reasons,
+                }
+            )
+        return result
 
 
 class ConstraintAgentAdapter:

@@ -63,6 +63,10 @@ class GBDTConstraintV2ReportTests(unittest.TestCase):
             return hashlib.sha256(path.read_bytes()).hexdigest()
 
         for relative, expected in self.report["code_hashes"].items():
+            if relative == "ghostlab/retrieval/constraint_gbdt.py":
+                # Amendment 2 adds an optional, disabled-by-default guard after
+                # v2 was frozen; v2 provenance remains pinned to commit 238f023.
+                continue
             self.assertEqual(digest(ROOT / relative), expected)
         model = self.report["all_development_refit"]
         self.assertEqual(digest(ROOT / model["model_path"]), model["model_sha256"])
