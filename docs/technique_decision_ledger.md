@@ -168,6 +168,12 @@ contradiction.” Training groups every turn from a session in the same fold, an
 tree depth, leaves, features, and rounds are selected inside training folds. The
 linear champion is the complexity control.
 
+Outcome: `ranking.gbdt_v2` completed the minimum independent test under the frozen
+nested procedure. The selected shallow metadata model scored `0.861417` OOF versus
+`0.817649` for the two-feature linear control, with a positive paired bootstrap
+interval and improvements in all five outer folds. It is promoted to integration,
+not compiled into this worktree's champion. See `docs/gbdt_reranker_report.md`.
+
 ### `exp/cross-encoder`
 
 This challenger jointly reads the query and each Top-20 candidate, which can resolve
@@ -222,6 +228,7 @@ produces one frozen candidate; prototype branches never access the sealed holdou
 | D023 | `question.no_question_v1` | `PARKED_STANDALONE` | Useful only as a stop-action control. |
 | D024 | `retrieval.sparse_semantic_v1` | `NOT_TESTED` | Optional semantic alternative, not implemented. |
 | D025 | `ranking.quality_only_v1` | `PARKED_STANDALONE` | Near-champion scalar score; lost robustness tie-break. |
+| D026 | `ranking.gbdt_v2` | `PROMOTED` | Stable grouped OOF gain; advance to integration without changing the compiled champion. |
 
 ## How future worktrees update the evidence
 

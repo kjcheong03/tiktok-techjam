@@ -4,6 +4,7 @@ import json
 import math
 from dataclasses import asdict, dataclass
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 from numpy.typing import NDArray
@@ -114,7 +115,9 @@ class GBDTFeatureStore:
         denominator = max(1, len(query_set))
         product = self.products.get(identifier)
         if product is None:
-            field_terms = (frozenset(),) * len(FIELD_FEATURE_NAMES)
+            field_terms: tuple[frozenset[str], ...] = (frozenset(),) * len(
+                FIELD_FEATURE_NAMES
+            )
             field_missing = (True,) * len(FIELD_FEATURE_NAMES)
             average_rating = rating_number = None
             completeness = 0.0
@@ -184,7 +187,7 @@ class RegressionTree:
     value: tuple[float, ...]
 
     def predict(self, features: NDArray[np.float64]) -> NDArray[np.float64]:
-        predictions = np.empty(len(features), dtype=np.float64)
+        predictions: NDArray[np.float64] = np.empty(len(features), dtype=np.float64)
         for row_index, row in enumerate(features):
             node = 0
             while self.children_left[node] != self.children_right[node]:
@@ -242,7 +245,7 @@ class LambdaMARTModel:
         return cls(**value)
 
     def predict(self, features: NDArray[np.float64]) -> NDArray[np.float64]:
-        scores = np.zeros(len(features), dtype=np.float64)
+        scores: NDArray[np.float64] = np.zeros(len(features), dtype=np.float64)
         for tree in self.trees[: self.best_iteration]:
             scores += self.learning_rate * tree.predict(features)
         return scores
@@ -300,7 +303,7 @@ def fit_lambdamart(
     validation: tuple[NDArray[np.float64], NDArray[np.int64], list[int]] | None = None,
     seed: int = 20260826,
 ) -> LambdaMARTModel:
-    from sklearn.tree import DecisionTreeRegressor
+    from sklearn.tree import DecisionTreeRegressor  # type: ignore[import-untyped]
 
     if len(features) != len(labels) or sum(groups) != len(labels):
         raise ValueError("ranking rows, labels, and group sizes do not align")
@@ -311,8 +314,9 @@ def fit_lambdamart(
     if max_depth <= 0 or not 1 < num_leaves <= 2**max_depth:
         raise ValueError("invalid constrained tree capacity")
     group_slices = _group_slices(groups)
-    train_scores = np.zeros(len(labels), dtype=np.float64)
-    valid_features = valid_labels = None
+    train_scores: NDArray[np.float64] = np.zeros(len(labels), dtype=np.float64)
+    valid_features: NDArray[np.float64] | None = None
+    valid_labels: NDArray[np.int64] | None = None
     valid_groups: list[int] | None = None
     valid_scores: NDArray[np.float64] | None = None
     if validation is not None:
@@ -383,7 +387,7 @@ def fit_lambdamart(
 
 
 def _group_slices(groups: list[int]) -> list[slice]:
-    result = []
+    result: list[slice] = []
     start = 0
     for size in groups:
         result.append(slice(start, start + size))
@@ -398,8 +402,8 @@ def _ranking_derivatives(
     *,
     truncation: int,
 ) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
-    lambdas = np.zeros(len(labels), dtype=np.float64)
-    hessians = np.zeros(len(labels), dtype=np.float64)
+    lambdas: NDArray[np.float64] = np.zeros(len(labels), dtype=np.float64)
+    hessians: NDArray[np.float64] = np.zeros(len(labels), dtype=np.float64)
     for group in groups:
         group_labels = labels[group]
         positives = np.flatnonzero(group_labels > 0)
@@ -407,7 +411,7 @@ def _ranking_derivatives(
             raise ValueError("each ranking group must contain exactly one positive")
         group_scores = scores[group]
         order = np.argsort(-group_scores, kind="stable")
-        positions = np.empty(len(order), dtype=np.int64)
+        positions: NDArray[np.int64] = np.empty(len(order), dtype=np.int64)
         positions[order] = np.arange(len(order))
         positive = int(positives[0])
         positive_discount = (
@@ -415,8 +419,8 @@ def _ranking_derivatives(
             if positions[positive] < truncation
             else 0.0
         )
-        for negative in np.flatnonzero(group_labels == 0):
-            negative = int(negative)
+        for raw_negative in np.flatnonzero(group_labels == 0):
+            negative = int(raw_negative)
             negative_discount = (
                 1.0 / math.log2(int(positions[negative]) + 2)
                 if positions[negative] < truncation
@@ -440,7 +444,7 @@ def _ranking_derivatives(
     return lambdas, hessians
 
 
-def _extract_tree(tree: object, leaf_values: dict[int, float]) -> RegressionTree:
+def _extract_tree(tree: Any, leaf_values: dict[int, float]) -> RegressionTree:
     children_left = tuple(int(value) for value in tree.children_left)
     children_right = tuple(int(value) for value in tree.children_right)
     feature = tuple(int(value) for value in tree.feature)
