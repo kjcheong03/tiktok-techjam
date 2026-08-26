@@ -12,6 +12,8 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import Protocol
 
+from .state import fixed_question_for_turn
+
 
 class QuestionState(Protocol):
     """The small state surface needed by a question policy."""
@@ -36,6 +38,15 @@ def current_order(state: QuestionState, turn: int | None = None) -> str | None:
     return state.choose_question()
 
 
+def fixed_turn_order(state: QuestionState, turn: int | None = None) -> str | None:
+    """Return the original fixed turn order without reading managed state."""
+
+    del state
+    if not isinstance(turn, int):
+        raise ValueError("fixed_turn_order requires a concrete integer turn")
+    return fixed_question_for_turn(turn)
+
+
 def fixed_other(state: QuestionState, turn: int | None = None) -> str:
     """Return the simulator-sensitive fixed-``other`` diagnostic probe."""
 
@@ -45,6 +56,7 @@ def fixed_other(state: QuestionState, turn: int | None = None) -> str:
 
 QUESTION_POLICIES: dict[str, QuestionPolicy] = {
     "current_order": current_order,
+    "fixed_turn_order": fixed_turn_order,
     "fixed_other": fixed_other,
 }
 
@@ -68,6 +80,7 @@ __all__ = [
     "QuestionState",
     "QUESTION_POLICIES",
     "current_order",
+    "fixed_turn_order",
     "fixed_other",
     "get_question_policy",
 ]
