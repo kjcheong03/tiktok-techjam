@@ -27,6 +27,22 @@ with controlled evidence, whether learned questioning, semantic retrieval,
 nonlinear ranking, cross-encoding, or better query construction can improve the
 complete conversational-search policy beyond this champion.
 
+### 1.1 Decision memory
+
+The authoritative cross-phase decision record is
+`artifacts/evidence/technique_decisions.jsonl`; its readable explanation is
+`docs/technique_decision_ledger.md`. Every challenger must read the current ledger
+before declaring a run and add a versioned decision after validation. Raw reports
+remain immutable detailed evidence. A losing technique is classified as parked,
+interaction reserve, dependency-gated, invalid, or out of scope rather than being
+silently forgotten.
+
+Validate the record with:
+
+```bash
+uv run --frozen python -m scripts.validate_decision_ledger
+```
+
 ## 2. Non-negotiable invariants
 
 1. `ghostlab/implementation` remains the recoverable champion branch.
@@ -245,6 +261,80 @@ Before a heavy run, create a manifest containing:
 Candidate counts below are initial ceilings, not targets that must be exhausted.
 Stop early when a recall gate fails, behavior duplicates an existing candidate, or
 confidence shows no plausible useful gain.
+
+### 8.1 Global coverage matrix
+
+Maintain this matrix throughout the challenger tournament so an attractive result
+in one family does not silently prevent the other materially different hypotheses
+from receiving a fair first test. The technique decision ledger stores durable
+outcomes; this matrix tracks execution coverage.
+
+| Family | Required control | Minimum independent test | Important dependency interaction | Initial disposition |
+|---|---|---|---|---|
+| Learned questioning | Fixed-sequence champion and heuristic adaptive policy | Linear action-value model with a learned stop action | Question policy + structured query/retrieval | Scheduled |
+| Dense retrieval | Champion BM25 and current MiniLM | One compact retrieval-specialized encoder with recall gate | Dense + query, fusion, GBDT, or cross-encoder | Scheduled |
+| Nonlinear ranking | Fixed field+quality and two-feature linear champion | One capacity-limited grouped GBDT/LambdaMART model | GBDT + validated dense/query features | Scheduled |
+| Cross-encoding | Champion Top-20/50 ordering | One compact zero-shot Top-20 reranker | Cross-encoder score + GBDT or dense union | Scheduled |
+| Query construction | Raw-history champion | Structured, hybrid, and negation-safe raw-fallback variants | Query + dense and learned questioning | Scheduled |
+| Sparse semantic retrieval | Field-aware BM25 | One viable offline sparse expansion model, only if asset and runtime gates pass | Sparse semantic + query or GBDT | Conditional reserve |
+| Integration | Complete champion | Every standalone survivor plus dependency-justified reserves | Pairwise, selected higher-order, and backward ablations | Blocked on tracks |
+
+For each row record the owner/worktree, parent commit, manifest path, code status,
+run status, valid candidate count, best OOF estimate, uncertainty, runtime cost,
+decision ID, and next gate. Allowed run states are:
+
+```text
+NOT_STARTED -> IMPLEMENTING -> SMOKE_VALIDATED -> RUNNING -> EVALUATED -> DECIDED
+```
+
+A row may instead terminate as `INVALID` or `OUT_OF_SCOPE_WITH_REASON`. A
+`NOT_TESTED` ledger entry may not be changed to a positive or negative decision
+until its minimum independent test and required control were run under the common
+challenger contract.
+
+### 8.2 Portfolio allocation and pruning protocol
+
+Allocate evaluation in predeclared tranches rather than allowing the first promising
+family to consume the search budget:
+
+1. **Coverage tranche:** give every scheduled family its minimum independent test.
+   This is mandatory even when another family produces an early large gain.
+2. **Diagnostic tranche:** for each valid result, identify whether the limiting
+   factor is candidate recall, Top-10 ordering, dialogue reward, latency, packaging,
+   or statistical instability. Permit only targeted variants that address the
+   observed limiter.
+3. **Exploitation tranche:** spend additional candidates on families with positive
+   OOF evidence, stable folds, unique rescues, or a clear recoverable failure mode.
+4. **Interaction tranche:** reserve capacity for dependency-justified losers such
+   as query+dense and dense+reranker. A standalone loss is not sufficient reason to
+   test unrelated combinations.
+5. **Confirmation tranche:** rerun finalists with the frozen nested procedure,
+   repeated seeds when the algorithm is stochastic, full performance gates, and
+   backward ablations. Do not add new variants after entering this tranche.
+
+At every tranche boundary assign each versioned technique exactly one decision:
+
+| Decision | Operational rule |
+|---|---|
+| Promote | Positive, stable evidence and acceptable runtime; advance to integration. |
+| Continue targeted | The failure diagnosis is specific and the next variant tests that diagnosis directly. |
+| Interaction reserve | Standalone evidence is weak, but a named dependency and mechanism justify a bounded combination. |
+| Retest after dependency | Stop spending on the current version until its named upstream component changes materially. |
+| Park standalone | No competitive standalone value under the tested mechanism; preserve its report and controls. |
+| Prune version | Invalid, behaviorally duplicated, strictly dominated, or unable to satisfy immutable runtime/contract gates. |
+
+Expansion decisions use paired OOF deltas, uncertainty, fold/scenario stability,
+unique error corrections, and resource cost together. They must not be based on the
+largest technical-score decimal alone. Any increase to a family's candidate or
+wall-clock ceiling requires a manifest amendment written before evaluating the new
+tranche, containing the previous diagnosis and the falsifiable reason more search
+could change the result.
+
+Unlimited time does not permit unlimited adaptive reuse of the 150 development
+sessions. When additional compute only evaluates more choices against the same OOF
+outcomes, statistical selection risk rises even if model training is perfectly
+fold-local. Prefer new diagnostic evidence, behavioral deduplication, repeated
+stability checks, and dependency-driven combinations over blind search expansion.
 
 ## 9. Track A: learned counterfactual question policy
 
@@ -635,6 +725,8 @@ checkpoint branch until the competition is complete.
 
 ## 20. Per-track completion checklist
 
+- [ ] Global coverage matrix has an owner, run state, manifest, and next gate.
+- [ ] Current evaluation tranche and any budget amendment were declared in advance.
 - [ ] Branch starts at the recorded champion commit.
 - [ ] Worktree has no F3 file or access log.
 - [ ] Hypothesis and budget were declared before the run.

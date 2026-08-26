@@ -27,6 +27,62 @@ prospectively confirmed.
 6. Normalize, deduplicate, catalog-validate, and truncate recommendations to the
    official Top-10 contract. Token usage and external calls are zero.
 
+## Implementation and policy inventory
+
+The repository contains more techniques than the compiled champion activates.
+This inventory distinguishes deployable champion behavior, implemented research
+switches, experiment/search infrastructure, and future work that is still absent.
+The detailed decision history and evidence links are in
+`docs/technique_decision_ledger.md` and
+`artifacts/evidence/technique_decisions.jsonl`.
+
+### Active in the compiled champion
+
+| Area | Active implementation/policy |
+|---|---|
+| State | Raw normalized message history; session-isolated memory. |
+| Query | Concatenated raw user history. |
+| Retrieval | SQLite FTS5 field-aware BM25, Top-200, validated six-field weights. |
+| Ranking | Catalog-quality prior at `0.2`, then frozen two-feature pairwise linear reranker over Top-50. |
+| Dialogue | Fixed eight-action sequence with a bounded stop after the sequence. |
+| Output | Normalization, deduplication, catalog validation, and official Top-10 truncation. |
+| Runtime | Offline compiled policy; no dense model initialization, model download, token use, or external call. |
+
+### Implemented and experimentally switchable, but inactive
+
+| Area | Available techniques and policies |
+|---|---|
+| State | Current-turn only, raw history, single-value, multi-value, and compressed representations; negative evidence, provenance, and override invalidation switches. |
+| Question policy | No question, organizer fixed, explicit sequence, missing-priority, feature-first, uncertainty-limited, `other`-always, and heuristic adaptive policies. |
+| Retrieval | Organizer keyword baseline, generic MiniLM dense retrieval, RRF, weighted sparse/dense fusion, and field-aware sparse retrieval. |
+| Filtering/ranking | Coverage-aware structured filter, fixed lexical reranker, profile prior, catalog-quality prior, and learned linear reranker. |
+| Routing | Observable decision-list and shallow route-stump research paths, including always-route controls. |
+
+These paths are retained because an inactive technique may be a useful comparator or
+interaction dependency. Inactive does not mean recommended for submission.
+
+### Implemented research and optimization infrastructure
+
+- deterministic replay, counterfactual action evaluation, route analysis, and
+  question-policy evaluation;
+- grid, random, beam/racing, and evidence-allocation search utilities with bounded
+  manifests and cacheable results;
+- grouped frozen splits, paired statistics, integrity checks, holdout firewall,
+  compiled parity, runtime measurements, and offline contract validation;
+- typed technique configurations, lazy technique registry, experimental runtime
+  switches, traces, evidence records, and the validated technique-decision ledger.
+
+### Explicitly not implemented in this checkpoint
+
+- learned counterfactual question policy;
+- retrieval-specialized dense/vector index and sparse semantic expansion;
+- cross-fitted GBDT/LambdaMART reranker;
+- compact cross-encoder reranker;
+- raw-plus-structured hybrid query-construction challenger.
+
+These remain isolated worktree proposals. Their presence in the execution plan or
+decision ledger must not be interpreted as implemented code or positive evidence.
+
 ## Validation results
 
 All figures below use only the 150-session adaptive development split.
