@@ -181,6 +181,19 @@ The retained design scopes history to an intent epoch. It filters and fills from
 candidates while intent is stable, then clears history when state accepts an explicit
 correction. Ambiguous corrections that change no state do not clear it.
 
+### Cumulative score breakdown
+
+| Variant / policy | Hit Rate@10 | MRR | MTTC | TechnicalScore |
+| --- | ---: | ---: | ---: | ---: |
+| Raw history — literal fixed turn order | 0.800 | 0.517585 | 4.795 | 0.679376 |
+| Raw history — fixed `other` | 0.875 | 0.540002 | 3.455 | 0.750401 |
+| Corrected state — literal fixed turn order | 0.795 | 0.527571 | 4.945 | 0.676871 |
+| Corrected state — fixed `other` | 0.870 | 0.559954 | 3.480 | 0.753386 |
+| Coverage-adaptive state — literal fixed turn order | 0.820 | 0.549690 | 4.705 | 0.700807 |
+| Coverage-adaptive state — fixed `other` | 0.870 | 0.559954 | 3.480 | 0.753386 |
+| + recommendation history — literal fixed turn order | 0.955 | 0.587571 | 3.625 | 0.801271 |
+| + recommendation history — fixed `other` | 0.990 | 0.610714 | 2.715 | 0.843914 |
+
 | Variant | Policy | Hit Rate@10 | MRR | MTTC | Efficiency | TechnicalScore | Delta |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
 | Coverage-adaptive state | literal fixed turn order | 0.820 | 0.549690 | 4.705 | 0.6295 | 0.700807 | — |
