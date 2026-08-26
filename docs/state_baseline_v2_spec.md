@@ -32,6 +32,18 @@ control under literal order, and `0.753386` versus `0.750401` under fixed `other
 Question selection remains fixed in both comparisons; this is a query-state contribution,
 not an adaptive question policy.
 
+## Experiment Preservation
+
+The retained baseline branch contains only components that are currently retained for
+evaluation. A candidate that regresses or has inconclusive evidence is removed from that
+runtime path, but is not discarded by default. Its implementation, focused tests, exact
+evaluation artifact, and decision record belong on a named local experiment branch.
+
+Later work may iterate from that branch without rebuilding the candidate. An experiment
+is deleted only after an explicit decision that the approach is abandoned. Fixed question
+policies remain evaluation controls; they must not become an architectural dependency of
+the message interpreter merely because they are used to measure a candidate.
+
 Recommendation-history filtering is also retained. The agent removes products already
 returned during the current intent epoch and fills the response from lower unseen BM25
 candidates. An accepted correction starts a new epoch so products considered under the

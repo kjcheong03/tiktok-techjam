@@ -277,8 +277,9 @@ constraint values were never rewritten. No catalog or derived index was persiste
 
 The minimal consumer applied this grounding before the retained state reducer; BM25,
 fixed question policies, coverage-adaptive query selection, and recommendation-history
-epochs were unchanged. The candidate failed both required comparisons and was removed,
-including its runtime vocabulary and tests, rather than retained as unused complexity.
+epochs were unchanged. The candidate failed both required comparisons and was removed
+from the retained runtime path. Its implementation and focused tests are preserved on
+the named `experiment/exact-catalog-grounding-v1` local branch for later iteration.
 The complete session-level evidence is `artifacts/state_catalog_grounding_results.json`.
 
 | Variant | Policy | Hit Rate@10 | MRR | MTTC | TechnicalScore | Delta vs retained |
