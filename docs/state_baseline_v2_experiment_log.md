@@ -18,10 +18,12 @@
 | V2 state only | fixed `other` | 0.710 | 0.465732 | 4.930 | 0.616120 | +0.070808 |
 | V2 interpreted | fixed `other` | 0.710 | 0.423925 | 4.920 | 0.603777 | -0.012343 |
 
-The state-only candidate passed: neither policy regressed and current order improved by
-`0.005007`, meeting the `0.005` TechnicalScore gate. Under current order it also produced
-five earlier hits and four better target ranks with no paired losses. Under fixed `other`
-it produced 16 miss-to-hit conversions and no hit-to-miss conversions.
+The state-only candidate passed within the original parsed-query family: neither policy
+regressed and current order improved by `0.005007`, meeting the `0.005` TechnicalScore
+gate. Under current order it also produced five earlier hits and four better target ranks
+with no paired losses. Under fixed `other` it produced 16 miss-to-hit conversions and no
+hit-to-miss conversions. The later raw-history factorial control superseded this as
+evidence for final component retention.
 
 The deterministic interpreter candidate failed and was reverted. Under current order it
 caused 16 hit-to-miss and 11 miss-to-hit conversions; under fixed `other` it caused 16 of
@@ -55,7 +57,29 @@ user messages.
 | V2 state only | fixed `other` | 0.710 | 0.465732 | 4.930 | 0.616120 | — |
 | V2 + raw-history query | fixed `other` | 0.875 | 0.540002 | 3.455 | 0.750401 | +0.134281 |
 
-The candidate passed the contribution gate under both policies. Current order produced
-28 miss-to-hit and 8 hit-to-miss conversions; fixed `other` produced 34 miss-to-hit and
-one hit-to-miss conversion. The retained design therefore keeps structured state and raw
-retrieval evidence as separate representations.
+The raw-history query change passed relative to V2's lossy parsed query under both
+policies. Current order produced 28 miss-to-hit and 8 hit-to-miss conversions; fixed
+`other` produced 34 miss-to-hit and one hit-to-miss conversion. This established the
+value of raw history, but did not establish that managed state contributed.
+
+## State/no-state factorial control
+
+The final control held raw-history retrieval constant and explicitly separated the literal
+fixed turn order from the state-aware order.
+
+| Raw-history implementation | Policy | Hit Rate@10 | MRR | MTTC | TechnicalScore | State delta |
+| --- | --- | ---: | ---: | ---: | ---: | ---: |
+| No managed state | literal fixed turn order | 0.800 | 0.517585 | 4.795 | 0.679376 | — |
+| V2 state stored | literal fixed turn order | 0.800 | 0.517585 | 4.795 | 0.679376 | 0.000000 |
+| No managed state | fixed `other` | 0.875 | 0.540002 | 3.455 | 0.750401 | — |
+| V2 state stored | fixed `other` | 0.875 | 0.540002 | 3.455 | 0.750401 | 0.000000 |
+| V2 state drives skipping | state-aware order | 0.695 | 0.432111 | 5.645 | 0.584233 | -0.095143 |
+
+Under both policies that ignore managed state, all 200 paired sessions were identical.
+The current state-aware order caused 21 hit-to-miss conversions and no miss-to-hit
+conversions relative to raw history with the literal order. Consequently:
+
+- raw history is retained as the proven retrieval improvement;
+- fixed `other` remains a diagnostic rather than the product policy;
+- the literal fixed turn order is the strongest non-diagnostic control at `0.679376`; and
+- structured state remains experimental until a state consumer beats that control.

@@ -9,6 +9,25 @@ State Baseline V2 must understand and retain customer constraints more faithfull
 keeping the organizer's SQLite FTS5/BM25 retrieval implementation unchanged. It must also
 make the effect of state changes measurable independently from question-policy changes.
 
+## Evaluation Status
+
+The original specification below describes candidate components, not assumed wins. The
+factorial evaluation established the following retained control:
+
+- lossless raw user history is the BM25 query;
+- the literal fixed turn order is the primary non-diagnostic question control; and
+- fixed `other` remains a simulator-sensitive diagnostic.
+
+Structured state is not yet a retained performance component. With raw-history retrieval,
+storing V2 state while holding the literal fixed order or fixed `other` constant changed
+zero session outcomes. Letting the current state-aware order skip known or rejected
+attributes reduced TechnicalScore from `0.679376` to `0.584233` and caused 21 hit-to-miss
+conversions with no miss-to-hit conversions. The deterministic interpreter was also
+rejected after regressing both policies.
+
+Future state work must therefore beat `raw history + no managed state` under the same
+question policy. A comparison only against the lossy parsed-query baseline is insufficient.
+
 ## Current Baseline
 
 The current stateful baseline stores:
@@ -38,16 +57,17 @@ The current implementation has these limitations:
 
 ## Scope
 
-State Baseline V2 includes:
+State Baseline V2 candidate experiments include:
 
 - a shared attribute schema and normalization vocabulary;
 - deterministic extraction of structured constraints from customer messages;
 - multi-value, negative, hard, soft, numeric, and superseded constraint state;
 - targeted correction and no-preference handling;
-- deterministic compilation of active state into a BM25 query;
+- lossless raw-history BM25 queries, with structured state evaluated as a separate sidecar;
 - per-session recommendation history and unseen-product filtering;
 - the unchanged keyword retriever; and
-- controlled evaluation under the current question order and the fixed-`other` probe.
+- controlled evaluation under the state-aware order, literal fixed turn order, and
+  fixed-`other` probe.
 
 State Baseline V2 does not include:
 
@@ -174,15 +194,21 @@ candidates remain. `reset()` creates an empty history for the new session.
 
 ## BM25 Query Compilation
 
-The query compiler produces a deterministic string from active state:
+The initial active-state query compiler was useful as an ablation but was not retained as
+the primary BM25 query. It discarded lexical evidence that the unchanged OR-style BM25
+retriever uses effectively. The retained query is the exact accumulated user-message
+history in turn order.
 
-- category terms appear first;
-- active positive values follow in source-turn order;
-- duplicate normalized terms are emitted once;
-- superseded and no-preference values are omitted;
-- negative constraints are retained in state but omitted from the positive BM25 query,
+Structured state remains a sidecar representation. If a later retrieval experiment uses
+it, the compiler must preserve the raw evidence and separately demonstrate the value of:
+
+- placing category terms first;
+- ordering active positive values by source turn;
+- emitting duplicate normalized terms once;
+- omitting superseded and no-preference values;
+- retaining negative constraints in state while omitting them from the positive BM25 query,
   because the unchanged organizer retriever does not implement structured exclusion; and
-- hard and soft strength are retained in state but do not alter BM25 field weights in V2.
+- retaining hard and soft strength without altering BM25 field weights.
 
 These restrictions keep retrieval unchanged and prevent a phrase such as "not leather"
 from becoming a positive search for leather. Structured exclusion and preference weighting
@@ -192,20 +218,24 @@ belong to a later retrieval experiment.
 
 Question policy is held separate from state behavior.
 
-The current-order condition uses the existing order:
+The state-aware `current_order` condition uses the existing order:
 
 ```text
 material -> color -> style -> use_case -> feature -> budget -> size
 ```
 
-It continues to skip attributes that state reports as known, previously asked, or rejected.
-This is the primary backward-compatible condition; it is not claimed to be an optimal
-shopping policy.
+It skips attributes that state reports as known, previously asked, or rejected. Evaluation
+showed that this behavior currently regresses the raw-history control, so it is an
+experimental state policy rather than the primary control.
+
+The `fixed_turn_order` condition asks the same literal sequence by turn without reading
+managed state. This is the primary non-diagnostic control for state comparisons.
 
 The fixed-`other` condition returns `ask_attribute="other"` on every turn. It is a
 simulator-sensitive diagnostic probe, not the product policy or an adaptive controller.
-The user-reported TechnicalScore of approximately `0.76` must be reproduced and recorded
-before it is used as a non-regression benchmark.
+The user-reported raw-history fixed-`other` TechnicalScore of approximately `0.76` must be
+reproduced and recorded before it is used as a non-regression benchmark. The exact
+reproduced value is `0.750401`.
 
 No new question order is designed in this work. Adaptive question selection is evaluated
 separately after State Baseline V2.
@@ -282,20 +312,27 @@ ground-truth ASINs.
 
 ### Contribution isolation
 
-Run these cumulative variants under both question-policy conditions:
+Run these variants under the state-aware order, literal fixed turn order, and fixed-`other`
+conditions where applicable:
 
-| Variant | Interpreter | Catalog normalization | State transitions | Recommendation filtering |
-|---|---|---|---|---|
-| V1 | V1 | Off | V1 | Off |
-| V2 state only | V1, adapted to emit the V2 contract | Off | V2 | Off |
-| V2 interpreted | V2 | Off | V2 | Off |
-| V2 normalized | V2 | On | V2 | Off |
-| V2 full | V2 | On | V2 | On |
+| Variant | BM25 query | Interpreter | Catalog normalization | State transitions | Recommendation filtering |
+|---|---|---|---|---|---|
+| V1 | V1 active slots | V1 | Off | V1 | Off |
+| V2 state only | V2 active constraints | V1 adapter | Off | V2 | Off |
+| Raw-history no state | Raw messages | None | Off | None | Off |
+| V2 raw-history query | Raw messages | V1 adapter | Off | V2 | Off |
+| V2 interpreted | Raw messages | V2 | Off | V2 | Off |
+| V2 normalized | Raw messages plus candidate normalized evidence | V2 | On | V2 | Off |
+| V2 full | Raw messages plus retained evidence | V2 | On | V2 | On |
 
 Use the successive deltas to attribute outcomes:
 
 - `V2 state only - V1` measures the new state transitions and query compilation;
-- `V2 interpreted - V2 state only` measures conversation interpretation;
+- `V2 raw-history query - V2 state only` measures lossless query representation while
+  holding V2 state constant;
+- `V2 raw-history query - raw-history no state` measures the state contribution while
+  holding raw-history retrieval and question policy constant;
+- `V2 interpreted - V2 raw-history query` measures conversation interpretation;
 - `V2 normalized - V2 interpreted` measures catalog-backed normalization; and
 - `V2 full - V2 normalized` measures recommendation-history filtering.
 
@@ -328,10 +365,12 @@ State Baseline V2 is complete when:
 
 - all unit, transcript-replay, agent-contract, and existing evaluator tests pass;
 - V1 reproduces its committed current-order metrics within deterministic equality;
-- the fixed-`other` V1 probe is reproduced and its exact metrics are stored as an artifact;
-- V2 does not reduce TechnicalScore relative to V1 under either fixed policy;
-- V2 under fixed `other` meets or exceeds the exact reproduced probe TechnicalScore,
-  currently user-reported as approximately `0.76`;
+- the raw-history fixed-`other` probe is reproduced and its exact metrics are stored as an
+  artifact;
+- any retained state behavior meets or exceeds the raw-history/no-state control under the
+  identical question policy;
+- the retained raw-history implementation reproduces the exact fixed-`other` probe
+  TechnicalScore of `0.750401`;
 - scenario-level, successive-delta, and paired-session results are stored with the overall
   results;
 - every retained V2 component satisfies the component-retention rule; and
