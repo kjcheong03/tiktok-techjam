@@ -18,21 +18,21 @@
   "gate": "champion_checkpoint_performance_and_packaging",
   "holdout_accessed": false,
   "latency": {
-    "max_ms": 65.838542,
-    "mean_ms": 23.27959,
-    "p50_ms": 22.286791,
-    "p95_ms": 46.652208,
+    "max_ms": 58.888875,
+    "mean_ms": 23.005288,
+    "p50_ms": 21.861291,
+    "p95_ms": 46.56325,
     "turn_count": 349
   },
   "measurements": {
     "bundled_model_asset_mb": 0.148161,
     "catalog_input_mb": 57.741477,
-    "cold_start_seconds": 4.652511,
-    "memory_after_init_mb": 995.469,
-    "memory_before_init_mb": 41.812,
-    "peak_process_memory_mb": 1171.312,
+    "cold_start_seconds": 4.586991,
+    "memory_after_init_mb": 995.625,
+    "memory_before_init_mb": 42.312,
+    "peak_process_memory_mb": 1171.781,
     "runtime_source_and_config_mb": 0.080192,
-    "warm_turn_p95_ms": 46.652208
+    "warm_turn_p95_ms": 46.56325
   },
   "metrics": {
     "hit_rate_at_10": 0.973333,

@@ -2,7 +2,9 @@
 
 Date: 2026-08-26
 
-Branch: `exp/compile-guarded-gbdt`
+Original compilation branch: `exp/compile-guarded-gbdt`
+
+Integrated branch: `ghostlab/integration`
 
 Research parent: `93bf07b`
 
@@ -68,10 +70,10 @@ challenger report.
 
 | Measurement | Result | Budget |
 |---|---:|---:|
-| Cold initialization | 4.629019 s | <= 30 s |
-| First response | 32.650667 ms | reported |
-| Warm response p95 | 47.835583 ms | <= 500 ms |
-| Peak process memory | 1175.859 MB | <= 4096 MB |
+| Cold initialization | 4.543854 s | <= 30 s |
+| First response | 31.996292 ms | reported |
+| Warm response p95 | 46.659083 ms | <= 500 ms |
+| Peak process memory | 1177.141 MB | <= 4096 MB |
 | Combined model assets | 0.148161 MB | <= 500 MB |
 | Response failures | 0 | 0 |
 | External calls | 0 | 0 |
@@ -81,3 +83,9 @@ files, lazy loading occurred on the first response, and no experiment trace was
 present. Exact machine-readable evidence is in
 `artifacts/reports/guarded_compiled_parity_v1.json` and
 `artifacts/reports/guarded_compiled_runtime_v1.json`.
+
+The table above is the isolated, contention-free rerun from
+`ghostlab/integration` after the compiled commit was cherry-picked. The integration
+worktree also passed 132 tests, repository Ruff checks, production-boundary mypy,
+lockfile, organizer integrity, decision-ledger, compiled parity, checkpoint, and
+offline fallback gates. See `docs/final_candidate_checkpoint.md`.

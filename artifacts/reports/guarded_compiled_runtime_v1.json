@@ -15,7 +15,7 @@
       }
     ]
   },
-  "cold_start_seconds": 4.629019,
+  "cold_start_seconds": 4.543854,
   "config": {
     "canonical_sha256": "15a8b67ba680a403f888120540f8b790035d2d34510742c1c61cb627c88b3772",
     "path": "configs/compiled_policy.json",
@@ -24,11 +24,11 @@
   "experiment_trace_present": false,
   "external_calls_per_turn": 0,
   "failure_count": 0,
-  "first_response_ms": 32.650667,
+  "first_response_ms": 31.996292,
   "gate": "guarded_compiled_runtime",
   "holdout_accessed": false,
   "measurement_scope": "all-development compiled runtime",
-  "memory_before_init_mb": 45.359,
+  "memory_before_init_mb": 45.875,
   "metrics": {
     "hit_rate_at_10": 0.973333,
     "mrr": 0.757508,
@@ -39,11 +39,11 @@
   "models_loaded_after_evaluation": true,
   "offline_network_guard": "passed",
   "passed": true,
-  "peak_process_memory_mb": 1175.859,
+  "peak_process_memory_mb": 1177.141,
   "sample_count": 150,
   "schema_version": 1,
   "turn_count": 349,
-  "warm_turn_max_ms": 59.223417,
-  "warm_turn_mean_ms": 23.318843,
-  "warm_turn_p95_ms": 47.835583
+  "warm_turn_max_ms": 58.532208,
+  "warm_turn_mean_ms": 23.020509,
+  "warm_turn_p95_ms": 46.659083
 }
