@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "amendment_id": "gbdt_constraint_interaction_v1_amendment_1",
+  "experiment_id": "gbdt_constraint_interaction_v1",
+  "parent_result_commit": "97dc1e752cb72720e2042d10a60ab1c803fa15a6",
+  "created_before_corrected_outcomes": true,
+  "corrected_outcomes_observed": false,
+  "holdout_accessed": false,
+  "reason": "Independent audit found that scoped override semantics, training/runtime asked-attribute bookkeeping, and mutable runtime context binding were incorrect even though the original score gates passed.",
+  "superseded_evidence": {
+    "report": "artifacts/reports/gbdt_constraint_interaction_v1.json",
+    "model": "artifacts/models/gbdt_constraint_interaction_v1.json",
+    "status": "SUPERSEDED_SEMANTIC_DEFECT",
+    "preservation_rule": "Keep the original report and model immutable; write corrected evidence to v2 paths."
+  },
+  "frozen_corrections": {
+    "override_scope": {
+      "global_reset": "Observable phrases such as start over, ignore everything, or ignore all previous requirements invalidate all earlier active positive and negative constraints before current-message ingestion.",
+      "explicit_earlier_preference_reset": "The exact observable phrase ignore my earlier preference combined with replacement evidence invalidates earlier active non-category preferences while preserving category; then current-message evidence is ingested.",
+      "slot_correction": "A targeted correction invalidates earlier values only for the newly detected attribute.",
+      "category_replacement": "A category or intent replacement invalidates the old category and only constraints carrying that category scope.",
+      "ambiguous_actually": "Actually without a parsed correction or explicit reset preserves unrelated state.",
+      "negative_evidence": "Explicit negation keeps the existing value-matching invalidation semantics and must not become a global reset."
+    },
+    "question_bookkeeping": "Training must use the runtime deduplication rule for consecutive repeated question attributes so asked_count and no_preference_ratio are exactly equal for identical observable trajectories.",
+    "runtime_context": "Replace shared mutable bound state/turn with invocation-scoped context whose token is reset in try/finally; interleaved and concurrent calls must not cross-contaminate sessions.",
+    "typing": "Resolve targeted mypy errors introduced by the constraint challenger without weakening repository checks or changing model behavior."
+  },
+  "frozen_retest": {
+    "candidate_id": "metadata_depth3_plus_runtime_constraints_v2_scoped_override",
+    "feature_names": "identical to constraint_runtime_v1",
+    "top_k_head": 50,
+    "outer_folds": "nested_v1 unchanged",
+    "outer_fold_rounds": [100, 4, 56, 98, 34],
+    "all_development_rounds": 56,
+    "max_depth": 3,
+    "num_leaves": 7,
+    "learning_rate": 0.03,
+    "seed": 20260826,
+    "controls": "Retrain the exact metadata GBDT control from scratch and require 0.861417 within 0.000001.",
+    "corrected_report": "artifacts/reports/gbdt_constraint_interaction_v2.json",
+    "corrected_model": "artifacts/models/gbdt_constraint_interaction_v2.json",
+    "no_new_features_hyperparameters_or_selection": true
+  },
+  "promotion_gates": {
+    "minimum_oof_score_delta": 0.005,
+    "minimum_nonnegative_outer_folds": 4,
+    "minimum_hit_rate_delta": -0.005,
+    "minimum_each_scenario_score_delta": -0.005,
+    "required_failure_count": 0,
+    "cold_start_seconds_max": 30.0,
+    "warm_turn_p95_ms_max": 500.0,
+    "peak_process_memory_mb_max": 4096.0,
+    "model_asset_mb_max": 500.0,
+    "exact_control_reproduction_tolerance": 0.000001,
+    "required_state_semantic_tests": true,
+    "required_training_runtime_feature_parity": true,
+    "required_interleaved_concurrency_safety": true,
+    "required_determinism": true
+  },
+  "selection_prohibitions": [
+    "no new features",
+    "no hyperparameter or round search",
+    "no post-correction feature selection",
+    "no target, profile, scenario, future-turn, or holdout fields",
+    "no access to F3"
+  ]
+}
