@@ -39,17 +39,41 @@ class TimedAgent:
     def __init__(self, wrapped: ExperimentalAgent) -> None:
         self.wrapped = wrapped
         self.latencies_ms: list[float] = []
+        self.reset_exception_count = 0
+        self.response_exception_count = 0
+        self.invalid_response_count = 0
+        self.response_calls = 0
 
     def reset(self, session_id: str, user_profile: dict) -> None:
-        self.wrapped.reset(session_id, user_profile)
+        try:
+            self.wrapped.reset(session_id, user_profile)
+        except Exception:
+            self.reset_exception_count += 1
+            raise
 
     def respond(
         self, session_id: str, user_message: str, turn: int, top_k: int
     ) -> dict:
         started = time.perf_counter()
-        result = self.wrapped.respond(session_id, user_message, turn, top_k)
+        self.response_calls += 1
+        try:
+            result = self.wrapped.respond(session_id, user_message, turn, top_k)
+        except Exception:  # noqa: BLE001 - instrument evaluator-equivalent containment
+            self.response_exception_count += 1
+            result = {"message": "", "ask_attribute": None, "recommendations": []}
+        if not isinstance(result, dict) or not isinstance(result.get("message"), str):
+            self.invalid_response_count += 1
+            result = {"message": "", "ask_attribute": None, "recommendations": []}
         self.latencies_ms.append((time.perf_counter() - started) * 1000)
         return result
+
+    @property
+    def failure_count(self) -> int:
+        return (
+            self.reset_exception_count
+            + self.response_exception_count
+            + self.invalid_response_count
+        )
 
 
 def percentile(values: list[float], fraction: float) -> float:
@@ -109,7 +133,13 @@ def main() -> None:
         "model_asset_bytes": model_path.stat().st_size,
         "model_asset_mb": round(model_path.stat().st_size / (1024 * 1024), 6),
         "external_calls_per_turn": 0,
-        "failure_count": 0,
+        "response_calls": timed.response_calls,
+        "failure_count": timed.failure_count,
+        "failure_counts": {
+            "reset_exceptions": timed.reset_exception_count,
+            "response_exceptions": timed.response_exception_count,
+            "invalid_responses": timed.invalid_response_count,
+        },
         "metrics": {
             key: result[key]
             for key in (

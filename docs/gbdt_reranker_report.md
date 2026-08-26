@@ -65,6 +65,11 @@ zero. The all-development refit scored `0.828369`; its stopping round was select
 inside an all-development training/validation split and its behavior matched the
 isolated runtime measurement exactly.
 
+This initial four-round deployable asset is superseded by the independently audited
+56-round artifact. The OOF evidence above is unchanged. See
+`docs/gbdt_deployment_audit_resolution.md` for the precommitted median-round rule,
+the `0.857554` deployment-fit result, executable gates, and failure instrumentation.
+
 The full machine-readable manifest, per-session predictions, fold IDs, scenario
 metrics, paired evidence, feature importance, model hashes, and measurements are in
 `configs/experiments/gbdt_reranker_v1.json` and

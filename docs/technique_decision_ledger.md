@@ -229,6 +229,7 @@ produces one frozen candidate; prototype branches never access the sealed holdou
 | D024 | `retrieval.sparse_semantic_v1` | `NOT_TESTED` | Optional semantic alternative, not implemented. |
 | D025 | `ranking.quality_only_v1` | `PARKED_STANDALONE` | Near-champion scalar score; lost robustness tie-break. |
 | D026 | `ranking.gbdt_v2` | `PROMOTED` | Stable grouped OOF gain; advance to integration without changing the compiled champion. |
+| D027 | `ranking.gbdt_deployable_v2` | `PROMOTED` | Audited 56-round refit passed deterministic deployment and packaging gates. |
 
 ## How future worktrees update the evidence
 
