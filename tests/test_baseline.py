@@ -6,6 +6,7 @@ from baseline.agent import BaselineAgent
 from baseline.question_policy import fixed_other
 from baseline.retrieval import reciprocal_rank_fusion
 from baseline.state import SessionState
+from baseline.state_v2 import StructuredSessionState
 
 
 class FakeKeywordRetriever:
@@ -19,6 +20,17 @@ class FakeKeywordRetriever:
 class FakeDenseRetriever:
     def search(self, query: str, limit: int) -> list[str]:
         return ["B", "D", "A"]
+
+
+class SequenceKeywordRetriever:
+    def __init__(self, ranking: list[str]) -> None:
+        self.ranking = ranking
+
+    def reset(self, session_id: str, user_profile: dict) -> None:
+        pass
+
+    def search(self, session_id: str, query: str, turn: int, limit: int) -> list[str]:
+        return list(self.ranking)
 
 
 class StateTest(unittest.TestCase):
@@ -89,6 +101,85 @@ class RetrievalTest(unittest.TestCase):
         self.assertEqual(response["recommendations"][0]["parent_asin"], "B")
         self.assertIn(response["ask_attribute"], {"material", "color"})
         self.assertEqual(response["usage"], {"prompt_tokens": 0, "completion_tokens": 0})
+
+    def test_opt_out_repeats_ranked_candidates(self) -> None:
+        agent = BaselineAgent(
+            mode="keyword",
+            stateful=True,
+            keyword=SequenceKeywordRetriever(["A", "B", "C"]),  # type: ignore[arg-type]
+            dense=None,
+            state_factory=StructuredSessionState,
+        )
+        agent.reset("session", {})
+
+        first = agent.respond("session", "I'm looking for shoes.", 1, 2)
+        second = agent.respond("session", "I'm still exploring.", 2, 2)
+
+        self.assertEqual(first["recommendations"], [{"parent_asin": "A"}, {"parent_asin": "B"}])
+        self.assertEqual(second["recommendations"], [{"parent_asin": "A"}, {"parent_asin": "B"}])
+
+    def test_opt_in_filters_seen_and_fills_from_retrieval_window(self) -> None:
+        agent = BaselineAgent(
+            mode="keyword",
+            stateful=True,
+            keyword=SequenceKeywordRetriever(["A", "B", "C", "D"]),  # type: ignore[arg-type]
+            dense=None,
+            state_factory=StructuredSessionState,
+            filter_seen_recommendations=True,
+        )
+        agent.reset("session", {})
+
+        first = agent.respond("session", "I'm looking for shoes.", 1, 2)
+        second = agent.respond("session", "I'm still exploring.", 2, 2)
+
+        self.assertEqual(first["recommendations"], [{"parent_asin": "A"}, {"parent_asin": "B"}])
+        self.assertEqual(second["recommendations"], [{"parent_asin": "C"}, {"parent_asin": "D"}])
+
+    def test_only_returned_recommendations_are_recorded(self) -> None:
+        agent = BaselineAgent(
+            mode="keyword",
+            stateful=True,
+            keyword=SequenceKeywordRetriever(["A", "B", "C"]),  # type: ignore[arg-type]
+            dense=None,
+            state_factory=StructuredSessionState,
+            filter_seen_recommendations=True,
+        )
+        agent.reset("session", {})
+
+        agent.respond("session", "I'm looking for shoes.", 1, 2)
+
+        state = agent.sessions["session"]
+        self.assertEqual(state.shown_product_ids, {"A", "B"})
+        self.assertNotIn("C", state.shown_product_ids)
+
+    def test_opt_in_filtering_applies_to_dense_and_hybrid_rankings(self) -> None:
+        for mode, keyword, dense, expected_first, expected_second in (
+            ("dense", SequenceKeywordRetriever([]), FakeDenseRetriever(), ["B", "D"], ["A"]),
+            ("hybrid", SequenceKeywordRetriever(["A", "B", "C"]), FakeDenseRetriever(), ["B", "A"], ["D", "C"]),
+        ):
+            with self.subTest(mode=mode):
+                agent = BaselineAgent(
+                    mode=mode,
+                    stateful=True,
+                    keyword=keyword,  # type: ignore[arg-type]
+                    dense=dense,  # type: ignore[arg-type]
+                    retrieval_k=4,
+                    state_factory=StructuredSessionState,
+                    filter_seen_recommendations=True,
+                )
+                agent.reset("session", {})
+
+                first = agent.respond("session", "I'm looking for shoes.", 1, 2)
+                second = agent.respond("session", "I'm still exploring.", 2, 2)
+
+                self.assertEqual(
+                    [item["parent_asin"] for item in first["recommendations"]],
+                    expected_first,
+                )
+                self.assertEqual(
+                    [item["parent_asin"] for item in second["recommendations"]],
+                    expected_second,
+                )
 
 
 if __name__ == "__main__":

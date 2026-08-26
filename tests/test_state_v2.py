@@ -150,6 +150,7 @@ class StateV2ReplayTest(unittest.TestCase):
             1,
         )
         state.observe("A key requirement is: leather; under $80.", 1)
+        state.record_recommendations(["shown-before-correction"])
         state.observe(
             "Actually, ignore my earlier preference. What I need is: navy.",
             2,
@@ -165,6 +166,7 @@ class StateV2ReplayTest(unittest.TestCase):
         self.assertNotIn("black", state.build_query())
         self.assertIn("navy", state.build_query())
         self.assertIn("I'm looking for shoes", state.messages[0])
+        self.assertEqual(state.shown_product_ids, set())
 
     def test_ambiguous_correction_preserves_state_and_raw_message(self) -> None:
         state = StructuredSessionState("session", {})
@@ -172,12 +174,14 @@ class StateV2ReplayTest(unittest.TestCase):
             "I'm looking for shoes. A key requirement is: black leather.",
             1,
         )
+        state.record_recommendations(["shown-before-ambiguous-correction"])
         ambiguous = "Actually, ignore my earlier preference. What I need is: something."
         state.observe(ambiguous, 2)
 
         self.assertEqual(state.build_query(), "shoes. black leather")
         self.assertTrue(all(item.status == "active" for item in state.constraints))
         self.assertEqual(state.messages[-1], ambiguous)
+        self.assertEqual(state.shown_product_ids, {"shown-before-ambiguous-correction"})
 
     def test_no_preference_skips_question_but_keeps_query_value(self) -> None:
         state = StructuredSessionState("session", {})
@@ -218,6 +222,7 @@ class StateV2ReplayTest(unittest.TestCase):
     def test_reset_clears_conversation_state(self) -> None:
         state = StructuredSessionState("session", {})
         state.observe("I'm looking for shoes.", 1)
+        state.record_recommendations(["A", "B"])
 
         state.reset("next", {"summary": "new profile"})
 
@@ -225,6 +230,18 @@ class StateV2ReplayTest(unittest.TestCase):
         self.assertEqual(state.user_profile, {"summary": "new profile"})
         self.assertEqual(state.messages, [])
         self.assertEqual(state.constraints, [])
+        self.assertEqual(state.shown_product_ids, set())
+        self.assertEqual(state.filter_seen_recommendations(["A", "B"]), ["A", "B"])
+
+    def test_recommendation_history_preserves_unseen_rank_order(self) -> None:
+        state = StructuredSessionState("session", {})
+
+        state.record_recommendations(["B"])
+
+        self.assertEqual(
+            state.filter_seen_recommendations(["A", "B", "C", "A"]),
+            ["A", "C", "A"],
+        )
 
 
 if __name__ == "__main__":

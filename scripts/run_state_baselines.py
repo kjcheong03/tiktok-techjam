@@ -48,6 +48,7 @@ DEFAULT_COMPARISON_EDGES = (
     ("v1_keyword_state", "v2_state_only"),
     ("v2_state_only", "v2_coverage_adaptive_query"),
     ("raw_history_no_state", "v2_coverage_adaptive_query"),
+    ("v2_coverage_adaptive_query", "v2_coverage_adaptive_history"),
 )
 
 
@@ -180,11 +181,16 @@ def default_variant_registry() -> dict[str, VariantSpec]:
         "v2_coverage_adaptive_query",
         _coverage_adaptive_v2_agent,
     )
+    coverage_adaptive_history = VariantSpec(
+        "v2_coverage_adaptive_history",
+        _coverage_adaptive_history_v2_agent,
+    )
     return {
         v1.name: v1,
         state_only.name: state_only,
         raw_control.name: raw_control,
         coverage_adaptive.name: coverage_adaptive,
+        coverage_adaptive_history.name: coverage_adaptive_history,
     }
 
 
@@ -225,6 +231,27 @@ def _coverage_adaptive_v2_agent(
         dense=None,
         state_factory=CoverageAdaptiveSessionState,
         question_policy=policy,
+    )
+
+
+def _coverage_adaptive_history_v2_agent(
+    catalog_path: Path,
+    keyword: Any,
+    policy: QuestionPolicy,
+) -> Any:
+    """Build coverage-adaptive V2 with per-session unseen-result filtering."""
+
+    from baseline.agent import BaselineAgent
+    from baseline.query_state import CoverageAdaptiveSessionState
+
+    return BaselineAgent(
+        mode="keyword",
+        stateful=True,
+        keyword=keyword,
+        dense=None,
+        state_factory=CoverageAdaptiveSessionState,
+        question_policy=policy,
+        filter_seen_recommendations=True,
     )
 
 

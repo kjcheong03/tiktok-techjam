@@ -25,6 +25,7 @@ class BaselineAgent:
         rrf_constant: int = 60,
         state_factory: Callable[[str, dict], Any] = SessionState,
         question_policy: QuestionPolicy | None = None,
+        filter_seen_recommendations: bool = False,
     ) -> None:
         if mode in {"dense", "hybrid"} and dense is None:
             raise ValueError(f"{mode} mode requires a dense retriever")
@@ -36,6 +37,7 @@ class BaselineAgent:
         self.rrf_constant = rrf_constant
         self.state_factory = state_factory
         self.question_policy = question_policy
+        self.filter_seen_recommendations = filter_seen_recommendations
         self.sessions: dict[str, Any] = {}
 
     def reset(self, session_id: str, user_profile: dict) -> None:
@@ -80,6 +82,17 @@ class BaselineAgent:
                 limit=self.retrieval_k,
             )
 
+        if self.filter_seen_recommendations:
+            filter_seen = getattr(state, "filter_seen_recommendations", None)
+            if callable(filter_seen):
+                ranked = filter_seen(ranked)
+
+        returned = ranked[:top_k]
+        if self.filter_seen_recommendations:
+            record = getattr(state, "record_recommendations", None)
+            if callable(record):
+                record(returned)
+
         if ask_attribute is None:
             message = "Here are the closest matches based on what you have shared."
         else:
@@ -89,7 +102,7 @@ class BaselineAgent:
             "message": message,
             "ask_attribute": ask_attribute,
             "recommendations": [
-                {"parent_asin": identifier} for identifier in ranked[:top_k]
+                {"parent_asin": identifier} for identifier in returned
             ],
             "usage": {"prompt_tokens": 0, "completion_tokens": 0},
         }

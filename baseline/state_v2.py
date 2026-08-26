@@ -57,6 +57,7 @@ class StructuredSessionState:
     constraints: list[StructuredConstraint] = field(default_factory=list)
     asked_attributes: list[str] = field(default_factory=list)
     no_preference_attributes: set[str] = field(default_factory=set)
+    shown_product_ids: set[str] = field(default_factory=set)
     last_asked_attribute: str | None = None
     _adapter: LegacyV1ConstraintAdapter = field(
         default_factory=LegacyV1ConstraintAdapter,
@@ -108,11 +109,14 @@ class StructuredSessionState:
             incoming = list(parsed_constraints)
 
         self.no_preference_attributes.update(explicit_no_preference)
-        self.apply_constraints(
+        correction = _CORRECTION_RE.search(message) is not None
+        accepted = self.apply_constraints(
             incoming,
             source_text=message,
-            correction=_CORRECTION_RE.search(message) is not None,
+            correction=correction,
         )
+        if correction and accepted:
+            self.shown_product_ids.clear()
 
     def apply_constraints(
         self,
@@ -238,6 +242,16 @@ class StructuredSessionState:
                     result.append(value)
         return result
 
+    def filter_seen_recommendations(self, product_ids: Iterable[str]) -> list[str]:
+        """Keep ranked candidates that have not been shown in this session."""
+
+        return [product_id for product_id in product_ids if product_id not in self.shown_product_ids]
+
+    def record_recommendations(self, product_ids: Iterable[str]) -> None:
+        """Record only the recommendation IDs actually returned to the customer."""
+
+        self.shown_product_ids.update(product_ids)
+
     def build_query(self) -> str:
         """Compile active positive evidence into the deterministic BM25 query."""
 
@@ -289,6 +303,7 @@ class StructuredSessionState:
         self.constraints.clear()
         self.asked_attributes.clear()
         self.no_preference_attributes.clear()
+        self.shown_product_ids.clear()
         self.last_asked_attribute = None
         self._adapter = LegacyV1ConstraintAdapter()
 

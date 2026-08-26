@@ -54,6 +54,7 @@ class PairedComparisonTest(unittest.TestCase):
                 "v2_state_only",
                 "raw_history_no_state",
                 "v2_coverage_adaptive_query",
+                "v2_coverage_adaptive_history",
             ],
         )
         self.assertIn(
@@ -62,6 +63,10 @@ class PairedComparisonTest(unittest.TestCase):
         )
         self.assertIn(
             ("v2_state_only", "v2_coverage_adaptive_query"),
+            DEFAULT_COMPARISON_EDGES,
+        )
+        self.assertIn(
+            ("v2_coverage_adaptive_query", "v2_coverage_adaptive_history"),
             DEFAULT_COMPARISON_EDGES,
         )
 
