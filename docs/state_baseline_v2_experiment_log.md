@@ -264,3 +264,40 @@ are not reclassified as strict-gate passes.
 This is a provisional architecture decision, not proof that every transition independently
 improves every fixed policy. Later changes must continue reporting the two policies
 separately so these interactions remain observable.
+
+## Deferred exact catalog normalization and grounding
+
+This isolated candidate built a read-only, in-memory vocabulary from all 50,000
+catalog rows. It contained `19,855` distinct non-empty participant-visible `store`
+values and `863` `categories` values. Keys used only case/whitespace normalization.
+Grounding reassigned a constraint to `brand` or `category` only when its normalized
+value identified one raw catalog value in one field; normalized collisions, cross-field
+collisions, and unmatched values retained their prior interpretation. Source text and
+constraint values were never rewritten. No catalog or derived index was persisted.
+
+The minimal consumer applied this grounding before the retained state reducer; BM25,
+fixed question policies, coverage-adaptive query selection, and recommendation-history
+epochs were unchanged. The candidate failed both required comparisons and was removed,
+including its runtime vocabulary and tests, rather than retained as unused complexity.
+The complete session-level evidence is `artifacts/state_catalog_grounding_results.json`.
+
+| Variant | Policy | Hit Rate@10 | MRR | MTTC | TechnicalScore | Delta vs retained |
+| --- | --- | ---: | ---: | ---: | ---: | ---: |
+| Full retained | literal fixed turn order | 0.955 | 0.587571 | 3.625 | 0.801271 | — |
+| + exact catalog grounding | literal fixed turn order | 0.950 | 0.585905 | 3.660 | 0.797571 | -0.003700 |
+| Full retained | fixed `other` | 0.990 | 0.610714 | 2.715 | 0.843914 | — |
+| + exact catalog grounding | fixed `other` | 0.985 | 0.606048 | 2.775 | 0.838814 | -0.005100 |
+
+The regression was entirely in Intent Override; Boundary, Browsing, and Buying scenario
+metrics were identical under each policy.
+
+| Policy | Intent Override: retained (Hit/MRR/MTTC) | Grounded (Hit/MRR/MTTC) |
+| --- | --- | --- |
+| literal fixed turn order | 0.900000 / 0.712540 / 4.633333 | 0.866667 / 0.701429 / 4.866667 |
+| fixed `other` | 0.966667 / 0.701243 / 4.200000 | 0.933333 / 0.670132 / 4.600000 |
+
+Paired outcomes were also unfavorable. Under literal order there were zero miss-to-hit
+and one hit-to-miss conversion (`public_0103`). Under fixed `other` there were zero
+miss-to-hit and one hit-to-miss (`public_0103`), zero earlier and two later hits
+(`public_0064`, `public_0080`), one better rank (`public_0177`), and two worse ranks
+(`public_0064`, `public_0080`).
