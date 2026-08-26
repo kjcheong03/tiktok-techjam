@@ -41,3 +41,21 @@ conversation-history retrieval. Reproducing that exact joint control scored:
 
 This is a reference probe rather than an isolated state delta. The per-variant fixed
 `other` results above deliberately keep each variant's own state representation.
+
+## Raw-history query candidate
+
+This candidate retained V2 structured state for transitions and question selection, but
+changed only BM25 query compilation from active parsed constraints to exact accumulated
+user messages.
+
+| Cumulative variant | Policy | Hit Rate@10 | MRR | MTTC | TechnicalScore | Delta |
+| --- | --- | ---: | ---: | ---: | ---: | ---: |
+| V2 state only | current order | 0.595 | 0.391891 | 6.335 | 0.508367 | — |
+| V2 + raw-history query | current order | 0.695 | 0.432111 | 5.645 | 0.584233 | +0.075866 |
+| V2 state only | fixed `other` | 0.710 | 0.465732 | 4.930 | 0.616120 | — |
+| V2 + raw-history query | fixed `other` | 0.875 | 0.540002 | 3.455 | 0.750401 | +0.134281 |
+
+The candidate passed the contribution gate under both policies. Current order produced
+28 miss-to-hit and 8 hit-to-miss conversions; fixed `other` produced 34 miss-to-hit and
+one hit-to-miss conversion. The retained design therefore keeps structured state and raw
+retrieval evidence as separate representations.
