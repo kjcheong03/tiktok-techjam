@@ -8,7 +8,7 @@ from ghostlab.runtime.agent import GhostLabRuntime
 
 
 class CompiledRuntimeTest(unittest.TestCase):
-    def test_primary_is_champion_sequence_and_contract_safe(self) -> None:
+    def test_primary_is_guarded_sequence_and_contract_safe(self) -> None:
         agent = GhostLabRuntime("data/catalog.jsonl")
         agent.reset("session", {})
         attributes = []
@@ -21,16 +21,25 @@ class CompiledRuntimeTest(unittest.TestCase):
             self.assertLessEqual(len(response["recommendations"]), 10)
         self.assertEqual(attributes, ["other", "other", "use_case"])
 
-    def test_default_policy_contains_the_frozen_champion(self) -> None:
+    def test_default_policy_contains_the_guarded_candidate(self) -> None:
         config = RuntimeConfig.model_validate_json(
             Path("configs/compiled_policy.json").read_text(encoding="utf-8")
         )
         techniques = config.techniques
-        self.assertEqual(config.policy_id, "ghostlab_champion_linear_v1")
+        self.assertEqual(config.policy_id, "ghostlab_guarded_constraint_gbdt_v1")
         self.assertEqual(techniques.state_mode, "raw_history")
         self.assertEqual(techniques.sparse_field_weights, (2, 8, 4, 2.5, 1.5, 1))
-        self.assertEqual(techniques.reranker, "learned_linear")
-        self.assertEqual(techniques.learned_training_pairs, 32746)
+        self.assertEqual(techniques.reranker, "guarded_constraint_gbdt")
+        assert techniques.base_model_asset is not None
+        assert techniques.constraint_model_asset is not None
+        self.assertEqual(
+            techniques.base_model_asset.sha256,
+            "10782d08ce20f8c9a60d3e2482ff577c887a35cc74e456c69c781409eb4df4d6",
+        )
+        self.assertEqual(
+            techniques.constraint_model_asset.sha256,
+            "2a3dc13284bb5ca53b9b795c9ec69ac921883be55efe6a239072302c4d4f6e6b",
+        )
 
     def test_two_instances_are_deterministic(self) -> None:
         first = GhostLabRuntime("data/catalog.jsonl")

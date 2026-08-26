@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+from pathlib import PurePath
 from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
@@ -24,6 +25,26 @@ QuestionPolicy = Literal[
 ]
 
 
+class ModelAssetConfig(BaseModel):
+    """Content-addressed local model asset resolved from the project root."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+    path: str = Field(min_length=1)
+    sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+
+    @field_validator("path")
+    @classmethod
+    def relative_path(cls, value: str) -> str:
+        path = PurePath(value)
+        if path.is_absolute():
+            raise ValueError("model asset paths must be relative")
+        if ".." in path.parts:
+            raise ValueError("model asset paths cannot leave the project root")
+        if not path.name or value.strip() != value:
+            raise ValueError("model asset path must name a local file")
+        return value
+
+
 class TechniqueConfig(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
     retrieval_route: RetrievalRoute = "keyword"
@@ -40,13 +61,17 @@ class TechniqueConfig(BaseModel):
     override_invalidation: bool = True
     profile_priors: bool = False
     quality_prior_weight: float = Field(default=0.0, ge=0.0, le=1.0)
-    reranker: Literal["none", "linear", "learned_linear"] = "none"
+    reranker: Literal["none", "linear", "learned_linear", "guarded_constraint_gbdt"] = (
+        "none"
+    )
     rerank_k: int = Field(default=50, ge=10, le=200)
     learned_weights: tuple[float, float, float, float, float, float, float] | None = (
         None
     )
     learned_l2: float = Field(default=0.1, ge=0.0)
     learned_training_pairs: int = Field(default=0, ge=0)
+    base_model_asset: ModelAssetConfig | None = None
+    constraint_model_asset: ModelAssetConfig | None = None
     question_order: tuple[AskAttribute, ...] = Field(default=(), max_length=10)
     enabled_filters: tuple[str, ...] = ()
 
@@ -85,6 +110,26 @@ class TechniqueConfig(BaseModel):
             raise ValueError("learned linear reranker requires learned_weights")
         if self.reranker != "learned_linear" and self.learned_weights is not None:
             raise ValueError("learned_weights require the learned linear reranker")
+        model_assets = (self.base_model_asset, self.constraint_model_asset)
+        if self.reranker == "guarded_constraint_gbdt":
+            if any(asset is None for asset in model_assets):
+                raise ValueError(
+                    "guarded constraint GBDT requires base and constraint assets"
+                )
+            if self.retrieval_route != "keyword":
+                raise ValueError("guarded constraint GBDT requires keyword retrieval")
+            if self.state_mode != "raw_history":
+                raise ValueError("guarded constraint GBDT requires raw_history state")
+            if self.question_policy != "sequence":
+                raise ValueError("guarded constraint GBDT requires a question sequence")
+            if self.sparse_field_weights is None:
+                raise ValueError(
+                    "guarded constraint GBDT requires sparse field weights"
+                )
+        elif any(asset is not None for asset in model_assets):
+            raise ValueError(
+                "GBDT model assets require the guarded constraint reranker"
+            )
         return self
 
 

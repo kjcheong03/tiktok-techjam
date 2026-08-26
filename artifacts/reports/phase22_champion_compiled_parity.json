@@ -2,33 +2,33 @@
   "gate": "champion_compiled_research_parity",
   "holdout_accessed": false,
   "metrics": {
-    "hit_rate_at_10": 0.933333,
-    "mrr": 0.639508,
-    "mttc": 2.94,
-    "recommended_technical_score": 0.819719,
+    "hit_rate_at_10": 0.973333,
+    "mrr": 0.757508,
+    "mttc": 2.353333,
+    "recommended_technical_score": 0.886852,
     "scenario_metrics": {
       "boundary": {
         "hit_rate_at_10": 0.875,
-        "mrr": 0.60119,
-        "mttc": 4.5,
+        "mrr": 0.770833,
+        "mttc": 3.875,
         "sample_count": 8
       },
       "browsing": {
-        "hit_rate_at_10": 0.966667,
-        "mrr": 0.655615,
-        "mttc": 2.516667,
+        "hit_rate_at_10": 1.0,
+        "mrr": 0.735556,
+        "mttc": 1.95,
         "sample_count": 60
       },
       "buying": {
-        "hit_rate_at_10": 0.933333,
-        "mrr": 0.597163,
-        "mttc": 2.516667,
+        "hit_rate_at_10": 0.966667,
+        "mrr": 0.771111,
+        "mttc": 1.95,
         "sample_count": 60
       },
       "intent_override": {
-        "hit_rate_at_10": 0.863636,
-        "mrr": 0.725,
-        "mttc": 4.681818,
+        "hit_rate_at_10": 0.954545,
+        "mrr": 0.775433,
+        "mttc": 4.0,
         "sample_count": 22
       }
     }
@@ -36,8 +36,8 @@
   "mismatches": {},
   "passed": true,
   "phase": 22,
-  "policy_canonical_sha256": "95c1cdde107388d064b5d584393a570a9f220093291f8e7ccee730622ea0af5f",
-  "policy_id": "ghostlab_champion_linear_v1",
-  "policy_sha256": "57857af805256240e3f6d4e51ba164cf9cbe8575174840da981faa4811390b19",
+  "policy_canonical_sha256": "15a8b67ba680a403f888120540f8b790035d2d34510742c1c61cb627c88b3772",
+  "policy_id": "ghostlab_guarded_constraint_gbdt_v1",
+  "policy_sha256": "97b10856fbeff77f3001ed9ce456a681447045c8c38395d95aefc9dd4d2237cf",
   "split": "adaptive_v1"
 }

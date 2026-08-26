@@ -9,6 +9,7 @@ import time
 from pathlib import Path
 
 from evaluator.local_evaluator import catalog_index, evaluate, load_jsonl
+from ghostlab.policy.models import RuntimeConfig
 from ghostlab.runtime.agent import GhostLabRuntime
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -17,10 +18,13 @@ RUNTIME_FILES = (
     "ghostlab/competition/contract.py",
     "ghostlab/policy/models.py",
     "ghostlab/retrieval/learned.py",
+    "ghostlab/retrieval/gbdt.py",
+    "ghostlab/retrieval/constraint_gbdt.py",
     "ghostlab/retrieval/quality.py",
     "ghostlab/retrieval/sparse.py",
     "ghostlab/runtime/agent.py",
     "ghostlab/runtime/compiled.py",
+    "ghostlab/runtime/guarded_gbdt.py",
     "ghostlab/runtime/normalizer.py",
     "ghostlab/state/memory.py",
     "configs/compiled_policy.json",
@@ -101,6 +105,18 @@ def main() -> None:
     result = evaluate(timed, samples, catalog_ids, categories, products)
 
     runtime_bytes = sum((ROOT / name).stat().st_size for name in RUNTIME_FILES)
+    config = RuntimeConfig.model_validate_json(policy_path.read_text(encoding="utf-8"))
+    model_assets = tuple(
+        asset
+        for asset in (
+            config.techniques.base_model_asset,
+            config.techniques.constraint_model_asset,
+        )
+        if asset is not None
+    )
+    model_asset_bytes = sum(
+        (ROOT / asset.path).stat().st_size for asset in model_assets
+    )
     catalog_bytes = catalog_path.stat().st_size
     latency = {
         "turn_count": len(timed.turn_ms),
@@ -117,7 +133,7 @@ def main() -> None:
         "peak_process_memory_mb": round(peak_rss_mb(), 3),
         "runtime_source_and_config_mb": round(runtime_bytes / 1024 / 1024, 6),
         "catalog_input_mb": round(catalog_bytes / 1024 / 1024, 6),
-        "bundled_model_asset_mb": 0.0,
+        "bundled_model_asset_mb": round(model_asset_bytes / 1024 / 1024, 6),
     }
     checks = {
         "cold_start": cold_start_seconds <= BUDGETS["cold_start_seconds"],

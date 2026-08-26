@@ -13,6 +13,7 @@ class SubmissionBoundaryTest(unittest.TestCase):
             Path("starter/agent.py"),
             Path("ghostlab/runtime/agent.py"),
             Path("ghostlab/runtime/compiled.py"),
+            Path("ghostlab/runtime/guarded_gbdt.py"),
         ):
             source = path.read_text(encoding="utf-8")
             self.assertNotIn("ghostlab.research", source, path)

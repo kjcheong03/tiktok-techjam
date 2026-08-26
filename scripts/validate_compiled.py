@@ -3,28 +3,47 @@ from __future__ import annotations
 import hashlib
 import json
 from pathlib import Path
+from typing import cast
 
 from evaluator.local_evaluator import catalog_index, evaluate, load_jsonl
+from ghostlab.competition.contract import AgentProtocol
 from ghostlab.policy.models import RuntimeConfig
+from ghostlab.retrieval.constraint_gbdt import ConstraintGBDTFeatureStore
+from ghostlab.retrieval.gbdt import LambdaMARTModel
 from ghostlab.retrieval.learned import (
     CandidateFeatureStore,
     LearnedLinearReranker,
     LinearRerankerModel,
 )
+from ghostlab.retrieval.quality import CatalogQualityReranker
 from ghostlab.runtime.agent import GhostLabRuntime
 from ghostlab.runtime.experimental import ExperimentalAgent
+from scripts.run_gbdt_constraint_override_guard import build_guarded_agent
+from starter.agent import Agent
 
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def research_agent(catalog_path: Path, config: RuntimeConfig) -> ExperimentalAgent:
+def research_agent(catalog_path: Path, config: RuntimeConfig) -> AgentProtocol:
     techniques = config.techniques
     if techniques.state_mode != "raw_history":
         raise ValueError("champion parity expects raw_history state")
     if techniques.question_policy != "sequence":
         raise ValueError("champion parity expects the sequence question policy")
+    if techniques.reranker == "guarded_constraint_gbdt":
+        assert techniques.base_model_asset is not None
+        assert techniques.constraint_model_asset is not None
+        quality = CatalogQualityReranker(catalog_path)
+        features = ConstraintGBDTFeatureStore(catalog_path, quality=quality.quality)
+        agent, _ = build_guarded_agent(
+            quality,
+            features,
+            LambdaMARTModel.load(ROOT / techniques.base_model_asset.path),
+            LambdaMARTModel.load(ROOT / techniques.constraint_model_asset.path),
+        )
+        return agent
     if techniques.reranker != "learned_linear":
-        raise ValueError("champion parity expects the learned linear reranker")
+        raise ValueError("compiled parity expects a supported learned reranker")
     assert techniques.learned_weights is not None
     model = LinearRerankerModel(
         weights=techniques.learned_weights,
@@ -58,14 +77,14 @@ def main() -> None:
     samples = [sample for sample in samples if sample["sample_id"] in allowed]
     catalog_ids, categories, products = catalog_index(catalog_path)
     research = evaluate(
-        research_agent(catalog_path, config),
+        cast(Agent, research_agent(catalog_path, config)),
         samples,
         catalog_ids,
         categories,
         products,
     )
     compiled = evaluate(
-        GhostLabRuntime(catalog_path, policy_path),
+        cast(Agent, GhostLabRuntime(catalog_path, policy_path)),
         samples,
         catalog_ids,
         categories,

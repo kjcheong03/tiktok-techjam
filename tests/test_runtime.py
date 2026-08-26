@@ -7,7 +7,7 @@ from pathlib import Path
 
 from pydantic import ValidationError
 
-from ghostlab.policy.models import RuntimeConfig, TechniqueConfig
+from ghostlab.policy.models import ModelAssetConfig, RuntimeConfig, TechniqueConfig
 from ghostlab.policy.registry import Technique, TechniqueRegistry
 from ghostlab.runtime.normalizer import normalize_identifiers, normalize_response
 
@@ -63,6 +63,22 @@ class RuntimeBoundaryTest(unittest.TestCase):
             TechniqueConfig(reranker="learned_linear")
         with self.assertRaises(ValidationError):
             TechniqueConfig(question_policy="sequence")
+
+    def test_guarded_assets_are_relative_typed_and_complete(self) -> None:
+        with self.assertRaises(ValidationError):
+            ModelAssetConfig(path="/tmp/model.json", sha256="0" * 64)
+        with self.assertRaises(ValidationError):
+            ModelAssetConfig(path="../model.json", sha256="0" * 64)
+        with self.assertRaises(ValidationError):
+            ModelAssetConfig(path="artifacts/model.json", sha256="invalid")
+        with self.assertRaises(ValidationError):
+            TechniqueConfig(
+                state_mode="raw_history",
+                question_policy="sequence",
+                question_order=("other",),
+                sparse_field_weights=(2, 8, 4, 2.5, 1.5, 1),
+                reranker="guarded_constraint_gbdt",
+            )
 
 
 if __name__ == "__main__":

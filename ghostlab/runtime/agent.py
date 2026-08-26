@@ -9,6 +9,7 @@ from baseline.retrieval import DenseRetriever, KeywordRetriever
 from ghostlab.competition.contract import AgentProtocol
 from ghostlab.policy.models import RuntimeConfig
 from ghostlab.runtime.compiled import CompiledKeywordAgent
+from ghostlab.runtime.guarded_gbdt import CompiledGuardedGBDTAgent
 from ghostlab.runtime.normalizer import normalize_response
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -35,7 +36,14 @@ class GhostLabRuntime:
         self.catalog_ids = _catalog_ids(self.catalog_path)
         techniques = self.config.techniques
         self._primary: AgentProtocol
-        if techniques.state_mode in {"multi", "compressed", "raw_history"}:
+        if techniques.reranker == "guarded_constraint_gbdt":
+            self._primary = CompiledGuardedGBDTAgent(
+                self.catalog_path,
+                self.catalog_ids,
+                techniques,
+                PROJECT_ROOT,
+            )
+        elif techniques.state_mode in {"multi", "compressed", "raw_history"}:
             self._primary = CompiledKeywordAgent(
                 self.catalog_path, self.catalog_ids, techniques
             )

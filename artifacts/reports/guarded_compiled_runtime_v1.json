@@ -1,0 +1,49 @@
+{
+  "assets": {
+    "combined_bytes": 155358,
+    "combined_mb": 0.148161,
+    "models": [
+      {
+        "actual_sha256": "10782d08ce20f8c9a60d3e2482ff577c887a35cc74e456c69c781409eb4df4d6",
+        "configured_sha256": "10782d08ce20f8c9a60d3e2482ff577c887a35cc74e456c69c781409eb4df4d6",
+        "path": "artifacts/models/gbdt_reranker_v2_round56.json"
+      },
+      {
+        "actual_sha256": "2a3dc13284bb5ca53b9b795c9ec69ac921883be55efe6a239072302c4d4f6e6b",
+        "configured_sha256": "2a3dc13284bb5ca53b9b795c9ec69ac921883be55efe6a239072302c4d4f6e6b",
+        "path": "artifacts/models/gbdt_constraint_interaction_v2.json"
+      }
+    ]
+  },
+  "cold_start_seconds": 4.629019,
+  "config": {
+    "canonical_sha256": "15a8b67ba680a403f888120540f8b790035d2d34510742c1c61cb627c88b3772",
+    "path": "configs/compiled_policy.json",
+    "sha256": "97b10856fbeff77f3001ed9ce456a681447045c8c38395d95aefc9dd4d2237cf"
+  },
+  "experiment_trace_present": false,
+  "external_calls_per_turn": 0,
+  "failure_count": 0,
+  "first_response_ms": 32.650667,
+  "gate": "guarded_compiled_runtime",
+  "holdout_accessed": false,
+  "measurement_scope": "all-development compiled runtime",
+  "memory_before_init_mb": 45.359,
+  "metrics": {
+    "hit_rate_at_10": 0.973333,
+    "mrr": 0.757508,
+    "mttc": 2.353333,
+    "recommended_technical_score": 0.886852
+  },
+  "models_lazy_before_first_response": true,
+  "models_loaded_after_evaluation": true,
+  "offline_network_guard": "passed",
+  "passed": true,
+  "peak_process_memory_mb": 1175.859,
+  "sample_count": 150,
+  "schema_version": 1,
+  "turn_count": 349,
+  "warm_turn_max_ms": 59.223417,
+  "warm_turn_mean_ms": 23.318843,
+  "warm_turn_p95_ms": 47.835583
+}

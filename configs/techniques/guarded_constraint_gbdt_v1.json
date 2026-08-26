@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "policy_id": "ghostlab_guarded_constraint_gbdt_v1",
+  "policy_id": "ghostlab_guarded_constraint_gbdt_v1_candidate",
   "techniques": {
     "retrieval_route": "keyword",
     "state_mode": "raw_history",
