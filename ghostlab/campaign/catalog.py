@@ -33,6 +33,10 @@ class TechniqueCatalog:
 
 
 def _v1_availability(status: str) -> Availability:
+    if status.startswith(("unavailable", "not_implemented")):
+        return "planned"
+    if status.startswith("available_dependency_blocked"):
+        return "retest_after_dependency"
     if status in {"selected", "original_champion"}:
         return "selected"
     if status.startswith("parked") or status == "fallback":
@@ -45,6 +49,15 @@ def _v1_availability(status: str) -> Availability:
 def _load_v1(path: Path) -> dict[str, TechniqueSpec]:
     value = json.loads(path.read_text(encoding="utf-8"))
     result: dict[str, TechniqueSpec] = {}
+    anchor_only = {
+        "ranking.pairwise_linear",
+        "ranking.constraint_gbdt",
+        "ranking.deep_dense_gbdt",
+        "ranking.neural_gbdt",
+        "guard.override_fallback",
+        "routing.observable_stump",
+        "routing.route_table",
+    }
     for item in value["techniques"]:
         result[item["id"]] = TechniqueSpec(
             id=item["id"],
@@ -54,6 +67,14 @@ def _load_v1(path: Path) -> dict[str, TechniqueSpec]:
             default_enabled=False,
             source=item.get("source"),
             execution_class=item.get("extra", "core"),
+            execution_mode=(
+                "research_only"
+                if item["family"]
+                in {"research", "optimization", "evidence", "evaluation"}
+                else "anchor_only"
+                if item["id"] in anchor_only
+                else "runtime"
+            ),
             resources=ResourceRequest(
                 heavy_model=item.get("extra") in {"neural", "all"}
             ),

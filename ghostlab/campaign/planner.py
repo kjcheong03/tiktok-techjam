@@ -11,6 +11,7 @@ from ghostlab.campaign.models import CandidateSpec
 
 @dataclass(frozen=True)
 class SkippedCandidate:
+    baseline_id: str
     roots: tuple[str, ...]
     reasons: tuple[str, ...]
 
@@ -75,12 +76,30 @@ def plan_candidates(
         for additions in combinations(roots, order):
             if len(candidates) >= candidate_limit:
                 return CandidatePlan(tuple(candidates), tuple(skipped))
+            non_runtime = tuple(
+                technique_id
+                for technique_id in additions
+                if technique_id in catalog.techniques
+                and catalog.techniques[technique_id].execution_mode != "runtime"
+            )
+            if non_runtime:
+                skipped.append(
+                    SkippedCandidate(
+                        baseline_id,
+                        additions,
+                        tuple(
+                            f"non-runtime technique must be tested as an anchor: {item}"
+                            for item in non_runtime
+                        ),
+                    )
+                )
+                continue
             complete = _dependency_closure(
                 catalog, set(baseline_techniques) | set(additions)
             )
             result = validate_techniques(catalog, complete)
             if not result.valid:
-                skipped.append(SkippedCandidate(additions, result.reasons))
+                skipped.append(SkippedCandidate(baseline_id, additions, result.reasons))
                 continue
             candidate = CandidateSpec(
                 candidate_id=_candidate_id(baseline_id, additions),

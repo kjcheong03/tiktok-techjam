@@ -48,19 +48,20 @@ class CatalogPlannerTests(unittest.TestCase):
                 source="../outside.py",
             )
 
-    def test_v2_extends_v1_and_planned_techniques_are_not_executable(self) -> None:
+    def test_v2_extends_v1_and_unavailable_techniques_are_not_executable(self) -> None:
         catalog = load_catalog(PROJECT_ROOT / "configs/techniques/catalog_v2.json")
         self.assertIn("retrieval.sparse", catalog.techniques)
         self.assertTrue(catalog.techniques["retrieval.sparse"].executable)
-        self.assertFalse(catalog.techniques["question.candidate_eig.v1"].executable)
+        self.assertTrue(catalog.techniques["question.candidate_eig.v1"].executable)
+        self.assertFalse(catalog.techniques["retrieval.splade_rescue.v1"].executable)
 
         plan = plan_candidates(
             catalog,
             baseline_id="champion",
             baseline_techniques=BASELINE,
             technique_ids=(
-                "search.bohb.v1",
                 "question.candidate_eig.v1",
+                "retrieval.splade_rescue.v1",
             ),
             max_order=2,
         )

@@ -5,8 +5,8 @@ import json
 from pathlib import Path
 
 from ghostlab.campaign.catalog import load_catalog
+from ghostlab.campaign.controller import initial_stage
 from ghostlab.campaign.models import CampaignManifest
-from ghostlab.campaign.planner import plan_candidates
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
@@ -28,21 +28,20 @@ def main() -> None:
     catalog = load_catalog(args.catalog)
     if manifest.catalog_hash != catalog.content_hash:
         raise ValueError("campaign catalog hash does not match the current catalog")
-    plan = plan_candidates(
-        catalog,
-        baseline_id=manifest.baseline_presets[0],
-        baseline_techniques=manifest.baseline_techniques,
-        technique_ids=manifest.technique_ids,
-        max_order=manifest.max_order,
-        candidate_limit=manifest.candidate_limit,
-    )
+    plan, stage = initial_stage(catalog, manifest)
     payload = {
         "schema_version": 1,
         "campaign_id": manifest.campaign_id,
         "manifest_hash": manifest.canonical_hash(),
         "candidates": [item.model_dump(mode="json") for item in plan.candidates],
+        "jobs": [item.model_dump(mode="json") for item in stage.jobs],
         "skipped": [
-            {"roots": item.roots, "reasons": item.reasons} for item in plan.skipped
+            {
+                "baseline_id": item.baseline_id,
+                "roots": item.roots,
+                "reasons": item.reasons,
+            }
+            for item in plan.skipped
         ],
     }
     args.output.parent.mkdir(parents=True, exist_ok=True)

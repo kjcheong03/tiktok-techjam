@@ -622,7 +622,7 @@ class ExperimentalAgent:
             )
         diversification_trace: dict[str, object] | None = None
         if self.diversifier is not None:
-            decision = self.diversifier.rerank(
+            diversification_decision = self.diversifier.rerank(
                 ranked,
                 DiversificationContext(
                     turn=turn,
@@ -632,10 +632,10 @@ class ExperimentalAgent:
                     ),
                 ),
             )
-            ranked = list(decision.ranking)
+            ranked = list(diversification_decision.ranking)
             diversification_trace = {
-                "activated": decision.activated,
-                "reason": decision.reason,
+                "activated": diversification_decision.activated,
+                "reason": diversification_decision.reason,
             }
         self.last_runtime_inputs[session_id] = (query, retrieval_scores)
         self.retrieval_trace.append(
@@ -676,7 +676,8 @@ class ExperimentalAgent:
             legal_actions = legal_question_actions(state)
             if session_id in self.stopped_sessions:
                 question = None
-                action_values = {None: 0.0}
+                absorbing_values: dict[QuestionAction, float] = {None: 0.0}
+                action_values = absorbing_values
                 question_reason = "absorbing_stop"
             else:
                 assert self.learned_question_model is not None
@@ -697,12 +698,12 @@ class ExperimentalAgent:
             statistics = self.candidate_facets.summarize(
                 ranked, limit=self.eig_candidate_k
             )
-            decision = self.eig_policy.decide(
+            eig_decision = self.eig_policy.decide(
                 state, statistics, turn=turn, message=user_message
             )
-            question = decision.ask_attribute
-            question_reason = decision.reason
-            action_values = dict(decision.values)
+            question = eig_decision.ask_attribute
+            question_reason = eig_decision.reason
+            action_values = dict(eig_decision.values)
             if question is not None:
                 state.asked_attributes.append(question)
             state.last_asked_attribute = question

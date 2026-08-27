@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "experiment_id": "unified_unfitted_keyword_search_v1",
+  "engine": "experimental",
+  "state_variant": "current",
+  "question_variant": "fixed",
+  "question_order": [],
+  "retrieval_route": "keyword",
+  "dense_backend": "off",
+  "negative_evidence": false,
+  "provenance": false,
+  "override_invalidation": false,
+  "profile_prior_weight": 0.0,
+  "quality_prior_weight": 0.0,
+  "reranker": "none"
+}

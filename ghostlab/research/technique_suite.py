@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 from itertools import product
 from pathlib import Path, PurePath
@@ -30,6 +31,10 @@ QuestionVariant = Literal[
     "other_always",
     "adaptive",
     "learned",
+    "candidate_eig",
+    "reward_voi",
+    "joint_observable",
+    "distilled_joint",
 ]
 RetrievalRoute = Literal[
     "keyword",
@@ -41,9 +46,18 @@ RetrievalRoute = Literal[
     "late_interaction_union",
 ]
 DenseBackend = Literal["off", "minilm_control", "e5_small_v2"]
-Reranker = Literal["none", "linear", "metadata_gbdt"]
+Reranker = Literal[
+    "none",
+    "linear",
+    "metadata_gbdt",
+    "reward_lambdamart",
+    "turn_aware_lambdamart",
+    "rank_ensemble",
+]
 QueryExpansion = Literal["off", "prf"]
 Diversification = Literal["off", "facet_mmr"]
+Normalizer = Literal["off", "catalog_v1"]
+RoutingVariant = Literal["off", "calibrated"]
 
 
 class CandidateRetriever(Protocol):
@@ -64,6 +78,13 @@ class UnifiedTechniqueConfig(BaseModel):
     question_variant: QuestionVariant = "sequence"
     question_order: tuple[AskAttribute, ...] = ()
     learned_question_asset: str | None = None
+    eig_candidate_k: int = Field(default=100, ge=20, le=400)
+    question_value_margin: float = Field(default=0.0, ge=0.0, le=1.0)
+    joint_policy_asset: str | None = None
+
+    normalizer: Normalizer = "off"
+    normalizer_asset: str | None = None
+    constraint_confidence: float = Field(default=0.9, ge=0.0, le=1.0)
 
     retrieval_route: RetrievalRoute = "keyword"
     dense_backend: DenseBackend = "off"
@@ -102,14 +123,21 @@ class UnifiedTechniqueConfig(BaseModel):
     diversification_max_turn: int = Field(default=2, ge=1, le=9)
     diversification_max_constraints: int = Field(default=1, ge=0, le=10)
 
+    routing_variant: RoutingVariant = "off"
+    router_asset: str | None = None
+    component_fallback: bool = False
+
     @field_validator(
         "compiled_config_path",
         "learned_question_asset",
+        "joint_policy_asset",
+        "normalizer_asset",
         "dense_model_path",
         "reranker_model_asset",
         "cross_encoder_model_path",
         "learned_sparse_asset",
         "late_interaction_asset",
+        "router_asset",
     )
     @classmethod
     def safe_relative_path(cls, value: str | None) -> str | None:
@@ -130,6 +158,8 @@ class UnifiedTechniqueConfig(BaseModel):
                 or self.late_interaction_asset is not None
                 or self.query_expansion != "off"
                 or self.diversification != "off"
+                or self.normalizer != "off"
+                or self.routing_variant != "off"
             ):
                 raise ValueError(
                     "Wave 2 retrieval switches require the experimental engine"
@@ -177,12 +207,31 @@ class UnifiedTechniqueConfig(BaseModel):
             and self.learned_question_asset is not None
         ):
             raise ValueError("learned_question_asset requires learned questions")
+        joint_variants = {"joint_observable", "distilled_joint"}
+        if (self.question_variant in joint_variants) != (
+            self.joint_policy_asset is not None
+        ):
+            raise ValueError("joint question policies require exactly one joint asset")
         if self.question_variant == "sequence" and not self.question_order:
             raise ValueError("sequence question policy requires question_order")
-        if self.reranker == "metadata_gbdt" and self.reranker_model_asset is None:
-            raise ValueError("metadata GBDT requires reranker_model_asset")
-        if self.reranker != "metadata_gbdt" and self.reranker_model_asset is not None:
-            raise ValueError("reranker_model_asset requires metadata GBDT")
+        learned_rankers = {
+            "metadata_gbdt",
+            "reward_lambdamart",
+            "turn_aware_lambdamart",
+            "rank_ensemble",
+        }
+        if (self.reranker in learned_rankers) != (
+            self.reranker_model_asset is not None
+        ):
+            raise ValueError("learned rerankers require exactly one model asset")
+        if (self.normalizer == "catalog_v1") != (self.normalizer_asset is not None):
+            raise ValueError(
+                "catalog normalization requires exactly one ontology asset"
+            )
+        if (self.routing_variant == "calibrated") != (self.router_asset is not None):
+            raise ValueError("calibrated routing requires exactly one router asset")
+        if self.component_fallback and self.routing_variant != "calibrated":
+            raise ValueError("component fallback requires calibrated routing")
         if self.cross_encoder_enabled:
             if self.cross_encoder_model_path is None:
                 raise ValueError("cross-encoder requires cross_encoder_model_path")
@@ -232,6 +281,14 @@ def _project_path(value: str) -> Path:
     return path
 
 
+def _sha256_file(path: str | Path) -> str:
+    digest = hashlib.sha256()
+    with Path(path).open("rb") as handle:
+        for block in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(block)
+    return digest.hexdigest()
+
+
 def _load_question_model(path: Path):
     from ghostlab.policy.learned_questions import LinearActionValueModel
 
@@ -260,7 +317,11 @@ def build_suite_agent(
         return GhostLabRuntime(catalog_path, _project_path(config.compiled_config_path))
 
     from ghostlab.retrieval.cross_encoder import CrossEncoderReranker
-    from ghostlab.runtime.unified_experimental import ExperimentalAgent
+    from ghostlab.runtime.unified_experimental import (
+        CandidateReranker,
+        ExperimentalAgent,
+        JointCandidatePolicy,
+    )
 
     dense = None
     if config.dense_backend != "off":
@@ -343,8 +404,63 @@ def build_suite_agent(
             _project_path(config.learned_question_asset)
         )
 
-    learned_reranker = None
-    if config.reranker == "metadata_gbdt":
+    catalog_normalizer = None
+    if config.normalizer == "catalog_v1":
+        from ghostlab.state.catalog_ontology import CatalogOntology
+        from ghostlab.state.normalization import CatalogStateNormalizer
+
+        assert config.normalizer_asset is not None
+        ontology = CatalogOntology.from_path(_project_path(config.normalizer_asset))
+        if ontology.catalog_sha256 != _sha256_file(catalog_path):
+            raise ValueError("catalog ontology was built for another catalog")
+        catalog_normalizer = CatalogStateNormalizer(
+            ontology, confidence_threshold=config.constraint_confidence
+        )
+
+    eig_policy = None
+    if config.question_variant in {"candidate_eig", "reward_voi"}:
+        from ghostlab.policy.eig_questions import CandidateEIGPolicy
+
+        eig_policy = CandidateEIGPolicy(
+            question_value_margin=config.question_value_margin
+        )
+
+    joint_policy: JointCandidatePolicy | None = None
+    if config.joint_policy_asset is not None:
+        if config.question_variant == "distilled_joint":
+            from ghostlab.policy.distilled_expert import DistilledExpertPolicy
+
+            joint_policy = DistilledExpertPolicy.from_path(
+                _project_path(config.joint_policy_asset)
+            )
+        else:
+            from ghostlab.policy.joint_policy import JointObservablePolicy
+
+            joint_policy = JointObservablePolicy.from_path(
+                _project_path(config.joint_policy_asset)
+            )
+
+    calibrated_router = None
+    component_fallback = None
+    if config.routing_variant == "calibrated":
+        from ghostlab.policy.calibrated_router import CalibratedRouteModel
+
+        assert config.router_asset is not None
+        calibrated_router = CalibratedRouteModel.from_path(
+            _project_path(config.router_asset)
+        )
+        if config.component_fallback:
+            from ghostlab.runtime.component_fallback import ComponentFallback
+
+            component_fallback = ComponentFallback()
+
+    learned_reranker: CandidateReranker | None = None
+    if config.reranker in {
+        "metadata_gbdt",
+        "reward_lambdamart",
+        "turn_aware_lambdamart",
+        "rank_ensemble",
+    }:
         from ghostlab.retrieval.gbdt import (
             GBDTFeatureStore,
             LambdaMARTModel,
@@ -355,10 +471,22 @@ def build_suite_agent(
         assert config.reranker_model_asset is not None
         quality = CatalogQualityReranker(catalog_path)
         features = GBDTFeatureStore(catalog_path, quality=quality.quality)
-        learned_reranker = LambdaMARTReranker(
-            features,
-            LambdaMARTModel.load(_project_path(config.reranker_model_asset)),
-        )
+        model_asset = _project_path(config.reranker_model_asset)
+        if config.reranker == "rank_ensemble":
+            from ghostlab.retrieval.ensemble import (
+                ModelRankEnsembleReranker,
+                RankEnsembleAsset,
+            )
+
+            learned_reranker = ModelRankEnsembleReranker.from_asset(
+                features,
+                RankEnsembleAsset.load(model_asset),
+                project_root=PROJECT_ROOT,
+            )
+        else:
+            learned_reranker = LambdaMARTReranker(
+                features, LambdaMARTModel.load(model_asset)
+            )
 
     cross_encoder = None
     if config.cross_encoder_enabled:
@@ -401,10 +529,18 @@ def build_suite_agent(
     return ExperimentalAgent(
         catalog_path,
         state_variant=config.state_variant,
+        normalizer=config.normalizer,
+        catalog_normalizer=catalog_normalizer,
         query_variant=config.query_variant,
         question_variant=config.question_variant,
         question_order=tuple(config.question_order),
         learned_question_model=learned_question_model,
+        eig_policy=eig_policy,
+        eig_candidate_k=config.eig_candidate_k,
+        joint_policy=joint_policy,
+        routing_variant=config.routing_variant,
+        calibrated_router=calibrated_router,
+        component_fallback=component_fallback,
         retrieval_route=config.retrieval_route,
         dense_retriever=dense,
         semantic_rescue_retriever=semantic_rescue,

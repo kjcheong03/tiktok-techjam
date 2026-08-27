@@ -10,7 +10,7 @@
     {
       "name": "question_value_margin",
       "kind": "float",
-      "low": -0.02,
+      "low": 0.0,
       "high": 0.05,
       "requires_all": ["question.candidate_eig.v1"]
     },

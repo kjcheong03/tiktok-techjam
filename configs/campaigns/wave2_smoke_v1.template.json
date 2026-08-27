@@ -5,24 +5,32 @@
   "adaptive_split_path": "configs/splits/adaptive_v1.json",
   "nested_split_path": "configs/splits/nested_v1.json",
   "protected_holdout_access": "forbidden",
-  "baseline_presets": ["champion_guarded"],
+  "search_outer_folds": [0, 2, 3],
+  "confirmation_outer_folds": [1, 4],
+  "baseline_presets": ["configs/suites/unfitted_keyword_search.json"],
   "baseline_techniques": [
-    "state.raw_history",
-    "retrieval.sparse",
-    "ranking.constraint_gbdt",
-    "prior.quality",
-    "guard.override_fallback"
+    "state.current",
+    "question.fixed",
+    "retrieval.sparse"
   ],
+  "baseline_techniques_by_preset": {
+    "configs/suites/unfitted_keyword_search.json": [
+      "state.current",
+      "question.fixed",
+      "retrieval.sparse"
+    ]
+  },
+  "baseline_search_modes": {
+    "configs/suites/unfitted_keyword_search.json": "composable"
+  },
   "technique_ids": [
-    "search.bohb.v1",
-    "state.catalog_normalizer.v1",
     "question.candidate_eig.v1",
     "ranking.reward_lambdamart.v1",
-    "retrieval.splade_rescue.v1"
+    "ranking.facet_diversity.v1"
   ],
   "max_order": 2,
   "candidate_limit": 500,
-  "fidelity_budgets": {"f0": 20, "f1": 10, "f2": 2},
+  "fidelity_budgets": {"f0": 12, "f1": 24, "f2": 150},
   "exploration_fraction": 0.2,
   "seeds": [20260826],
   "max_wall_seconds": 3600,

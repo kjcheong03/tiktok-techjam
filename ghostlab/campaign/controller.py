@@ -26,13 +26,28 @@ class CampaignStage:
 def initial_stage(
     catalog: TechniqueCatalog, manifest: CampaignManifest
 ) -> tuple[CandidatePlan, CampaignStage]:
-    plan = plan_candidates(
-        catalog,
-        baseline_id=manifest.baseline_presets[0],
-        baseline_techniques=manifest.baseline_techniques,
-        technique_ids=manifest.technique_ids,
-        max_order=manifest.max_order,
-        candidate_limit=manifest.candidate_limit,
+    anchor_count = len(manifest.baseline_presets)
+    per_anchor_limit = max(1, manifest.candidate_limit // anchor_count)
+    plans = tuple(
+        plan_candidates(
+            catalog,
+            baseline_id=preset,
+            baseline_techniques=manifest.techniques_for_preset(preset),
+            technique_ids=(
+                manifest.techniques_for_preset(preset)
+                if manifest.search_mode_for_preset(preset) == "control_only"
+                else manifest.technique_ids
+            ),
+            max_order=manifest.max_order,
+            candidate_limit=per_anchor_limit,
+        )
+        for preset in manifest.baseline_presets
+    )
+    plan = CandidatePlan(
+        candidates=tuple(
+            candidate for anchor_plan in plans for candidate in anchor_plan.candidates
+        )[: manifest.candidate_limit],
+        skipped=tuple(item for anchor_plan in plans for item in anchor_plan.skipped),
     )
     stage = CampaignStage(
         fidelity="f0",

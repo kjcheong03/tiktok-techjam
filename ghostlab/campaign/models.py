@@ -20,6 +20,7 @@ Availability = Literal[
 ]
 Fidelity = Literal["f0", "f1", "f2"]
 JobState = Literal["pending", "running", "complete", "blocked", "failed"]
+ExecutionMode = Literal["runtime", "anchor_only", "research_only"]
 
 
 class ResourceRequest(BaseModel):
@@ -42,6 +43,8 @@ class TechniqueSpec(BaseModel):
     source: str | None = None
     config_binding: str | None = None
     execution_class: str = "core"
+    execution_mode: ExecutionMode = "runtime"
+    selection_safe: bool = True
     fit_required: bool = False
     assets: tuple[str, ...] = ()
     requires: tuple[str, ...] = ()
@@ -137,8 +140,16 @@ class CampaignManifest(BaseModel):
     adaptive_split_hash: str = Field(pattern=r"^[0-9a-f]{64}$")
     nested_split_hash: str = Field(pattern=r"^[0-9a-f]{64}$")
     protected_holdout_access: Literal["forbidden"] = "forbidden"
+    search_outer_folds: tuple[int, ...] = Field(default=(0, 2, 3), min_length=1)
+    confirmation_outer_folds: tuple[int, ...] = Field(default=(1, 4), min_length=1)
     baseline_presets: tuple[str, ...] = Field(min_length=1)
     baseline_techniques: tuple[str, ...] = Field(min_length=1)
+    baseline_techniques_by_preset: dict[str, tuple[str, ...]] = Field(
+        default_factory=dict
+    )
+    baseline_search_modes: dict[str, Literal["composable", "control_only"]] = Field(
+        default_factory=dict
+    )
     technique_ids: tuple[str, ...] = ()
     max_order: int = Field(default=2, ge=1, le=8)
     candidate_limit: int = Field(default=1000, ge=1)
@@ -155,9 +166,56 @@ class CampaignManifest(BaseModel):
             raise ValueError("manifest technique IDs must be unique")
         if len(set(self.baseline_techniques)) != len(self.baseline_techniques):
             raise ValueError("manifest baseline technique IDs must be unique")
+        unknown_presets = (
+            set(self.baseline_techniques_by_preset) | set(self.baseline_search_modes)
+        ) - set(self.baseline_presets)
+        if unknown_presets:
+            raise ValueError(
+                "baseline technique mapping references unknown presets: "
+                f"{sorted(unknown_presets)}"
+            )
+        for preset, technique_ids in self.baseline_techniques_by_preset.items():
+            if len(set(technique_ids)) != len(technique_ids):
+                raise ValueError(
+                    f"baseline technique IDs must be unique for preset {preset}"
+                )
         if len(set(self.seeds)) != len(self.seeds):
             raise ValueError("manifest seeds must be unique")
+        if len(set(self.search_outer_folds)) != len(self.search_outer_folds):
+            raise ValueError("search outer-fold IDs must be unique")
+        if len(set(self.confirmation_outer_folds)) != len(
+            self.confirmation_outer_folds
+        ):
+            raise ValueError("confirmation outer-fold IDs must be unique")
+        overlap = set(self.search_outer_folds) & set(self.confirmation_outer_folds)
+        if overlap:
+            raise ValueError(
+                f"search and confirmation outer folds overlap: {sorted(overlap)}"
+            )
         return self
+
+    def validate_fold_partition(self, outer_fold_count: int) -> None:
+        if outer_fold_count <= 1:
+            raise ValueError("campaign requires at least two outer folds")
+        declared = set(self.search_outer_folds) | set(self.confirmation_outer_folds)
+        expected = set(range(outer_fold_count))
+        if declared != expected:
+            raise ValueError(
+                "search and confirmation folds must partition every nested outer "
+                f"fold exactly; expected {sorted(expected)}, got {sorted(declared)}"
+            )
+
+    def techniques_for_preset(self, preset: str) -> tuple[str, ...]:
+        if preset not in self.baseline_presets:
+            raise ValueError(f"unknown baseline preset: {preset}")
+        return self.baseline_techniques_by_preset.get(preset, self.baseline_techniques)
+
+    def search_mode_for_preset(
+        self, preset: str
+    ) -> Literal["composable", "control_only"]:
+        if preset not in self.baseline_presets:
+            raise ValueError(f"unknown baseline preset: {preset}")
+        return self.baseline_search_modes.get(preset, "composable")
 
     def canonical_hash(self) -> str:
         encoded = json.dumps(
@@ -186,6 +244,8 @@ class JobOutcome(BaseModel):
     session_rewards: tuple[float, ...] = ()
     scenario_scores: dict[str, float] = Field(default_factory=dict)
     elapsed_seconds: float = Field(default=0.0, ge=0.0)
+    latency_p95_ms: float = Field(default=0.0, ge=0.0)
+    memory_mb: float = Field(default=0.0, ge=0.0)
     error: str | None = None
 
     @model_validator(mode="after")

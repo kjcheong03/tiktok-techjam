@@ -19,6 +19,14 @@ reproduction commands, evidence, dependencies, compatibility, and retest policy.
 Supporting documents and JSON reports remain immutable evidence; a teammate should
 be able to start here without knowing which historical worktree created a technique.
 
+For the implemented autonomous campaign engine, its fairness invariants, exact freeze/run/
+resume/proposal commands, pruning and HPO behavior, overfitting controls, and human gates,
+use `docs/autonomous_unified_system_reference.md`. Autonomous discovery starts from
+`configs/suites/unfitted_keyword_search.json`: current-turn state, fixed starter questions,
+keyword retrieval only, no dense/hybrid path, no reranker, zero profile/quality priors,
+and no negative-evidence/provenance/override logic. Historical champions and challengers
+are controls only; they do not seed the search.
+
 It does not replace or mutate the protected checkpoints:
 
 - `ghostlab/implementation@189f0c6`: original pairwise-linear champion;
@@ -844,31 +852,34 @@ from this system reference.
 
 ## 22. Current automation boundary and autonomous experiment system
 
-The repository is currently **semi-automated**. Codex or a human researcher still
-selects a declared campaign, freezes its manifest, starts runners, interprets
-evidence and approves promotion. The code already automates important bounded
-parts:
+The repository now contains a bounded, resumable, proposal-only autonomous development
+controller. A human still chooses and freezes a declared campaign, starts/resumes the
+runner, reviews proposals, and controls Gate A/F3/Gate B; the controller cannot commit,
+merge, push, expose F3, or promote a champion. The full executable contract and commands
+are in `docs/autonomous_unified_system_reference.md`.
+
+The implemented components include:
 
 - `scripts/plan_unified_combinations.py` enumerates schema-valid combinations;
+- `scripts/freeze_wave2_campaign.py` freezes hashes, splits, assets and authority;
+- `scripts/run_autonomous_campaign.py` runs bounded F0/F1/F2 structure/HPO search and
+  resumes from atomic checkpoints;
+- `scripts/materialize_campaign_top_three.py` fail-closed packages up to three distinct
+  development-confirmed proposals for human review;
 - `ghostlab/research/technique_suite.py` rejects incompatible configurations;
+- `ghostlab/campaign/` provides typed bindings, compatibility, scheduling, paired
+  evaluation, interaction-aware search, safety gates, leaderboards and proposal records;
 - `ghostlab/optimization/search.py`, `ghostlab/optimization/racing.py`,
   `ghostlab/optimization/meta_search.py` and `ghostlab/optimization/evidence.py`
   provide grid/random/beam, racing and adaptive allocation primitives;
 - dedicated runners perform grouped fitting and replay for their technique family;
 - reports, the decision ledger and consolidation audit preserve evidence.
 
-It does **not** yet provide one controller that automatically prepares every asset,
-fits every optional technique, expands every compatible interaction, schedules all
-folds, resumes failures, performs backward ablations, writes decisions and proposes
-a final candidate. The earlier challenger tournament was orchestrated by Codex using
-these deterministic components.
-
-A safe autonomous controller is possible. It should be a bounded, manifest-driven
-experiment engine—not an unrestricted Cartesian-product script. Its required design
-is:
+The controller is deliberately not an unrestricted Cartesian-product script. It:
 
 1. read the technique catalog as a dependency/compatibility graph;
-2. freeze the baseline, folds, objective, gates, candidate budget and holdout policy;
+2. freezes the pure keyword baseline, folds, objective, gates, candidate budget and
+   holdout policy; prior winners are `control_only`;
 3. validate/install only assets required by enabled techniques;
 4. cache shared sparse, dense, feature and replay outputs by content hash;
 5. schedule grouped nested-CV fitting and evaluation with deterministic seeds;
@@ -880,10 +891,14 @@ is:
 8. run matched controls, component-off ablations, scenario safety gates, latency,
    memory and failure checks automatically;
 9. append immutable manifests, reports and machine-readable evidence;
-10. propose—but never automatically promote—a candidate for human review;
+10. proposes—but never automatically promotes—up to three distinct candidates for human
+    review;
 11. keep the protected/private set inaccessible to the search controller.
 
-Blindly trying every possible combination is neither guaranteed to find the true
+It does not yet automatically build/fold-fit every unavailable or `fit_required` asset,
+and its generic path uses prospective disjoint development confirmation rather than fully
+nested fold-local training. Those techniques remain recorded and default-off until their
+safe fit path exists. Blindly trying every possible combination is neither guaranteed to find the true
 best policy nor statistically safe. The number of continuous parameters, fitted
 models, question trajectories and conditional routes is effectively unbounded, and
 repeated public-set selection will overfit. Autonomy should improve reproducibility,
@@ -892,7 +907,9 @@ strictly human-controlled.
 
 ## 23. Retesting and extending the whole system
 
-When a better baseline arrives, use this exact sequence:
+The default unbiased discovery campaign must always restart from the pure unified keyword
+anchor described above. When a better baseline arrives, keep that from-scratch campaign
+and run the following as a separate sensitivity/retest campaign:
 
 1. Freeze the new baseline as a versioned suite/config and reproduce the old control.
 2. Use Sections 19 and 20 to identify every technique whose dependency changed.
