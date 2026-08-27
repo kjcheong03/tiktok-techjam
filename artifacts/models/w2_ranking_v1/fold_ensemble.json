@@ -1,0 +1,14 @@
+{
+  "aggregation": "standardized_score",
+  "model_assets": [
+    "artifacts/models/w2_ranking_v1/ndcg_at_10_control.json",
+    "artifacts/models/w2_ranking_v1/reward_lambdamart_v1.json",
+    "artifacts/models/w2_ranking_v1/turn_aware_lambdamart_v1.json"
+  ],
+  "technique_id": "ranking.fold_ensemble.v1",
+  "weights": [
+    0.3333333333333333,
+    0.3333333333333333,
+    0.3333333333333333
+  ]
+}

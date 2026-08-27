@@ -1,0 +1,2387 @@
+{
+  "candidates": {
+    "equal_mean_rank": {
+      "evidence_label": "stitched outer-fold OOF",
+      "folds": [
+        {
+          "outer_fold": 0,
+          "outer_metrics": {
+            "hit_rate_at_10": 0.967742,
+            "mrr": 0.64977,
+            "mttc": 2.516129,
+            "recommended_technical_score": 0.848479,
+            "sample_count": 31,
+            "scenario_metrics": {
+              "boundary": {
+                "hit_rate_at_10": 0.5,
+                "mrr": 0.125,
+                "mttc": 7.0,
+                "sample_count": 2
+              },
+              "browsing": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.633433,
+                "mttc": 2.0,
+                "sample_count": 12
+              },
+              "buying": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.736111,
+                "mttc": 1.666667,
+                "sample_count": 12
+              },
+              "intent_override": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.691667,
+                "mttc": 4.0,
+                "sample_count": 5
+              }
+            }
+          },
+          "outer_validation_samples": 31,
+          "weights": [
+            0.3333333333333333,
+            0.3333333333333333,
+            0.3333333333333333
+          ]
+        },
+        {
+          "outer_fold": 1,
+          "outer_metrics": {
+            "hit_rate_at_10": 0.967742,
+            "mrr": 0.63565,
+            "mttc": 2.580645,
+            "recommended_technical_score": 0.842953,
+            "sample_count": 31,
+            "scenario_metrics": {
+              "boundary": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.6,
+                "mttc": 3.0,
+                "sample_count": 2
+              },
+              "browsing": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.790972,
+                "mttc": 2.166667,
+                "sample_count": 12
+              },
+              "buying": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.459458,
+                "mttc": 1.75,
+                "sample_count": 12
+              },
+              "intent_override": {
+                "hit_rate_at_10": 0.8,
+                "mrr": 0.7,
+                "mttc": 5.4,
+                "sample_count": 5
+              }
+            }
+          },
+          "outer_validation_samples": 31,
+          "weights": [
+            0.3333333333333333,
+            0.3333333333333333,
+            0.3333333333333333
+          ]
+        },
+        {
+          "outer_fold": 2,
+          "outer_metrics": {
+            "hit_rate_at_10": 0.966667,
+            "mrr": 0.713651,
+            "mttc": 2.433333,
+            "recommended_technical_score": 0.868762,
+            "sample_count": 30,
+            "scenario_metrics": {
+              "boundary": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.571429,
+                "mttc": 2.0,
+                "sample_count": 2
+              },
+              "browsing": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.708333,
+                "mttc": 2.083333,
+                "sample_count": 12
+              },
+              "buying": {
+                "hit_rate_at_10": 0.916667,
+                "mrr": 0.716667,
+                "mttc": 2.416667,
+                "sample_count": 12
+              },
+              "intent_override": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.791667,
+                "mttc": 3.75,
+                "sample_count": 4
+              }
+            }
+          },
+          "outer_validation_samples": 30,
+          "weights": [
+            0.3333333333333333,
+            0.3333333333333333,
+            0.3333333333333333
+          ]
+        },
+        {
+          "outer_fold": 3,
+          "outer_metrics": {
+            "hit_rate_at_10": 0.965517,
+            "mrr": 0.623125,
+            "mttc": 2.448276,
+            "recommended_technical_score": 0.840731,
+            "sample_count": 29,
+            "scenario_metrics": {
+              "boundary": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 1.0,
+                "mttc": 4.0,
+                "sample_count": 1
+              },
+              "browsing": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.564815,
+                "mttc": 1.916667,
+                "sample_count": 12
+              },
+              "buying": {
+                "hit_rate_at_10": 0.916667,
+                "mrr": 0.591071,
+                "mttc": 2.5,
+                "sample_count": 12
+              },
+              "intent_override": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.8,
+                "mttc": 3.5,
+                "sample_count": 4
+              }
+            }
+          },
+          "outer_validation_samples": 29,
+          "weights": [
+            0.3333333333333333,
+            0.3333333333333333,
+            0.3333333333333333
+          ]
+        },
+        {
+          "outer_fold": 4,
+          "outer_metrics": {
+            "hit_rate_at_10": 1.0,
+            "mrr": 0.687069,
+            "mttc": 2.137931,
+            "recommended_technical_score": 0.883362,
+            "sample_count": 29,
+            "scenario_metrics": {
+              "boundary": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 1.0,
+                "mttc": 3.0,
+                "sample_count": 1
+              },
+              "browsing": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.677083,
+                "mttc": 2.083333,
+                "sample_count": 12
+              },
+              "buying": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.688889,
+                "mttc": 1.666667,
+                "sample_count": 12
+              },
+              "intent_override": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.633333,
+                "mttc": 3.5,
+                "sample_count": 4
+              }
+            }
+          },
+          "outer_validation_samples": 29,
+          "weights": [
+            0.3333333333333333,
+            0.3333333333333333,
+            0.3333333333333333
+          ]
+        }
+      ],
+      "oof_metrics": {
+        "hit_rate_at_10": 0.973333,
+        "mrr": 0.661688,
+        "mttc": 2.426667,
+        "recommended_technical_score": 0.85664,
+        "sample_count": 150,
+        "scenario_metrics": {
+          "boundary": {
+            "hit_rate_at_10": 0.875,
+            "mrr": 0.574107,
+            "mttc": 3.875,
+            "sample_count": 8
+          },
+          "browsing": {
+            "hit_rate_at_10": 1.0,
+            "mrr": 0.674927,
+            "mttc": 2.05,
+            "sample_count": 60
+          },
+          "buying": {
+            "hit_rate_at_10": 0.966667,
+            "mrr": 0.638439,
+            "mttc": 2.0,
+            "sample_count": 60
+          },
+          "intent_override": {
+            "hit_rate_at_10": 0.954545,
+            "mrr": 0.720833,
+            "mttc": 4.090909,
+            "sample_count": 22
+          }
+        }
+      },
+      "paired_vs_ndcg_control": {
+        "losses": 27,
+        "mean_paired_session_reward_delta": -0.004777,
+        "paired_bootstrap_95_interval": [
+          -0.022412,
+          0.012125
+        ],
+        "paired_randomization_p_value": 0.612339,
+        "resamples": 10000,
+        "ties": 96,
+        "wins": 27
+      },
+      "stability": {
+        "fold_scores": [
+          0.848479,
+          0.842953,
+          0.868762,
+          0.840731,
+          0.883362
+        ],
+        "mean": 0.856857,
+        "standard_deviation": 0.01654,
+        "worst_fold": 0.840731
+      },
+      "target_rank_movement_vs_ndcg": {
+        "lost_rank_1_sessions": 12,
+        "mean_reciprocal_rank_delta": -0.01859,
+        "new_rank_1_sessions": 8,
+        "new_session_hits": 1,
+        "reciprocal_rank_improvements": 26,
+        "reciprocal_rank_regressions": 29
+      }
+    },
+    "equal_standardized_scores": {
+      "evidence_label": "stitched outer-fold OOF",
+      "folds": [
+        {
+          "outer_fold": 0,
+          "outer_metrics": {
+            "hit_rate_at_10": 0.967742,
+            "mrr": 0.682796,
+            "mttc": 2.516129,
+            "recommended_technical_score": 0.858387,
+            "sample_count": 31,
+            "scenario_metrics": {
+              "boundary": {
+                "hit_rate_at_10": 0.5,
+                "mrr": 0.166667,
+                "mttc": 7.0,
+                "sample_count": 2
+              },
+              "browsing": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.642361,
+                "mttc": 2.0,
+                "sample_count": 12
+              },
+              "buying": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.805556,
+                "mttc": 1.666667,
+                "sample_count": 12
+              },
+              "intent_override": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.691667,
+                "mttc": 4.0,
+                "sample_count": 5
+              }
+            }
+          },
+          "outer_validation_samples": 31,
+          "weights": [
+            0.3333333333333333,
+            0.3333333333333333,
+            0.3333333333333333
+          ]
+        },
+        {
+          "outer_fold": 1,
+          "outer_metrics": {
+            "hit_rate_at_10": 1.0,
+            "mrr": 0.635881,
+            "mttc": 2.322581,
+            "recommended_technical_score": 0.864313,
+            "sample_count": 31,
+            "scenario_metrics": {
+              "boundary": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.666667,
+                "mttc": 4.0,
+                "sample_count": 2
+              },
+              "browsing": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.749306,
+                "mttc": 2.166667,
+                "sample_count": 12
+              },
+              "buying": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.437037,
+                "mttc": 1.583333,
+                "sample_count": 12
+              },
+              "intent_override": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.828571,
+                "mttc": 3.8,
+                "sample_count": 5
+              }
+            }
+          },
+          "outer_validation_samples": 31,
+          "weights": [
+            0.3333333333333333,
+            0.3333333333333333,
+            0.3333333333333333
+          ]
+        },
+        {
+          "outer_fold": 2,
+          "outer_metrics": {
+            "hit_rate_at_10": 0.966667,
+            "mrr": 0.678611,
+            "mttc": 2.466667,
+            "recommended_technical_score": 0.857583,
+            "sample_count": 30,
+            "scenario_metrics": {
+              "boundary": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.5625,
+                "mttc": 2.0,
+                "sample_count": 2
+              },
+              "browsing": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.708333,
+                "mttc": 2.083333,
+                "sample_count": 12
+              },
+              "buying": {
+                "hit_rate_at_10": 0.916667,
+                "mrr": 0.627778,
+                "mttc": 2.5,
+                "sample_count": 12
+              },
+              "intent_override": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.8,
+                "mttc": 3.75,
+                "sample_count": 4
+              }
+            }
+          },
+          "outer_validation_samples": 30,
+          "weights": [
+            0.3333333333333333,
+            0.3333333333333333,
+            0.3333333333333333
+          ]
+        },
+        {
+          "outer_fold": 3,
+          "outer_metrics": {
+            "hit_rate_at_10": 0.965517,
+            "mrr": 0.677436,
+            "mttc": 2.448276,
+            "recommended_technical_score": 0.857024,
+            "sample_count": 29,
+            "scenario_metrics": {
+              "boundary": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 1.0,
+                "mttc": 4.0,
+                "sample_count": 1
+              },
+              "browsing": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.607275,
+                "mttc": 1.916667,
+                "sample_count": 12
+              },
+              "buying": {
+                "hit_rate_at_10": 0.916667,
+                "mrr": 0.679861,
+                "mttc": 2.5,
+                "sample_count": 12
+              },
+              "intent_override": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.8,
+                "mttc": 3.5,
+                "sample_count": 4
+              }
+            }
+          },
+          "outer_validation_samples": 29,
+          "weights": [
+            0.3333333333333333,
+            0.3333333333333333,
+            0.3333333333333333
+          ]
+        },
+        {
+          "outer_fold": 4,
+          "outer_metrics": {
+            "hit_rate_at_10": 1.0,
+            "mrr": 0.715517,
+            "mttc": 2.172414,
+            "recommended_technical_score": 0.891207,
+            "sample_count": 29,
+            "scenario_metrics": {
+              "boundary": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 1.0,
+                "mttc": 3.0,
+                "sample_count": 1
+              },
+              "browsing": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.746528,
+                "mttc": 2.083333,
+                "sample_count": 12
+              },
+              "buying": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.684028,
+                "mttc": 1.75,
+                "sample_count": 12
+              },
+              "intent_override": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.645833,
+                "mttc": 3.5,
+                "sample_count": 4
+              }
+            }
+          },
+          "outer_validation_samples": 29,
+          "weights": [
+            0.3333333333333333,
+            0.3333333333333333,
+            0.3333333333333333
+          ]
+        }
+      ],
+      "oof_metrics": {
+        "hit_rate_at_10": 0.98,
+        "mrr": 0.677553,
+        "mttc": 2.386667,
+        "recommended_technical_score": 0.865533,
+        "sample_count": 150,
+        "scenario_metrics": {
+          "boundary": {
+            "hit_rate_at_10": 0.875,
+            "mrr": 0.598958,
+            "mttc": 4.125,
+            "sample_count": 8
+          },
+          "browsing": {
+            "hit_rate_at_10": 1.0,
+            "mrr": 0.690761,
+            "mttc": 2.05,
+            "sample_count": 60
+          },
+          "buying": {
+            "hit_rate_at_10": 0.966667,
+            "mrr": 0.646852,
+            "mttc": 2.0,
+            "sample_count": 60
+          },
+          "intent_override": {
+            "hit_rate_at_10": 1.0,
+            "mrr": 0.753842,
+            "mttc": 3.727273,
+            "sample_count": 22
+          }
+        }
+      },
+      "paired_vs_ndcg_control": {
+        "losses": 18,
+        "mean_paired_session_reward_delta": 0.004116,
+        "paired_bootstrap_95_interval": [
+          -0.008292,
+          0.018221
+        ],
+        "paired_randomization_p_value": 0.589641,
+        "resamples": 10000,
+        "ties": 104,
+        "wins": 28
+      },
+      "stability": {
+        "fold_scores": [
+          0.858387,
+          0.864313,
+          0.857583,
+          0.857024,
+          0.891207
+        ],
+        "mean": 0.865703,
+        "standard_deviation": 0.013017,
+        "worst_fold": 0.857024
+      },
+      "target_rank_movement_vs_ndcg": {
+        "lost_rank_1_sessions": 9,
+        "mean_reciprocal_rank_delta": -0.002725,
+        "new_rank_1_sessions": 7,
+        "new_session_hits": 1,
+        "reciprocal_rank_improvements": 28,
+        "reciprocal_rank_regressions": 18
+      }
+    },
+    "fold_local_rank_stack": {
+      "evidence_label": "stitched outer-fold OOF",
+      "folds": [
+        {
+          "outer_fold": 0,
+          "outer_metrics": {
+            "hit_rate_at_10": 0.967742,
+            "mrr": 0.666667,
+            "mttc": 2.483871,
+            "recommended_technical_score": 0.854194,
+            "sample_count": 31,
+            "scenario_metrics": {
+              "boundary": {
+                "hit_rate_at_10": 0.5,
+                "mrr": 0.166667,
+                "mttc": 7.0,
+                "sample_count": 2
+              },
+              "browsing": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.670139,
+                "mttc": 2.0,
+                "sample_count": 12
+              },
+              "buying": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.732639,
+                "mttc": 1.583333,
+                "sample_count": 12
+              },
+              "intent_override": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.7,
+                "mttc": 4.0,
+                "sample_count": 5
+              }
+            }
+          },
+          "outer_validation_samples": 31,
+          "weights": [
+            1.0,
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "outer_fold": 1,
+          "outer_metrics": {
+            "hit_rate_at_10": 1.0,
+            "mrr": 0.62701,
+            "mttc": 2.193548,
+            "recommended_technical_score": 0.864232,
+            "sample_count": 31,
+            "scenario_metrics": {
+              "boundary": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.666667,
+                "mttc": 3.0,
+                "sample_count": 2
+              },
+              "browsing": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.671759,
+                "mttc": 2.0,
+                "sample_count": 12
+              },
+              "buying": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.531349,
+                "mttc": 1.583333,
+                "sample_count": 12
+              },
+              "intent_override": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.733333,
+                "mttc": 3.8,
+                "sample_count": 5
+              }
+            }
+          },
+          "outer_validation_samples": 31,
+          "weights": [
+            0.0,
+            1.0,
+            0.0
+          ]
+        },
+        {
+          "outer_fold": 2,
+          "outer_metrics": {
+            "hit_rate_at_10": 0.966667,
+            "mrr": 0.673519,
+            "mttc": 2.433333,
+            "recommended_technical_score": 0.856722,
+            "sample_count": 30,
+            "scenario_metrics": {
+              "boundary": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.555556,
+                "mttc": 2.0,
+                "sample_count": 2
+              },
+              "browsing": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.671759,
+                "mttc": 2.0,
+                "sample_count": 12
+              },
+              "buying": {
+                "hit_rate_at_10": 0.916667,
+                "mrr": 0.711111,
+                "mttc": 2.5,
+                "sample_count": 12
+              },
+              "intent_override": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.625,
+                "mttc": 3.75,
+                "sample_count": 4
+              }
+            }
+          },
+          "outer_validation_samples": 30,
+          "weights": [
+            0.0,
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "outer_fold": 3,
+          "outer_metrics": {
+            "hit_rate_at_10": 0.965517,
+            "mrr": 0.695019,
+            "mttc": 2.448276,
+            "recommended_technical_score": 0.862299,
+            "sample_count": 29,
+            "scenario_metrics": {
+              "boundary": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 1.0,
+                "mttc": 4.0,
+                "sample_count": 1
+              },
+              "browsing": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.646759,
+                "mttc": 1.916667,
+                "sample_count": 12
+              },
+              "buying": {
+                "hit_rate_at_10": 0.916667,
+                "mrr": 0.678704,
+                "mttc": 2.5,
+                "sample_count": 12
+              },
+              "intent_override": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.8125,
+                "mttc": 3.5,
+                "sample_count": 4
+              }
+            }
+          },
+          "outer_validation_samples": 29,
+          "weights": [
+            0.75,
+            0.0,
+            0.25
+          ]
+        },
+        {
+          "outer_fold": 4,
+          "outer_metrics": {
+            "hit_rate_at_10": 1.0,
+            "mrr": 0.693815,
+            "mttc": 2.137931,
+            "recommended_technical_score": 0.885386,
+            "sample_count": 29,
+            "scenario_metrics": {
+              "boundary": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 1.0,
+                "mttc": 3.0,
+                "sample_count": 1
+              },
+              "browsing": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.723016,
+                "mttc": 2.0,
+                "sample_count": 12
+              },
+              "buying": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.62037,
+                "mttc": 1.75,
+                "sample_count": 12
+              },
+              "intent_override": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.75,
+                "mttc": 3.5,
+                "sample_count": 4
+              }
+            }
+          },
+          "outer_validation_samples": 29,
+          "weights": [
+            0.0,
+            1.0,
+            0.0
+          ]
+        }
+      ],
+      "oof_metrics": {
+        "hit_rate_at_10": 0.98,
+        "mrr": 0.670571,
+        "mttc": 2.34,
+        "recommended_technical_score": 0.864371,
+        "sample_count": 150,
+        "scenario_metrics": {
+          "boundary": {
+            "hit_rate_at_10": 0.875,
+            "mrr": 0.597222,
+            "mttc": 3.875,
+            "sample_count": 8
+          },
+          "browsing": {
+            "hit_rate_at_10": 1.0,
+            "mrr": 0.676687,
+            "mttc": 1.983333,
+            "sample_count": 60
+          },
+          "buying": {
+            "hit_rate_at_10": 0.966667,
+            "mrr": 0.654835,
+            "mttc": 1.983333,
+            "sample_count": 60
+          },
+          "intent_override": {
+            "hit_rate_at_10": 1.0,
+            "mrr": 0.723485,
+            "mttc": 3.727273,
+            "sample_count": 22
+          }
+        }
+      },
+      "paired_vs_ndcg_control": {
+        "losses": 15,
+        "mean_paired_session_reward_delta": 0.002955,
+        "paired_bootstrap_95_interval": [
+          -0.011662,
+          0.018977
+        ],
+        "paired_randomization_p_value": 0.729927,
+        "resamples": 10000,
+        "ties": 114,
+        "wins": 21
+      },
+      "stability": {
+        "fold_scores": [
+          0.854194,
+          0.864232,
+          0.856722,
+          0.862299,
+          0.885386
+        ],
+        "mean": 0.864567,
+        "standard_deviation": 0.011026,
+        "worst_fold": 0.854194
+      },
+      "target_rank_movement_vs_ndcg": {
+        "lost_rank_1_sessions": 9,
+        "mean_reciprocal_rank_delta": -0.009706,
+        "new_rank_1_sessions": 7,
+        "new_session_hits": 1,
+        "reciprocal_rank_improvements": 20,
+        "reciprocal_rank_regressions": 14
+      }
+    },
+    "ndcg_at_10_control": {
+      "evidence_label": "stitched outer-fold OOF",
+      "folds": [
+        {
+          "inner_selected_rounds": 100,
+          "inner_training_samples": 88,
+          "inner_validation_samples": 31,
+          "outer_fold": 0,
+          "outer_metrics": {
+            "hit_rate_at_10": 0.967742,
+            "mrr": 0.666667,
+            "mttc": 2.483871,
+            "recommended_technical_score": 0.854194,
+            "sample_count": 31,
+            "scenario_metrics": {
+              "boundary": {
+                "hit_rate_at_10": 0.5,
+                "mrr": 0.166667,
+                "mttc": 7.0,
+                "sample_count": 2
+              },
+              "browsing": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.670139,
+                "mttc": 2.0,
+                "sample_count": 12
+              },
+              "buying": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.732639,
+                "mttc": 1.583333,
+                "sample_count": 12
+              },
+              "intent_override": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.7,
+                "mttc": 4.0,
+                "sample_count": 5
+              }
+            }
+          },
+          "outer_validation_samples": 31
+        },
+        {
+          "inner_selected_rounds": 4,
+          "inner_training_samples": 89,
+          "inner_validation_samples": 30,
+          "outer_fold": 1,
+          "outer_metrics": {
+            "hit_rate_at_10": 0.967742,
+            "mrr": 0.665233,
+            "mttc": 2.677419,
+            "recommended_technical_score": 0.849892,
+            "sample_count": 31,
+            "scenario_metrics": {
+              "boundary": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.666667,
+                "mttc": 4.0,
+                "sample_count": 2
+              },
+              "browsing": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.802778,
+                "mttc": 2.25,
+                "sample_count": 12
+              },
+              "buying": {
+                "hit_rate_at_10": 0.916667,
+                "mrr": 0.499074,
+                "mttc": 2.416667,
+                "sample_count": 12
+              },
+              "intent_override": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.733333,
+                "mttc": 3.8,
+                "sample_count": 5
+              }
+            }
+          },
+          "outer_validation_samples": 31
+        },
+        {
+          "inner_selected_rounds": 56,
+          "inner_training_samples": 91,
+          "inner_validation_samples": 29,
+          "outer_fold": 2,
+          "outer_metrics": {
+            "hit_rate_at_10": 0.966667,
+            "mrr": 0.699537,
+            "mttc": 2.433333,
+            "recommended_technical_score": 0.864528,
+            "sample_count": 30,
+            "scenario_metrics": {
+              "boundary": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.5625,
+                "mttc": 2.0,
+                "sample_count": 2
+              },
+              "browsing": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.743056,
+                "mttc": 2.083333,
+                "sample_count": 12
+              },
+              "buying": {
+                "hit_rate_at_10": 0.916667,
+                "mrr": 0.648148,
+                "mttc": 2.416667,
+                "sample_count": 12
+              },
+              "intent_override": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.791667,
+                "mttc": 3.75,
+                "sample_count": 4
+              }
+            }
+          },
+          "outer_validation_samples": 30
+        },
+        {
+          "inner_selected_rounds": 98,
+          "inner_training_samples": 92,
+          "inner_validation_samples": 29,
+          "outer_fold": 3,
+          "outer_metrics": {
+            "hit_rate_at_10": 0.965517,
+            "mrr": 0.679502,
+            "mttc": 2.448276,
+            "recommended_technical_score": 0.857644,
+            "sample_count": 29,
+            "scenario_metrics": {
+              "boundary": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 1.0,
+                "mttc": 4.0,
+                "sample_count": 1
+              },
+              "browsing": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.609259,
+                "mttc": 1.916667,
+                "sample_count": 12
+              },
+              "buying": {
+                "hit_rate_at_10": 0.916667,
+                "mrr": 0.678704,
+                "mttc": 2.5,
+                "sample_count": 12
+              },
+              "intent_override": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.8125,
+                "mttc": 3.5,
+                "sample_count": 4
+              }
+            }
+          },
+          "outer_validation_samples": 29
+        },
+        {
+          "inner_selected_rounds": 34,
+          "inner_training_samples": 90,
+          "inner_validation_samples": 31,
+          "outer_fold": 4,
+          "outer_metrics": {
+            "hit_rate_at_10": 1.0,
+            "mrr": 0.691762,
+            "mttc": 2.275862,
+            "recommended_technical_score": 0.882011,
+            "sample_count": 29,
+            "scenario_metrics": {
+              "boundary": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 1.0,
+                "mttc": 3.0,
+                "sample_count": 1
+              },
+              "browsing": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.708333,
+                "mttc": 2.25,
+                "sample_count": 12
+              },
+              "buying": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.650926,
+                "mttc": 1.75,
+                "sample_count": 12
+              },
+              "intent_override": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.6875,
+                "mttc": 3.75,
+                "sample_count": 4
+              }
+            }
+          },
+          "outer_validation_samples": 29
+        }
+      ],
+      "oof_metrics": {
+        "hit_rate_at_10": 0.973333,
+        "mrr": 0.680278,
+        "mttc": 2.466667,
+        "recommended_technical_score": 0.861417,
+        "sample_count": 150,
+        "scenario_metrics": {
+          "boundary": {
+            "hit_rate_at_10": 0.875,
+            "mrr": 0.598958,
+            "mttc": 4.125,
+            "sample_count": 8
+          },
+          "browsing": {
+            "hit_rate_at_10": 1.0,
+            "mrr": 0.706713,
+            "mttc": 2.1,
+            "sample_count": 60
+          },
+          "buying": {
+            "hit_rate_at_10": 0.95,
+            "mrr": 0.641898,
+            "mttc": 2.133333,
+            "sample_count": 60
+          },
+          "intent_override": {
+            "hit_rate_at_10": 1.0,
+            "mrr": 0.742424,
+            "mttc": 3.772727,
+            "sample_count": 22
+          }
+        }
+      },
+      "paired_vs_ndcg_control": null,
+      "stability": {
+        "fold_scores": [
+          0.854194,
+          0.849892,
+          0.864528,
+          0.857644,
+          0.882011
+        ],
+        "mean": 0.861654,
+        "standard_deviation": 0.011249,
+        "worst_fold": 0.849892
+      },
+      "target_rank_movement_vs_ndcg": null
+    },
+    "pointwise_control": {
+      "evidence_label": "stitched outer-fold OOF",
+      "folds": [
+        {
+          "inner_selected_rounds": 22,
+          "inner_training_samples": 88,
+          "inner_validation_samples": 31,
+          "outer_fold": 0,
+          "outer_metrics": {
+            "hit_rate_at_10": 0.870968,
+            "mrr": 0.610253,
+            "mttc": 3.516129,
+            "recommended_technical_score": 0.768237,
+            "sample_count": 31,
+            "scenario_metrics": {
+              "boundary": {
+                "hit_rate_at_10": 0.5,
+                "mrr": 0.5,
+                "mttc": 7.0,
+                "sample_count": 2
+              },
+              "browsing": {
+                "hit_rate_at_10": 0.916667,
+                "mrr": 0.63125,
+                "mttc": 3.083333,
+                "sample_count": 12
+              },
+              "buying": {
+                "hit_rate_at_10": 0.916667,
+                "mrr": 0.636905,
+                "mttc": 2.666667,
+                "sample_count": 12
+              },
+              "intent_override": {
+                "hit_rate_at_10": 0.8,
+                "mrr": 0.54,
+                "mttc": 5.2,
+                "sample_count": 5
+              }
+            }
+          },
+          "outer_validation_samples": 31
+        },
+        {
+          "inner_selected_rounds": 21,
+          "inner_training_samples": 89,
+          "inner_validation_samples": 30,
+          "outer_fold": 1,
+          "outer_metrics": {
+            "hit_rate_at_10": 0.967742,
+            "mrr": 0.753763,
+            "mttc": 2.709677,
+            "recommended_technical_score": 0.875806,
+            "sample_count": 31,
+            "scenario_metrics": {
+              "boundary": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.6,
+                "mttc": 4.0,
+                "sample_count": 2
+              },
+              "browsing": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.798611,
+                "mttc": 2.166667,
+                "sample_count": 12
+              },
+              "buying": {
+                "hit_rate_at_10": 0.916667,
+                "mrr": 0.631944,
+                "mttc": 2.583333,
+                "sample_count": 12
+              },
+              "intent_override": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 1.0,
+                "mttc": 3.8,
+                "sample_count": 5
+              }
+            }
+          },
+          "outer_validation_samples": 31
+        },
+        {
+          "inner_selected_rounds": 1,
+          "inner_training_samples": 91,
+          "inner_validation_samples": 29,
+          "outer_fold": 2,
+          "outer_metrics": {
+            "hit_rate_at_10": 0.933333,
+            "mrr": 0.791429,
+            "mttc": 2.933333,
+            "recommended_technical_score": 0.865429,
+            "sample_count": 30,
+            "scenario_metrics": {
+              "boundary": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 1.0,
+                "mttc": 3.0,
+                "sample_count": 2
+              },
+              "browsing": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.761905,
+                "mttc": 2.333333,
+                "sample_count": 12
+              },
+              "buying": {
+                "hit_rate_at_10": 0.916667,
+                "mrr": 0.841667,
+                "mttc": 2.666667,
+                "sample_count": 12
+              },
+              "intent_override": {
+                "hit_rate_at_10": 0.75,
+                "mrr": 0.625,
+                "mttc": 5.5,
+                "sample_count": 4
+              }
+            }
+          },
+          "outer_validation_samples": 30
+        },
+        {
+          "inner_selected_rounds": 18,
+          "inner_training_samples": 92,
+          "inner_validation_samples": 29,
+          "outer_fold": 3,
+          "outer_metrics": {
+            "hit_rate_at_10": 0.931034,
+            "mrr": 0.676437,
+            "mttc": 2.793103,
+            "recommended_technical_score": 0.832586,
+            "sample_count": 29,
+            "scenario_metrics": {
+              "boundary": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 1.0,
+                "mttc": 4.0,
+                "sample_count": 1
+              },
+              "browsing": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.652778,
+                "mttc": 2.166667,
+                "sample_count": 12
+              },
+              "buying": {
+                "hit_rate_at_10": 0.833333,
+                "mrr": 0.620833,
+                "mttc": 3.083333,
+                "sample_count": 12
+              },
+              "intent_override": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.833333,
+                "mttc": 3.5,
+                "sample_count": 4
+              }
+            }
+          },
+          "outer_validation_samples": 29
+        },
+        {
+          "inner_selected_rounds": 5,
+          "inner_training_samples": 90,
+          "inner_validation_samples": 31,
+          "outer_fold": 4,
+          "outer_metrics": {
+            "hit_rate_at_10": 1.0,
+            "mrr": 0.669048,
+            "mttc": 2.275862,
+            "recommended_technical_score": 0.875197,
+            "sample_count": 29,
+            "scenario_metrics": {
+              "boundary": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 1.0,
+                "mttc": 3.0,
+                "sample_count": 1
+              },
+              "browsing": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.660516,
+                "mttc": 2.25,
+                "sample_count": 12
+              },
+              "buying": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.675099,
+                "mttc": 1.75,
+                "sample_count": 12
+              },
+              "intent_override": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.59375,
+                "mttc": 3.75,
+                "sample_count": 4
+              }
+            }
+          },
+          "outer_validation_samples": 29
+        }
+      ],
+      "oof_metrics": {
+        "hit_rate_at_10": 0.94,
+        "mrr": 0.70031,
+        "mttc": 2.853333,
+        "recommended_technical_score": 0.843026,
+        "sample_count": 150,
+        "scenario_metrics": {
+          "boundary": {
+            "hit_rate_at_10": 0.875,
+            "mrr": 0.775,
+            "mttc": 4.375,
+            "sample_count": 8
+          },
+          "browsing": {
+            "hit_rate_at_10": 0.983333,
+            "mrr": 0.701012,
+            "mttc": 2.4,
+            "sample_count": 60
+          },
+          "buying": {
+            "hit_rate_at_10": 0.916667,
+            "mrr": 0.68129,
+            "mttc": 2.55,
+            "sample_count": 60
+          },
+          "intent_override": {
+            "hit_rate_at_10": 0.909091,
+            "mrr": 0.723106,
+            "mttc": 4.363636,
+            "sample_count": 22
+          }
+        }
+      },
+      "paired_vs_ndcg_control": {
+        "losses": 37,
+        "mean_paired_session_reward_delta": -0.01839,
+        "paired_bootstrap_95_interval": [
+          -0.044857,
+          0.005557
+        ],
+        "paired_randomization_p_value": 0.162584,
+        "resamples": 10000,
+        "ties": 79,
+        "wins": 34
+      },
+      "stability": {
+        "fold_scores": [
+          0.768237,
+          0.875806,
+          0.865429,
+          0.832586,
+          0.875197
+        ],
+        "mean": 0.843451,
+        "standard_deviation": 0.040775,
+        "worst_fold": 0.768237
+      },
+      "target_rank_movement_vs_ndcg": {
+        "lost_rank_1_sessions": 14,
+        "mean_reciprocal_rank_delta": 0.020032,
+        "new_rank_1_sessions": 20,
+        "new_session_hits": 0,
+        "reciprocal_rank_improvements": 36,
+        "reciprocal_rank_regressions": 31
+      }
+    },
+    "reward_lambdamart_v1": {
+      "evidence_label": "stitched outer-fold OOF",
+      "folds": [
+        {
+          "inner_selected_rounds": 75,
+          "inner_training_samples": 88,
+          "inner_validation_samples": 31,
+          "outer_fold": 0,
+          "outer_metrics": {
+            "hit_rate_at_10": 0.935484,
+            "mrr": 0.580684,
+            "mttc": 2.709677,
+            "recommended_technical_score": 0.807753,
+            "sample_count": 31,
+            "scenario_metrics": {
+              "boundary": {
+                "hit_rate_at_10": 0.5,
+                "mrr": 0.071429,
+                "mttc": 7.0,
+                "sample_count": 2
+              },
+              "browsing": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.581944,
+                "mttc": 2.0,
+                "sample_count": 12
+              },
+              "buying": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.628472,
+                "mttc": 1.666667,
+                "sample_count": 12
+              },
+              "intent_override": {
+                "hit_rate_at_10": 0.8,
+                "mrr": 0.666667,
+                "mttc": 5.2,
+                "sample_count": 5
+              }
+            }
+          },
+          "outer_validation_samples": 31
+        },
+        {
+          "inner_selected_rounds": 55,
+          "inner_training_samples": 89,
+          "inner_validation_samples": 30,
+          "outer_fold": 1,
+          "outer_metrics": {
+            "hit_rate_at_10": 1.0,
+            "mrr": 0.62701,
+            "mttc": 2.193548,
+            "recommended_technical_score": 0.864232,
+            "sample_count": 31,
+            "scenario_metrics": {
+              "boundary": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.666667,
+                "mttc": 3.0,
+                "sample_count": 2
+              },
+              "browsing": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.671759,
+                "mttc": 2.0,
+                "sample_count": 12
+              },
+              "buying": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.531349,
+                "mttc": 1.583333,
+                "sample_count": 12
+              },
+              "intent_override": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.733333,
+                "mttc": 3.8,
+                "sample_count": 5
+              }
+            }
+          },
+          "outer_validation_samples": 31
+        },
+        {
+          "inner_selected_rounds": 25,
+          "inner_training_samples": 91,
+          "inner_validation_samples": 29,
+          "outer_fold": 2,
+          "outer_metrics": {
+            "hit_rate_at_10": 0.966667,
+            "mrr": 0.633188,
+            "mttc": 2.433333,
+            "recommended_technical_score": 0.844623,
+            "sample_count": 30,
+            "scenario_metrics": {
+              "boundary": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.5625,
+                "mttc": 2.0,
+                "sample_count": 2
+              },
+              "browsing": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.585648,
+                "mttc": 2.0,
+                "sample_count": 12
+              },
+              "buying": {
+                "hit_rate_at_10": 0.916667,
+                "mrr": 0.69246,
+                "mttc": 2.5,
+                "sample_count": 12
+              },
+              "intent_override": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.633333,
+                "mttc": 3.75,
+                "sample_count": 4
+              }
+            }
+          },
+          "outer_validation_samples": 30
+        },
+        {
+          "inner_selected_rounds": 48,
+          "inner_training_samples": 92,
+          "inner_validation_samples": 29,
+          "outer_fold": 3,
+          "outer_metrics": {
+            "hit_rate_at_10": 0.965517,
+            "mrr": 0.62567,
+            "mttc": 2.482759,
+            "recommended_technical_score": 0.840805,
+            "sample_count": 29,
+            "scenario_metrics": {
+              "boundary": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 1.0,
+                "mttc": 4.0,
+                "sample_count": 1
+              },
+              "browsing": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.636111,
+                "mttc": 2.0,
+                "sample_count": 12
+              },
+              "buying": {
+                "hit_rate_at_10": 0.916667,
+                "mrr": 0.525926,
+                "mttc": 2.5,
+                "sample_count": 12
+              },
+              "intent_override": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.8,
+                "mttc": 3.5,
+                "sample_count": 4
+              }
+            }
+          },
+          "outer_validation_samples": 29
+        },
+        {
+          "inner_selected_rounds": 44,
+          "inner_training_samples": 90,
+          "inner_validation_samples": 31,
+          "outer_fold": 4,
+          "outer_metrics": {
+            "hit_rate_at_10": 1.0,
+            "mrr": 0.693815,
+            "mttc": 2.137931,
+            "recommended_technical_score": 0.885386,
+            "sample_count": 29,
+            "scenario_metrics": {
+              "boundary": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 1.0,
+                "mttc": 3.0,
+                "sample_count": 1
+              },
+              "browsing": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.723016,
+                "mttc": 2.0,
+                "sample_count": 12
+              },
+              "buying": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.62037,
+                "mttc": 1.75,
+                "sample_count": 12
+              },
+              "intent_override": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.75,
+                "mttc": 3.5,
+                "sample_count": 4
+              }
+            }
+          },
+          "outer_validation_samples": 29
+        }
+      ],
+      "oof_metrics": {
+        "hit_rate_at_10": 0.973333,
+        "mrr": 0.631328,
+        "mttc": 2.393333,
+        "recommended_technical_score": 0.848198,
+        "sample_count": 150,
+        "scenario_metrics": {
+          "boundary": {
+            "hit_rate_at_10": 0.875,
+            "mrr": 0.575149,
+            "mttc": 3.875,
+            "sample_count": 8
+          },
+          "browsing": {
+            "hit_rate_at_10": 1.0,
+            "mrr": 0.639696,
+            "mttc": 2.0,
+            "sample_count": 60
+          },
+          "buying": {
+            "hit_rate_at_10": 0.966667,
+            "mrr": 0.599716,
+            "mttc": 2.0,
+            "sample_count": 60
+          },
+          "intent_override": {
+            "hit_rate_at_10": 0.954545,
+            "mrr": 0.715152,
+            "mttc": 4.0,
+            "sample_count": 22
+          }
+        }
+      },
+      "paired_vs_ndcg_control": {
+        "losses": 36,
+        "mean_paired_session_reward_delta": -0.013218,
+        "paired_bootstrap_95_interval": [
+          -0.033585,
+          0.007299
+        ],
+        "paired_randomization_p_value": 0.213579,
+        "resamples": 10000,
+        "ties": 83,
+        "wins": 31
+      },
+      "stability": {
+        "fold_scores": [
+          0.807753,
+          0.864232,
+          0.844623,
+          0.840805,
+          0.885386
+        ],
+        "mean": 0.84856,
+        "standard_deviation": 0.025856,
+        "worst_fold": 0.807753
+      },
+      "target_rank_movement_vs_ndcg": {
+        "lost_rank_1_sessions": 21,
+        "mean_reciprocal_rank_delta": -0.04895,
+        "new_rank_1_sessions": 11,
+        "new_session_hits": 1,
+        "reciprocal_rank_improvements": 31,
+        "reciprocal_rank_regressions": 34
+      }
+    },
+    "turn_aware_lambdamart_v1": {
+      "evidence_label": "stitched outer-fold OOF",
+      "folds": [
+        {
+          "inner_selected_rounds": 78,
+          "inner_training_samples": 88,
+          "inner_validation_samples": 31,
+          "outer_fold": 0,
+          "outer_metrics": {
+            "hit_rate_at_10": 0.967742,
+            "mrr": 0.670878,
+            "mttc": 2.516129,
+            "recommended_technical_score": 0.854812,
+            "sample_count": 31,
+            "scenario_metrics": {
+              "boundary": {
+                "hit_rate_at_10": 0.5,
+                "mrr": 0.166667,
+                "mttc": 7.0,
+                "sample_count": 2
+              },
+              "browsing": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.62963,
+                "mttc": 2.0,
+                "sample_count": 12
+              },
+              "buying": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.7875,
+                "mttc": 1.666667,
+                "sample_count": 12
+              },
+              "intent_override": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.691667,
+                "mttc": 4.0,
+                "sample_count": 5
+              }
+            }
+          },
+          "outer_validation_samples": 31
+        },
+        {
+          "inner_selected_rounds": 10,
+          "inner_training_samples": 89,
+          "inner_validation_samples": 30,
+          "outer_fold": 1,
+          "outer_metrics": {
+            "hit_rate_at_10": 0.935484,
+            "mrr": 0.686559,
+            "mttc": 3.0,
+            "recommended_technical_score": 0.83371,
+            "sample_count": 31,
+            "scenario_metrics": {
+              "boundary": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.666667,
+                "mttc": 4.0,
+                "sample_count": 2
+              },
+              "browsing": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.822222,
+                "mttc": 2.25,
+                "sample_count": 12
+              },
+              "buying": {
+                "hit_rate_at_10": 0.916667,
+                "mrr": 0.506944,
+                "mttc": 2.583333,
+                "sample_count": 12
+              },
+              "intent_override": {
+                "hit_rate_at_10": 0.8,
+                "mrr": 0.8,
+                "mttc": 5.4,
+                "sample_count": 5
+              }
+            }
+          },
+          "outer_validation_samples": 31
+        },
+        {
+          "inner_selected_rounds": 37,
+          "inner_training_samples": 91,
+          "inner_validation_samples": 29,
+          "outer_fold": 2,
+          "outer_metrics": {
+            "hit_rate_at_10": 0.966667,
+            "mrr": 0.673519,
+            "mttc": 2.433333,
+            "recommended_technical_score": 0.856722,
+            "sample_count": 30,
+            "scenario_metrics": {
+              "boundary": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.555556,
+                "mttc": 2.0,
+                "sample_count": 2
+              },
+              "browsing": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.671759,
+                "mttc": 2.0,
+                "sample_count": 12
+              },
+              "buying": {
+                "hit_rate_at_10": 0.916667,
+                "mrr": 0.711111,
+                "mttc": 2.5,
+                "sample_count": 12
+              },
+              "intent_override": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.625,
+                "mttc": 3.75,
+                "sample_count": 4
+              }
+            }
+          },
+          "outer_validation_samples": 30
+        },
+        {
+          "inner_selected_rounds": 50,
+          "inner_training_samples": 92,
+          "inner_validation_samples": 29,
+          "outer_fold": 3,
+          "outer_metrics": {
+            "hit_rate_at_10": 0.965517,
+            "mrr": 0.622031,
+            "mttc": 2.448276,
+            "recommended_technical_score": 0.840402,
+            "sample_count": 29,
+            "scenario_metrics": {
+              "boundary": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 1.0,
+                "mttc": 4.0,
+                "sample_count": 1
+              },
+              "browsing": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.560648,
+                "mttc": 1.916667,
+                "sample_count": 12
+              },
+              "buying": {
+                "hit_rate_at_10": 0.916667,
+                "mrr": 0.59537,
+                "mttc": 2.5,
+                "sample_count": 12
+              },
+              "intent_override": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.791667,
+                "mttc": 3.5,
+                "sample_count": 4
+              }
+            }
+          },
+          "outer_validation_samples": 29
+        },
+        {
+          "inner_selected_rounds": 40,
+          "inner_training_samples": 90,
+          "inner_validation_samples": 31,
+          "outer_fold": 4,
+          "outer_metrics": {
+            "hit_rate_at_10": 1.0,
+            "mrr": 0.677011,
+            "mttc": 2.172414,
+            "recommended_technical_score": 0.879655,
+            "sample_count": 29,
+            "scenario_metrics": {
+              "boundary": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 1.0,
+                "mttc": 3.0,
+                "sample_count": 1
+              },
+              "browsing": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.683333,
+                "mttc": 2.083333,
+                "sample_count": 12
+              },
+              "buying": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.633333,
+                "mttc": 1.75,
+                "sample_count": 12
+              },
+              "intent_override": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.708333,
+                "mttc": 3.5,
+                "sample_count": 4
+              }
+            }
+          },
+          "outer_validation_samples": 29
+        }
+      ],
+      "oof_metrics": {
+        "hit_rate_at_10": 0.966667,
+        "mrr": 0.666389,
+        "mttc": 2.52,
+        "recommended_technical_score": 0.85285,
+        "sample_count": 150,
+        "scenario_metrics": {
+          "boundary": {
+            "hit_rate_at_10": 0.875,
+            "mrr": 0.597222,
+            "mttc": 4.125,
+            "sample_count": 8
+          },
+          "browsing": {
+            "hit_rate_at_10": 1.0,
+            "mrr": 0.673519,
+            "mttc": 2.05,
+            "sample_count": 60
+          },
+          "buying": {
+            "hit_rate_at_10": 0.95,
+            "mrr": 0.646852,
+            "mttc": 2.2,
+            "sample_count": 60
+          },
+          "intent_override": {
+            "hit_rate_at_10": 0.954545,
+            "mrr": 0.725379,
+            "mttc": 4.090909,
+            "sample_count": 22
+          }
+        }
+      },
+      "paired_vs_ndcg_control": {
+        "losses": 28,
+        "mean_paired_session_reward_delta": -0.008567,
+        "paired_bootstrap_95_interval": [
+          -0.0256,
+          0.005739
+        ],
+        "paired_randomization_p_value": 0.309069,
+        "resamples": 10000,
+        "ties": 98,
+        "wins": 24
+      },
+      "stability": {
+        "fold_scores": [
+          0.854812,
+          0.83371,
+          0.856722,
+          0.840402,
+          0.879655
+        ],
+        "mean": 0.85306,
+        "standard_deviation": 0.015865,
+        "worst_fold": 0.83371
+      },
+      "target_rank_movement_vs_ndcg": {
+        "lost_rank_1_sessions": 13,
+        "mean_reciprocal_rank_delta": -0.013889,
+        "new_rank_1_sessions": 9,
+        "new_session_hits": 0,
+        "reciprocal_rank_improvements": 24,
+        "reciprocal_rank_regressions": 27
+      }
+    },
+    "uniform_pairwise_control": {
+      "evidence_label": "stitched outer-fold OOF",
+      "folds": [
+        {
+          "inner_selected_rounds": 75,
+          "inner_training_samples": 88,
+          "inner_validation_samples": 31,
+          "outer_fold": 0,
+          "outer_metrics": {
+            "hit_rate_at_10": 0.967742,
+            "mrr": 0.683372,
+            "mttc": 2.580645,
+            "recommended_technical_score": 0.85727,
+            "sample_count": 31,
+            "scenario_metrics": {
+              "boundary": {
+                "hit_rate_at_10": 0.5,
+                "mrr": 0.25,
+                "mttc": 7.0,
+                "sample_count": 2
+              },
+              "browsing": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.690972,
+                "mttc": 2.25,
+                "sample_count": 12
+              },
+              "buying": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.713294,
+                "mttc": 1.583333,
+                "sample_count": 12
+              },
+              "intent_override": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.766667,
+                "mttc": 4.0,
+                "sample_count": 5
+              }
+            }
+          },
+          "outer_validation_samples": 31
+        },
+        {
+          "inner_selected_rounds": 9,
+          "inner_training_samples": 89,
+          "inner_validation_samples": 30,
+          "outer_fold": 1,
+          "outer_metrics": {
+            "hit_rate_at_10": 1.0,
+            "mrr": 0.737225,
+            "mttc": 2.193548,
+            "recommended_technical_score": 0.897296,
+            "sample_count": 31,
+            "scenario_metrics": {
+              "boundary": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 1.0,
+                "mttc": 3.0,
+                "sample_count": 2
+              },
+              "browsing": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.654497,
+                "mttc": 2.0,
+                "sample_count": 12
+              },
+              "buying": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.722222,
+                "mttc": 1.583333,
+                "sample_count": 12
+              },
+              "intent_override": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.866667,
+                "mttc": 3.8,
+                "sample_count": 5
+              }
+            }
+          },
+          "outer_validation_samples": 31
+        },
+        {
+          "inner_selected_rounds": 39,
+          "inner_training_samples": 91,
+          "inner_validation_samples": 29,
+          "outer_fold": 2,
+          "outer_metrics": {
+            "hit_rate_at_10": 0.933333,
+            "mrr": 0.710635,
+            "mttc": 2.7,
+            "recommended_technical_score": 0.845857,
+            "sample_count": 30,
+            "scenario_metrics": {
+              "boundary": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.6,
+                "mttc": 2.0,
+                "sample_count": 2
+              },
+              "browsing": {
+                "hit_rate_at_10": 0.916667,
+                "mrr": 0.761905,
+                "mttc": 2.75,
+                "sample_count": 12
+              },
+              "buying": {
+                "hit_rate_at_10": 0.916667,
+                "mrr": 0.708333,
+                "mttc": 2.416667,
+                "sample_count": 12
+              },
+              "intent_override": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.619048,
+                "mttc": 3.75,
+                "sample_count": 4
+              }
+            }
+          },
+          "outer_validation_samples": 30
+        },
+        {
+          "inner_selected_rounds": 24,
+          "inner_training_samples": 92,
+          "inner_validation_samples": 29,
+          "outer_fold": 3,
+          "outer_metrics": {
+            "hit_rate_at_10": 0.965517,
+            "mrr": 0.637165,
+            "mttc": 2.448276,
+            "recommended_technical_score": 0.844943,
+            "sample_count": 29,
+            "scenario_metrics": {
+              "boundary": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 1.0,
+                "mttc": 4.0,
+                "sample_count": 1
+              },
+              "browsing": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.543981,
+                "mttc": 1.916667,
+                "sample_count": 12
+              },
+              "buying": {
+                "hit_rate_at_10": 0.916667,
+                "mrr": 0.634722,
+                "mttc": 2.5,
+                "sample_count": 12
+              },
+              "intent_override": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.833333,
+                "mttc": 3.5,
+                "sample_count": 4
+              }
+            }
+          },
+          "outer_validation_samples": 29
+        },
+        {
+          "inner_selected_rounds": 25,
+          "inner_training_samples": 90,
+          "inner_validation_samples": 31,
+          "outer_fold": 4,
+          "outer_metrics": {
+            "hit_rate_at_10": 0.965517,
+            "mrr": 0.630501,
+            "mttc": 2.37931,
+            "recommended_technical_score": 0.844323,
+            "sample_count": 29,
+            "scenario_metrics": {
+              "boundary": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 1.0,
+                "mttc": 3.0,
+                "sample_count": 1
+              },
+              "browsing": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.541071,
+                "mttc": 1.916667,
+                "sample_count": 12
+              },
+              "buying": {
+                "hit_rate_at_10": 0.916667,
+                "mrr": 0.607639,
+                "mttc": 2.416667,
+                "sample_count": 12
+              },
+              "intent_override": {
+                "hit_rate_at_10": 1.0,
+                "mrr": 0.875,
+                "mttc": 3.5,
+                "sample_count": 4
+              }
+            }
+          },
+          "outer_validation_samples": 29
+        }
+      ],
+      "oof_metrics": {
+        "hit_rate_at_10": 0.966667,
+        "mrr": 0.680799,
+        "mttc": 2.46,
+        "recommended_technical_score": 0.858373,
+        "sample_count": 150,
+        "scenario_metrics": {
+          "boundary": {
+            "hit_rate_at_10": 0.875,
+            "mrr": 0.7125,
+            "mttc": 3.875,
+            "sample_count": 8
+          },
+          "browsing": {
+            "hit_rate_at_10": 0.983333,
+            "mrr": 0.638485,
+            "mttc": 2.166667,
+            "sample_count": 60
+          },
+          "buying": {
+            "hit_rate_at_10": 0.95,
+            "mrr": 0.677242,
+            "mttc": 2.1,
+            "sample_count": 60
+          },
+          "intent_override": {
+            "hit_rate_at_10": 1.0,
+            "mrr": 0.794372,
+            "mttc": 3.727273,
+            "sample_count": 22
+          }
+        }
+      },
+      "paired_vs_ndcg_control": {
+        "losses": 36,
+        "mean_paired_session_reward_delta": -0.003044,
+        "paired_bootstrap_95_interval": [
+          -0.029108,
+          0.022683
+        ],
+        "paired_randomization_p_value": 0.817518,
+        "resamples": 10000,
+        "ties": 80,
+        "wins": 34
+      },
+      "stability": {
+        "fold_scores": [
+          0.85727,
+          0.897296,
+          0.845857,
+          0.844943,
+          0.844323
+        ],
+        "mean": 0.857938,
+        "standard_deviation": 0.020247,
+        "worst_fold": 0.844323
+      },
+      "target_rank_movement_vs_ndcg": {
+        "lost_rank_1_sessions": 18,
+        "mean_reciprocal_rank_delta": 0.000521,
+        "new_rank_1_sessions": 19,
+        "new_session_hits": 1,
+        "reciprocal_rank_improvements": 33,
+        "reciprocal_rank_regressions": 35
+      }
+    }
+  },
+  "caveats": [
+    "The matched ranking subsystem uses the frozen Wave 1 raw-history/fixed-question trajectory, not the complete 0.878963 guarded policy.",
+    "The all-development assets are deployment artifacts, not OOF evidence.",
+    "No F3/protected-50 data was imported, enumerated, read, or scored."
+  ],
+  "collection": {
+    "candidate_rows": 65350,
+    "queries_with_target_in_top50": 1307,
+    "ranking_groups": 1307,
+    "samples_with_ranking_groups": 147,
+    "trajectory_queries": 1500
+  },
+  "development_refit_assets": {
+    "fold_ensemble": {
+      "bytes": 397,
+      "relative_path": "artifacts/models/w2_ranking_v1/fold_ensemble.json",
+      "sha256": "84f8d8c486ca2aaf6d79d52bb496c65e58169b4d622266c4a76540ce68571113"
+    },
+    "ndcg_at_10_control": {
+      "bytes": 6248,
+      "objective": "ndcg_at_10",
+      "relative_path": "artifacts/models/w2_ranking_v1/ndcg_at_10_control.json",
+      "selected_rounds": 4,
+      "sha256": "afe1bd6eeb204f4fe16938dedb99a816d45a9260ed53b6547edca5ecd6e23b6d",
+      "technique_id": "ranking.metadata_gbdt"
+    },
+    "pointwise_control": {
+      "bytes": 8962,
+      "objective": "pointwise",
+      "relative_path": "artifacts/models/w2_ranking_v1/pointwise_control.json",
+      "selected_rounds": 6,
+      "sha256": "f97cc647461f567a711b8a1b6f654d9444be7b725b67684bd46199c66afccefa",
+      "technique_id": "ranking.pointwise_gbdt.v1"
+    },
+    "rank_stack": {
+      "bytes": 350,
+      "relative_path": "artifacts/models/w2_ranking_v1/rank_stack.json",
+      "sha256": "490b275f5a836d0a8fa0392d35e2b33754a92be442ac29612885bddaa6695c62",
+      "weights": [
+        0.25,
+        0.5,
+        0.25
+      ]
+    },
+    "reward_lambdamart_v1": {
+      "bytes": 55815,
+      "objective": "reward",
+      "relative_path": "artifacts/models/w2_ranking_v1/reward_lambdamart_v1.json",
+      "selected_rounds": 40,
+      "sha256": "582ffd0552d35d288c6cf29eea81107b3a1d1385d0d78c6e600e27215c9db29c",
+      "technique_id": "ranking.reward_lambdamart.v1"
+    },
+    "turn_aware_lambdamart_v1": {
+      "bytes": 88615,
+      "objective": "turn_aware_reward",
+      "relative_path": "artifacts/models/w2_ranking_v1/turn_aware_lambdamart_v1.json",
+      "selected_rounds": 64,
+      "sha256": "6e5da4c33779c755752d14298826159b0837f248e4a8429981345d72498bfafb",
+      "technique_id": "ranking.turn_aware_lambdamart.v1"
+    },
+    "uniform_pairwise_control": {
+      "bytes": 50365,
+      "objective": "uniform_pairwise",
+      "relative_path": "artifacts/models/w2_ranking_v1/uniform_pairwise_control.json",
+      "selected_rounds": 36,
+      "sha256": "595c2c8cf3add59dd698d05c514414be3ffdbc6c36218887141509c992059751",
+      "technique_id": "ranking.uniform_pairwise.v1"
+    }
+  },
+  "elapsed_seconds": 631.068,
+  "evidence_label": "nested grouped outer-fold OOF on adaptive 150 only",
+  "experiment_id": "w2_ranking_v1",
+  "fold_local_stack_weights": [
+    {
+      "inner_validation_reward": 0.861288,
+      "outer_fold": 0,
+      "weights": [
+        1.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "inner_validation_reward": 0.804104,
+      "outer_fold": 1,
+      "weights": [
+        0.0,
+        1.0,
+        0.0
+      ]
+    },
+    {
+      "inner_validation_reward": 0.840528,
+      "outer_fold": 2,
+      "weights": [
+        0.0,
+        0.0,
+        1.0
+      ]
+    },
+    {
+      "inner_validation_reward": 0.818889,
+      "outer_fold": 3,
+      "weights": [
+        0.75,
+        0.0,
+        0.25
+      ]
+    },
+    {
+      "inner_validation_reward": 0.802487,
+      "outer_fold": 4,
+      "weights": [
+        0.0,
+        1.0,
+        0.0
+      ]
+    }
+  ],
+  "manifests": {
+    "ensemble": "configs/experiments/w2_rank_ensemble_v1.json",
+    "reward": "configs/experiments/w2_reward_lambdamart_v1.json"
+  },
+  "matched_contract": {
+    "candidate_depth": 50,
+    "capacity": {
+      "early_stopping_rounds": 20,
+      "l2_leaf": 1.0,
+      "learning_rate": 0.03,
+      "max_depth": 3,
+      "max_rounds": 160,
+      "min_samples_leaf": 40,
+      "num_leaves": 7,
+      "seed": 20260826
+    },
+    "feature_set": "metadata",
+    "runtime_features_observable": true,
+    "same_candidate_set": true,
+    "targets_turn_outcomes_training_labels_only": true
+  },
+  "oof_leader": {
+    "candidate_id": "equal_standardized_scores",
+    "metrics": {
+      "hit_rate_at_10": 0.98,
+      "mrr": 0.677553,
+      "mttc": 2.386667,
+      "recommended_technical_score": 0.865533,
+      "sample_count": 150,
+      "scenario_metrics": {
+        "boundary": {
+          "hit_rate_at_10": 0.875,
+          "mrr": 0.598958,
+          "mttc": 4.125,
+          "sample_count": 8
+        },
+        "browsing": {
+          "hit_rate_at_10": 1.0,
+          "mrr": 0.690761,
+          "mttc": 2.05,
+          "sample_count": 60
+        },
+        "buying": {
+          "hit_rate_at_10": 0.966667,
+          "mrr": 0.646852,
+          "mttc": 2.0,
+          "sample_count": 60
+        },
+        "intent_override": {
+          "hit_rate_at_10": 1.0,
+          "mrr": 0.753842,
+          "mttc": 3.727273,
+          "sample_count": 22
+        }
+      }
+    },
+    "promotion_status": "research_only_not_promoted"
+  },
+  "protected_holdout_accessed": false,
+  "ranking": [
+    "equal_standardized_scores",
+    "fold_local_rank_stack",
+    "ndcg_at_10_control",
+    "uniform_pairwise_control",
+    "equal_mean_rank",
+    "turn_aware_lambdamart_v1",
+    "reward_lambdamart_v1",
+    "pointwise_control"
+  ],
+  "runtime": {
+    "fold_ensemble": {
+      "milliseconds_per_query": 2.058666,
+      "queries": 100,
+      "total_seconds": 0.205867
+    },
+    "ndcg_single": {
+      "milliseconds_per_query": 1.14044,
+      "queries": 100,
+      "total_seconds": 0.114044
+    },
+    "rank_stack": {
+      "milliseconds_per_query": 2.053555,
+      "queries": 100,
+      "total_seconds": 0.205355
+    },
+    "reward_single": {
+      "milliseconds_per_query": 1.189903,
+      "queries": 100,
+      "total_seconds": 0.11899
+    }
+  },
+  "schema_version": 1
+}
