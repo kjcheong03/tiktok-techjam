@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "campaign_id": "wave2_smoke_v1",
+  "catalog_path": "configs/techniques/catalog_v2.json",
+  "adaptive_split_path": "configs/splits/adaptive_v1.json",
+  "nested_split_path": "configs/splits/nested_v1.json",
+  "protected_holdout_access": "forbidden",
+  "baseline_presets": ["champion_guarded"],
+  "baseline_techniques": [
+    "state.raw_history",
+    "retrieval.sparse",
+    "ranking.constraint_gbdt",
+    "prior.quality",
+    "guard.override_fallback"
+  ],
+  "technique_ids": [
+    "search.bohb.v1",
+    "state.catalog_normalizer.v1",
+    "question.candidate_eig.v1",
+    "ranking.reward_lambdamart.v1",
+    "retrieval.splade_rescue.v1"
+  ],
+  "max_order": 2,
+  "candidate_limit": 500,
+  "fidelity_budgets": {"f0": 20, "f1": 10, "f2": 2},
+  "exploration_fraction": 0.2,
+  "seeds": [20260826],
+  "max_wall_seconds": 3600,
+  "resources": {
+    "cpu_jobs": 4,
+    "gpu_jobs": 0,
+    "memory_gb": 12.0,
+    "heavy_model_jobs": 1
+  },
+  "promotion_rule": "proposal_only"
+}

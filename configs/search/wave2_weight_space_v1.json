@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "parameters": [
+    {
+      "name": "eig_candidate_k",
+      "kind": "categorical",
+      "choices": [50, 100, 200],
+      "requires_all": ["question.candidate_eig.v1"]
+    },
+    {
+      "name": "question_value_margin",
+      "kind": "float",
+      "low": -0.02,
+      "high": 0.05,
+      "requires_all": ["question.candidate_eig.v1"]
+    },
+    {
+      "name": "rerank_k",
+      "kind": "categorical",
+      "choices": [20, 50, 100, 200],
+      "requires_any": ["ranking.reward_lambdamart.v1", "ranking.fold_ensemble.v1"]
+    },
+    {
+      "name": "learned_sparse_weight",
+      "kind": "float",
+      "low": 0.0,
+      "high": 0.5,
+      "requires_all": ["retrieval.splade_rescue.v1"]
+    },
+    {
+      "name": "late_interaction_weight",
+      "kind": "float",
+      "low": 0.0,
+      "high": 0.5,
+      "requires_all": ["retrieval.late_interaction_rescue.v1"]
+    },
+    {
+      "name": "expansion_max_terms",
+      "kind": "int",
+      "low": 1,
+      "high": 12,
+      "requires_all": ["query.catalog_prf.v1"]
+    },
+    {
+      "name": "diversification_weight",
+      "kind": "float",
+      "low": 0.0,
+      "high": 0.5,
+      "requires_all": ["ranking.facet_diversity.v1"]
+    },
+    {
+      "name": "router_threshold",
+      "kind": "float",
+      "low": 0.5,
+      "high": 0.95,
+      "requires_all": ["routing.calibrated_observable.v1"]
+    }
+  ]
+}
