@@ -33,7 +33,12 @@ to its source, preventing silent documentation drift.
    [ranking](wave2_ranking_report.md).
 10. [Autonomous system reference](autonomous_unified_system_reference.md) — the
     implemented pure-baseline search, F0/F1/F2 execution, pruning, conditional HPO,
-    overfitting controls, checkpoint/resume, top-three proposals, and human gates.
+    dense/neural asset preflight, overfitting controls, one-command checkpoint/resume,
+    top-three proposals, hash-bound activation/rollback, and human gates. Section 16 is
+    the current `autonomous_state_v2_v1` eight-step execution guide.
+11. [State Baseline V2 integration](state_baseline_v2_integration.md) — exact teammate
+    parity, native state/query/history switches, presets, autonomous linkage,
+    combination result, and overfitting-safe validation.
 
 ## What to use for each task
 
@@ -46,6 +51,7 @@ to its source, preventing silent documentation drift.
 | Install dependencies and run presets | `unified_technique_operations.md` |
 | Run the autonomous campaign | `autonomous_unified_system_reference.md` |
 | Understand the score to beat | `final_candidate_checkpoint.md` |
+| Use or retest the teammate State V2 baseline | `state_baseline_v2_integration.md` |
 | Understand Wave 2 hypotheses versus actual evidence | Wave 2 plan followed by the three result reports |
 
 ## Essential non-Markdown companions
@@ -70,4 +76,3 @@ uv run pytest -q tests/test_essential_docs.py
 
 Do not independently edit an essential copy, because the synchronization test will
 correctly treat that as drift.
-

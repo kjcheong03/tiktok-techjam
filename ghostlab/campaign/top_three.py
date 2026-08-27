@@ -35,6 +35,9 @@ class CandidatePackage:
     confirmed: bool = False
     safe: bool = False
     notes: tuple[str, ...] = ()
+    enabled_techniques: tuple[str, ...] = ()
+    technique_sources: tuple[tuple[str, str, str], ...] = ()
+    tuned_parameters: tuple[tuple[str, str | int | float | bool], ...] = ()
 
     def __post_init__(self) -> None:
         if not self.candidate_id:
@@ -55,8 +58,7 @@ class CandidatePackage:
         missing = configured_paths - set(self.assets)
         if missing:
             raise ValueError(
-                "candidate package must declare every config asset: "
-                f"{sorted(missing)}"
+                f"candidate package must declare every config asset: {sorted(missing)}"
             )
 
 
@@ -117,9 +119,7 @@ def select_top_three(
     if maximum_scenario_regression < 0.0 or efficient_score_band < 0.0:
         raise ValueError("selection tolerances cannot be negative")
     root = Path(project_root).resolve()
-    safe: list[
-        tuple[CandidateEvaluation, PairedAnalysis, CandidatePackage]
-    ] = []
+    safe: list[tuple[CandidateEvaluation, PairedAnalysis, CandidatePackage]] = []
     excluded: list[tuple[str, str]] = []
     for evaluation in sorted(evaluations, key=lambda item: item.candidate_id):
         reason = _exclusion_reason(
@@ -273,7 +273,9 @@ def _exclusion_reason(
         *evaluation.session_rewards,
         *evaluation.scenario_scores.values(),
     )
-    if not evaluation.session_rewards or not all(math.isfinite(item) for item in numeric):
+    if not evaluation.session_rewards or not all(
+        math.isfinite(item) for item in numeric
+    ):
         return "missing or non-finite evaluation evidence"
     if not math.isclose(
         evaluation.score,

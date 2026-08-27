@@ -34,6 +34,7 @@ def resolve_repository_path(
     *,
     label: str,
     must_exist: bool = True,
+    allow_directory: bool = False,
 ) -> Path:
     """Resolve a non-protected path without permitting repository escape."""
 
@@ -49,8 +50,11 @@ def resolve_repository_path(
         resolved.relative_to(root)
     except ValueError as error:
         raise ValueError(f"{label} must stay inside the project") from error
-    if must_exist and not resolved.is_file():
-        raise FileNotFoundError(f"{label} does not exist: {value}")
+    if must_exist:
+        exists = resolved.exists() if allow_directory else resolved.is_file()
+        if not exists:
+            expected = "file or directory" if allow_directory else "file"
+            raise FileNotFoundError(f"{label} {expected} does not exist: {value}")
     return resolved
 
 
@@ -188,7 +192,7 @@ def _validate_asset_paths(
     label: str,
 ) -> None:
     for path in paths:
-        resolve_repository_path(project_root, path, label=label)
+        resolve_repository_path(project_root, path, label=label, allow_directory=True)
 
 
 def _validate_baseline_presets(

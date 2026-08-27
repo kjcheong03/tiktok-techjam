@@ -235,9 +235,16 @@ class AutonomousCampaign:
             for technique_id in self.manifest.technique_ids
             if technique_id not in composable
         ]
-        per_anchor = max(
-            1, self.manifest.candidate_limit // len(self.manifest.baseline_presets)
+        discovery_presets = tuple(
+            preset
+            for preset in self.manifest.baseline_presets
+            if self.manifest.search_mode_for_preset(preset) == "composable"
         )
+        control_count = len(self.manifest.baseline_presets) - len(discovery_presets)
+        discovery_budget = self.manifest.candidate_limit - control_count
+        if discovery_budget < len(discovery_presets):
+            raise ValueError("candidate limit cannot fit every declared anchor control")
+        per_anchor = max(1, discovery_budget // len(discovery_presets))
         planned: list[CandidateSpec] = []
         for preset in self.manifest.baseline_presets:
             baseline = self.manifest.techniques_for_preset(preset)
@@ -477,7 +484,11 @@ class AutonomousCampaign:
         limit: int,
     ) -> CampaignStage:
         selected: list[CandidateSpec] = []
-        per_anchor = max(1, math.ceil(limit / len(self.manifest.baseline_presets)))
+        discovery_count = sum(
+            self.manifest.search_mode_for_preset(preset) == "composable"
+            for preset in self.manifest.baseline_presets
+        )
+        per_anchor = max(1, math.ceil(limit / max(1, discovery_count)))
         for offset, preset in enumerate(self.manifest.baseline_presets):
             candidates = tuple(
                 item for item in previous.candidates if item.baseline_id == preset
@@ -635,9 +646,10 @@ class AutonomousCampaign:
                 ):
                     classification = "scenario_regression"
                     reason = "matched scenario regression exceeded the declared gate"
-                elif not isinstance(analysis, dict) or float(
-                    analysis["mean_delta"]
-                ) <= 0.0:
+                elif (
+                    not isinstance(analysis, dict)
+                    or float(analysis["mean_delta"]) <= 0.0
+                ):
                     classification = "no_confirmed_improvement"
                     reason = (
                         "independent development confirmation did not beat the "

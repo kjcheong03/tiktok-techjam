@@ -8,10 +8,12 @@ For the technique-by-technique historical registry, prior scores, challenger lin
 retest triggers, also see `docs/unified_technique_operations.md`. This document is the
 canonical source for the current autonomous campaign contract and executable commands.
 
-This document describes implemented behavior, not intended future behavior. A command or
-orchestrator entry point that does not exist in this worktree is labelled **PENDING**. The
-system is proposal-only: it may search, evaluate, compare, and package candidates, but it
-must not promote a champion, expose the protected F3 split, merge, commit, or push.
+This document describes implemented behavior, not intended future behavior. The current
+campaign is `autonomous_state_v2_v1`; it is deliberately separate from the historical
+`autonomous_full_v1` campaign so checkpoints cannot be mixed after the State Baseline V2
+integration. Section 16 is the canonical one-command workflow. The system is proposal-only:
+it may search, evaluate, compare, and package candidates, but it must not promote a champion,
+expose the protected F3 split, merge, commit, or push.
 
 ## 1. Operating contract
 
@@ -256,17 +258,17 @@ presets to `control_only` until fold-safe refitting exists.
 | `question.adaptive_heuristic` | Composable | `ghostlab/policy/adaptive_questions.py` |
 | `question.learned_linear` | Historical control-only anchor | typed binding exists, but catalog is `fit_required=true`, `selection_safe=false`; prior fitted asset cannot enter prospective selection |
 | `retrieval.sparse` | Composable | `ghostlab/retrieval/sparse.py` |
-| `retrieval.minilm` | Unavailable | local MiniLM asset absent |
-| `retrieval.e5` | Unavailable | local E5 asset absent |
-| `fusion.rrf` | Unavailable | dense asset required by this route is absent |
-| `fusion.weighted` | Unavailable | dense asset required by this route is absent |
-| `fusion.sparse_first_union` | Unavailable | dense asset required by this route is absent |
+| `retrieval.minilm` | Composable after preflight | pinned offline asset fetched from `configs/assets/minilm_control.json` |
+| `retrieval.e5` | Composable after preflight | pinned and hash-verified offline E5 asset |
+| `fusion.rrf` | Composable with one dense backend | typed route override; invalid standalone is retained as a dependency-closed pair |
+| `fusion.weighted` | Composable with one dense backend | conditional sparse/dense weights are tunable only when enabled |
+| `fusion.sparse_first_union` | Composable with one dense backend | sparse-first dense backfill route |
 | `ranking.fixed_lexical` | Composable | `ghostlab/retrieval/rerank.py` |
 | `ranking.pairwise_linear` | Anchor-only | historical ranker not represented by the unified reranker enum |
 | `ranking.metadata_gbdt` | Historical control-only anchor | typed binding/asset exists, but catalog is `fit_required=true`, `selection_safe=false`; prior fit predates the 90/60 boundary |
 | `ranking.constraint_gbdt` | Anchor-only | compiled suite anchor, not an additive patch |
 | `ranking.deep_dense_gbdt` | Anchor-only | historical standalone challenger |
-| `ranking.cross_encoder` | Unavailable | local cross-encoder asset absent |
+| `ranking.cross_encoder` | Composable after preflight | pinned offline top-k cross-encoder with weight and rerank-depth switches |
 | `ranking.neural_gbdt` | Anchor-only | historical standalone challenger |
 | `filter.structured` | Composable | `ghostlab/retrieval/filters.py` |
 | `prior.profile` | Composable | typed initial weight; tune only inside inner folds |
@@ -628,10 +630,12 @@ silently replace the from-scratch result. There is no dedicated `retest-new-base
 command. The supported sensitivity workflow is:
 
 1. Add a new immutable suite JSON under `configs/suites/`.
-2. Copy `configs/campaigns/autonomous_full_v1.template.json` to a new versioned template.
+2. Copy `configs/campaigns/autonomous_state_v2_v1.template.json` to a new versioned template.
 3. Give it a new `campaign_id`, add the suite path to `baseline_presets`, declare its
-   `baseline_techniques_by_preset`, and set its `baseline_search_modes` entry to
-   `composable`. Preserve the pure anchor and old controls; do not replace their evidence.
+   `baseline_techniques_by_preset`, and normally set its `baseline_search_modes` entry to
+   `control_only`. Preserve the sole pure discovery anchor and old controls. A separate
+   baseline-sensitivity experiment may declare another composable anchor, but must use a
+   different campaign ID and cannot be treated as the absolute-start search.
 4. Keep unavailable, anchor-only, and research-only items visible in catalogs but out of
    the runtime `technique_ids` list. Re-admit them only after assets/bindings change.
 5. Commit the reviewed template/config so freeze has a clean `HEAD`.
@@ -672,6 +676,13 @@ competition gain. On another run, fewer than three behaviorally distinct, strict
 improving candidates remains a valid result; the proposal CLI must fail rather than
 package controls, ties, or duplicate behaviors.
 
+Do not extrapolate `109.52` seconds to the current full campaign. The current admission
+audit has 522 planned low-order structures and 359 materializable structures before
+higher-order/HPO work, including serialized neural candidates. Actual completion depends
+on hardware and survivor counts and may take many hours. It remains finite because
+candidate, fidelity, HPO-round, higher-order, resource, and expansion-wall bounds are
+frozen; the checkpoint permits interruption and identical-command resume.
+
 ## 7. Search, pruning, combinations, and HPO rules
 
 ### 7.1 Candidate enumeration
@@ -681,7 +692,7 @@ package controls, ties, or duplicate behaviors.
 behavior hash, and stops at `candidate_limit`. Orders one, two, and three are labelled
 single, pair, and triple; larger orders are labelled beam candidates.
 
-The current `autonomous_full_v1` template bounds search at order 6 and 600 candidates.
+The current `autonomous_state_v2_v1` template bounds search at order 6 and 600 candidates.
 This is a ceiling, not proof that every possible six-way combination was evaluated.
 
 ### 7.2 Interaction-aware exploration
@@ -1020,3 +1031,168 @@ whole-campaign wall stop rather than the current bounded job counts plus higher-
 estimate. Even with those,
 the output remains a development-confirmed proposal—not the final/generalization-proof
 champion—until human Gate A, the external one-shot F3 process, and Gate B are complete.
+
+## 16. Canonical one-command workflow after State Baseline V2
+
+This section supersedes the older manual command sequence for new campaigns. The manual
+commands remain useful for debugging individual stages. The one-command entry point is:
+
+```bash
+uv run python -m scripts.run_autonomous_end_to_end --prepare-assets
+```
+
+Run it from the repository root only after the implementation has been reviewed and
+committed. It performs preflight and asset preparation, freezes a manifest when none exists,
+writes a plan, executes or resumes F0/F1/F2, materializes three proposals, and prints three
+candidate-preparation commands. Re-running the same command resumes the existing frozen
+campaign. The wrapper never commits, pushes, opens F3, or activates a candidate.
+
+### 16.1 Eight user steps
+
+1. Review `git status`, tests, the campaign template, and this reference.
+2. Commit the reviewed implementation locally. Freeze intentionally rejects a dirty
+   worktree because otherwise HEAD would not contain its inputs.
+3. Run the one command above. On later invocations `--prepare-assets` may be omitted because
+   preflight still verifies the existing assets.
+4. Read `artifacts/campaigns/autonomous_state_v2_v1/admission.json`. Every catalog entry is
+   classified as admitted, anchor-only, research-only, missing-asset blocked, or unavailable.
+5. Read the plan, checkpoint, evidence, and
+   `artifacts/proposals/autonomous_state_v2_v1/proposal_manifest.json`.
+6. Choose one of the three printed preparation commands. Preparation copies the immutable
+   preset into `configs/candidates/`, validates it on development replay, hashes it, and
+   prints the exact activation command. It does not activate anything.
+7. If human review approves it, run the printed hash-bound activation command, then the
+   printed verification command. `starter.Agent` now resolves the active pointer.
+8. If verification or review fails, run
+   `uv run python -m scripts.activate_candidate --rollback`. This atomically selects
+   `configs/suites/champion_guarded.json` again.
+
+### 16.2 Files created and consumed
+
+| Path | Purpose |
+|---|---|
+| `configs/campaigns/autonomous_state_v2_v1.template.json` | Current versioned campaign input; pure keyword discovery anchor plus historical controls |
+| `scripts/preflight_autonomous.py` | Optional asset preparation and exhaustive catalog admission ledger |
+| `ghostlab/campaign/admission.py` | Typed admission and minimum-trial coverage audit |
+| `scripts/run_autonomous_end_to_end.py` | Single resumable orchestration command |
+| `artifacts/campaigns/autonomous_state_v2_v1/admission.json` | Every technique, source, disposition, assets, blockers, and minimum trial |
+| `artifacts/campaigns/autonomous_state_v2_v1/manifest.json` | Immutable commit/input/split/campaign hashes |
+| `artifacts/campaigns/autonomous_state_v2_v1/plan.json` | Audit preview and explicit skips |
+| `artifacts/campaigns/autonomous_state_v2_v1/checkpoint.json` | Atomic resumable job outcomes |
+| `artifacts/campaigns/autonomous_state_v2_v1/evidence.json` | F0/F1/F2 leaderboards, interactions, safety, and confirmation |
+| `artifacts/proposals/autonomous_state_v2_v1/` | Three immutable candidate presets and human-review manifest |
+| `scripts/prepare_candidate.py` | Stages and development-validates one proposal; prints activation command |
+| `scripts/activate_candidate.py` | Atomically writes a hash-bound active pointer or rolls back |
+| `scripts/verify_active_candidate.py` | Verifies pointer, hash, preset, and starter entry point |
+| `ghostlab/runtime/selected.py` | Submission runtime selector with champion fallback |
+| `configs/active_candidate.json` | Explicit selected preset pointer; absent means compiled champion fallback |
+
+### 16.3 What “all techniques are considered” guarantees
+
+The preflight loads the resolved v1+v2 catalog and produces one record for every entry.
+Every executable composable technique in the current template must have its dependencies
+and local assets present and must occur in at least one materializable F0 structure. The
+current audit plans 522 low-order structures inside the 600-candidate cap: every valid
+standalone and compatible pair is considered from the pure anchor. A fusion switch whose
+standalone form is meaningless receives its first trial with a dense backend. Invalid
+schema combinations are recorded as blocked structures, not performance failures.
+
+Unavailable source ideas are still accounted for but are not fabricated as experiments.
+For example, SPLADE, ColBERT/BGE-M3, query2doc, distilled expert, and the calibrated router
+remain blocked until their manifests name pinned, licensed, locally loadable assets and any
+required fold-safe fit exists. `admission.json` gives the exact current reason. Resolving a
+blocker requires a new versioned template/campaign; old checkpoints must never be reused.
+
+Research procedures—counterfactual labels, replay, leakage checks, paired statistics,
+Hyperband/BOHB, and evidence allocation—operate on the experiment workflow and therefore
+are not runtime on/off switches. Anchor-only compiled systems are comparison controls and
+cannot seed the discovery beam.
+
+### 16.4 Combination and pruning policy
+
+- The only discovery anchor is `configs/suites/unfitted_keyword_search.json`: current turn,
+  fixed questions, sparse retrieval, no fitted ranker, no priors, and no dense model.
+- The compiled champion, historical keyword/learned systems, and State Baseline V2 preset
+  are controls only. State V2 itself remains an additive technique that can be discovered
+  from the pure anchor.
+- F0 gives each materializable standalone/dependency closure and compatible pair a small,
+  stratified evaluation. Dense/neural jobs are serialized by the heavy-model resource cap.
+- Permanent pruning requires invalidity, behavioral duplication, or repeated domination.
+  Uncertain, mildly negative, diverse-family, random audit, and interaction-reserve paths
+  remain eligible for higher-order search.
+- Higher orders are not fixed at three. Bounded beam expansion can produce orders 3–6,
+  subject to compatibility, candidate, resource, and wall budgets.
+- Conditional BOHB proposals tune only active parameters. Weighted fusion weights must sum
+  to one; cross-encoder weight/depth, EIG margin, priors, and diversification parameters are
+  irrelevant and therefore absent when their technique is off.
+- Backward ablations and paired interaction deltas identify components whose value appears
+  only in combination and prevent one strong component from taking credit for the rest.
+
+This is designed to maximize useful coverage under a finite budget, not to claim a
+mathematical global optimum over an effectively unbounded software/model space.
+
+### 16.5 Overfitting controls
+
+Search and HPO use only frozen outer folds `[0, 2, 3]` (90 sessions). F2 receives finalists
+only and uses folds `[1, 4]` (60 different sessions) with one frozen seed. The split hashes,
+sample-ID hashes, and zero overlap are recorded. F3 paths are rejected by schema and path
+guards and are absent from every command here.
+
+Techniques marked `fit_required=true` or `selection_safe=false` may be screened for research
+diagnosis, but prefitted assets cannot become a proposal. They require fold-local fitting
+and a newly versioned campaign before selection. Promotion additionally requires positive
+paired development-confirmation delta, scenario gates, complete jobs, unique behavior, and
+existing hashed assets. Three proposals are retained because score, robustness, and
+efficiency are different objectives; the full leaderboard remains in evidence.
+
+### 16.6 Dependencies and offline assets
+
+Install the declared environment with `uv sync --all-extras`. The current admitted optional
+assets are pinned by revision:
+
+- MiniLM: `configs/assets/minilm_control.json` to
+  `artifacts/cache/models/all-MiniLM-L6-v2`;
+- E5-small-v2: `configs/assets/e5_small_v2.json` to
+  `artifacts/cache/models/e5-small-v2`, verified file-by-file;
+- cross-encoder: `configs/assets/cross_encoder_minilm.json` to
+  `artifacts/cache/models/ms-marco-MiniLM-L6-v2`;
+- catalog ontology: built from the exact catalog into
+  `artifacts/assets/catalog_ontology_v1.json`.
+
+These cache/model files are intentionally not Git payloads. Teammates reproduce them through
+`--prepare-assets`; acquisition receipts or file hashes are verified before admission. The
+runtime loads them with `local_files_only=True`, so evaluation does not depend on network
+access after preparation.
+
+The first full-catalog use of each dense backend builds a content-addressed embedding index.
+On the current CPU-only Mac test, E5 projected roughly 20–25 minutes for 50,000 products;
+later candidates reuse the verified cache. This is finite initialization work, not model
+training or one cost per candidate. Do not interrupt it merely because the first progress
+bar is slow. Heavy-model scheduling serializes this initialization to avoid cache races.
+
+### 16.7 Proposal contents and activation
+
+Each candidate record in `proposal_manifest.json` includes its role, score, paired interval,
+scenario deltas, resource measurements, enabled technique IDs, source files, descriptions,
+tuned parameters, full resolved configuration (including weights), dependency extras,
+asset/evidence hashes, preset hash, and exact preparation command. The campaign prints all
+three commands; it does not select one automatically.
+
+Preparation output contains one `next_activation_command`. That command includes the exact
+preset SHA-256; activation refuses a changed file. Activation writes only
+`configs/active_candidate.json`, then prints verification and rollback commands.
+`starter.Agent` uses `SelectedRuntime`: no pointer preserves the compiled champion exactly,
+an approved pointer builds the selected unified suite, and component/runtime failure falls
+back to the compiled champion at the competition boundary.
+
+### 16.8 Failure and resume behavior
+
+- A dirty worktree blocks only a new freeze; it does not authorize an automatic commit.
+- Missing packages/assets fail preflight with an explicit admission record.
+- An interrupted evaluation retains atomic checkpoint outcomes. Re-run the same one command;
+  completed job IDs are skipped.
+- A changed campaign ID, manifest hash, input hash, split hash, or candidate hash fails closed.
+- Fewer than three independently confirmed safe candidates stops proposal materialization;
+  it never pads the result with unsafe or duplicate candidates.
+- No command here commits, pushes, merges, deletes a worktree, reads F3, or changes the active
+  method without the separate human activation command.

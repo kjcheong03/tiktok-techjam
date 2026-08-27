@@ -44,6 +44,11 @@ class CandidateRecord(TypedDict):
     notes: list[str]
     confirmed: bool
     safe: bool
+    enabled_techniques: list[str]
+    technique_sources: list[dict[str, str]]
+    tuned_parameters: dict[str, str | int | float | bool]
+    configuration: dict[str, object]
+    prepare_command: str
 
 
 @dataclass(frozen=True)
@@ -78,9 +83,10 @@ def materialize_top_three(
     if not 1 <= maximum_asset_bytes <= 100 * 1024**3:
         raise ValueError("maximum_asset_bytes must be between 1 and 100 GiB")
     candidates = selection.candidates
-    if len(candidates) != 3 or len(
-        {item.evaluation.candidate_id for item in candidates}
-    ) != 3:
+    if (
+        len(candidates) != 3
+        or len({item.evaluation.candidate_id for item in candidates}) != 3
+    ):
         raise ValueError("materialization requires three distinct candidates")
     target.mkdir(parents=True, exist_ok=True)
     reports_dir = target / "reports"
@@ -160,6 +166,7 @@ def _candidate_record(
     maximum_asset_bytes: int,
 ) -> CandidateRecord:
     package = candidate.package
+    preset_relative = preset_path.relative_to(root).as_posix()
     return {
         "role": candidate.role,
         "candidate_id": candidate.evaluation.candidate_id,
@@ -202,6 +209,17 @@ def _candidate_record(
         "notes": list(package.notes),
         "confirmed": package.confirmed,
         "safe": package.safe,
+        "enabled_techniques": list(package.enabled_techniques),
+        "technique_sources": [
+            {"technique_id": item, "source": source, "description": description}
+            for item, source, description in package.technique_sources
+        ],
+        "tuned_parameters": dict(package.tuned_parameters),
+        "configuration": package.config.model_dump(mode="json"),
+        "prepare_command": (
+            "uv run python -m scripts.prepare_candidate --preset "
+            + shlex.quote(preset_relative)
+        ),
     }
 
 
@@ -258,7 +276,13 @@ def _render_guide(
                 "",
                 "- Dependency extras: "
                 + ", ".join(f"`{item}`" for item in record["dependency_extras"]),
+                "- Enabled techniques: "
+                + ", ".join(f"`{item}`" for item in record["enabled_techniques"]),
+                "- Tuned parameters: `"
+                + json.dumps(record["tuned_parameters"], sort_keys=True)
+                + "`",
                 f"- Preset: `{record['preset']['path']}` (`{record['preset']['sha256']}`)",
+                f"- Prepare command: `{record['prepare_command']}`",
             ]
         )
         assets = record["assets"]
@@ -277,9 +301,7 @@ def _render_guide(
         lines.append(
             "- Evidence: "
             + (
-                "; ".join(
-                    f"`{item['path']}` (`{item['sha256']}`)" for item in evidence
-                )
+                "; ".join(f"`{item['path']}` (`{item['sha256']}`)" for item in evidence)
                 if evidence
                 else "none"
             )
@@ -339,6 +361,9 @@ def _render_guide(
             "scenario safety, dependencies, offline assets, runtime, licensing, and",
             "compiled parity. Gate A may freeze exactly one candidate for guarded F3",
             "or reject every proposal. The software cannot approve this gate.",
+            "Running a candidate's prepare command validates it and prints the exact",
+            "hash-bound activation command. Activation then prints verification and",
+            "rollback commands; it is never performed by the campaign itself.",
             "",
             "### One-shot F3 — outside this proposal bundle",
             "",
@@ -399,9 +424,7 @@ def _path_record(
     maximum_asset_files: int,
     maximum_asset_bytes: int,
 ) -> PathRecord:
-    digest, size, files = _hash_path(
-        path, maximum_asset_files, maximum_asset_bytes
-    )
+    digest, size, files = _hash_path(path, maximum_asset_files, maximum_asset_bytes)
     return {
         "path": path.relative_to(root).as_posix(),
         "sha256": digest,

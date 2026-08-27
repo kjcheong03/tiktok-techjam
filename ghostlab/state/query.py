@@ -13,6 +13,7 @@ QueryVariant = Literal[
     "raw_plus_active",
     "compressed_raw",
     "negation_safe_hybrid",
+    "coverage_adaptive_v2",
 ]
 NEGATED_CLAUSE_RE = re.compile(
     r"\b(?:not|avoid|without|exclude)\b[^.;,]*", re.IGNORECASE
@@ -70,6 +71,15 @@ def _compressed_messages(state: ConversationState) -> list[str]:
 
 def build_query(state: ConversationState, variant: QueryVariant) -> str:
     """Build a non-destructive query from runtime-observable conversation state."""
+
+    from ghostlab.state.baseline_v2 import StateBaselineV2
+
+    if variant == "coverage_adaptive_v2":
+        if not isinstance(state, StateBaselineV2):
+            raise TypeError("coverage-adaptive V2 query requires State Baseline V2")
+        return state.build_coverage_adaptive_query()
+    if variant == "structured_active" and isinstance(state, StateBaselineV2):
+        return state.build_state_query()
 
     raw = _unique(state.messages)
     active = _active_parts(state)

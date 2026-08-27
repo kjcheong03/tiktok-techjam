@@ -12,7 +12,14 @@ from ghostlab.competition.contract import AgentProtocol, AskAttribute
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
-StateVariant = Literal["current", "raw_history", "single", "multi", "compressed"]
+StateVariant = Literal[
+    "current",
+    "raw_history",
+    "single",
+    "multi",
+    "compressed",
+    "baseline_v2",
+]
 QueryVariant = Literal[
     "raw_history",
     "structured_active",
@@ -20,6 +27,7 @@ QueryVariant = Literal[
     "raw_plus_active",
     "compressed_raw",
     "negation_safe_hybrid",
+    "coverage_adaptive_v2",
 ]
 QuestionVariant = Literal[
     "none",
@@ -58,6 +66,7 @@ QueryExpansion = Literal["off", "prf"]
 Diversification = Literal["off", "facet_mmr"]
 Normalizer = Literal["off", "catalog_v1"]
 RoutingVariant = Literal["off", "calibrated"]
+RecommendationHistory = Literal["off", "correction_scoped"]
 
 
 class CandidateRetriever(Protocol):
@@ -105,6 +114,7 @@ class UnifiedTechniqueConfig(BaseModel):
     negative_evidence: bool = True
     provenance: bool = True
     override_invalidation: bool = True
+    recommendation_history: RecommendationHistory = "off"
     structured_filter: bool = False
     profile_prior_weight: float = Field(default=0.0, ge=0.0, le=1.0)
     quality_prior_weight: float = Field(default=0.2, ge=0.0, le=1.0)
@@ -167,6 +177,26 @@ class UnifiedTechniqueConfig(BaseModel):
             return self
         if self.compiled_config_path is not None:
             raise ValueError("compiled_config_path is only valid for compiled engine")
+        if (
+            self.query_variant == "coverage_adaptive_v2"
+            and self.state_variant != "baseline_v2"
+        ):
+            raise ValueError(
+                "coverage-adaptive V2 query requires state_variant=baseline_v2"
+            )
+        if self.state_variant == "baseline_v2" and self.normalizer != "off":
+            raise ValueError(
+                "State Baseline V2 uses its frozen legacy adapter; catalog "
+                "normalization must be tested as a separate state implementation"
+            )
+        if (
+            self.recommendation_history == "correction_scoped"
+            and self.state_variant != "baseline_v2"
+        ):
+            raise ValueError(
+                "correction-scoped recommendation history requires "
+                "state_variant=baseline_v2"
+            )
         dense_routes = {"dense", "rrf", "weighted", "sparse_first_union"}
         needs_dense = self.retrieval_route in dense_routes
         if needs_dense != (self.dense_backend != "off"):
@@ -562,4 +592,5 @@ def build_suite_agent(
         cross_encoder_rerank_k=config.cross_encoder_rerank_k,
         query_expander=query_expander,
         diversifier=diversifier,
+        recommendation_history=config.recommendation_history,
     )

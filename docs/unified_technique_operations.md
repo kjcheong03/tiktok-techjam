@@ -4,6 +4,10 @@ New teammates should begin with `docs/essentials/README.md`, which provides the
 curated reading order and execution checklist while linking back to this canonical
 technical reference.
 
+The teammate State Baseline V2 is now a native, opt-in state/query/history family. Its
+complete mapping, exact parity hashes, presets, interaction evidence, and safe retest
+commands are in `docs/state_baseline_v2_integration.md`.
+
 Date: 2026-08-26
 Branch: `ghostlab/unified-techniques`
 Worktree: `techjam-unified/`
@@ -37,10 +41,11 @@ It does not replace or mutate the protected checkpoints:
 - `ghostlab/integration@ec4906a`: validated guarded-constraint GBDT candidate;
 - `main@55b3d55`: first baseline.
 
-The submission runtime remains `ghostlab.runtime.agent.GhostLabRuntime`. Unified
-research configuration is intentionally separate in
-`ghostlab/research/technique_suite.py`, preventing additional experimental
-defaults from changing the compiled candidate's configuration hash or behavior.
+`starter.Agent` now enters through `ghostlab.runtime.selected.SelectedRuntime`. With no
+`configs/active_candidate.json` pointer it delegates to the exact compiled
+`ghostlab.runtime.agent.GhostLabRuntime`, preserving the current champion. Only the
+separate hash-bound human activation command selects a validated unified preset; runtime
+failure falls back to the compiled champion.
 
 The default reproducible candidate is
 `configs/suites/champion_guarded.json`. Treat every other suite as a challenger,
@@ -131,6 +136,21 @@ uv run python -m scripts.run_unified_preset \
 
 The command evaluates all 200 public sessions unless a different `--dataset`
 is provided. Do not tune after inspecting a protected holdout.
+
+### 2.5 Run the complete autonomous search
+
+After reviewing and locally committing the implementation, run:
+
+```bash
+uv run python -m scripts.run_autonomous_end_to_end --prepare-assets
+```
+
+This prepares/verifies pinned optional models, accounts for every catalog technique,
+freezes the versioned `autonomous_state_v2_v1` campaign, runs or resumes the bounded
+pure-baseline F0/F1/F2 search, and prints three candidate-preparation commands. It does
+not activate, commit, push, or access F3. See Section 16 of
+`docs/autonomous_unified_system_reference.md` for the eight user steps, exact files,
+combination/pruning algorithm, overfitting controls, activation, and rollback.
 
 ## 3. Folder map
 

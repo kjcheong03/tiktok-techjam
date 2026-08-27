@@ -41,7 +41,15 @@ if TYPE_CHECKING:
     from ghostlab.runtime.component_fallback import ComponentFallback
     from ghostlab.state.normalization import CatalogStateNormalizer
 
-StateVariant = Literal["current", "raw_history", "single", "multi", "compressed"]
+StateVariant = Literal[
+    "current",
+    "raw_history",
+    "single",
+    "multi",
+    "compressed",
+    "baseline_v2",
+]
+RecommendationHistory = Literal["off", "correction_scoped"]
 QuestionVariant = Literal[
     "none",
     "fixed",
@@ -141,6 +149,7 @@ class ExperimentalAgent:
         cross_encoder_rerank_k: int = 20,
         query_expander: QueryExpander | None = None,
         diversifier: CandidateDiversifier | None = None,
+        recommendation_history: RecommendationHistory = "off",
     ) -> None:
         self.state_variant = state_variant
         self.question_variant = question_variant
@@ -263,7 +272,12 @@ class ExperimentalAgent:
         self.cross_encoder_rerank_k = cross_encoder_rerank_k
         self.query_expander = query_expander
         self.diversifier = diversifier
+        if recommendation_history not in {"off", "correction_scoped"}:
+            raise ValueError("unknown recommendation-history mode")
+        self.recommendation_history = recommendation_history
         self.sessions: dict[str, ConversationState | SessionState] = {}
+        self.shown_recommendations: dict[str, set[str]] = {}
+        self.recommendation_epochs: dict[str, int] = {}
         self.stopped_sessions: set[str] = set()
         self.last_runtime_inputs: dict[str, tuple[str, list[float]]] = {}
         self.question_trace: list[dict[str, object]] = []
@@ -284,6 +298,17 @@ class ExperimentalAgent:
             self.profile_prior.reset(session_id, user_profile)
         if self.state_variant == "single":
             self.sessions[session_id] = SessionState(session_id, user_profile)
+        elif self.state_variant == "baseline_v2":
+            from ghostlab.state.baseline_v2 import StateBaselineV2
+
+            self.sessions[session_id] = StateBaselineV2(
+                session_id,
+                user_profile,
+                multi_value=True,
+                negative_evidence=self.negative_evidence,
+                provenance_enabled=self.provenance,
+                override_invalidation=self.override_invalidation,
+            )
         else:
             if self.normalizer == "catalog_v1":
                 from ghostlab.state.normalization import NormalizedConversationState
@@ -308,6 +333,36 @@ class ExperimentalAgent:
                 )
         self.stopped_sessions.discard(session_id)
         self.last_runtime_inputs.pop(session_id, None)
+        self.shown_recommendations[session_id] = set()
+        self.recommendation_epochs[session_id] = 0
+
+    def _filter_recommendation_history(
+        self,
+        session_id: str,
+        state: ConversationState | SessionState,
+        ranking: list[str],
+    ) -> list[str]:
+        if self.recommendation_history == "off":
+            return ranking
+        epoch = int(getattr(state, "intent_epoch", 0))
+        if epoch != self.recommendation_epochs[session_id]:
+            self.shown_recommendations[session_id].clear()
+            self.recommendation_epochs[session_id] = epoch
+        shown = self.shown_recommendations[session_id]
+        return [identifier for identifier in ranking if identifier not in shown]
+
+    def _record_recommendation_history(
+        self,
+        session_id: str,
+        response: dict,
+    ) -> None:
+        if self.recommendation_history == "off":
+            return
+        self.shown_recommendations[session_id].update(
+            str(item["parent_asin"])
+            for item in response["recommendations"]
+            if isinstance(item, dict) and item.get("parent_asin")
+        )
 
     def _query_and_question(
         self, state: ConversationState | SessionState, message: str, turn: int
@@ -637,6 +692,7 @@ class ExperimentalAgent:
                 "activated": diversification_decision.activated,
                 "reason": diversification_decision.reason,
             }
+        ranked = self._filter_recommendation_history(session_id, state, list(ranked))
         self.last_runtime_inputs[session_id] = (query, retrieval_scores)
         self.retrieval_trace.append(
             {
@@ -723,7 +779,7 @@ class ExperimentalAgent:
             if question is None
             else f"Do you have a preference for {question.replace('_', ' ')}?"
         )
-        return normalize_response(
+        response = normalize_response(
             {
                 "message": message,
                 "ask_attribute": question,
@@ -733,6 +789,8 @@ class ExperimentalAgent:
             self.catalog_ids,
             top_k,
         )
+        self._record_recommendation_history(session_id, response)
+        return response
 
     def override_last_question(self, session_id: str, attribute: str | None) -> None:
         """Research hook used immediately after a first-action counterfactual branch."""

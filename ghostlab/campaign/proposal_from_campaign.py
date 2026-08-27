@@ -281,7 +281,9 @@ def materialize_confirmed_campaign_top_three(
     raw_summaries = evidence.get("confirmed_top3")
     if not isinstance(raw_summaries, list) or len(raw_summaries) < 3:
         raise ValueError("at least three confirmed proposal summaries are required")
-    summaries = tuple(ConfirmedProposalSummary.model_validate(item) for item in raw_summaries)
+    summaries = tuple(
+        ConfirmedProposalSummary.model_validate(item) for item in raw_summaries
+    )
     summary_by_id = {item.candidate_id: item for item in summaries}
     if len(summary_by_id) != len(summaries):
         raise ValueError("confirmed proposal summaries contain duplicate IDs")
@@ -316,9 +318,14 @@ def materialize_confirmed_campaign_top_three(
     for candidate_id in sorted(confirmed_ids):
         record = safety_by_id[candidate_id]
         if record.get("classification") != ELIGIBLE_CLASSIFICATION:
-            raise ValueError(f"candidate is not independently proposal eligible: {candidate_id}")
+            raise ValueError(
+                f"candidate is not independently proposal eligible: {candidate_id}"
+            )
         candidate = CandidateSpec.model_validate(record["candidate"])
-        if candidate.candidate_id != candidate_id or candidate.baseline_id != baseline_id:
+        if (
+            candidate.candidate_id != candidate_id
+            or candidate.baseline_id != baseline_id
+        ):
             raise ValueError("confirmed candidate baseline/ID mismatch")
         if candidate.generation == "control":
             raise ValueError("a matched control cannot be a proposal candidate")
@@ -331,7 +338,9 @@ def materialize_confirmed_campaign_top_three(
             or catalog.techniques[item].fit_required
             for item in candidate.techniques
         ):
-            raise ValueError("confirmed candidate contains an unsafe or fit-required technique")
+            raise ValueError(
+                "confirmed candidate contains an unsafe or fit-required technique"
+            )
         expected_job_ids = tuple(
             _job_id(candidate, fold, seed)
             for fold in sorted(split.confirmation_outer_folds)
@@ -359,7 +368,9 @@ def materialize_confirmed_campaign_top_three(
             or abs(summary.score - evaluation.score) > 1e-12
             or abs(summary.mean_delta - paired.mean_delta) > 1e-12
         ):
-            raise ValueError("confirmed proposal summary does not match detailed evidence")
+            raise ValueError(
+                "confirmed proposal summary does not match detailed evidence"
+            )
         config = _materialize_config(manifest, candidate, root)
         assets = _candidate_assets(config)
         extras = tuple(
@@ -386,6 +397,16 @@ def materialize_confirmed_campaign_top_three(
             notes=(
                 "development-confirmed on prospectively disjoint public folds; not final generalization proof",
             ),
+            enabled_techniques=candidate.techniques,
+            technique_sources=tuple(
+                (
+                    item,
+                    catalog.techniques[item].source or "not_declared",
+                    default_binding_registry().bindings[item].reason,
+                )
+                for item in candidate.techniques
+            ),
+            tuned_parameters=candidate.parameters,
         )
 
     assert analysis_baseline is not None

@@ -30,6 +30,9 @@ ESSENTIAL_MIRRORS = {
         "docs/essentials/wave2_retrieval_track_report.md"
     ),
     "docs/wave2_ranking_report.md": "docs/essentials/wave2_ranking_report.md",
+    "docs/state_baseline_v2_integration.md": (
+        "docs/essentials/state_baseline_v2_integration.md"
+    ),
 }
 
 

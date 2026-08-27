@@ -13,6 +13,12 @@ MANIFESTS = {
     "cross_encoder": ROOT / "configs/assets/cross_encoder_minilm.json",
 }
 RECEIPT = ".ghostlab_asset.json"
+SAFE_MODEL_PATTERNS = (
+    "*.json",
+    "*.txt",
+    "*.safetensors",
+    "1_Pooling/*",
+)
 
 
 def sha256_file(path: Path) -> str:
@@ -71,7 +77,9 @@ def main() -> None:
             revision=str(manifest["revision"]),
             local_dir=destination,
             allow_patterns=(
-                sorted(expected_files) if isinstance(expected_files, dict) else None
+                sorted(expected_files)
+                if isinstance(expected_files, dict)
+                else list(SAFE_MODEL_PATTERNS)
             ),
         )
         if not isinstance(expected_files, dict):

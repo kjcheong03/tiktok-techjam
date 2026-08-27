@@ -2,14 +2,14 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from ghostlab.runtime.agent import GhostLabRuntime
+from ghostlab.runtime.selected import SelectedRuntime
 
 
 class Agent:
     """Official TechJam adapter; implementation lives in the submission runtime."""
 
     def __init__(self, catalog_path: str | Path = "data/catalog.jsonl") -> None:
-        self._runtime = GhostLabRuntime(catalog_path)
+        self._runtime = SelectedRuntime(catalog_path)
 
     def reset(self, session_id: str, user_profile: dict) -> None:
         self._runtime.reset(session_id, user_profile)

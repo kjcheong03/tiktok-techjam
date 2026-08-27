@@ -15,6 +15,7 @@ from ghostlab.research.technique_suite import (
     QueryExpansion,
     QueryVariant,
     QuestionVariant,
+    RecommendationHistory,
     Reranker,
     RetrievalRoute,
     RoutingVariant,
@@ -81,6 +82,7 @@ class TechniquePatch(BaseModel):
     routing_variant: RoutingVariant | None = None
     router_asset: str | None = None
     component_fallback: bool | None = None
+    recommendation_history: RecommendationHistory | None = None
 
     @field_validator(*ASSET_FIELDS)
     @classmethod
@@ -104,6 +106,16 @@ class TechniqueBinding(BaseModel):
     patch: TechniquePatch | None = None
     reason: str
     requires: tuple[str, ...] = ()
+    overrides: tuple[str, ...] = ()
+    override_priority: int = 0
+
+    @field_validator("overrides")
+    @classmethod
+    def valid_overrides(cls, values: tuple[str, ...]) -> tuple[str, ...]:
+        unknown = set(values) - set(TechniquePatch.model_fields)
+        if unknown:
+            raise ValueError(f"unknown override fields: {sorted(unknown)}")
+        return values
 
     @property
     def asset_paths(self) -> tuple[str, ...]:
@@ -139,7 +151,7 @@ class TechniqueBindingRegistry:
         candidate: CandidateSpec,
     ) -> UnifiedTechniqueConfig:
         value = baseline.model_dump(mode="json")
-        owners: dict[str, tuple[str, object]] = {}
+        proposals: dict[str, list[tuple[TechniqueBinding, object]]] = {}
         selected = set(candidate.techniques)
         for technique_id in candidate.techniques:
             binding = self.bindings.get(technique_id)
@@ -154,14 +166,27 @@ class TechniqueBindingRegistry:
                 raise ValueError(f"{technique_id} requires {sorted(missing)}")
             assert binding.patch is not None
             for field, update in binding.patch.updates().items():
-                previous = owners.get(field)
-                if previous is not None and previous[1] != update:
-                    raise BindingConflictError(
-                        f"conflicting patches for {field}: "
-                        f"{previous[0]}={previous[1]!r}, {technique_id}={update!r}"
-                    )
-                owners[field] = (technique_id, update)
-                value[field] = update
+                proposals.setdefault(field, []).append((binding, update))
+        for field, updates in proposals.items():
+            distinct = {repr(update) for _, update in updates}
+            if len(distinct) == 1:
+                value[field] = updates[0][1]
+                continue
+            overriding = [item for item in updates if field in item[0].overrides]
+            highest = max(
+                (item[0].override_priority for item in overriding), default=-1
+            )
+            winners = [
+                item for item in overriding if item[0].override_priority == highest
+            ]
+            if len(winners) != 1:
+                rendered = ", ".join(
+                    f"{binding.technique_id}={update!r}" for binding, update in updates
+                )
+                raise BindingConflictError(
+                    f"conflicting patches for {field}: {rendered}"
+                )
+            value[field] = winners[0][1]
         parameters = dict(candidate.parameters)
         unknown = set(parameters) - set(UnifiedTechniqueConfig.model_fields)
         if unknown:
@@ -182,6 +207,8 @@ def _composable(
     *,
     reason: str,
     requires: tuple[str, ...] = (),
+    overrides: tuple[str, ...] = (),
+    override_priority: int = 0,
 ) -> TechniqueBinding:
     return TechniqueBinding(
         technique_id=technique_id,
@@ -189,6 +216,8 @@ def _composable(
         patch=patch,
         reason=reason,
         requires=requires,
+        overrides=overrides,
+        override_priority=override_priority,
     )
 
 
@@ -216,48 +245,325 @@ def default_binding_registry() -> TechniqueBindingRegistry:
     )
     metadata_model = "artifacts/models/gbdt_reranker_v2_round56.json"
     bindings = [
-        _composable("state.current", TechniquePatch(state_variant="current", query_variant=None), reason="current-turn state"),
-        _composable("state.raw_history", TechniquePatch(state_variant="raw_history"), reason="raw history state"),
-        _composable("state.multi", TechniquePatch(state_variant="multi"), reason="multi-value conversation state"),
-        _composable("state.compressed", TechniquePatch(state_variant="compressed"), reason="compressed state"),
-        _composable("query.structured", TechniquePatch(query_variant="structured_active"), reason="structured active query"),
-        _composable("question.fixed", TechniquePatch(question_variant="fixed", question_order=(), learned_question_asset=None, joint_policy_asset=None), reason="fixed question control"),
-        _composable("question.adaptive_heuristic", TechniquePatch(question_variant="adaptive", question_order=(), learned_question_asset=None, joint_policy_asset=None), reason="observable heuristic policy"),
-        _composable("question.learned_linear", TechniquePatch(question_variant="learned", question_order=(), learned_question_asset=learned_question, joint_policy_asset=None), reason="local compiled linear question asset"),
-        _composable("retrieval.sparse", TechniquePatch(retrieval_route="keyword", dense_backend="off", dense_model_path=None, learned_sparse_asset=None, late_interaction_asset=None), reason="core sparse retrieval"),
-        _composable("ranking.fixed_lexical", TechniquePatch(reranker="linear", reranker_model_asset=None), reason="fixed lexical reranker"),
-        _composable("ranking.metadata_gbdt", TechniquePatch(reranker="metadata_gbdt", reranker_model_asset=metadata_model), reason="local metadata GBDT asset"),
-        _composable("filter.structured", TechniquePatch(structured_filter=True), reason="coverage-aware structured filter"),
-        _composable("prior.profile", TechniquePatch(profile_prior_weight=0.1), reason="profile prior with tunable starting weight"),
-        _composable("prior.quality", TechniquePatch(quality_prior_weight=0.2), reason="catalog quality prior"),
-        _composable("state.catalog_normalizer.v1", TechniquePatch(normalizer="catalog_v1", normalizer_asset="artifacts/assets/catalog_ontology_v1.json"), reason="local catalog ontology asset"),
-        _classified("state.attribute_ontology.v1", "anchor_only", "asset-producing dependency of catalog normalization"),
-        _composable("state.confidence_gated_constraints.v1", TechniquePatch(constraint_confidence=0.9), reason="normalization confidence gate", requires=("state.catalog_normalizer.v1",)),
-        _composable("question.candidate_eig.v1", TechniquePatch(question_variant="candidate_eig", question_order=(), learned_question_asset=None, joint_policy_asset=None), reason="candidate-statistics EIG policy"),
-        _classified("question.reward_voi.v1", "unavailable", "UnifiedTechniqueConfig has no fold-fitted reward-VOI calibration asset binding"),
-        _composable("termination.reward_aware.v1", TechniquePatch(question_value_margin=0.02), reason="explicit question/stop margin", requires=("question.candidate_eig.v1",)),
-        _composable("policy.joint_observable.v1", TechniquePatch(question_variant="joint_observable", question_order=(), learned_question_asset=None, joint_policy_asset="configs/assets/joint_policy_control_v1.json"), reason="bounded local joint decision-list asset"),
-        _classified("routing.joint_route.v1", "anchor_only", "routing behavior is inseparable from the selected joint policy asset"),
-        _classified("research.counterfactual_expert.v2", "research_only", "offline label generator, not a runtime switch"),
-        _classified("policy.distilled_expert.v1", "unavailable", "no fold-fitted distilled runtime asset is present"),
-        _classified("search.expert_iteration.v1", "research_only", "offline dataset aggregation procedure"),
-        _composable("ranking.reward_lambdamart.v1", TechniquePatch(reranker="reward_lambdamart", reranker_model_asset="artifacts/models/w2_ranking_v1/reward_lambdamart_v1.json"), reason="local reward-aligned ranker asset"),
-        _composable("ranking.turn_aware_lambdamart.v1", TechniquePatch(reranker="turn_aware_lambdamart", reranker_model_asset="artifacts/models/w2_ranking_v1/turn_aware_lambdamart_v1.json"), reason="local turn-aware ranker asset"),
-        _composable("ranking.fold_ensemble.v1", TechniquePatch(reranker="rank_ensemble", reranker_model_asset="artifacts/models/w2_ranking_v1/fold_ensemble.json"), reason="local fold-ensemble asset"),
-        _composable("fusion.rank_stack.v1", TechniquePatch(reranker="rank_ensemble", reranker_model_asset="artifacts/models/w2_ranking_v1/rank_stack.json"), reason="local rank-stack asset"),
-        _composable("query.catalog_prf.v1", TechniquePatch(query_expansion="prf"), reason="core catalog PRF"),
-        _classified("query.expansion_guard.v1", "anchor_only", "guard is intrinsic to catalog PRF and has no independent runtime toggle"),
-        _composable("ranking.facet_diversity.v1", TechniquePatch(diversification="facet_mmr"), reason="core facet MMR"),
-        _classified("ranking.mmr_early.v1", "anchor_only", "early-turn gate is intrinsic to facet MMR in the current config"),
+        _composable(
+            "state.current",
+            TechniquePatch(state_variant="current", query_variant=None),
+            reason="current-turn state",
+        ),
+        _composable(
+            "state.raw_history",
+            TechniquePatch(state_variant="raw_history"),
+            reason="raw history state",
+        ),
+        _composable(
+            "state.multi",
+            TechniquePatch(state_variant="multi"),
+            reason="multi-value conversation state",
+        ),
+        _composable(
+            "state.compressed",
+            TechniquePatch(state_variant="compressed"),
+            reason="compressed state",
+        ),
+        _composable(
+            "state.baseline_v2",
+            TechniquePatch(
+                state_variant="baseline_v2", normalizer="off", normalizer_asset=None
+            ),
+            reason="teammate structured State Baseline V2",
+        ),
+        _composable(
+            "query.structured",
+            TechniquePatch(query_variant="structured_active"),
+            reason="structured active query",
+        ),
+        _composable(
+            "query.coverage_adaptive_v2",
+            TechniquePatch(query_variant="coverage_adaptive_v2"),
+            reason="correction-coverage adaptive State V2 query",
+            requires=("state.baseline_v2",),
+        ),
+        _composable(
+            "question.fixed",
+            TechniquePatch(
+                question_variant="fixed",
+                question_order=(
+                    "material",
+                    "color",
+                    "style",
+                    "use_case",
+                    "feature",
+                    "budget",
+                    "size",
+                ),
+                learned_question_asset=None,
+                joint_policy_asset=None,
+            ),
+            reason="literal organizer fixed question control",
+        ),
+        _composable(
+            "question.other_always",
+            TechniquePatch(
+                question_variant="other_always",
+                question_order=(),
+                learned_question_asset=None,
+                joint_policy_asset=None,
+            ),
+            reason="fixed other diagnostic policy",
+        ),
+        _composable(
+            "question.adaptive_heuristic",
+            TechniquePatch(
+                question_variant="adaptive",
+                question_order=(),
+                learned_question_asset=None,
+                joint_policy_asset=None,
+            ),
+            reason="observable heuristic policy",
+        ),
+        _composable(
+            "question.learned_linear",
+            TechniquePatch(
+                question_variant="learned",
+                question_order=(),
+                learned_question_asset=learned_question,
+                joint_policy_asset=None,
+            ),
+            reason="local compiled linear question asset",
+        ),
+        _composable(
+            "retrieval.sparse",
+            TechniquePatch(
+                retrieval_route="keyword",
+                dense_backend="off",
+                dense_model_path=None,
+                learned_sparse_asset=None,
+                late_interaction_asset=None,
+            ),
+            reason="core sparse retrieval",
+        ),
+        _composable(
+            "retrieval.minilm",
+            TechniquePatch(
+                retrieval_route="dense",
+                dense_backend="minilm_control",
+                dense_model_path="artifacts/cache/models/all-MiniLM-L6-v2",
+            ),
+            reason="pinned offline MiniLM dense retrieval",
+            overrides=("retrieval_route", "dense_backend", "dense_model_path"),
+            override_priority=10,
+        ),
+        _composable(
+            "retrieval.e5",
+            TechniquePatch(
+                retrieval_route="dense",
+                dense_backend="e5_small_v2",
+                dense_model_path="artifacts/cache/models/e5-small-v2",
+            ),
+            reason="pinned offline E5-small-v2 dense retrieval",
+            overrides=("retrieval_route", "dense_backend", "dense_model_path"),
+            override_priority=10,
+        ),
+        _composable(
+            "fusion.rrf",
+            TechniquePatch(retrieval_route="rrf"),
+            reason="rank-based sparse/dense reciprocal-rank fusion",
+            overrides=("retrieval_route",),
+            override_priority=20,
+        ),
+        _composable(
+            "fusion.weighted",
+            TechniquePatch(
+                retrieval_route="weighted", sparse_weight=0.75, dense_weight=0.25
+            ),
+            reason="tunable weighted sparse/dense fusion",
+            overrides=("retrieval_route",),
+            override_priority=20,
+        ),
+        _composable(
+            "fusion.sparse_first_union",
+            TechniquePatch(retrieval_route="sparse_first_union"),
+            reason="sparse-first recall union with dense backfill",
+            overrides=("retrieval_route",),
+            override_priority=20,
+        ),
+        _composable(
+            "ranking.cross_encoder",
+            TechniquePatch(
+                cross_encoder_enabled=True,
+                cross_encoder_model_path=(
+                    "artifacts/cache/models/ms-marco-MiniLM-L6-v2"
+                ),
+                cross_encoder_weight=0.35,
+                cross_encoder_rerank_k=20,
+            ),
+            reason="pinned offline cross-encoder top-k reranking",
+        ),
+        _composable(
+            "ranking.fixed_lexical",
+            TechniquePatch(reranker="linear", reranker_model_asset=None),
+            reason="fixed lexical reranker",
+        ),
+        _composable(
+            "ranking.metadata_gbdt",
+            TechniquePatch(
+                reranker="metadata_gbdt", reranker_model_asset=metadata_model
+            ),
+            reason="local metadata GBDT asset",
+        ),
+        _composable(
+            "filter.structured",
+            TechniquePatch(structured_filter=True),
+            reason="coverage-aware structured filter",
+        ),
+        _composable(
+            "recommendation.correction_scoped_history",
+            TechniquePatch(recommendation_history="correction_scoped"),
+            reason="avoid products already shown in the current intent epoch",
+        ),
+        _composable(
+            "prior.profile",
+            TechniquePatch(profile_prior_weight=0.1),
+            reason="profile prior with tunable starting weight",
+        ),
+        _composable(
+            "prior.quality",
+            TechniquePatch(quality_prior_weight=0.2),
+            reason="catalog quality prior",
+        ),
+        _composable(
+            "state.catalog_normalizer.v1",
+            TechniquePatch(
+                normalizer="catalog_v1",
+                normalizer_asset="artifacts/assets/catalog_ontology_v1.json",
+            ),
+            reason="local catalog ontology asset",
+        ),
+        _classified(
+            "state.attribute_ontology.v1",
+            "anchor_only",
+            "asset-producing dependency of catalog normalization",
+        ),
+        _composable(
+            "state.confidence_gated_constraints.v1",
+            TechniquePatch(constraint_confidence=0.9),
+            reason="normalization confidence gate",
+            requires=("state.catalog_normalizer.v1",),
+        ),
+        _composable(
+            "question.candidate_eig.v1",
+            TechniquePatch(
+                question_variant="candidate_eig",
+                question_order=(),
+                learned_question_asset=None,
+                joint_policy_asset=None,
+            ),
+            reason="candidate-statistics EIG policy",
+        ),
+        _classified(
+            "question.reward_voi.v1",
+            "unavailable",
+            "UnifiedTechniqueConfig has no fold-fitted reward-VOI calibration asset binding",
+        ),
+        _composable(
+            "termination.reward_aware.v1",
+            TechniquePatch(question_value_margin=0.02),
+            reason="explicit question/stop margin",
+            requires=("question.candidate_eig.v1",),
+        ),
+        _composable(
+            "policy.joint_observable.v1",
+            TechniquePatch(
+                question_variant="joint_observable",
+                question_order=(),
+                learned_question_asset=None,
+                joint_policy_asset="configs/assets/joint_policy_control_v1.json",
+            ),
+            reason="bounded local joint decision-list asset",
+        ),
+        _classified(
+            "routing.joint_route.v1",
+            "anchor_only",
+            "routing behavior is inseparable from the selected joint policy asset",
+        ),
+        _classified(
+            "research.counterfactual_expert.v2",
+            "research_only",
+            "offline label generator, not a runtime switch",
+        ),
+        _classified(
+            "policy.distilled_expert.v1",
+            "unavailable",
+            "no fold-fitted distilled runtime asset is present",
+        ),
+        _classified(
+            "search.expert_iteration.v1",
+            "research_only",
+            "offline dataset aggregation procedure",
+        ),
+        _composable(
+            "ranking.reward_lambdamart.v1",
+            TechniquePatch(
+                reranker="reward_lambdamart",
+                reranker_model_asset="artifacts/models/w2_ranking_v1/reward_lambdamart_v1.json",
+            ),
+            reason="local reward-aligned ranker asset",
+            overrides=("reranker", "reranker_model_asset"),
+            override_priority=10,
+        ),
+        _composable(
+            "ranking.turn_aware_lambdamart.v1",
+            TechniquePatch(
+                reranker="turn_aware_lambdamart",
+                reranker_model_asset="artifacts/models/w2_ranking_v1/turn_aware_lambdamart_v1.json",
+            ),
+            reason="local turn-aware ranker asset",
+            overrides=("reranker", "reranker_model_asset"),
+            override_priority=20,
+        ),
+        _composable(
+            "ranking.fold_ensemble.v1",
+            TechniquePatch(
+                reranker="rank_ensemble",
+                reranker_model_asset="artifacts/models/w2_ranking_v1/fold_ensemble.json",
+            ),
+            reason="local fold-ensemble asset",
+            overrides=("reranker", "reranker_model_asset"),
+            override_priority=10,
+        ),
+        _composable(
+            "fusion.rank_stack.v1",
+            TechniquePatch(
+                reranker="rank_ensemble",
+                reranker_model_asset="artifacts/models/w2_ranking_v1/rank_stack.json",
+            ),
+            reason="local rank-stack asset",
+            overrides=("reranker", "reranker_model_asset"),
+            override_priority=20,
+        ),
+        _composable(
+            "query.catalog_prf.v1",
+            TechniquePatch(query_expansion="prf"),
+            reason="core catalog PRF",
+        ),
+        _classified(
+            "query.expansion_guard.v1",
+            "anchor_only",
+            "guard is intrinsic to catalog PRF and has no independent runtime toggle",
+        ),
+        _composable(
+            "ranking.facet_diversity.v1",
+            TechniquePatch(diversification="facet_mmr"),
+            reason="core facet MMR",
+        ),
+        _classified(
+            "ranking.mmr_early.v1",
+            "anchor_only",
+            "early-turn gate is intrinsic to facet MMR in the current config",
+        ),
     ]
 
     unavailable = {
-        "retrieval.minilm": "local MiniLM model asset is absent",
-        "retrieval.e5": "local E5 model asset is absent",
-        "fusion.rrf": "dense model asset required by this route is absent",
-        "fusion.weighted": "dense model asset required by this route is absent",
-        "fusion.sparse_first_union": "dense model asset required by this route is absent",
-        "ranking.cross_encoder": "local cross-encoder model asset is absent",
         "retrieval.splade_rescue.v1": "learned-sparse model/index asset is unavailable",
         "fusion.sparse_semantic_union.v1": "learned-sparse dependency is unavailable",
         "retrieval.late_interaction_rescue.v1": "late-interaction feasibility asset is unavailable",
