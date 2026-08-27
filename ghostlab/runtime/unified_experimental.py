@@ -34,9 +34,11 @@ from ghostlab.state.query import QueryVariant, build_query
 from ghostlab.state.query_expansion import QueryExpansion
 
 if TYPE_CHECKING:
+    from ghostlab.policy.calibrated_router import CalibratedRouteModel
     from ghostlab.policy.candidate_statistics import CandidateFacetStore
     from ghostlab.policy.eig_questions import CandidateEIGPolicy
     from ghostlab.policy.joint_policy import JointPolicyDecision
+    from ghostlab.runtime.component_fallback import ComponentFallback
 
 StateVariant = Literal["current", "raw_history", "single", "multi", "compressed"]
 QuestionVariant = Literal[
@@ -117,6 +119,9 @@ class ExperimentalAgent:
         eig_policy: CandidateEIGPolicy | None = None,
         eig_candidate_k: int = 100,
         joint_policy: JointCandidatePolicy | None = None,
+        routing_variant: Literal["off", "calibrated"] = "off",
+        calibrated_router: CalibratedRouteModel | None = None,
+        component_fallback: ComponentFallback | None = None,
         query_variant: QueryVariant | None = None,
         structured_filter: bool = False,
         profile_prior_weight: float = 0.0,
@@ -143,14 +148,30 @@ class ExperimentalAgent:
             joint_policy is None
         ):
             raise ValueError("joint question policy requires a compiled policy")
-        needs_dense = retrieval_route in {
-            "dense",
-            "rrf",
-            "weighted",
-            "sparse_first_union",
-        } or bool(
-            joint_policy is not None
-            and joint_policy.possible_routes & {"dense", "rrf", "weighted_fusion"}
+        if routing_variant == "calibrated" and calibrated_router is None:
+            raise ValueError("calibrated routing requires a fold-fitted model")
+        if routing_variant == "off" and calibrated_router is not None:
+            raise ValueError("calibrated router asset requires its explicit switch")
+        self.routing_variant = routing_variant
+        self.calibrated_router = calibrated_router
+        self.component_fallback = component_fallback
+        needs_dense = (
+            retrieval_route
+            in {
+                "dense",
+                "rrf",
+                "weighted",
+                "sparse_first_union",
+            }
+            or bool(
+                joint_policy is not None
+                and joint_policy.possible_routes & {"dense", "rrf", "weighted_fusion"}
+            )
+            or bool(
+                calibrated_router is not None
+                and calibrated_router.possible_routes
+                & {"dense", "rrf", "weighted_fusion"}
+            )
         )
         self.dense: DenseCandidateRetriever | None = dense_retriever
         if needs_dense and self.dense is None:
@@ -427,13 +448,14 @@ class ExperimentalAgent:
     ) -> dict:
         state = self.sessions[session_id]
         query, question = self._query_and_question(state, user_message, turn)
-        active_route = self.retrieval_route
+        active_route: str = self.retrieval_route
         retrieval_limit = 200
         active_sparse_weight = self.sparse_weight
         active_dense_weight = self.dense_weight
         joint_features: dict[str, float] | None = None
         joint_values: dict[str, float] | None = None
         joint_reason: str | None = None
+        route_decision: dict[str, object] | None = None
         if self.question_variant in {"joint_observable", "distilled_joint"}:
             if not isinstance(state, ConversationState):
                 raise TypeError("joint policy requires conversation state")
@@ -465,6 +487,31 @@ class ExperimentalAgent:
             if question is not None:
                 state.asked_attributes.append(question)
             state.last_asked_attribute = question
+        if self.routing_variant == "calibrated":
+            assert self.calibrated_router is not None
+            if not isinstance(state, ConversationState):
+                raise TypeError("calibrated routing requires conversation state")
+            if joint_features is None:
+                from ghostlab.policy.joint_actions import observable_joint_features
+
+                previous = self.last_runtime_inputs.get(session_id)
+                joint_features = observable_joint_features(
+                    state,
+                    turn=turn,
+                    previous_scores=None if previous is None else previous[1],
+                )
+            selected_route = self.calibrated_router.decide(joint_features)
+            active_route = (
+                "weighted"
+                if selected_route.route == "weighted_fusion"
+                else selected_route.route
+            )
+            route_decision = {
+                "route": selected_route.route,
+                "predicted_advantage": selected_route.predicted_advantage,
+                "confidence": selected_route.confidence,
+                "reason": selected_route.reason,
+            }
         original_query = query
         sparse_ids, sparse_scores = self._sparse_ids(
             session_id, query, turn, retrieval_limit
@@ -515,6 +562,11 @@ class ExperimentalAgent:
                 semantic_weight=self.semantic_rescue_weight,
                 limit=retrieval_limit,
             )
+        fallback_reason: str | None = None
+        if self.component_fallback is not None and active_route != "keyword":
+            fallback = self.component_fallback.choose(ranked, sparse_ids)
+            ranked = list(fallback.ranking)
+            fallback_reason = fallback.reason
         retrieved = list(ranked)
         if self.structured_filter is not None:
             ranked = self.structured_filter.apply(
@@ -573,6 +625,8 @@ class ExperimentalAgent:
                 "expansion": expansion_trace,
                 "diversification": diversification_trace,
                 "route": active_route,
+                "route_decision": route_decision,
+                "fallback_reason": fallback_reason,
                 "retrieved": retrieved,
                 "ranked": list(ranked),
             }

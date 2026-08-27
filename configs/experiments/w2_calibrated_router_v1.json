@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "experiment_id": "w2_calibrated_router_v1",
+  "technique_ids": [
+    "routing.calibrated_observable.v1",
+    "guard.component_fallback.v1"
+  ],
+  "default_enabled": false,
+  "routing_variant": "calibrated",
+  "base_route": "keyword",
+  "minimum_calibration_precision": 0.6,
+  "fit_scope": "outer_training_only_with_disjoint_inner_calibration",
+  "protected_f3_access": false,
+  "classification": "available_unvalidated"
+}
