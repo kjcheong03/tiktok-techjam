@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "technique_id": "state.catalog_normalizer.v1",
+  "builder": "python -m scripts.build_attribute_ontology",
+  "catalog_path": "data/catalog.jsonl",
+  "default_output": "artifacts/assets/catalog_ontology_v1.json",
+  "minimum_frequency": 2,
+  "maximum_values_per_attribute": 20000,
+  "runtime_dependency": "core",
+  "committed_asset": false
+}
