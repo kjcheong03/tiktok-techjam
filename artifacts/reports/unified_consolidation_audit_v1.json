@@ -1,6 +1,6 @@
 {
   "archived_raw_files_are_runtime_dependencies": false,
-  "catalog_technique_count": 40,
+  "catalog_technique_count": 50,
   "component_count": 12,
   "components": [
     {
@@ -141,13 +141,13 @@
     "configs/experiments/learned_question_linear_v1.json": "4ee0d493ceb2fb84e72b4c4b856dfa16d606dbf661403f5fd5624425dd8d34d9",
     "configs/experiments/neural_rank_interaction_v1.json": "6094b5df18798ba92ce346e5d3e595c66fd299eb0dc80c5ea52033a9f053d7c3",
     "configs/search/unified_space_v1.json": "f35961648111848a4deff73a9a1381cefebbeaae1e12d1f3c50a46797753d44e",
-    "configs/techniques/catalog_v1.json": "72a7ea3d6e5306dbdd712c53dd041ad34cdfee379a5456d4de942e17c0e4b8a6",
+    "configs/techniques/catalog_v1.json": "24138d9859fd3368b68f91f220bf5c9e1fb234d6e90413181482f14dcdcb6ce0",
     "configs/techniques/guarded_constraint_gbdt_v1.json": "6aac183675c323a10b6d33d21b9d8c8db1067af1891e2caf7d5bbe2a0ba147ff",
     "ghostlab/evaluation/gbdt_audit.py": "837dcc0a470e36df3ff8cb68a84f464f660729e775cfa18c8fdabf36a922ad11",
     "ghostlab/optimization/search.py": "c334d5f15f19fb83d54e882418694b7b55fd6b8a4fffe847b692e502c591b706",
     "ghostlab/policy/learned_questions.py": "b86ffbf2efdf583a36d319c8805b2004631b7df13b5141f7c86f92f9fcbca814",
     "ghostlab/research/learned_questions.py": "7a9c7bb948a14a9c4dd03dad81ddb45e566d8347b799d11c6ca7e96a1b70d15f",
-    "ghostlab/research/technique_suite.py": "95b2071826f0dc827a3c495767af6cad3c3d0adfe22e1cd2f98bc854ec85bcc8",
+    "ghostlab/research/technique_suite.py": "0c13d898c228fc556cd954ed55b3c6c0d7333992f67fa8fa55d47a343cf97019",
     "ghostlab/retrieval/constraint_gbdt.py": "071f932d113e192fa151e88f4bad362dd52d9f192321b3c6155d380473ca118b",
     "ghostlab/retrieval/cross_encoder.py": "77573eab088ece8510441f9c5ce1319bcd17d3fe66fdabe4af6e46b865216265",
     "ghostlab/retrieval/dense.py": "2d153f2adefa109f2c200a29696801dc9403cd0204fce36ef1234a1409701b7a",
@@ -161,7 +161,7 @@
     "ghostlab/runtime/agent.py": "a229065c279aa7a9e147a80717447aa60afa847be21811e81a586272ca4b7eb7",
     "ghostlab/runtime/experimental_questions.py": "fe1e30ee3d7749bf69da0a2b41a817c0ca5c2099ae5780c5637b148d809e4f96",
     "ghostlab/runtime/guarded_gbdt.py": "77f01c8c1beacf4cacc70a2e7ede58f750f987f4ef00442a8eb0b91c80611f26",
-    "ghostlab/runtime/unified_experimental.py": "9a04af5a51ec2379b2212c4f5c8631452a0b6db510626589164019dd09ad7c1d",
+    "ghostlab/runtime/unified_experimental.py": "4bbee14fff0eea819beeccc3c47e95b3f3332fc2c51b03d5ef78736170150d1b",
     "ghostlab/state/memory.py": "104ba1d328642c7590e6bb3af8c892bcfdc8e66dc7193abe4a354d444e6323c6",
     "ghostlab/state/query.py": "41a0a9c1e9b062273cc098ac2a3e864bc1cd1e60b0b68364d066a67fadbb5f7e",
     "scripts/fetch_dense_assets.py": "17b6cb0e6e1da5945d3a8243ce75a7a8d3af3e72c8e76868cf9f8b378449e6dc",
@@ -179,7 +179,7 @@
     "scripts/run_learned_question_challenger.py": "4da00edb6652bdb5a7822d430c40892cd9587c64e5119b9393b9eb688548535f",
     "scripts/run_neural_rank_interaction.py": "2e631c9cdca1acd453b28283a9dfa445184de02b04a4cef69376921fc4090ef2",
     "scripts/run_query_challenger.py": "6dd895e0d128cecf852aff098d8c814178b37a7401dad83287533ba3770ad3a0",
-    "scripts/run_unified_preset.py": "cc6da4163c0407eaecb03d3a0dd7d0329a6f1d9224a5cfda18f3b379049682d4",
+    "scripts/run_unified_preset.py": "9c8a5944c93ec75686aa365dcc57efc621d0339f58a2eabd8b78d8004c0c968b",
     "scripts/validate_guarded_compiled.py": "fb9501c3fa02174d389d01bfea06487c0a7d161df44f13b7917b3c480fcf50f6",
     "tests/test_constraint_gbdt.py": "e2be510d1420145a35ba0bb227a81aaee4b068e8a2c6a98a3d425ded79f24310",
     "tests/test_cross_encoder.py": "258ed9c0cdb7e3e6fc5969242f9749fed766fa4331e95373a8264f201062ee53",
@@ -203,14 +203,18 @@
     "tests/test_technique_suite.py": "64dfbd8c887354ea43aa8de2ab48a8eb259305e148f697e45cc61d0d27a41b74"
   },
   "schema_version": 1,
-  "suite_count": 6,
+  "suite_count": 10,
   "suite_ids": [
     "unified_all_composable_v1",
     "unified_champion_guarded_v1",
     "unified_cross_encoder_v1",
     "unified_dense_e5_v1",
     "unified_keyword_research_v1",
-    "unified_learned_questions_v1"
+    "unified_learned_questions_v1",
+    "unified_unfitted_keyword_search_v1",
+    "w2_facet_mmr_core_v1",
+    "w2_prf_core_v1",
+    "w2_prf_facet_mmr_core_v1"
   ],
   "unified_base": {
     "branch": "ghostlab/integration",
