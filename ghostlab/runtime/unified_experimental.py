@@ -36,7 +36,7 @@ from ghostlab.state.query_expansion import QueryExpansion
 if TYPE_CHECKING:
     from ghostlab.policy.candidate_statistics import CandidateFacetStore
     from ghostlab.policy.eig_questions import CandidateEIGPolicy
-    from ghostlab.policy.joint_policy import JointObservablePolicy
+    from ghostlab.policy.joint_policy import JointPolicyDecision
 
 StateVariant = Literal["current", "raw_history", "single", "multi", "compressed"]
 QuestionVariant = Literal[
@@ -52,6 +52,7 @@ QuestionVariant = Literal[
     "candidate_eig",
     "reward_voi",
     "joint_observable",
+    "distilled_joint",
 ]
 FEATURE_FIRST = ("feature", "use_case", "material", "style", "color", "budget", "size")
 
@@ -74,6 +75,15 @@ class CandidateDiversifier(Protocol):
     def rerank(
         self, ranking: list[str], context: DiversificationContext
     ) -> DiversificationDecision: ...
+
+
+class JointCandidatePolicy(Protocol):
+    @property
+    def possible_routes(self) -> frozenset[str]: ...
+
+    def decide(
+        self, state: ConversationState, features: dict[str, float]
+    ) -> JointPolicyDecision: ...
 
 
 class ExperimentalAgent:
@@ -106,7 +116,7 @@ class ExperimentalAgent:
         learned_question_model: LinearActionValueModel | None = None,
         eig_policy: CandidateEIGPolicy | None = None,
         eig_candidate_k: int = 100,
-        joint_policy: JointObservablePolicy | None = None,
+        joint_policy: JointCandidatePolicy | None = None,
         query_variant: QueryVariant | None = None,
         structured_filter: bool = False,
         profile_prior_weight: float = 0.0,
@@ -129,8 +139,10 @@ class ExperimentalAgent:
         self.retrieval_route = retrieval_route
         self.keyword = KeywordRetriever(catalog_path)
         self.joint_policy = joint_policy
-        if question_variant == "joint_observable" and joint_policy is None:
-            raise ValueError("joint observable policy requires a compiled policy")
+        if question_variant in {"joint_observable", "distilled_joint"} and (
+            joint_policy is None
+        ):
+            raise ValueError("joint question policy requires a compiled policy")
         needs_dense = retrieval_route in {
             "dense",
             "rrf",
@@ -311,6 +323,7 @@ class ExperimentalAgent:
             "candidate_eig",
             "reward_voi",
             "joint_observable",
+            "distilled_joint",
         }:
             question = None
         else:
@@ -321,6 +334,7 @@ class ExperimentalAgent:
             "candidate_eig",
             "reward_voi",
             "joint_observable",
+            "distilled_joint",
         } and isinstance(state, ConversationState):
             if question is not None and (
                 not state.asked_attributes or state.asked_attributes[-1] != question
@@ -420,7 +434,7 @@ class ExperimentalAgent:
         joint_features: dict[str, float] | None = None
         joint_values: dict[str, float] | None = None
         joint_reason: str | None = None
-        if self.question_variant == "joint_observable":
+        if self.question_variant in {"joint_observable", "distilled_joint"}:
             if not isinstance(state, ConversationState):
                 raise TypeError("joint policy requires conversation state")
             assert self.joint_policy is not None
