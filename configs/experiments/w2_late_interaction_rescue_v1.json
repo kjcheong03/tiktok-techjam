@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "experiment_id": "w2_late_interaction_rescue_v1",
+  "technique_ids": ["retrieval.colbert_rescue.v1", "retrieval.bge_m3_rescue.v1", "fusion.late_interaction_union.v1"],
+  "availability": "blocked_feasibility",
+  "split": "adaptive_v1",
+  "holdout_accessed": false,
+  "primary_gate": "unique target recall and measured p95 latency on all 50k products",
+  "asset_manifest": "configs/assets/late_interaction_rescue_v1.json",
+  "flat_reference_bounds": {
+    "document_count": 50000,
+    "average_document_tokens": 64,
+    "embedding_dimension": 128,
+    "dtype_bytes": 2,
+    "query_tokens": 24,
+    "max_index_gib": 1.0,
+    "max_dot_products_per_query": 50000000
+  },
+  "promotion_rule": "Admit only a pinned offline candidate that passes recall, asset, memory, and latency gates; do not silently substitute dense retrieval."
+}

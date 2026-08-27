@@ -25,12 +25,21 @@ def main() -> None:
     parser.add_argument(
         "--dataset", type=Path, default=PROJECT_ROOT / "data/public_set.jsonl"
     )
+    parser.add_argument(
+        "--split",
+        type=Path,
+        help="Optional split manifest; required for protected development campaigns",
+    )
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
 
     config = load_suite_config(args.config)
     config_json = config.model_dump_json()
     samples = load_jsonl(args.dataset)
+    if args.split is not None:
+        split = json.loads(args.split.read_text(encoding="utf-8"))
+        allowed = set(split["sample_ids"])
+        samples = [sample for sample in samples if sample["sample_id"] in allowed]
     _, categories, products = catalog_index(args.catalog)
     agent = build_suite_agent(config, args.catalog)
     result = evaluate_replay(agent, samples, categories, products)

@@ -17,15 +17,21 @@ from ghostlab.policy.learned_questions import (
 )
 from ghostlab.policy.signals import retrieval_signals
 from ghostlab.retrieval.cross_encoder import CrossEncoderReranker
+from ghostlab.retrieval.diversify import (
+    DiversificationContext,
+    DiversificationDecision,
+)
 from ghostlab.retrieval.filters import CoverageAwareFilter
 from ghostlab.retrieval.fusion import sparse_first_union_ids, weighted_fuse_ids
 from ghostlab.retrieval.profile import ProfilePriorReranker
 from ghostlab.retrieval.quality import CatalogQualityReranker
 from ghostlab.retrieval.rerank import LinearLexicalReranker
 from ghostlab.retrieval.sparse import OFFICIAL_WEIGHTS, SparseIndex
+from ghostlab.retrieval.sparse_semantic_fusion import sparse_semantic_union_ids
 from ghostlab.runtime.normalizer import normalize_response
 from ghostlab.state.memory import ConversationState
 from ghostlab.state.query import QueryVariant, build_query
+from ghostlab.state.query_expansion import QueryExpansion
 
 StateVariant = Literal["current", "raw_history", "single", "multi", "compressed"]
 QuestionVariant = Literal[
@@ -52,6 +58,16 @@ class DenseCandidateRetriever(Protocol):
     def search(self, query: str, limit: int) -> object: ...
 
 
+class QueryExpander(Protocol):
+    def expand(self, query: str, ranking: list[str]) -> QueryExpansion: ...
+
+
+class CandidateDiversifier(Protocol):
+    def rerank(
+        self, ranking: list[str], context: DiversificationContext
+    ) -> DiversificationDecision: ...
+
+
 class ExperimentalAgent:
     """Research agent whose dimensions are explicit constructor switches."""
 
@@ -62,7 +78,13 @@ class ExperimentalAgent:
         state_variant: StateVariant = "multi",
         question_variant: QuestionVariant = "missing_priority",
         retrieval_route: Literal[
-            "keyword", "dense", "rrf", "weighted", "sparse_first_union"
+            "keyword",
+            "dense",
+            "rrf",
+            "weighted",
+            "sparse_first_union",
+            "learned_sparse_union",
+            "late_interaction_union",
         ] = "keyword",
         negative_evidence: bool = True,
         provenance: bool = True,
@@ -83,9 +105,13 @@ class ExperimentalAgent:
         learned_rerank_k: int = 50,
         quality_prior: CatalogQualityReranker | None = None,
         dense_retriever: DenseCandidateRetriever | None = None,
+        semantic_rescue_retriever: DenseCandidateRetriever | None = None,
+        semantic_rescue_weight: float = 0.25,
         cross_encoder_reranker: CrossEncoderReranker | None = None,
         cross_encoder_weight: float = 0.0,
         cross_encoder_rerank_k: int = 20,
+        query_expander: QueryExpander | None = None,
+        diversifier: CandidateDiversifier | None = None,
     ) -> None:
         self.state_variant = state_variant
         self.question_variant = question_variant
@@ -100,6 +126,16 @@ class ExperimentalAgent:
         self.dense: DenseCandidateRetriever | None = dense_retriever
         if needs_dense and self.dense is None:
             self.dense = DenseRetriever(catalog_path)
+        needs_rescue = retrieval_route in {
+            "learned_sparse_union",
+            "late_interaction_union",
+        }
+        if needs_rescue and semantic_rescue_retriever is None:
+            raise ValueError(f"{retrieval_route} requires a semantic rescue retriever")
+        if not 0.0 <= semantic_rescue_weight <= 1.0:
+            raise ValueError("semantic rescue weight must be between zero and one")
+        self.semantic_rescue = semantic_rescue_retriever
+        self.semantic_rescue_weight = semantic_rescue_weight
         self.catalog_ids = self._read_ids(catalog_path)
         self.negative_evidence = negative_evidence
         self.provenance = provenance
@@ -153,6 +189,8 @@ class ExperimentalAgent:
         self.cross_encoder_reranker = cross_encoder_reranker
         self.cross_encoder_weight = cross_encoder_weight
         self.cross_encoder_rerank_k = cross_encoder_rerank_k
+        self.query_expander = query_expander
+        self.diversifier = diversifier
         self.sessions: dict[str, ConversationState | SessionState] = {}
         self.stopped_sessions: set[str] = set()
         self.last_runtime_inputs: dict[str, tuple[str, list[float]]] = {}
@@ -319,12 +357,36 @@ class ExperimentalAgent:
             raise TypeError("dense retriever returned an unsupported result")
         return [str(item.parent_asin) for item in items]
 
+    def _rescue_ids(self, query: str) -> list[str]:
+        if self.semantic_rescue is None:
+            raise RuntimeError("semantic rescue retrieval is not configured")
+        result = self.semantic_rescue.search(query, 200)
+        if isinstance(result, list):
+            return [str(item) for item in result]
+        items = getattr(result, "items", None)
+        if items is None:
+            raise TypeError("semantic rescue retriever returned an unsupported result")
+        return [str(item.parent_asin) for item in items]
+
     def respond(
         self, session_id: str, user_message: str, turn: int, top_k: int
     ) -> dict:
         state = self.sessions[session_id]
         query, question = self._query_and_question(state, user_message, turn)
+        original_query = query
         sparse_ids, sparse_scores = self._sparse_ids(session_id, query, turn)
+        expansion_trace: dict[str, object] | None = None
+        if self.query_expander is not None:
+            expansion = self.query_expander.expand(query, sparse_ids)
+            expanded_query = expansion.expanded_query
+            terms = expansion.terms
+            expansion_trace = {
+                "reason": expansion.reason,
+                "terms": [term.value for term in terms],
+            }
+            if expanded_query != query:
+                query = expanded_query
+                sparse_ids, sparse_scores = self._sparse_ids(session_id, query, turn)
         retrieval_scores: list[float] = sparse_scores
         if self.retrieval_route == "keyword":
             ranked = sparse_ids
@@ -344,9 +406,17 @@ class ExperimentalAgent:
                 dense_weight=self.dense_weight,
                 limit=200,
             )
-        else:
+        elif self.retrieval_route == "sparse_first_union":
             ranked = sparse_first_union_ids(
                 sparse_ids, self._dense_ids(query), limit=400
+            )
+        else:
+            ranked = sparse_semantic_union_ids(
+                sparse_ids,
+                self._rescue_ids(query),
+                sparse_weight=1.0 - self.semantic_rescue_weight,
+                semantic_weight=self.semantic_rescue_weight,
+                limit=200,
             )
         retrieved = list(ranked)
         if self.structured_filter is not None:
@@ -379,12 +449,32 @@ class ExperimentalAgent:
                 rerank_k=self.cross_encoder_rerank_k,
                 weight=self.cross_encoder_weight,
             )
+        diversification_trace: dict[str, object] | None = None
+        if self.diversifier is not None:
+            decision = self.diversifier.rerank(
+                ranked,
+                DiversificationContext(
+                    turn=turn,
+                    active_constraint_count=sum(
+                        len(values)
+                        for values in self._positive_constraints(state).values()
+                    ),
+                ),
+            )
+            ranked = list(decision.ranking)
+            diversification_trace = {
+                "activated": decision.activated,
+                "reason": decision.reason,
+            }
         self.last_runtime_inputs[session_id] = (query, retrieval_scores)
         self.retrieval_trace.append(
             {
                 "session_id": session_id,
                 "turn": turn,
                 "query": query,
+                "original_query": original_query,
+                "expansion": expansion_trace,
+                "diversification": diversification_trace,
                 "retrieved": retrieved,
                 "ranked": list(ranked),
             }

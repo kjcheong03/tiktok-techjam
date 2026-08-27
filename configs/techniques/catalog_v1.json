@@ -40,6 +40,16 @@
     {"id": "search.crossover", "family": "optimization", "extra": "core", "source": "ghostlab/optimization/patches.py", "status": "interaction_reserve"},
     {"id": "evidence.decision_store", "family": "evidence", "extra": "core", "source": "ghostlab/optimization/evidence.py", "status": "promoted_infrastructure"},
     {"id": "evaluation.grouped_splits", "family": "evaluation", "extra": "core", "source": "ghostlab/evaluation/splits.py", "status": "promoted_infrastructure"},
-    {"id": "evaluation.paired_statistics", "family": "evaluation", "extra": "core", "source": "ghostlab/evaluation/statistics.py", "status": "promoted_infrastructure"}
+    {"id": "evaluation.paired_statistics", "family": "evaluation", "extra": "core", "source": "ghostlab/evaluation/statistics.py", "status": "promoted_infrastructure"},
+    {"id": "retrieval.splade_rescue.v1", "family": "retrieval", "extra": "neural", "source": "ghostlab/retrieval/learned_sparse.py", "status": "unavailable_missing_asset"},
+    {"id": "fusion.sparse_semantic_union.v1", "family": "fusion", "extra": "core", "source": "ghostlab/retrieval/sparse_semantic_fusion.py", "status": "available_dependency_blocked"},
+    {"id": "retrieval.colbert_rescue.v1", "family": "retrieval", "extra": "neural", "source": "ghostlab/retrieval/late_interaction.py", "status": "unavailable_feasibility"},
+    {"id": "retrieval.bge_m3_rescue.v1", "family": "retrieval", "extra": "neural", "source": "ghostlab/retrieval/late_interaction.py", "status": "unavailable_feasibility"},
+    {"id": "fusion.late_interaction_union.v1", "family": "fusion", "extra": "core", "source": "ghostlab/retrieval/sparse_semantic_fusion.py", "status": "available_dependency_blocked"},
+    {"id": "query.catalog_prf.v1", "family": "query", "extra": "core", "source": "ghostlab/retrieval/pseudo_relevance.py", "status": "parked"},
+    {"id": "query.query2doc_local.v1", "family": "query", "extra": "neural", "source": "ghostlab/state/query_expansion.py", "status": "not_implemented_optional_model_not_admitted"},
+    {"id": "query.expansion_guard.v1", "family": "query", "extra": "core", "source": "ghostlab/state/query_expansion.py", "status": "available"},
+    {"id": "ranking.mmr_early.v1", "family": "ranking", "extra": "core", "source": "ghostlab/retrieval/diversify.py", "status": "interaction_reserve"},
+    {"id": "ranking.facet_diversity.v1", "family": "ranking", "extra": "core", "source": "ghostlab/retrieval/diversify.py", "status": "interaction_reserve"}
   ]
 }

@@ -53,6 +53,13 @@ ignore_errors = true
 
 [[tool.mypy.overrides]]
 module = [
+  "ghostlab.retrieval.learned_sparse",
+  "ghostlab.retrieval.late_interaction",
+]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = [
   "ghostlab.runtime.experimental",
   "ghostlab.runtime.experimental_questions",
 ]

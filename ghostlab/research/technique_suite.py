@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from itertools import product
 from pathlib import Path, PurePath
-from typing import Literal, cast
+from typing import Literal, Protocol, cast
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
@@ -31,9 +31,23 @@ QuestionVariant = Literal[
     "adaptive",
     "learned",
 ]
-RetrievalRoute = Literal["keyword", "dense", "rrf", "weighted", "sparse_first_union"]
+RetrievalRoute = Literal[
+    "keyword",
+    "dense",
+    "rrf",
+    "weighted",
+    "sparse_first_union",
+    "learned_sparse_union",
+    "late_interaction_union",
+]
 DenseBackend = Literal["off", "minilm_control", "e5_small_v2"]
 Reranker = Literal["none", "linear", "metadata_gbdt"]
+QueryExpansion = Literal["off", "prf"]
+Diversification = Literal["off", "facet_mmr"]
+
+
+class CandidateRetriever(Protocol):
+    def search(self, query: str, limit: int) -> object: ...
 
 
 class UnifiedTechniqueConfig(BaseModel):
@@ -57,6 +71,15 @@ class UnifiedTechniqueConfig(BaseModel):
     sparse_weights: tuple[float, float, float, float, float, float] | None = None
     sparse_weight: float = Field(default=0.75, ge=0.0, le=1.0)
     dense_weight: float = Field(default=0.25, ge=0.0, le=1.0)
+    semantic_rescue_weight: float = Field(default=0.25, ge=0.0, le=1.0)
+    learned_sparse_asset: str | None = None
+    late_interaction_asset: str | None = None
+
+    query_expansion: QueryExpansion = "off"
+    expansion_feedback_k: int = Field(default=5, ge=2, le=50)
+    expansion_min_support: float = Field(default=0.4, gt=0.0, le=1.0)
+    expansion_max_terms: int = Field(default=4, ge=0, le=20)
+    expansion_max_added_ratio: float = Field(default=0.5, ge=0.0, le=1.0)
 
     negative_evidence: bool = True
     provenance: bool = True
@@ -72,6 +95,12 @@ class UnifiedTechniqueConfig(BaseModel):
     cross_encoder_model_path: str | None = None
     cross_encoder_weight: float = Field(default=0.0, ge=0.0, le=1.0)
     cross_encoder_rerank_k: int = Field(default=20, ge=1, le=200)
+    diversification: Diversification = "off"
+    diversification_weight: float = Field(default=0.85, ge=0.0, le=1.0)
+    diversification_rerank_k: int = Field(default=30, ge=10, le=200)
+    diversification_output_k: int = Field(default=10, ge=1, le=50)
+    diversification_max_turn: int = Field(default=2, ge=1, le=9)
+    diversification_max_constraints: int = Field(default=1, ge=0, le=10)
 
     @field_validator(
         "compiled_config_path",
@@ -79,6 +108,8 @@ class UnifiedTechniqueConfig(BaseModel):
         "dense_model_path",
         "reranker_model_asset",
         "cross_encoder_model_path",
+        "learned_sparse_asset",
+        "late_interaction_asset",
     )
     @classmethod
     def safe_relative_path(cls, value: str | None) -> str | None:
@@ -94,10 +125,20 @@ class UnifiedTechniqueConfig(BaseModel):
         if self.engine == "compiled":
             if self.compiled_config_path is None:
                 raise ValueError("compiled engine requires compiled_config_path")
+            if (
+                self.learned_sparse_asset is not None
+                or self.late_interaction_asset is not None
+                or self.query_expansion != "off"
+                or self.diversification != "off"
+            ):
+                raise ValueError(
+                    "Wave 2 retrieval switches require the experimental engine"
+                )
             return self
         if self.compiled_config_path is not None:
             raise ValueError("compiled_config_path is only valid for compiled engine")
-        needs_dense = self.retrieval_route != "keyword"
+        dense_routes = {"dense", "rrf", "weighted", "sparse_first_union"}
+        needs_dense = self.retrieval_route in dense_routes
         if needs_dense != (self.dense_backend != "off"):
             raise ValueError(
                 "non-keyword retrieval requires a dense backend, and keyword-only "
@@ -107,6 +148,18 @@ class UnifiedTechniqueConfig(BaseModel):
             raise ValueError("dense backend requires dense_model_path")
         if self.dense_backend == "off" and self.dense_model_path is not None:
             raise ValueError("dense_model_path requires a dense backend")
+        if self.retrieval_route == "learned_sparse_union":
+            if self.learned_sparse_asset is None:
+                raise ValueError("learned sparse union requires learned_sparse_asset")
+        elif self.learned_sparse_asset is not None:
+            raise ValueError("learned_sparse_asset requires learned sparse union")
+        if self.retrieval_route == "late_interaction_union":
+            if self.late_interaction_asset is None:
+                raise ValueError(
+                    "late interaction union requires late_interaction_asset"
+                )
+        elif self.late_interaction_asset is not None:
+            raise ValueError("late_interaction_asset requires late interaction union")
         if (
             self.retrieval_route == "weighted"
             and abs(self.sparse_weight + self.dense_weight - 1.0) > 1e-9
@@ -137,6 +190,8 @@ class UnifiedTechniqueConfig(BaseModel):
                 raise ValueError("enabled cross-encoder requires a positive weight")
         elif self.cross_encoder_model_path is not None or self.cross_encoder_weight:
             raise ValueError("cross-encoder fields require cross_encoder_enabled")
+        if self.diversification_output_k > self.diversification_rerank_k:
+            raise ValueError("diversification output depth cannot exceed rerank depth")
         return self
 
 
@@ -224,6 +279,64 @@ def build_suite_agent(
             local_files_only=True,
         )
 
+    semantic_rescue: CandidateRetriever | None = None
+    if config.learned_sparse_asset is not None:
+        from ghostlab.retrieval.learned_sparse import (
+            InvertedSparseIndex,
+            LearnedSparseAsset,
+            LearnedSparseRetriever,
+            SpladeEncoder,
+            sha256_file,
+        )
+
+        learned_manifest = LearnedSparseAsset.load(
+            _project_path(config.learned_sparse_asset)
+        )
+        model_path, index_path = learned_manifest.require_available(PROJECT_ROOT)
+        catalog_hash = sha256_file(catalog_path)
+        if learned_manifest.catalog_sha256 != catalog_hash:
+            raise ValueError("learned-sparse asset was built for another catalog")
+        semantic_rescue = LearnedSparseRetriever(
+            SpladeEncoder(model_path, max_terms=learned_manifest.max_terms),
+            InvertedSparseIndex.load(index_path),
+        )
+    if config.late_interaction_asset is not None:
+        from ghostlab.retrieval.late_interaction import (
+            LateInteractionRetriever,
+            TokenEmbeddingStore,
+            TransformerTokenEncoder,
+            load_feasibility_manifest,
+            sha256_file,
+        )
+
+        manifest_path = _project_path(config.late_interaction_asset)
+        late_manifest = load_feasibility_manifest(manifest_path)
+        if late_manifest.get("availability") != "available":
+            raise RuntimeError(
+                "late-interaction technique is unavailable: "
+                + str(
+                    late_manifest.get("unavailable_reason", "feasibility gate failed")
+                )
+            )
+        model_path = _project_path(str(late_manifest["model_path"]))
+        index_path = _project_path(str(late_manifest["index_path"]))
+        if not model_path.is_dir() or not index_path.is_file():
+            raise FileNotFoundError("late-interaction model or index is missing")
+        if sha256_file(index_path) != late_manifest.get("index_sha256"):
+            raise ValueError("late-interaction index checksum mismatch")
+        if sha256_file(catalog_path) != late_manifest.get("catalog_sha256"):
+            raise ValueError("late-interaction asset was built for another catalog")
+        late_max_length = late_manifest.get("max_length", 128)
+        if not isinstance(late_max_length, int):
+            raise TypeError("late-interaction max_length must be an integer")
+        semantic_rescue = LateInteractionRetriever(
+            TransformerTokenEncoder(
+                model_path,
+                max_length=late_max_length,
+            ),
+            TokenEmbeddingStore.load(index_path),
+        )
+
     learned_question_model = None
     if config.learned_question_asset is not None:
         learned_question_model = _load_question_model(
@@ -258,6 +371,33 @@ def build_suite_agent(
             local_files_only=True,
         )
 
+    query_expander = None
+    if config.query_expansion == "prf":
+        from ghostlab.retrieval.pseudo_relevance import (
+            CatalogPseudoRelevanceFeedback,
+        )
+
+        query_expander = CatalogPseudoRelevanceFeedback(
+            catalog_path,
+            feedback_k=config.expansion_feedback_k,
+            minimum_support=config.expansion_min_support,
+            max_terms=config.expansion_max_terms,
+            max_added_ratio=config.expansion_max_added_ratio,
+        )
+
+    diversifier = None
+    if config.diversification == "facet_mmr":
+        from ghostlab.retrieval.diversify import FacetMMRDiversifier
+
+        diversifier = FacetMMRDiversifier(
+            catalog_path,
+            relevance_weight=config.diversification_weight,
+            rerank_k=config.diversification_rerank_k,
+            output_k=config.diversification_output_k,
+            max_turn=config.diversification_max_turn,
+            max_active_constraints=config.diversification_max_constraints,
+        )
+
     return ExperimentalAgent(
         catalog_path,
         state_variant=config.state_variant,
@@ -267,6 +407,8 @@ def build_suite_agent(
         learned_question_model=learned_question_model,
         retrieval_route=config.retrieval_route,
         dense_retriever=dense,
+        semantic_rescue_retriever=semantic_rescue,
+        semantic_rescue_weight=config.semantic_rescue_weight,
         sparse_weight=config.sparse_weight,
         dense_weight=config.dense_weight,
         sparse_weights=config.sparse_weights,
@@ -282,4 +424,6 @@ def build_suite_agent(
         cross_encoder_reranker=cross_encoder,
         cross_encoder_weight=config.cross_encoder_weight,
         cross_encoder_rerank_k=config.cross_encoder_rerank_k,
+        query_expander=query_expander,
+        diversifier=diversifier,
     )
