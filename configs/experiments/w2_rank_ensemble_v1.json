@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "experiment_id": "w2_rank_ensemble_v1",
+  "parent_commit": "009c643",
+  "split": "nested_v1",
+  "protected_holdout_access": "forbidden",
+  "holdout_accessed": false,
+  "candidate_depth": 50,
+  "heads": ["ndcg_at_10_control", "reward_lambdamart_v1", "turn_aware_lambdamart_v1"],
+  "fixed_controls": [
+    {"candidate_id": "equal_standardized_scores", "method": "standardized_score"},
+    {"candidate_id": "equal_mean_rank", "method": "mean_rank"}
+  ],
+  "fold_local_candidate": {
+    "candidate_id": "fold_local_rank_stack",
+    "method": "standardized_score",
+    "grid_step": 0.25,
+    "technique_id": "fusion.rank_stack.v1"
+  },
+  "depth_matched_union_control": "not_applicable_same_candidate_set",
+  "promotion_rule": "A gain must survive depth matching, stitched OOF validation, backward ablation, runtime checks, and target-rank movement diagnostics."
+}
