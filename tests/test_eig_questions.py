@@ -36,7 +36,7 @@ class EIGQuestionTests(unittest.TestCase):
             {"color": facet("color", 0.8), "size": facet("size", 0.4)},
         )
         decision = CandidateEIGPolicy().decide(
-            state, statistics, turn=2, message="still exploring"
+            state, statistics, turn=3, message="still exploring"
         )
         self.assertEqual(decision.ask_attribute, "color")
         self.assertEqual(decision.reason, "candidate_information_gain")
@@ -51,6 +51,16 @@ class EIGQuestionTests(unittest.TestCase):
             message="no color preference",
         )
         self.assertNotEqual(decision.ask_attribute, "color")
+
+    def test_broad_discovery_is_deliberate_and_bounded(self) -> None:
+        decision = CandidateEIGPolicy().decide(
+            ConversationState("s", {}),
+            CandidateStatistics(100, {"color": facet("color", 0.9)}),
+            turn=1,
+            message="still exploring",
+        )
+        self.assertEqual(decision.ask_attribute, "other")
+        self.assertEqual(decision.reason, "broad_discovery")
 
     def test_low_information_stops(self) -> None:
         decision = CandidateEIGPolicy(question_value_margin=0.2).decide(
@@ -94,7 +104,7 @@ class EIGQuestionTests(unittest.TestCase):
             control.reset("c", {})
             enabled.reset("e", {})
             response = enabled.respond("e", "I want shoes", 1, 10)
-        self.assertIn(response["ask_attribute"], {"brand", "category", "color"})
+        self.assertEqual(response["ask_attribute"], "other")
 
 
 if __name__ == "__main__":

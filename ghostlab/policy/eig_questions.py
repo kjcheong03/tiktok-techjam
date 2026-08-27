@@ -25,10 +25,13 @@ class EIGQuestionDecision:
 
 @dataclass(frozen=True)
 class CandidateEIGPolicy:
-    question_value_margin: float = 0.08
+    question_value_margin: float = 0.0
     minimum_coverage: float = 0.2
     maximum_no_preference: float = 0.8
-    max_question_turn: int = 9
+    max_question_turn: int = 6
+    broad_discovery_turns: int = 2
+    official_turn_cost: float = 0.02
+    information_reward_scale: float = 0.2
     entropy_weight: float = 0.35
     partition_weight: float = 0.65
     calibration: RewardVOICalibration | None = None
@@ -41,6 +44,8 @@ class CandidateEIGPolicy:
             raise ValueError("minimum coverage must be between zero and one")
         if not 0.0 <= self.maximum_no_preference <= 1.0:
             raise ValueError("maximum no-preference must be between zero and one")
+        if self.official_turn_cost < 0.0 or self.information_reward_scale < 0.0:
+            raise ValueError("reward proxy terms must be non-negative")
 
     def decide(
         self,
@@ -52,6 +57,10 @@ class CandidateEIGPolicy:
     ) -> EIGQuestionDecision:
         if turn > self.max_question_turn:
             return EIGQuestionDecision(None, "question_budget_exhausted", {None: 0.0})
+        if turn <= self.broad_discovery_turns:
+            return EIGQuestionDecision(
+                "other", "broad_discovery", {None: 0.0, "other": 1.0}
+            )
         active = {item.attribute for item in state.active_values()}
         unavailable = (
             active
@@ -72,10 +81,14 @@ class CandidateEIGPolicy:
                 or facet.no_preference_probability > self.maximum_no_preference
             ):
                 continue
-            value = (
+            information = (
                 self.entropy_weight * facet.normalized_entropy
                 + self.partition_weight * facet.partition_gain
             ) * facet.coverage
+            value = (
+                self.information_reward_scale * information
+                - self.official_turn_cost
+            )
             if self.calibration is not None:
                 value += self.calibration.action_adjustments.get(attribute, 0.0)
             values[attribute] = value
