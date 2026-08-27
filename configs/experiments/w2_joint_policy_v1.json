@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "experiment_id": "w2_joint_policy_v1",
+  "technique_ids": ["policy.joint_observable.v1", "routing.joint_route.v1"],
+  "default_enabled": false,
+  "question_variant": "joint_observable",
+  "allowed_routes": ["keyword"],
+  "allowed_candidate_depths": [100, 200],
+  "fit_scope": "outer_training_only",
+  "protected_f3_access": false,
+  "classification": "available_unvalidated"
+}

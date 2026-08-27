@@ -36,6 +36,7 @@ from ghostlab.state.query_expansion import QueryExpansion
 if TYPE_CHECKING:
     from ghostlab.policy.candidate_statistics import CandidateFacetStore
     from ghostlab.policy.eig_questions import CandidateEIGPolicy
+    from ghostlab.policy.joint_policy import JointObservablePolicy
 
 StateVariant = Literal["current", "raw_history", "single", "multi", "compressed"]
 QuestionVariant = Literal[
@@ -50,6 +51,7 @@ QuestionVariant = Literal[
     "learned",
     "candidate_eig",
     "reward_voi",
+    "joint_observable",
 ]
 FEATURE_FIRST = ("feature", "use_case", "material", "style", "color", "budget", "size")
 
@@ -104,6 +106,7 @@ class ExperimentalAgent:
         learned_question_model: LinearActionValueModel | None = None,
         eig_policy: CandidateEIGPolicy | None = None,
         eig_candidate_k: int = 100,
+        joint_policy: JointObservablePolicy | None = None,
         query_variant: QueryVariant | None = None,
         structured_filter: bool = False,
         profile_prior_weight: float = 0.0,
@@ -125,12 +128,18 @@ class ExperimentalAgent:
         self.question_variant = question_variant
         self.retrieval_route = retrieval_route
         self.keyword = KeywordRetriever(catalog_path)
+        self.joint_policy = joint_policy
+        if question_variant == "joint_observable" and joint_policy is None:
+            raise ValueError("joint observable policy requires a compiled policy")
         needs_dense = retrieval_route in {
             "dense",
             "rrf",
             "weighted",
             "sparse_first_union",
-        }
+        } or bool(
+            joint_policy is not None
+            and joint_policy.possible_routes & {"dense", "rrf", "weighted_fusion"}
+        )
         self.dense: DenseCandidateRetriever | None = dense_retriever
         if needs_dense and self.dense is None:
             self.dense = DenseRetriever(catalog_path)
@@ -301,6 +310,7 @@ class ExperimentalAgent:
             "learned",
             "candidate_eig",
             "reward_voi",
+            "joint_observable",
         }:
             question = None
         else:
@@ -310,9 +320,8 @@ class ExperimentalAgent:
             "learned",
             "candidate_eig",
             "reward_voi",
-        } and isinstance(
-            state, ConversationState
-        ):
+            "joint_observable",
+        } and isinstance(state, ConversationState):
             if question is not None and (
                 not state.asked_attributes or state.asked_attributes[-1] != question
             ):
@@ -366,21 +375,21 @@ class ExperimentalAgent:
         return result
 
     def _sparse_ids(
-        self, session_id: str, query: str, turn: int
+        self, session_id: str, query: str, turn: int, limit: int = 200
     ) -> tuple[list[str], list[float]]:
         if self.field_sparse is None or self.sparse_weights is None:
-            identifiers = self.keyword.search(session_id, query, turn, 200)
+            identifiers = self.keyword.search(session_id, query, turn, limit)
             return identifiers, [1.0 / rank for rank in range(1, len(identifiers) + 1)]
-        result = self.field_sparse.search(query, 200, self.sparse_weights)
+        result = self.field_sparse.search(query, limit, self.sparse_weights)
         return (
             [item.parent_asin for item in result.items],
             [float(item.raw_score or 0.0) for item in result.items],
         )
 
-    def _dense_ids(self, query: str) -> list[str]:
+    def _dense_ids(self, query: str, limit: int = 200) -> list[str]:
         if self.dense is None:
             raise RuntimeError("dense retrieval is not configured")
-        result = self.dense.search(query, 200)
+        result = self.dense.search(query, limit)
         if isinstance(result, list):
             return [str(item) for item in result]
         items = getattr(result, "items", None)
@@ -404,42 +413,85 @@ class ExperimentalAgent:
     ) -> dict:
         state = self.sessions[session_id]
         query, question = self._query_and_question(state, user_message, turn)
+        active_route = self.retrieval_route
+        retrieval_limit = 200
+        active_sparse_weight = self.sparse_weight
+        active_dense_weight = self.dense_weight
+        joint_features: dict[str, float] | None = None
+        joint_values: dict[str, float] | None = None
+        joint_reason: str | None = None
+        if self.question_variant == "joint_observable":
+            if not isinstance(state, ConversationState):
+                raise TypeError("joint policy requires conversation state")
+            assert self.joint_policy is not None
+            from ghostlab.policy.joint_actions import observable_joint_features
+
+            previous = self.last_runtime_inputs.get(session_id)
+            joint_features = observable_joint_features(
+                state,
+                turn=turn,
+                previous_scores=None if previous is None else previous[1],
+            )
+            joint_decision = self.joint_policy.decide(state, joint_features)
+            question = joint_decision.action.ask_attribute
+            active_route = (
+                "weighted"
+                if joint_decision.action.retrieval_route == "weighted_fusion"
+                else joint_decision.action.retrieval_route
+            )
+            retrieval_limit = joint_decision.action.retrieval_k
+            active_sparse_weight = joint_decision.action.sparse_weight
+            active_dense_weight = joint_decision.action.dense_weight
+            joint_reason = joint_decision.reason
+            joint_values = {
+                "retrieval_k": float(retrieval_limit),
+                "sparse_weight": active_sparse_weight,
+                "dense_weight": active_dense_weight,
+            }
+            if question is not None:
+                state.asked_attributes.append(question)
+            state.last_asked_attribute = question
         original_query = query
-        sparse_ids, sparse_scores = self._sparse_ids(session_id, query, turn)
+        sparse_ids, sparse_scores = self._sparse_ids(
+            session_id, query, turn, retrieval_limit
+        )
         expansion_trace: dict[str, object] | None = None
         if self.query_expander is not None:
             expansion = self.query_expander.expand(query, sparse_ids)
             expanded_query = expansion.expanded_query
-            terms = expansion.terms
             expansion_trace = {
                 "reason": expansion.reason,
-                "terms": [term.value for term in terms],
+                "terms": [term.value for term in expansion.terms],
             }
             if expanded_query != query:
                 query = expanded_query
-                sparse_ids, sparse_scores = self._sparse_ids(session_id, query, turn)
+                sparse_ids, sparse_scores = self._sparse_ids(
+                    session_id, query, turn, retrieval_limit
+                )
         retrieval_scores: list[float] = sparse_scores
-        if self.retrieval_route == "keyword":
+        if active_route == "keyword":
             ranked = sparse_ids
-        elif self.retrieval_route == "dense":
-            ranked = self._dense_ids(query)
+        elif active_route == "dense":
+            ranked = self._dense_ids(query, retrieval_limit)
             retrieval_scores = [1.0 / rank for rank in range(1, len(ranked) + 1)]
-        elif self.retrieval_route == "rrf":
+        elif active_route == "rrf":
             ranked = reciprocal_rank_fusion(
-                [sparse_ids, self._dense_ids(query)],
-                limit=200,
+                [sparse_ids, self._dense_ids(query, retrieval_limit)],
+                limit=retrieval_limit,
             )
-        elif self.retrieval_route == "weighted":
+        elif active_route == "weighted":
             ranked = weighted_fuse_ids(
                 sparse_ids,
-                self._dense_ids(query),
-                sparse_weight=self.sparse_weight,
-                dense_weight=self.dense_weight,
-                limit=200,
+                self._dense_ids(query, retrieval_limit),
+                sparse_weight=active_sparse_weight,
+                dense_weight=active_dense_weight,
+                limit=retrieval_limit,
             )
-        elif self.retrieval_route == "sparse_first_union":
+        elif active_route == "sparse_first_union":
             ranked = sparse_first_union_ids(
-                sparse_ids, self._dense_ids(query), limit=400
+                sparse_ids,
+                self._dense_ids(query, retrieval_limit),
+                limit=min(400, retrieval_limit * 2),
             )
         else:
             ranked = sparse_semantic_union_ids(
@@ -447,7 +499,7 @@ class ExperimentalAgent:
                 self._rescue_ids(query),
                 sparse_weight=1.0 - self.semantic_rescue_weight,
                 semantic_weight=self.semantic_rescue_weight,
-                limit=200,
+                limit=retrieval_limit,
             )
         retrieved = list(ranked)
         if self.structured_filter is not None:
@@ -506,17 +558,20 @@ class ExperimentalAgent:
                 "original_query": original_query,
                 "expansion": expansion_trace,
                 "diversification": diversification_trace,
+                "route": active_route,
                 "retrieved": retrieved,
                 "ranked": list(ranked),
             }
         )
-        question_reason: str = self.question_variant
+        question_reason: str = joint_reason or self.question_variant
         if self.question_variant == "adaptive":
             question, question_reason = self._adaptive_question(
                 state, user_message, turn, query
             )
-        action_values: dict[QuestionAction, float] | None = None
-        feature_values: dict[str, float] | None = None
+        action_values: dict[QuestionAction, float] | dict[str, float] | None = (
+            joint_values
+        )
+        feature_values: dict[str, float] | None = joint_features
         legal_actions: tuple[QuestionAction, ...] | None = None
         if self.question_variant == "learned":
             if not isinstance(state, ConversationState):

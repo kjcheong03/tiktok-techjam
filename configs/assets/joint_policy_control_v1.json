@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "technique_id": "policy.joint_observable.v1",
+  "allowed_routes": ["keyword"],
+  "allowed_depths": [100, 200],
+  "policy": {
+    "rules": [
+      {
+        "rule_id": "early_discovery",
+        "all_conditions": [
+          {"feature": "turn_fraction", "operator": "le", "value": 0.2}
+        ],
+        "action_patch": {
+          "ask_attribute": "other",
+          "retrieval_route": "__inherit__",
+          "retrieval_k": 200,
+          "sparse_weight": "__inherit__",
+          "dense_weight": "__inherit__"
+        }
+      }
+    ],
+    "default_action": {
+      "ask_attribute": null,
+      "retrieval_route": "keyword",
+      "retrieval_k": 100,
+      "sparse_weight": 0.75,
+      "dense_weight": 0.25
+    }
+  },
+  "classification": "mechanism_control_not_selected"
+}
