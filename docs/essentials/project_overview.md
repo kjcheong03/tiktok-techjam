@@ -43,15 +43,79 @@ python3 -m evaluator.local_evaluator
 Edit `starter/agent.py` to implement your system. Do not edit the evaluator or public labels when reporting your local score.
 The command writes per-session results and aggregate metrics to `results.json`.
 
-## GhostLab Unified Techniques
+## GhostLab Unified Quick Start
 
-The `ghostlab/unified-techniques` branch consolidates the validated candidate and
-all reusable challenger implementations behind versioned research presets. Start
-with `docs/essentials/README.md` for the curated reading and execution path, then
-use `docs/unified_technique_operations.md` for the folder map, optional
-dependencies, pinned model assets, switches, combination planning, testing, and
-anti-overfitting protocol. The default unified preset preserves the compiled
-guarded-GBDT candidate; experimental presets are not automatic promotions.
+The unified system preserves the validated candidate and all reusable challenger
+implementations behind versioned, independently switchable presets. The autonomous
+campaign starts from the pure keyword baseline, evaluates compatible techniques and
+combinations through disjoint F0/F1/F2 stages, and proposes candidates without activating
+one automatically.
+
+Supported platforms are macOS and Linux. On Windows, use WSL2 with Ubuntu; native Windows
+is not yet supported because Unix-specific resource measurement remains in the campaign
+runtime and the full workflow has not passed Windows CI. Use CPython 3.10 through 3.13
+(3.12 recommended), `uv`, Git, and the released `data/catalog.jsonl`.
+
+### 1. Install and validate
+
+From the repository root:
+
+```bash
+uv sync --all-extras --group dev
+uv pip check
+uv run ruff check ghostlab scripts tests
+uv run mypy ghostlab
+uv run pytest -q
+git status
+```
+
+If the catalog is not present, complete **Download the Catalog** above first. Review and
+commit intended implementation/configuration changes before starting a new campaign;
+campaign freezing rejects a dirty worktree so that all inputs belong to a reproducible
+commit.
+
+### 2. Run or resume the autonomous search
+
+```bash
+uv run python -m scripts.run_autonomous_end_to_end --prepare-assets
+```
+
+The command prepares and verifies optional model assets, freezes or resumes the versioned
+campaign, runs the bounded F0/F1/F2 search, and materializes three independently confirmed
+safe proposals or stops without padding the result. It prints one preparation command per
+proposal. The first dense index can take roughly
+20–25 minutes on CPU and the full campaign can take several hours. If interrupted, run
+the same command again; completed checkpoint jobs are reused.
+
+### 3. Review and prepare one proposal
+
+Review:
+
+- `artifacts/campaigns/autonomous_state_v2_v1/admission.json`;
+- `artifacts/campaigns/autonomous_state_v2_v1/evidence.json`; and
+- `artifacts/proposals/autonomous_state_v2_v1/proposal_manifest.json`.
+
+Choose one proposal and run its preparation command printed by Stage 2. Preparation
+revalidates and hashes the immutable preset, then prints its exact hash-bound activation
+command. Candidate-specific commands cannot be written here
+in advance because their IDs, paths, and hashes are campaign outputs.
+
+### 4. Activate, verify, or roll back
+
+Only after human review, run the activation command printed by preparation. Activation
+prints the verification and rollback commands; run the verification command next. To
+reject the selection or recover from a failed verification, run:
+
+```bash
+uv run python -m scripts.activate_candidate --rollback
+```
+
+The autonomous wrapper never commits, pushes, reads the protected F3 holdout, or changes
+the active method by itself. Start with `docs/essentials/README.md` for the curated project
+reading order. Use `docs/essentials/unified_technique_operations.md` for every technique,
+dependency, switch, and retest rule, and
+`docs/essentials/autonomous_unified_system_reference.md` for the complete campaign,
+overfitting, pruning, proposal, activation, and recovery specification.
 
 The included weak BM25 starter scores Hit Rate@10 `0.125`, MRR `0.068034`, and
 MTTC `9.81` on the released public set. See `docs/baseline_results.json`.
