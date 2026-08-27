@@ -117,6 +117,159 @@ dependency, switch, and retest rule, and
 `docs/essentials/autonomous_unified_system_reference.md` for the complete campaign,
 overfitting, pruning, proposal, activation, and recovery specification.
 
+## Technical Architecture and Complete Strategy Surface
+
+The executable pipeline is:
+
+```text
+conversation state → query construction → sparse/dense retrieval → fusion
+                   → ranking/filtering/priors/diversity
+                   → question/termination policy → normalized Top-10 response
+```
+
+`configs/techniques/catalog_v2.json` extends the Wave 1 catalog and is the strategy
+source of truth. `ghostlab/campaign/bindings.py` is the runtime truth that maps a technique
+ID to a typed configuration patch. This README covers all 63 present strategies: 35
+runtime-composable switches, 12 anchor/intrinsic implementations, and 16 experiment
+procedures. Catalog entries without a runnable implementation are intentionally omitted.
+
+The tables use these execution classes:
+
+- **C — composable:** on when its ID is included in a candidate; off when omitted. All 35
+  C entries are independently considered by the current campaign. Mutually exclusive
+  values such as state, question, dense backend, fusion route, and primary reranker cannot
+  coexist; additive techniques can.
+- **A — anchor/intrinsic:** implemented and preserved, but not an independent additive
+  switch. It is selected through a complete preset or is inseparable from another switch.
+- **R — research-only:** invoked by the experiment engine, never emitted as submission
+  runtime configuration.
+
+For C entries, the **Enable** column shows the actual typed patch. Omission restores the
+baseline/off value. Numeric weights are present only when their technique is enabled and
+are tuned conditionally. A dagger (†) marks an executable historical fitted asset that can
+be diagnosed but cannot become a proposal without fold-local refitting and a new freeze.
+
+### Runtime-composable on/off switches (35)
+
+| Technique ID | Enable setting and mechanism | Implementation |
+|---|---|---|
+| `state.current` | `state_variant=current`; current-message state and pure-search anchor | `ghostlab/runtime/experimental.py` |
+| `state.raw_history` | `state_variant=raw_history`; lossless accumulated dialogue | `ghostlab/state/memory.py` |
+| `state.multi` | `state_variant=multi`; retain multiple values per attribute | `ghostlab/state/memory.py` |
+| `state.compressed` | `state_variant=compressed`; compact state summary | `ghostlab/state/memory.py` |
+| `state.baseline_v2` | `state_variant=baseline_v2`; typed constraints, corrections, provenance, intent epochs | `ghostlab/state/baseline_v2.py` |
+| `state.catalog_normalizer.v1` | `normalizer=catalog_v1`; local catalog-grounded ontology asset | `ghostlab/state/normalization.py` |
+| `state.confidence_gated_constraints.v1` | `constraint_confidence=0.9`; requires catalog normalizer | `ghostlab/state/normalization.py` |
+| `query.structured` | `query_variant=structured_active`; active structured evidence only | `ghostlab/state/query.py` |
+| `query.coverage_adaptive_v2` | `query_variant=coverage_adaptive_v2`; State V2 query with low-coverage raw-history fallback | `ghostlab/state/baseline_v2.py` |
+| `query.catalog_prf.v1` | `query_expansion=prf`; catalog-grounded pseudo-relevance feedback | `ghostlab/state/query_expansion.py` |
+| `question.fixed` | `question_variant=fixed`; literal organizer attribute order | `ghostlab/runtime/experimental.py` |
+| `question.other_always` | `question_variant=other_always`; simulator-sensitive diagnostic | `ghostlab/runtime/unified_experimental.py` |
+| `question.adaptive_heuristic` | `question_variant=adaptive`; observable rule-based question selection | `ghostlab/policy/adaptive_questions.py` |
+| `question.learned_linear`† | `question_variant=learned`; compiled linear action-value model | `ghostlab/policy/learned_questions.py` |
+| `question.candidate_eig.v1` | `question_variant=candidate_eig`; expected information gain from retrieved-candidate facets | `ghostlab/policy/eig_questions.py` |
+| `termination.reward_aware.v1` | `question_value_margin=0.02`; question-versus-stop margin, requires candidate EIG | `ghostlab/policy/eig_questions.py` |
+| `policy.joint_observable.v1` | `question_variant=joint_observable`; bounded decision list jointly chooses observable actions | `ghostlab/policy/joint_policy.py` |
+| `retrieval.sparse` | `retrieval_route=keyword`, `dense_backend=off`; organizer-compatible FTS5/BM25 | `ghostlab/retrieval/sparse.py` |
+| `retrieval.minilm` | `dense_backend=minilm_control`; pinned offline MiniLM cosine retrieval | `ghostlab/retrieval/dense.py` |
+| `retrieval.e5` | `dense_backend=e5_small_v2`; pinned offline E5 retrieval | `ghostlab/retrieval/dense.py` |
+| `fusion.rrf` | `retrieval_route=rrf`; reciprocal-rank sparse/dense fusion | `ghostlab/retrieval/fusion.py` |
+| `fusion.weighted` | `retrieval_route=weighted`; conditionally tuned sparse/dense weights | `ghostlab/retrieval/fusion.py` |
+| `fusion.sparse_first_union` | `retrieval_route=sparse_first_union`; sparse ranking with dense backfill | `ghostlab/retrieval/fusion.py` |
+| `ranking.fixed_lexical` | `reranker=linear`; deterministic lexical reranker | `ghostlab/retrieval/rerank.py` |
+| `ranking.metadata_gbdt`† | `reranker=metadata_gbdt`; shallow catalog/lexical GBDT | `ghostlab/retrieval/gbdt.py` |
+| `ranking.cross_encoder` | `cross_encoder_enabled=true`; pinned top-k neural reranking with tunable depth/weight | `ghostlab/retrieval/cross_encoder.py` |
+| `ranking.reward_lambdamart.v1`† | `reranker=reward_lambdamart`; metric-aligned learning-to-rank | `ghostlab/retrieval/reward_lambdamart.py` |
+| `ranking.turn_aware_lambdamart.v1`† | `reranker=turn_aware_lambdamart`; ranking objective includes turn cost | `ghostlab/retrieval/reward_lambdamart.py` |
+| `ranking.fold_ensemble.v1`† | `reranker=rank_ensemble`; fold-model variance reduction | `ghostlab/retrieval/ensemble.py` |
+| `fusion.rank_stack.v1`† | rank-stack ensemble asset; requires fold ensemble | `ghostlab/retrieval/ensemble.py` |
+| `ranking.facet_diversity.v1` | `diversification=facet_mmr`; facet-aware maximal marginal relevance | `ghostlab/retrieval/diversify.py` |
+| `filter.structured` | `structured_filter=true`; coverage-aware constraint filtering with fallback | `ghostlab/retrieval/filters.py` |
+| `recommendation.correction_scoped_history` | `recommendation_history=correction_scoped`; suppress repeats within the current intent epoch | `ghostlab/runtime/unified_experimental.py` |
+| `prior.profile` | `profile_prior_weight>0`; bounded observable-profile prior | `ghostlab/retrieval/profile.py` |
+| `prior.quality` | `quality_prior_weight>0`; bounded catalog-quality tie-breaker | `ghostlab/retrieval/quality.py` |
+
+### Implemented anchor or intrinsic strategies (12)
+
+These are off when their owning preset/switch is absent; they do not have a safe
+independent C toggle.
+
+| Technique ID | Role | Implementation |
+|---|---|---|
+| `state.attribute_ontology.v1` | Builds the ontology asset consumed by catalog normalization | `ghostlab/state/catalog_ontology.py` |
+| `query.expansion_guard.v1` | Safety guard intrinsic to catalog PRF | `ghostlab/state/query_expansion.py` |
+| `ranking.mmr_early.v1` | Early-turn gate intrinsic to facet MMR | `ghostlab/retrieval/diversify.py` |
+| `routing.joint_route.v1` | Routing behavior intrinsic to the joint-policy asset | `ghostlab/policy/joint_policy.py` |
+| `ranking.pairwise_linear` | Historical first-champion preset | `ghostlab/retrieval/learned.py` |
+| `ranking.constraint_gbdt` | Selected guarded-GBDT preset | `ghostlab/retrieval/constraint_gbdt.py` |
+| `ranking.deep_dense_gbdt` | Historical dense/GBDT challenger | `ghostlab/retrieval/gbdt_dense.py` |
+| `ranking.neural_gbdt` | Historical neural-score/GBDT challenger | `ghostlab/retrieval/neural_rank.py` |
+| `guard.override_fallback` | Override guard and fallback inside the compiled champion | `ghostlab/runtime/guarded_gbdt.py` |
+| `routing.decision_list` | Supporting decision-list mechanism selected through joint policy | `ghostlab/policy/decision_list.py` |
+| `routing.observable_stump` | Historical observable route-stump control | `ghostlab/research/route_stump.py` |
+| `routing.route_table` | Historical conditional route-table control | `ghostlab/research/route_policy.py` |
+
+### Research, search, and validation strategies (16)
+
+These procedures are available to, or used by, the experiment engine as declared by the
+frozen campaign; they are not Agent runtime switches. In particular, conditional BOHB is
+active in the current runner while Hyperband remains an implemented optional scheduler.
+
+| Technique ID | Engine role | Implementation |
+|---|---|---|
+| `research.replay` | Deterministic multi-turn replay and reward traces | `ghostlab/research/replay.py` |
+| `research.counterfactual` | Counterfactual action evaluation | `ghostlab/research/counterfactual.py` |
+| `research.counterfactual_expert.v2` | Offline expert-label generation | `ghostlab/research/counterfactual_expert.py` |
+| `research.leakage_firewall` | Reject protected or label-derived inputs | `ghostlab/research/firewall.py` |
+| `evaluation.grouped_splits` | Keep all turns from a session in one fold | `ghostlab/evaluation/splits.py` |
+| `evaluation.paired_statistics` | Paired deltas, intervals and significance diagnostics | `ghostlab/evaluation/statistics.py` |
+| `evidence.decision_store` | Append-only technique/interaction decision evidence | `ghostlab/optimization/evidence.py` |
+| `search.random_grid_beam` | Random/grid screening followed by bounded beam expansion | `ghostlab/optimization/search.py` |
+| `search.multifidelity_racing` | Promote or prune across F0/F1/F2 budgets | `ghostlab/optimization/racing.py` |
+| `search.hyperband.v1` | Successive-halving resource allocation | `ghostlab/optimization/hyperband.py` |
+| `search.bohb.v1` | Conditional model-based HPO proposals | `ghostlab/optimization/bohb.py` |
+| `search.typed_patches` | Type-safe configuration mutation | `ghostlab/optimization/patches.py` |
+| `search.crossover` | Interaction-reserve recombination of compatible candidates | `ghostlab/optimization/patches.py` |
+| `search.evidence_allocator` | Allocate budget using accumulated evidence | `ghostlab/optimization/meta_search.py` |
+| `search.family_ucb` | Preserve exploration across technique families | `ghostlab/optimization/evidence.py` |
+| `search.expert_iteration.v1` | Offline counterfactual dataset aggregation | `ghostlab/research/counterfactual_expert.py` |
+
+## How the Engine Tests Combinations
+
+The discovery anchor is intentionally minimal:
+
+```text
+state.current + question.fixed + retrieval.sparse
+```
+
+Everything else begins off. Historical champions and State Baseline V2 presets are
+matched controls, not privileged search seeds. The current versioned campaign then:
+
+1. resolves all 35 C entries through dependency and exclusivity rules;
+2. plans every valid standalone/dependency closure and compatible pair from the pure
+   anchor—currently 522 low-order structures within the 600-candidate cap, of which 359
+   are materializable and 163 are explicitly blocked as invalid combinations;
+3. evaluates small stratified F0 budgets and permanently removes only invalid, duplicate,
+   or repeatedly dominated structures;
+4. preserves uncertain, mildly negative, family-diverse, random-audit, and
+   interaction-reserve candidates so a weak standalone may still win in combination;
+5. expands evidence-supported combinations to orders 3–6 using bounded beam/crossover
+   search rather than enumerating an unbounded power set;
+6. applies conditional BOHB-style HPO and F1 racing only to enabled parameters—for example
+   fusion weights, rerank depth, EIG margin, priors, and diversity strength; the Hyperband
+   module remains available for a future versioned scheduler integration;
+7. uses backward ablation, add-back tests and paired interaction deltas to attribute gains;
+8. searches on three frozen outer folds (90 sessions), confirms finalists on two disjoint
+   folds (60 sessions), and never opens F3; and
+9. materializes exactly three independently confirmed, behaviorally distinct proposals or
+   stops without padding unsafe candidates.
+
+The exhaustive generated structures and skips live in
+`artifacts/campaigns/autonomous_state_v2_v1/plan.json`; outcomes and interactions live in
+`evidence.json`; enabled techniques, tuned parameters, full resolved configuration, hashes,
+and preparation commands live in
+`artifacts/proposals/autonomous_state_v2_v1/proposal_manifest.json`.
+
 The included weak BM25 starter scores Hit Rate@10 `0.125`, MRR `0.068034`, and
 MTTC `9.81` on the released public set. See `docs/baseline_results.json`.
 

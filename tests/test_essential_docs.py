@@ -1,5 +1,8 @@
 from pathlib import Path
 
+from ghostlab.campaign.bindings import default_binding_registry
+from ghostlab.campaign.catalog import load_catalog
+
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 ESSENTIAL_MIRRORS = {
     "README.md": "docs/essentials/project_overview.md",
@@ -46,3 +49,25 @@ def test_essential_documents_match_their_sources() -> None:
             f"{mirror} drifted from {source}; update the source first and then "
             "synchronize its essential copy"
         )
+
+
+def test_root_readme_indexes_present_techniques_only() -> None:
+    catalog = load_catalog(PROJECT_ROOT / "configs/techniques/catalog_v2.json")
+    bindings = default_binding_registry().bindings
+    readme = (PROJECT_ROOT / "README.md").read_text(encoding="utf-8")
+    missing = sorted(
+        technique_id
+        for technique_id in catalog.techniques
+        if bindings[technique_id].disposition != "unavailable"
+        if f"`{technique_id}`" not in readme
+    )
+    assert not missing, f"README technique inventory is missing: {missing}"
+    unavailable_present = sorted(
+        technique_id
+        for technique_id, binding in bindings.items()
+        if binding.disposition == "unavailable"
+        if technique_id in readme
+    )
+    assert not unavailable_present, (
+        f"README must omit unavailable techniques: {unavailable_present}"
+    )
