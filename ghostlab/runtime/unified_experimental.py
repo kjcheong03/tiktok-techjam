@@ -39,6 +39,7 @@ if TYPE_CHECKING:
     from ghostlab.policy.eig_questions import CandidateEIGPolicy
     from ghostlab.policy.joint_policy import JointPolicyDecision
     from ghostlab.runtime.component_fallback import ComponentFallback
+    from ghostlab.state.normalization import CatalogStateNormalizer
 
 StateVariant = Literal["current", "raw_history", "single", "multi", "compressed"]
 QuestionVariant = Literal[
@@ -122,6 +123,8 @@ class ExperimentalAgent:
         routing_variant: Literal["off", "calibrated"] = "off",
         calibrated_router: CalibratedRouteModel | None = None,
         component_fallback: ComponentFallback | None = None,
+        normalizer: Literal["off", "catalog_v1"] = "off",
+        catalog_normalizer: CatalogStateNormalizer | None = None,
         query_variant: QueryVariant | None = None,
         structured_filter: bool = False,
         profile_prior_weight: float = 0.0,
@@ -155,6 +158,12 @@ class ExperimentalAgent:
         self.routing_variant = routing_variant
         self.calibrated_router = calibrated_router
         self.component_fallback = component_fallback
+        if normalizer == "catalog_v1" and catalog_normalizer is None:
+            raise ValueError("catalog normalization requires a local ontology")
+        if normalizer == "off" and catalog_normalizer is not None:
+            raise ValueError("catalog normalizer asset requires its explicit switch")
+        self.normalizer = normalizer
+        self.catalog_normalizer = catalog_normalizer
         needs_dense = (
             retrieval_route
             in {
@@ -276,14 +285,27 @@ class ExperimentalAgent:
         if self.state_variant == "single":
             self.sessions[session_id] = SessionState(session_id, user_profile)
         else:
-            self.sessions[session_id] = ConversationState(
-                session_id,
-                user_profile,
-                multi_value=self.state_variant in {"multi", "compressed"},
-                negative_evidence=self.negative_evidence,
-                provenance_enabled=self.provenance,
-                override_invalidation=self.override_invalidation,
-            )
+            if self.normalizer == "catalog_v1":
+                from ghostlab.state.normalization import NormalizedConversationState
+
+                self.sessions[session_id] = NormalizedConversationState(
+                    session_id,
+                    user_profile,
+                    multi_value=self.state_variant in {"multi", "compressed"},
+                    negative_evidence=self.negative_evidence,
+                    provenance_enabled=self.provenance,
+                    override_invalidation=self.override_invalidation,
+                    catalog_normalizer=self.catalog_normalizer,
+                )
+            else:
+                self.sessions[session_id] = ConversationState(
+                    session_id,
+                    user_profile,
+                    multi_value=self.state_variant in {"multi", "compressed"},
+                    negative_evidence=self.negative_evidence,
+                    provenance_enabled=self.provenance,
+                    override_invalidation=self.override_invalidation,
+                )
         self.stopped_sessions.discard(session_id)
         self.last_runtime_inputs.pop(session_id, None)
 

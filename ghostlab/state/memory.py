@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass, field
-from typing import Literal, Protocol
+from typing import Literal
 
 from baseline.state import (
     ASK_ORDER,
@@ -40,19 +40,6 @@ EARLIER_PREFERENCE_RESET_RE = re.compile(
 )
 
 
-class ConstraintNormalizer(Protocol):
-    def normalize(
-        self, attribute: str, value: str, category: str | None
-    ) -> ConstraintNormalization | None: ...
-
-
-class ConstraintNormalization(Protocol):
-    attribute: str
-    canonical: str
-    confidence: float
-    source: str
-
-
 @dataclass
 class MemoryValue:
     attribute: str
@@ -65,8 +52,6 @@ class MemoryValue:
     category_scope: str | None = None
     active: bool = True
     invalidated_reason: str | None = None
-    normalization_confidence: float | None = None
-    normalization_source: str | None = None
 
 
 @dataclass
@@ -77,7 +62,6 @@ class ConversationState:
     negative_evidence: bool = True
     provenance_enabled: bool = True
     override_invalidation: bool = True
-    normalizer: ConstraintNormalizer | None = None
     messages: list[str] = field(default_factory=list)
     values: list[MemoryValue] = field(default_factory=list)
     asked_attributes: list[str] = field(default_factory=list)
@@ -188,17 +172,6 @@ class ConversationState:
         replace_reason: str = "replacement",
     ) -> None:
         normalized = value.casefold()
-        normalization_confidence: float | None = None
-        normalization_source: str | None = None
-        if self.normalizer is not None:
-            resolution = self.normalizer.normalize(
-                attribute, value, self.active_category
-            )
-            if resolution is not None:
-                attribute = resolution.attribute
-                normalized = resolution.canonical
-                normalization_confidence = resolution.confidence
-                normalization_source = resolution.source
         for item in self.values:
             if (
                 item.active
@@ -223,8 +196,6 @@ class ConversationState:
                 provenance=provenance if self.provenance_enabled else "explicit",
                 polarity=polarity,
                 category_scope=scope,
-                normalization_confidence=normalization_confidence,
-                normalization_source=normalization_source,
             )
         )
 

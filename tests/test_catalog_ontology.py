@@ -5,9 +5,13 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from ghostlab.runtime.unified_experimental import ExperimentalAgent
 from ghostlab.state.catalog_ontology import build_catalog_ontology, normalize_text
 from ghostlab.state.memory import ConversationState
-from ghostlab.state.normalization import CatalogStateNormalizer
+from ghostlab.state.normalization import (
+    CatalogStateNormalizer,
+    NormalizedConversationState,
+)
 
 
 class CatalogOntologyTests(unittest.TestCase):
@@ -49,19 +53,29 @@ class CatalogOntologyTests(unittest.TestCase):
             ontology = build_catalog_ontology(self.catalog(directory))
         baseline = ConversationState("baseline", {})
         baseline._add("color", "grey", 1, "grey", "explicit")
-        enabled = ConversationState(
-            "enabled", {}, normalizer=CatalogStateNormalizer(ontology)
+        enabled = NormalizedConversationState(
+            "enabled", {}, catalog_normalizer=CatalogStateNormalizer(ontology)
         )
         enabled._add("color", "grey", 1, "grey", "explicit")
         self.assertEqual(baseline.active_values()[0].normalized, "grey")
         self.assertEqual(enabled.active_values()[0].value, "grey")
         self.assertEqual(enabled.active_values()[0].normalized, "gray")
-        self.assertEqual(
-            enabled.active_values()[0].normalization_source, "catalog_exact"
-        )
+        self.assertEqual(enabled.normalization_trace[0]["source"], "catalog_exact")
 
     def test_text_normalization_preserves_numeric_units(self) -> None:
         self.assertEqual(normalize_text("  10–12 in. "), "10 12 in")
+
+    def test_runtime_normalizer_is_an_explicit_switch(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = self.catalog(directory)
+            normalizer = CatalogStateNormalizer(build_catalog_ontology(path))
+            with self.assertRaisesRegex(ValueError, "explicit switch"):
+                ExperimentalAgent(path, catalog_normalizer=normalizer)
+            agent = ExperimentalAgent(
+                path, normalizer="catalog_v1", catalog_normalizer=normalizer
+            )
+            agent.reset("s", {})
+        self.assertIsInstance(agent.sessions["s"], NormalizedConversationState)
 
 
 if __name__ == "__main__":
