@@ -152,6 +152,17 @@ not activate, commit, push, or access F3. See Section 16 of
 `docs/autonomous_unified_system_reference.md` for the eight user steps, exact files,
 combination/pruning algorithm, overfitting controls, activation, and rollback.
 
+### 2.6 Four-stage operator workflow
+
+1. **Prepare:** install all extras, verify `data/catalog.jsonl`, run validation, and
+   commit the reviewed implementation so `git status` is clean.
+2. **Search:** run the command in Section 2.5. Re-run the same command to resume an
+   interrupted campaign. It finishes by printing up to three preparation commands.
+3. **Prepare:** choose one proposal and run its printed preparation command. Review its
+   techniques, scores, hashes, and the activation command it prints.
+4. **Activate:** run the printed activation and verification commands. If rejected or
+   verification fails, run `uv run python -m scripts.activate_candidate --rollback`.
+
 ## 3. Folder map
 
 | Path | Responsibility |
