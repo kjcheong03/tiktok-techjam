@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Literal, Protocol
+from typing import TYPE_CHECKING, Literal, Protocol
 
 from baseline.retrieval import DenseRetriever, KeywordRetriever, reciprocal_rank_fusion
 from baseline.state import SessionState, fixed_question_for_turn
@@ -33,6 +33,10 @@ from ghostlab.state.memory import ConversationState
 from ghostlab.state.query import QueryVariant, build_query
 from ghostlab.state.query_expansion import QueryExpansion
 
+if TYPE_CHECKING:
+    from ghostlab.policy.candidate_statistics import CandidateFacetStore
+    from ghostlab.policy.eig_questions import CandidateEIGPolicy
+
 StateVariant = Literal["current", "raw_history", "single", "multi", "compressed"]
 QuestionVariant = Literal[
     "none",
@@ -44,6 +48,8 @@ QuestionVariant = Literal[
     "other_always",
     "adaptive",
     "learned",
+    "candidate_eig",
+    "reward_voi",
 ]
 FEATURE_FIRST = ("feature", "use_case", "material", "style", "color", "budget", "size")
 
@@ -96,6 +102,8 @@ class ExperimentalAgent:
         repeat_last_question: bool = False,
         adaptive_policy: AdaptiveQuestionPolicy | None = None,
         learned_question_model: LinearActionValueModel | None = None,
+        eig_policy: CandidateEIGPolicy | None = None,
+        eig_candidate_k: int = 100,
         query_variant: QueryVariant | None = None,
         structured_filter: bool = False,
         profile_prior_weight: float = 0.0,
@@ -151,6 +159,19 @@ class ExperimentalAgent:
         self.learned_question_model = learned_question_model
         if question_variant == "learned" and learned_question_model is None:
             raise ValueError("learned question policy requires a fitted model")
+        if eig_candidate_k <= 0 or eig_candidate_k > 400:
+            raise ValueError("EIG candidate depth must be between 1 and 400")
+        self.eig_candidate_k = eig_candidate_k
+        self.candidate_facets: CandidateFacetStore | None = None
+        self.eig_policy: CandidateEIGPolicy | None = None
+        if question_variant in {"candidate_eig", "reward_voi"}:
+            from ghostlab.policy.candidate_statistics import CandidateFacetStore
+            from ghostlab.policy.eig_questions import CandidateEIGPolicy
+
+            self.candidate_facets = CandidateFacetStore(catalog_path)
+            self.eig_policy = eig_policy or CandidateEIGPolicy()
+            if question_variant == "reward_voi" and self.eig_policy.calibration is None:
+                raise ValueError("reward VOI requires a fold-fitted calibration")
         self.query_variant = query_variant
         if sparse_weights is not None and any(
             weight < 0.0 for weight in sparse_weights
@@ -275,11 +296,21 @@ class ExperimentalAgent:
             )
         elif self.question_variant == "other_always":
             question = "other"
-        elif self.question_variant in {"adaptive", "learned"}:
+        elif self.question_variant in {
+            "adaptive",
+            "learned",
+            "candidate_eig",
+            "reward_voi",
+        }:
             question = None
         else:
             question = state.choose_question()
-        if self.question_variant not in {"adaptive", "learned"} and isinstance(
+        if self.question_variant not in {
+            "adaptive",
+            "learned",
+            "candidate_eig",
+            "reward_voi",
+        } and isinstance(
             state, ConversationState
         ):
             if question is not None and (
@@ -510,6 +541,23 @@ class ExperimentalAgent:
                 question_reason = "linear_action_value"
                 if question is None:
                     self.stopped_sessions.add(session_id)
+            if question is not None:
+                state.asked_attributes.append(question)
+            state.last_asked_attribute = question
+        if self.question_variant in {"candidate_eig", "reward_voi"}:
+            if not isinstance(state, ConversationState):
+                raise TypeError("EIG question policy requires conversation state")
+            assert self.candidate_facets is not None
+            assert self.eig_policy is not None
+            statistics = self.candidate_facets.summarize(
+                ranked, limit=self.eig_candidate_k
+            )
+            decision = self.eig_policy.decide(
+                state, statistics, turn=turn, message=user_message
+            )
+            question = decision.ask_attribute
+            question_reason = decision.reason
+            action_values = dict(decision.values)
             if question is not None:
                 state.asked_attributes.append(question)
             state.last_asked_attribute = question
