@@ -43,6 +43,10 @@ to its source, preventing silent documentation drift.
     search modes, 42 conditional runtime parameters, observable activation, true
     successive halving, fold-fitted residual ranking, fit receipts, overfitting
     controls, commands, and recovery.
+13. [GhostLab architecture and TechJam alignment](ghostlab_architecture_and_techjam_alignment.md)
+    — first-principles architecture, deployed-versus-experimental boundaries, mapping to
+    all four problem pillars and judging criteria, limitations, claims, deliverables, and
+    the prioritized submission roadmap.
 
 ## What to use for each task
 
@@ -58,6 +62,7 @@ to its source, preventing silent documentation drift.
 | Use or retest the teammate State V2 baseline | `state_baseline_v2_integration.md` |
 | Run or extend adaptive structure-plus-parameter optimization | `../adaptive_autonomous_optimizer.md` |
 | Understand Wave 2 hypotheses versus actual evidence | Wave 2 plan followed by the three result reports |
+| Understand GhostLab end to end and assess competition readiness | `ghostlab_architecture_and_techjam_alignment.md` |
 
 ## Essential non-Markdown companions
 
