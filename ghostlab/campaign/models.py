@@ -7,6 +7,8 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from ghostlab.training.protocol import FitReceipt
+
 Availability = Literal[
     "planned",
     "implementing",
@@ -132,13 +134,15 @@ class CampaignResources(BaseModel):
 class CampaignManifest(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
-    schema_version: Literal[1] = 1
+    schema_version: Literal[1, 2] = 1
     campaign_id: str = Field(min_length=1)
     parent_commit: str = Field(pattern=r"^[0-9a-f]{7,40}$")
     catalog_hash: str = Field(pattern=r"^[0-9a-f]{64}$")
     dataset_hash: str = Field(pattern=r"^[0-9a-f]{64}$")
     adaptive_split_hash: str = Field(pattern=r"^[0-9a-f]{64}$")
     nested_split_hash: str = Field(pattern=r"^[0-9a-f]{64}$")
+    search_space_path: str | None = None
+    search_space_hash: str | None = Field(default=None, pattern=r"^[0-9a-f]{64}$")
     protected_holdout_access: Literal["forbidden"] = "forbidden"
     search_outer_folds: tuple[int, ...] = Field(default=(0, 2, 3), min_length=1)
     confirmation_outer_folds: tuple[int, ...] = Field(default=(1, 4), min_length=1)
@@ -162,6 +166,16 @@ class CampaignManifest(BaseModel):
 
     @model_validator(mode="after")
     def unique_values(self) -> CampaignManifest:
+        if self.schema_version == 2 and (
+            self.search_space_path is None or self.search_space_hash is None
+        ):
+            raise ValueError("schema v2 campaigns must freeze their search space")
+        if (self.search_space_path is None) != (self.search_space_hash is None):
+            raise ValueError("search-space path and hash must be declared together")
+        if self.search_space_path is not None:
+            path = PurePath(self.search_space_path)
+            if path.is_absolute() or ".." in path.parts or not path.name:
+                raise ValueError("search-space path must stay inside the project")
         if len(set(self.technique_ids)) != len(self.technique_ids):
             raise ValueError("manifest technique IDs must be unique")
         if len(set(self.baseline_techniques)) != len(self.baseline_techniques):
@@ -219,7 +233,9 @@ class CampaignManifest(BaseModel):
 
     def canonical_hash(self) -> str:
         encoded = json.dumps(
-            self.model_dump(mode="json"), sort_keys=True, separators=(",", ":")
+            self.model_dump(mode="json", exclude_none=True),
+            sort_keys=True,
+            separators=(",", ":"),
         )
         return hashlib.sha256(encoded.encode()).hexdigest()
 
@@ -246,6 +262,7 @@ class JobOutcome(BaseModel):
     elapsed_seconds: float = Field(default=0.0, ge=0.0)
     latency_p95_ms: float = Field(default=0.0, ge=0.0)
     memory_mb: float = Field(default=0.0, ge=0.0)
+    fit_receipts: tuple[FitReceipt, ...] = ()
     error: str | None = None
 
     @model_validator(mode="after")

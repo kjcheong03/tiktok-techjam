@@ -39,6 +39,10 @@ to its source, preventing silent documentation drift.
 11. [State Baseline V2 integration](state_baseline_v2_integration.md) — exact teammate
     parity, native state/query/history switches, presets, autonomous linkage,
     combination result, and overfitting-safe validation.
+12. [Adaptive autonomous optimizer](../adaptive_autonomous_optimizer.md) — dual-track
+    search modes, 42 conditional runtime parameters, observable activation, true
+    successive halving, fold-fitted residual ranking, fit receipts, overfitting
+    controls, commands, and recovery.
 
 ## What to use for each task
 
@@ -52,6 +56,7 @@ to its source, preventing silent documentation drift.
 | Run the autonomous campaign | `autonomous_unified_system_reference.md` |
 | Understand the score to beat | `final_candidate_checkpoint.md` |
 | Use or retest the teammate State V2 baseline | `state_baseline_v2_integration.md` |
+| Run or extend adaptive structure-plus-parameter optimization | `../adaptive_autonomous_optimizer.md` |
 | Understand Wave 2 hypotheses versus actual evidence | Wave 2 plan followed by the three result reports |
 
 ## Essential non-Markdown companions

@@ -74,15 +74,49 @@ commit intended implementation/configuration changes before starting a new campa
 campaign freezing rejects a dirty worktree so that all inputs belong to a reproducible
 commit.
 
+### Run the current champion
+
+The default competition-facing method is the validated guarded GBDT champion. When
+`configs/active_candidate.json` is absent, `starter.Agent` intentionally uses this frozen
+compiled runtime; an active-candidate pointer is only created after a later proposal is
+explicitly approved.
+
+After installing the dependencies and placing the released catalog at
+`data/catalog.jsonl`, evaluate exactly what `starter.Agent` will run:
+
+```bash
+uv run python -m evaluator.local_evaluator \
+  --output artifacts/reports/champion_results.json
+```
+
+To evaluate the champion's explicit research preset over the 200 public sessions:
+
+```bash
+uv run python -m scripts.run_unified_preset \
+  --config configs/suites/champion_guarded.json \
+  --output artifacts/reports/local_unified_champion.json
+```
+
+The selected candidate's grouped 150-session OOF technical score is `0.878963`; this is
+a development estimate, not a guaranteed private-leaderboard score. See
+[`docs/final_candidate_checkpoint.md`](docs/final_candidate_checkpoint.md) for its exact
+pipeline, validation evidence, limitations, hashes, and recovery information.
+
 ### 2. Run or resume the autonomous search
 
 ```bash
 uv run python -m scripts.run_autonomous_end_to_end --prepare-assets
 ```
 
-The command prepares and verifies optional model assets, freezes or resumes the versioned
-campaign, runs the bounded F0/F1/F2 search, and materializes three independently confirmed
-safe proposals or stops without padding the result. It prints one preparation command per
+The unchanged command defaults to `--mode full`: it searches independently from both the
+pure keyword baseline and the strongest composable State V2 incumbent, while keeping the
+compiled guarded champion as a matched control. Use `--mode discover` for an unbiased
+pure-baseline reconstruction or `--mode augment` for targeted incumbent improvement.
+
+The command prepares and verifies optional model assets, freezes the campaign and its
+42-parameter conditional search space, resumes content-addressed checkpoints, runs the
+bounded F0/F1/F2 search, and materializes three independently confirmed safe proposal
+roles or stops without padding the result. It prints one preparation command per
 proposal. The first dense index can take roughly
 20–25 minutes on CPU and the full campaign can take several hours. If interrupted, run
 the same command again; completed checkpoint jobs are reused.
@@ -91,9 +125,10 @@ the same command again; completed checkpoint jobs are reused.
 
 Review:
 
-- `artifacts/campaigns/autonomous_state_v2_v1/admission.json`;
-- `artifacts/campaigns/autonomous_state_v2_v1/evidence.json`; and
-- `artifacts/proposals/autonomous_state_v2_v1/proposal_manifest.json`.
+- `artifacts/campaigns/adaptive_autonomous_full_v1/admission.json`;
+- `artifacts/campaigns/adaptive_autonomous_full_v1/live_status.json`;
+- `artifacts/campaigns/adaptive_autonomous_full_v1/evidence.json`; and
+- `artifacts/proposals/adaptive_autonomous_full_v1/proposal_manifest.json`.
 
 Choose one proposal and run its preparation command printed by Stage 2. Preparation
 revalidates and hashes the immutable preset, then prints its exact hash-bound activation
@@ -129,13 +164,13 @@ conversation state → query construction → sparse/dense retrieval → fusion
 
 `configs/techniques/catalog_v2.json` extends the Wave 1 catalog and is the strategy
 source of truth. `ghostlab/campaign/bindings.py` is the runtime truth that maps a technique
-ID to a typed configuration patch. This README covers all 63 present strategies: 35
+ID to a typed configuration patch. This README covers all 64 present strategies: 36
 runtime-composable switches, 12 anchor/intrinsic implementations, and 16 experiment
 procedures. Catalog entries without a runnable implementation are intentionally omitted.
 
 The tables use these execution classes:
 
-- **C — composable:** on when its ID is included in a candidate; off when omitted. All 35
+- **C — composable:** on when its ID is included in a candidate; off when omitted. All 36
   C entries are independently considered by the current campaign. Mutually exclusive
   values such as state, question, dense backend, fusion route, and primary reranker cannot
   coexist; additive techniques can.
@@ -149,7 +184,7 @@ baseline/off value. Numeric weights are present only when their technique is ena
 are tuned conditionally. A dagger (†) marks an executable historical fitted asset that can
 be diagnosed but cannot become a proposal without fold-local refitting and a new freeze.
 
-### Runtime-composable on/off switches (35)
+### Runtime-composable on/off switches (36)
 
 | Technique ID | Enable setting and mechanism | Implementation |
 |---|---|---|
@@ -178,6 +213,7 @@ be diagnosed but cannot become a proposal without fold-local refitting and a new
 | `fusion.sparse_first_union` | `retrieval_route=sparse_first_union`; sparse ranking with dense backfill | `ghostlab/retrieval/fusion.py` |
 | `ranking.fixed_lexical` | `reranker=linear`; deterministic lexical reranker | `ghostlab/retrieval/rerank.py` |
 | `ranking.metadata_gbdt`† | `reranker=metadata_gbdt`; shallow catalog/lexical GBDT | `ghostlab/retrieval/gbdt.py` |
+| `ranking.top10_residual_reranker.v2` | `residual_reranker_enabled=true`; fold-fitted, membership-preserving Top-10 reordering with adaptive model family, features and activation gates | `ghostlab/retrieval/residual.py`; `ghostlab/training/residual.py` |
 | `ranking.cross_encoder` | `cross_encoder_enabled=true`; pinned top-k neural reranking with tunable depth/weight | `ghostlab/retrieval/cross_encoder.py` |
 | `ranking.reward_lambdamart.v1`† | `reranker=reward_lambdamart`; metric-aligned learning-to-rank | `ghostlab/retrieval/reward_lambdamart.py` |
 | `ranking.turn_aware_lambdamart.v1`† | `reranker=turn_aware_lambdamart`; ranking objective includes turn cost | `ghostlab/retrieval/reward_lambdamart.py` |
@@ -226,7 +262,7 @@ active in the current runner while Hyperband remains an implemented optional sch
 | `evidence.decision_store` | Append-only technique/interaction decision evidence | `ghostlab/optimization/evidence.py` |
 | `search.random_grid_beam` | Random/grid screening followed by bounded beam expansion | `ghostlab/optimization/search.py` |
 | `search.multifidelity_racing` | Promote or prune across F0/F1/F2 budgets | `ghostlab/optimization/racing.py` |
-| `search.hyperband.v1` | Successive-halving resource allocation | `ghostlab/optimization/hyperband.py` |
+| `search.hyperband.v1` | Active seed-budget successive halving; weak HPO variants are pruned before full multi-seed evaluation | `ghostlab/campaign/orchestrator.py` |
 | `search.bohb.v1` | Conditional model-based HPO proposals | `ghostlab/optimization/bohb.py` |
 | `search.typed_patches` | Type-safe configuration mutation | `ghostlab/optimization/patches.py` |
 | `search.crossover` | Interaction-reserve recombination of compatible candidates | `ghostlab/optimization/patches.py` |
@@ -242,33 +278,51 @@ The discovery anchor is intentionally minimal:
 state.current + question.fixed + retrieval.sparse
 ```
 
-Everything else begins off. Historical champions and State Baseline V2 presets are
-matched controls, not privileged search seeds. The current versioned campaign then:
+Everything else begins off in discovery mode. Full mode also searches from the strongest
+composable State V2 incumbent, while the compiled guarded champion remains a matched
+control because its inseparable compiled internals cannot be safely patched. The current
+versioned campaign then:
 
-1. resolves all 35 C entries through dependency and exclusivity rules;
-2. plans every valid standalone/dependency closure and compatible pair from the pure
-   anchor—currently 522 low-order structures within the 600-candidate cap, of which 359
-   are materializable and 163 are explicitly blocked as invalid combinations;
+1. resolves all 36 C entries through dependency and exclusivity rules;
+2. plans every valid standalone/dependency closure and compatible pair across the two
+   searchable anchors—currently 984 low-order structures, of which 586 materialize and
+   every rejected structure remains explicit evidence;
 3. evaluates small stratified F0 budgets and permanently removes only invalid, duplicate,
    or repeatedly dominated structures;
 4. preserves uncertain, mildly negative, family-diverse, random-audit, and
    interaction-reserve candidates so a weak standalone may still win in combination;
 5. expands evidence-supported combinations to orders 3–6 using bounded beam/crossover
    search rather than enumerating an unbounded power set;
-6. applies conditional BOHB-style HPO and F1 racing only to enabled parameters—for example
-   fusion weights, rerank depth, EIG margin, priors, and diversity strength; the Hyperband
-   module remains available for a future versioned scheduler integration;
-7. uses backward ablation, add-back tests and paired interaction deltas to attribute gains;
-8. searches on three frozen outer folds (90 sessions), confirms finalists on two disjoint
+6. applies conditional BOHB proposals over 42 real runtime parameters, including question
+   ordering and horizon, six sparse field weights, retrieval depth, normalized fusion
+   share, EIG controls, PRF, priors, rerank depth, cross-encoder gating, and diversity;
+   log-scaled quantities are sampled in log space and uncertainty gates use target-free
+   retrieval entropy; the residual ranker additionally tunes feature set, logistic/GBDT/
+   ensemble implementation, regularization, depth, blending and confidence gates;
+7. performs actual seed-budget successive halving: all variants receive one seed, the
+   stronger half per compatible family receives the second, and only survivors receive
+   the remaining frozen seeds;
+8. uses backward ablation, add-back tests and paired interaction deltas to attribute gains;
+9. searches on three frozen outer folds (90 sessions), confirms finalists on two disjoint
    folds (60 sessions), and never opens F3; and
-9. materializes exactly three independently confirmed, behaviorally distinct proposals or
-   stops without padding unsafe candidates.
+10. materializes exactly three independently confirmed, behaviorally distinct roles—score
+   leader, robust leader, and efficient alternative—from one matched anchor, or stops
+   without padding unsafe candidates.
 
 The exhaustive generated structures and skips live in
-`artifacts/campaigns/autonomous_state_v2_v1/plan.json`; outcomes and interactions live in
+`artifacts/campaigns/adaptive_autonomous_full_v1/plan.json`; live progress is written to
+`live_status.json`; outcomes and interactions live in
 `evidence.json`; enabled techniques, tuned parameters, full resolved configuration, hashes,
 and preparation commands live in
-`artifacts/proposals/autonomous_state_v2_v1/proposal_manifest.json`.
+`artifacts/proposals/adaptive_autonomous_full_v1/proposal_manifest.json`.
+
+Every adaptive default reproduces the previous runtime. A candidate changes behavior only
+when its enabled technique exposes the corresponding parameter. The search-space file is
+hash-frozen into schema-v2 manifests. Fit-required additions remain barred from F2 unless
+they have a declared fold-safe trainer and provide complete disjoint-fold receipts; the
+residual Top-10 reranker implements that path. See
+[`docs/adaptive_autonomous_optimizer.md`](docs/adaptive_autonomous_optimizer.md) for the
+complete design, validation, recovery, and extension contract.
 
 The included weak BM25 starter scores Hit Rate@10 `0.125`, MRR `0.068034`, and
 MTTC `9.81` on the released public set. See `docs/baseline_results.json`.

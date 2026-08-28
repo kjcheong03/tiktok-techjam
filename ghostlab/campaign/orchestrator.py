@@ -27,6 +27,7 @@ from ghostlab.campaign.models import (
     Fidelity,
     JobOutcome,
 )
+from ghostlab.campaign.planner import backward_ablations
 from ghostlab.campaign.runner import CampaignCheckpoint, run_jobs
 from ghostlab.optimization.bohb import Observation
 from ghostlab.optimization.conditional import (
@@ -85,6 +86,49 @@ def sample_ids_hash(sample_ids: set[str]) -> str:
         sorted(sample_ids), separators=(",", ":"), ensure_ascii=True
     ).encode("utf-8")
     return hashlib.sha256(encoded).hexdigest()
+
+
+def _robust_proposal_key(
+    item: tuple[CandidateSpec, CandidateEvaluation, dict[str, object]],
+) -> tuple[float, float, int, float, str]:
+    candidate, evaluation, analysis = item
+    interval = analysis.get("confidence_interval", ())
+    lower = (
+        float(interval[0])
+        if isinstance(interval, (list, tuple)) and interval
+        else float("-inf")
+    )
+    raw_scenarios = analysis.get("scenario_deltas", {})
+    scenario_deltas = (
+        [float(value) for value in raw_scenarios.values()]
+        if isinstance(raw_scenarios, dict)
+        else []
+    )
+    worst_scenario = min(scenario_deltas, default=float("-inf"))
+    raw_wins = analysis.get("wins", 0)
+    raw_losses = analysis.get("losses", 0)
+    wins = int(raw_wins) if isinstance(raw_wins, (int, float)) else 0
+    losses = int(raw_losses) if isinstance(raw_losses, (int, float)) else 0
+    return (
+        -lower,
+        -worst_scenario,
+        -(wins - losses),
+        -evaluation.score,
+        candidate.candidate_id,
+    )
+
+
+def _efficient_proposal_key(
+    item: tuple[CandidateSpec, CandidateEvaluation, dict[str, object]],
+) -> tuple[float, float, int, float, str]:
+    candidate, evaluation, _ = item
+    return (
+        evaluation.latency_p95_ms,
+        evaluation.memory_mb,
+        candidate.complexity,
+        -evaluation.score,
+        candidate.candidate_id,
+    )
 
 
 def verify_frozen_inputs(
@@ -148,6 +192,7 @@ class AutonomousCampaign:
         project_root: Path = Path("."),
         search_space_path: Path = Path("configs/search/wave2_weight_space_v1.json"),
         verified_input_hashes: dict[str, str] | None = None,
+        fit_capable_techniques: frozenset[str] = frozenset(),
         options: CampaignOptions | None = None,
     ) -> None:
         self.manifest = manifest
@@ -161,11 +206,16 @@ class AutonomousCampaign:
         self.options = options or CampaignOptions()
         self.project_root = project_root
         self.verified_input_hashes = dict(verified_input_hashes or {})
+        self.fit_capable_techniques = fit_capable_techniques
         resolved_space = (
             search_space_path
             if search_space_path.is_absolute()
             else project_root / search_space_path
         )
+        if manifest.search_space_hash is not None:
+            actual_search_hash = sha256_file(resolved_space)
+            if actual_search_hash != manifest.search_space_hash:
+                raise ValueError("frozen conditional search-space hash mismatch")
         self.search_space = ConditionalSearchSpace.model_validate_json(
             resolved_space.read_text(encoding="utf-8")
         )
@@ -175,6 +225,32 @@ class AutonomousCampaign:
             for preset in manifest.baseline_presets
         }
         self._started = 0.0
+
+    def _additions(self, candidate: CandidateSpec) -> tuple[str, ...]:
+        inherited = set(self.manifest.techniques_for_preset(candidate.baseline_id))
+        return tuple(item for item in candidate.techniques if item not in inherited)
+
+    def _fit_receipts_complete(
+        self,
+        candidate: CandidateSpec,
+        job_ids: tuple[str, ...],
+        outcomes: dict[str, JobOutcome],
+    ) -> bool:
+        required = {
+            item
+            for item in self._additions(candidate)
+            if self.catalog.techniques[item].fit_required
+        }
+        if not required:
+            return True
+        for job_id in job_ids:
+            outcome = outcomes.get(job_id)
+            if outcome is None:
+                return False
+            received = {item.technique_id for item in outcome.fit_receipts}
+            if not required <= received:
+                return False
+        return True
 
     def materialize(self, candidate: CandidateSpec) -> UnifiedTechniqueConfig:
         baseline = self._baselines[candidate.baseline_id]
@@ -282,6 +358,14 @@ class AutonomousCampaign:
         self, fidelity: Fidelity, candidates: tuple[CandidateSpec, ...]
     ) -> CampaignStage:
         seeds = (self.manifest.seeds[0],) if fidelity == "f2" else self.manifest.seeds
+        return self._stage_with_seeds(fidelity, candidates, seeds)
+
+    def _stage_with_seeds(
+        self,
+        fidelity: Fidelity,
+        candidates: tuple[CandidateSpec, ...],
+        seeds: tuple[int, ...],
+    ) -> CampaignStage:
         outer_fold_count = len(self.outer_folds)
         jobs = build_jobs(
             self.catalog,
@@ -309,6 +393,7 @@ class AutonomousCampaign:
             resources=self.manifest.resources,
             checkpoint_path=self.checkpoint_path,
             evaluator=self.evaluator_factory(stage.candidates),
+            progress_path=self.evidence_path.parent / "live_status.json",
         )
 
     @staticmethod
@@ -447,11 +532,29 @@ class AutonomousCampaign:
                     estimated_candidate_seconds=estimate,
                 )
                 additions.extend(plan.candidates)
+                ablation_parents = sorted(
+                    (
+                        item
+                        for item in anchor
+                        if item.complexity >= 3 and item.candidate_id in evidence
+                    ),
+                    key=lambda item: (
+                        -evidence[item.candidate_id].mean_delta,
+                        item.candidate_id,
+                    ),
+                )[:3]
+                ablations = tuple(
+                    child
+                    for parent in ablation_parents
+                    for child in backward_ablations(parent)
+                )
+                additions.extend(ablations)
                 diagnostics.append(
                     {
                         "round": round_index,
                         "baseline_id": preset,
                         "planned": len(plan.candidates),
+                        "backward_ablations": len(ablations),
                         "reserve_candidate_ids": plan.reserve_candidate_ids,
                         "permanently_pruned": [
                             item.__dict__ for item in plan.permanently_pruned
@@ -460,7 +563,15 @@ class AutonomousCampaign:
                         "wall_exhausted": plan.wall_exhausted,
                     }
                 )
-            runnable_additions, rejected = self._runnable(tuple(additions))
+            known = {item.canonical_hash() for item in current.candidates}
+            unique_additions = {
+                item.canonical_hash(): item
+                for item in additions
+                if item.canonical_hash() not in known
+            }
+            runnable_additions, rejected = self._runnable(
+                tuple(unique_additions.values())
+            )
             diagnostics.extend(rejected)
             available = self.manifest.candidate_limit - len(current.candidates)
             additions = list(runnable_additions[: max(0, available)])
@@ -500,8 +611,11 @@ class AutonomousCampaign:
                     if item.generation == "control"
                     or all(
                         self.catalog.techniques[technique_id].selection_safe
-                        and not self.catalog.techniques[technique_id].fit_required
-                        for technique_id in item.techniques
+                        and (
+                            not self.catalog.techniques[technique_id].fit_required
+                            or technique_id in self.fit_capable_techniques
+                        )
+                        for technique_id in self._additions(item)
                     )
                 )
             jobs = tuple(
@@ -533,71 +647,170 @@ class AutonomousCampaign:
     def _run_hpo(
         self, stage: CampaignStage, checkpoint: CampaignCheckpoint
     ) -> tuple[CampaignStage, CampaignCheckpoint, list[dict[str, object]]]:
-        """Run bounded sequential conditional BOHB proposals at F1."""
+        """Adapt BOHB from prior batches and prune each batch by seed budget."""
 
-        current = stage
         diagnostics: list[dict[str, object]] = []
-        roots = tuple(item for item in stage.candidates if item.generation != "control")
-        for trial in range(self.options.hpo_trials_per_structure):
-            evaluations = self._evaluations(current, checkpoint.outcomes)
+        root_evaluations = self._evaluations(stage, checkpoint.outcomes)
+        family_roots: dict[tuple[str, tuple[str, ...]], CandidateSpec] = {}
+        observations: dict[tuple[str, tuple[str, ...]], list[Observation]] = {}
+        for candidate in stage.candidates:
+            if candidate.generation == "control":
+                continue
+            evaluation = root_evaluations.get(candidate.candidate_id)
+            if evaluation is None:
+                continue
+            key = (candidate.baseline_id, candidate.techniques)
+            current = family_roots.get(key)
+            if (
+                current is None
+                or evaluation.score > root_evaluations[current.candidate_id].score
+            ):
+                family_roots[key] = candidate
+            observations.setdefault(key, []).append(
+                Observation(candidate.parameters, evaluation.score)
+            )
+
+        total_trials = self.options.hpo_trials_per_structure
+        if not family_roots or total_trials == 0:
+            return stage, checkpoint, diagnostics
+        batch_sizes = tuple(
+            size
+            for size in (
+                math.ceil(total_trials / 2),
+                total_trials // 2,
+            )
+            if size > 0
+        )
+        retained: list[CandidateSpec] = []
+        accumulated_jobs: list[CampaignJob] = []
+        known = {item.canonical_hash() for item in stage.candidates}
+
+        for batch_index, batch_size in enumerate(batch_sizes):
             proposed: list[CandidateSpec] = []
-            for root in roots:
-                family = tuple(
-                    item
-                    for item in current.candidates
-                    if item.baseline_id == root.baseline_id
-                    and item.techniques == root.techniques
-                    and item.candidate_id in evaluations
-                )
-                observations = tuple(
-                    Observation(item.parameters, evaluations[item.candidate_id].score)
-                    for item in family
-                )
-                parameters = suggest_for_combination(
-                    self.search_space,
-                    root.techniques,
-                    observations,
-                    context=TuningContext(outer_fold=0, inner_fold=0),
-                    seed=self.manifest.seeds[0] + trial,
-                    exploration_fraction=self.manifest.exploration_fraction,
-                )
-                if not parameters:
-                    continue
-                digest = hashlib.sha256(
-                    repr((root.canonical_hash(), parameters)).encode()
-                ).hexdigest()[:10]
-                proposed.append(
-                    root.model_copy(
-                        update={
-                            "candidate_id": f"{root.candidate_id}-hpo-{digest}",
-                            "parameters": parameters,
-                            "generation": "beam",
-                        }
+            for key, root in family_roots.items():
+                root_seed = int(root.canonical_hash()[:8], 16)
+                for trial in range(batch_size):
+                    parameters = suggest_for_combination(
+                        self.search_space,
+                        root.techniques,
+                        tuple(observations[key]),
+                        context=TuningContext(outer_fold=0, inner_fold=0),
+                        seed=(
+                            self.manifest.seeds[0]
+                            + root_seed
+                            + batch_index * 10_000
+                            + trial
+                        ),
+                        exploration_fraction=self.manifest.exploration_fraction,
                     )
-                )
-            known = {item.canonical_hash() for item in current.candidates}
-            runnable, rejected = self._runnable(
-                tuple(item for item in proposed if item.canonical_hash() not in known)
-            )
+                    if not parameters:
+                        continue
+                    digest = hashlib.sha256(
+                        repr((root.canonical_hash(), parameters)).encode()
+                    ).hexdigest()[:10]
+                    proposed.append(
+                        root.model_copy(
+                            update={
+                                "candidate_id": f"{root.candidate_id}-hpo-{digest}",
+                                "parameters": parameters,
+                                "generation": "beam",
+                            }
+                        )
+                    )
+            unique = {
+                item.canonical_hash(): item
+                for item in proposed
+                if item.canonical_hash() not in known
+            }
+            runnable, rejected = self._runnable(tuple(unique.values()))
             diagnostics.extend(rejected)
-            diagnostics.append(
-                {
-                    "trial": trial,
-                    "proposed": len(proposed),
-                    "evaluated": len(runnable),
-                    "observations_informed": True,
-                }
-            )
             if not runnable:
                 continue
-            added = self._stage("f1", runnable)
-            checkpoint = self._run_stage(added)
-            current = CampaignStage(
-                fidelity="f1",
-                candidates=(*current.candidates, *runnable),
-                jobs=(*current.jobs, *added.jobs),
+
+            survivors = runnable
+            batch_jobs: list[CampaignJob] = []
+            elimination_rungs = min(2, max(0, len(self.manifest.seeds) - 1))
+            for rung, seed in enumerate(self.manifest.seeds):
+                added = self._stage_with_seeds("f1", survivors, (seed,))
+                checkpoint = self._run_stage(added)
+                batch_jobs.extend(added.jobs)
+                accumulated_jobs.extend(added.jobs)
+                before = len(survivors)
+                if rung < elimination_rungs:
+                    survivor_hashes = {item.canonical_hash() for item in survivors}
+                    rung_stage = CampaignStage(
+                        "f1",
+                        survivors,
+                        tuple(
+                            job
+                            for job in batch_jobs
+                            if job.candidate_hash in survivor_hashes
+                        ),
+                    )
+                    evaluations = self._evaluations(rung_stage, checkpoint.outcomes)
+                    grouped: dict[tuple[str, tuple[str, ...]], list[CandidateSpec]] = {}
+                    for candidate in survivors:
+                        grouped.setdefault(
+                            (candidate.baseline_id, candidate.techniques), []
+                        ).append(candidate)
+                    selected: list[CandidateSpec] = []
+                    for family in grouped.values():
+                        ranked = sorted(
+                            family,
+                            key=lambda item: (
+                                -evaluations[item.candidate_id].score,
+                                item.candidate_id,
+                            ),
+                        )
+                        selected.extend(ranked[: max(1, math.ceil(len(ranked) / 2))])
+                    survivors = tuple(selected)
+                diagnostics.append(
+                    {
+                        "adaptive_batch": batch_index,
+                        "prior_observations": sum(
+                            len(items) for items in observations.values()
+                        ),
+                        "rung": rung,
+                        "seed_budget": rung + 1,
+                        "evaluated": before,
+                        "survivors": len(survivors),
+                        "pruned": before - len(survivors),
+                    }
+                )
+
+            survivor_hashes = {item.canonical_hash() for item in survivors}
+            survivor_stage = CampaignStage(
+                "f1",
+                survivors,
+                tuple(
+                    job for job in batch_jobs if job.candidate_hash in survivor_hashes
+                ),
             )
-        return current, checkpoint, diagnostics
+            survivor_evaluations = self._evaluations(
+                survivor_stage, checkpoint.outcomes
+            )
+            for candidate in survivors:
+                key = (candidate.baseline_id, candidate.techniques)
+                observations[key].append(
+                    Observation(
+                        candidate.parameters,
+                        survivor_evaluations[candidate.candidate_id].score,
+                    )
+                )
+                known.add(candidate.canonical_hash())
+            retained.extend(survivors)
+
+        final_candidates = (*stage.candidates, *retained)
+        final_hashes = {item.canonical_hash() for item in final_candidates}
+        final_jobs = (
+            *stage.jobs,
+            *(job for job in accumulated_jobs if job.candidate_hash in final_hashes),
+        )
+        return (
+            CampaignStage("f1", final_candidates, final_jobs),
+            checkpoint,
+            diagnostics,
+        )
 
     def _safety(
         self, stage: CampaignStage, checkpoint: CampaignCheckpoint
@@ -629,11 +842,20 @@ class AutonomousCampaign:
                 analysis = None
             elif any(
                 not self.catalog.techniques[item].selection_safe
-                or self.catalog.techniques[item].fit_required
-                for item in candidate.techniques
+                or (
+                    self.catalog.techniques[item].fit_required
+                    and item not in self.fit_capable_techniques
+                )
+                for item in self._additions(candidate)
             ):
                 classification = "research_only_not_selection_safe"
                 reason = "catalog selection_safe/fit_required gate failed"
+                analysis = analyses.get(candidate.candidate_id)
+            elif not self._fit_receipts_complete(
+                candidate, confirmation_job_ids, checkpoint.outcomes
+            ):
+                classification = "fit_evidence_incomplete"
+                reason = "fold-fitted candidate lacks complete fit receipts"
                 analysis = analyses.get(candidate.candidate_id)
             else:
                 analysis = analyses.get(candidate.candidate_id)
@@ -683,6 +905,11 @@ class AutonomousCampaign:
                 item[0].candidate_id,
             ),
         )
+        if ranked:
+            proposal_baseline = ranked[0][0].baseline_id
+            ranked = [
+                item for item in ranked if item[0].baseline_id == proposal_baseline
+            ]
         distinct: list[
             tuple[CandidateSpec, CandidateEvaluation, dict[str, object]]
         ] = []
@@ -693,22 +920,39 @@ class AutonomousCampaign:
                 continue
             seen_behaviors.add(behavior)
             distinct.append(item)
-        proposals = [
-            {
-                "candidate_id": candidate.candidate_id,
-                "baseline_id": candidate.baseline_id,
-                "score": evaluation.score,
-                "mean_delta": analysis["mean_delta"],
-                "classification": "package_eligible_proposal_only",
-                "candidate_hash": candidate.canonical_hash(),
-                "confirmation_job_ids": tuple(
-                    job.job_id
-                    for job in stage.jobs
-                    if job.candidate_hash == candidate.canonical_hash()
-                ),
-            }
-            for candidate, evaluation, analysis in distinct[:3]
-        ]
+        if len(distinct) < 3:
+            return records, []
+        score_leader = distinct[0]
+        remaining = distinct[1:]
+        robust_leader = min(remaining, key=_robust_proposal_key)
+        remaining = [item for item in remaining if item is not robust_leader]
+        efficient_pool = [
+            item for item in remaining if item[1].score >= score_leader[1].score - 0.02
+        ] or remaining
+        efficient_alternative = min(efficient_pool, key=_efficient_proposal_key)
+        selected = (
+            ("score_leader", score_leader),
+            ("robust_leader", robust_leader),
+            ("efficient_alternative", efficient_alternative),
+        )
+        proposals = []
+        for role, (candidate, evaluation, analysis) in selected:
+            proposals.append(
+                {
+                    "proposal_role": role,
+                    "candidate_id": candidate.candidate_id,
+                    "baseline_id": candidate.baseline_id,
+                    "score": evaluation.score,
+                    "mean_delta": analysis["mean_delta"],
+                    "classification": "package_eligible_proposal_only",
+                    "candidate_hash": candidate.canonical_hash(),
+                    "confirmation_job_ids": tuple(
+                        job.job_id
+                        for job in stage.jobs
+                        if job.candidate_hash == candidate.canonical_hash()
+                    ),
+                }
+            )
         return records, proposals
 
     def _leaderboard(
@@ -816,7 +1060,8 @@ class AutonomousCampaign:
             "interaction_search": interaction_diagnostics,
             "conditional_hpo": {
                 "classification": "adaptive_conditional_bohb_f1_racing",
-                "space": "configs/search/wave2_weight_space_v1.json",
+                "space": self.manifest.search_space_path
+                or "configs/search/wave2_weight_space_v1.json",
                 "diagnostics": hpo_diagnostics,
             },
             "leaderboards": {

@@ -1139,8 +1139,11 @@ sample-ID hashes, and zero overlap are recorded. F3 paths are rejected by schema
 guards and are absent from every command here.
 
 Techniques marked `fit_required=true` or `selection_safe=false` may be screened for research
-diagnosis, but prefitted assets cannot become a proposal. They require fold-local fitting
-and a newly versioned campaign before selection. Promotion additionally requires positive
+diagnosis, but prefitted assets cannot become a proposal. The residual Top-10 ranker is the
+implemented exception: it has a declared fold-local trainer, per-job fit receipts and
+selection-safe membership invariants. Search evaluations use outer-fold cross-fitting;
+F2 models train only on the frozen search IDs. Other fitted techniques require their own
+fold-safe trainer and a newly versioned campaign before selection. Promotion additionally requires positive
 paired development-confirmation delta, scenario gates, complete jobs, unique behavior, and
 existing hashed assets. Three proposals are retained because score, robustness, and
 efficiency are different objectives; the full leaderboard remains in evidence.
@@ -1177,6 +1180,10 @@ scenario deltas, resource measurements, enabled technique IDs, source files, des
 tuned parameters, full resolved configuration (including weights), dependency extras,
 asset/evidence hashes, preset hash, and exact preparation command. The campaign prints all
 three commands; it does not select one automatically.
+
+For `ranking.top10_residual_reranker.v2`, the resolved proposal also records the selected
+fold-fitted asset. The packager verifies its hash, seed, outer fold, search-ID hash and
+validation-ID hash against checkpoint receipts before allowing it into a proposal.
 
 Preparation output contains one `next_activation_command`. That command includes the exact
 preset SHA-256; activation refuses a changed file. Activation writes only

@@ -19,6 +19,8 @@ from ghostlab.campaign.orchestrator import (
     FrozenInputs,
     verify_frozen_inputs,
 )
+from ghostlab.retrieval.residual import TECHNIQUE_ID as RESIDUAL_TECHNIQUE_ID
+from ghostlab.training.protocol import FitReceipt
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -45,7 +47,7 @@ def _manifest(*techniques: str) -> CampaignManifest:
         fidelity_budgets=FidelityBudget(f0=1, f1=1, f2=1),
         seeds=(11, 13),
         max_wall_seconds=60,
-        resources=CampaignResources(cpu_jobs=1),
+        resources=CampaignResources(cpu_jobs=2),
     )
 
 
@@ -114,11 +116,48 @@ class FlatImprovementEvaluatorFactory(FakeEvaluatorFactory):
         return evaluate
 
 
+class FoldFitEvaluatorFactory(FakeEvaluatorFactory):
+    def __call__(self, candidates: tuple[CandidateSpec, ...]):
+        by_hash = {item.canonical_hash(): item for item in candidates}
+
+        def evaluate(job):  # type: ignore[no-untyped-def]
+            self.calls += 1
+            candidate = by_hash[job.candidate_hash]
+            score = 0.4 if candidate.generation == "control" else 0.5
+            receipts = (
+                (
+                    FitReceipt(
+                        technique_id=RESIDUAL_TECHNIQUE_ID,
+                        outer_fold=job.outer_fold or 0,
+                        inner_fold=0,
+                        seed=job.seed,
+                        train_sample_ids_sha256="1" * 64,
+                        validation_sample_ids_sha256="2" * 64,
+                        asset_path="artifacts/test-residual.joblib",
+                        asset_sha256="3" * 64,
+                    ),
+                )
+                if RESIDUAL_TECHNIQUE_ID in candidate.techniques
+                else ()
+            )
+            return JobOutcome(
+                job_id=job.job_id,
+                state="complete",
+                score=score,
+                session_rewards=(score, score + 0.001),
+                scenario_scores={"buying": score, "browsing": score},
+                fit_receipts=receipts,
+            )
+
+        return evaluate
+
+
 def _campaign(
     tmp_path: Path,
     factory: FakeEvaluatorFactory,
     *,
     techniques: tuple[str, ...] = ("question.candidate_eig.v1",),
+    fit_capable_techniques: frozenset[str] = frozenset(),
 ) -> AutonomousCampaign:
     return AutonomousCampaign(
         manifest=_manifest(*techniques),
@@ -129,9 +168,10 @@ def _campaign(
         evidence_path=tmp_path / "evidence.json",
         outer_folds=(("a",), ("b",), ("c",), ("d",), ("e",)),
         project_root=ROOT,
+        fit_capable_techniques=fit_capable_techniques,
         options=CampaignOptions(
             f1_candidates=2,
-            f2_candidates=2,
+            f2_candidates=4,
             hpo_trials_per_structure=3,
             higher_order_rounds=0,
             bootstrap_resamples=50,
@@ -158,12 +198,43 @@ def test_campaign_runs_f0_f1_f2_resumes_and_fails_closed(tmp_path: Path) -> None
     assert first["conditional_hpo"]["classification"] == (
         "adaptive_conditional_bohb_f1_racing"
     )
+    hpo_rungs = first["conditional_hpo"]["diagnostics"]
+    assert hpo_rungs
+    assert any(row.get("pruned", 0) > 0 for row in hpo_rungs)
+    assert {row["seed_budget"] for row in hpo_rungs if "seed_budget" in row} >= {
+        1,
+        2,
+    }
+    first_batch = next(row for row in hpo_rungs if row.get("adaptive_batch") == 0)
+    second_batch = next(row for row in hpo_rungs if row.get("adaptive_batch") == 1)
+    assert second_batch["prior_observations"] > first_batch["prior_observations"]
     assert first["leaderboards"]["f2"]
     assert second["stage_counts"] == first["stage_counts"]
     assert factory.calls == first_calls
     persisted = json.loads((tmp_path / "evidence.json").read_text())
     assert persisted["manifest_hash"] == second["manifest_hash"]
     assert persisted["stage_counts"] == second["stage_counts"]
+
+
+def test_search_and_confirmation_jobs_use_disjoint_declared_folds(
+    tmp_path: Path,
+) -> None:
+    campaign = _campaign(tmp_path, FakeEvaluatorFactory())
+    candidate = CandidateSpec(
+        candidate_id="control",
+        baseline_id="configs/suites/keyword_research.json",
+        techniques=("retrieval.sparse", "prior.quality"),
+        complexity=0,
+        generation="control",
+    )
+    f0 = campaign._stage("f0", (candidate,))
+    f1 = campaign._stage("f1", (candidate,))
+    f2 = campaign._stage("f2", (candidate,))
+    # Search jobs deliberately carry no single fold: OfflineCampaignEvaluator
+    # samples only from the union of the manifest's frozen search folds.
+    assert {job.outer_fold for job in f0.jobs} == {None}
+    assert {job.outer_fold for job in f1.jobs} == {None}
+    assert {job.outer_fold for job in f2.jobs} == {1, 4}
 
 
 def test_hpo_suggestions_jointly_bind_all_eligible_parameters(tmp_path: Path) -> None:
@@ -196,7 +267,7 @@ def test_behaviorally_identical_hpo_variants_do_not_fill_top_three(
     tmp_path: Path,
 ) -> None:
     report = _campaign(tmp_path, FlatImprovementEvaluatorFactory()).run()
-    assert len(report["confirmed_top3"]) == 1
+    assert report["confirmed_top3"] == []
 
 
 def test_fit_required_candidate_is_not_allowed_into_f2(tmp_path: Path) -> None:
@@ -213,6 +284,32 @@ def test_fit_required_candidate_is_not_allowed_into_f2(tmp_path: Path) -> None:
         for row in f2
     )
     assert report["proposal"] is None
+
+
+def test_fold_fitted_residual_can_reach_f2_with_complete_receipts(
+    tmp_path: Path,
+) -> None:
+    campaign = _campaign(
+        tmp_path,
+        FoldFitEvaluatorFactory(),
+        techniques=(RESIDUAL_TECHNIQUE_ID,),
+        fit_capable_techniques=frozenset({RESIDUAL_TECHNIQUE_ID}),
+    )
+    report = campaign.run()
+
+    residual_rows = [
+        row
+        for row in report["leaderboards"]["f2"]
+        if RESIDUAL_TECHNIQUE_ID in row["candidate"]["techniques"]
+    ]
+    assert residual_rows
+    classifications = {
+        row["classification"]
+        for row in report["safety"]
+        if RESIDUAL_TECHNIQUE_ID in row["candidate"]["techniques"]
+    }
+    assert "fit_evidence_incomplete" not in classifications
+    assert "research_only_not_selection_safe" not in classifications
 
 
 def test_default_frozen_fold_roles_resolve_to_exact_90_60_counts(

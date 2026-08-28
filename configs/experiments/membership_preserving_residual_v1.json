@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "experiment_id": "membership_preserving_residual_v1",
+  "parent_commit": "8ef14f390d1e957baa9549145460e497222ef041",
+  "parent_policy": "guarded_constraint_gbdt_v1_oof",
+  "hypothesis": "A fold-local residual learner can improve reciprocal rank by permuting only the guarded champion's normalized Top-10 membership.",
+  "primary_metric": "recommended_technical_score",
+  "split": "nested_v1",
+  "holdout_accessed": false,
+  "outcomes_observed": false,
+  "adaptive_search": {
+    "model_families": ["regularized_logistic", "shallow_histogram_gbdt"],
+    "feature_sets": ["rank", "metadata", "full_context"],
+    "rerank_depth": [3, 5, 10],
+    "model_weight": [0.5, 0.75, 1.0],
+    "minimum_expected_gain": [0.0, 0.01, 0.025, 0.05],
+    "minimum_probability_margin": [0.0, 0.02],
+    "maximum_moved_ids": [2, 4, 10],
+    "model_shortlist": 4
+  },
+  "hard_invariants": {
+    "same_normalized_membership_each_turn": true,
+    "same_normalized_cardinality_each_turn": true,
+    "exact_hit_rate_at_10": true,
+    "exact_mttc": true,
+    "no_target_profile_scenario_or_future_features": true
+  },
+  "decision_gates": {
+    "minimum_oof_score_delta": 0.001,
+    "minimum_nonnegative_outer_folds": 4,
+    "minimum_scenario_delta": -0.005,
+    "maximum_membership_failures": 0,
+    "maximum_hit_rate_absolute_difference": 0.0,
+    "maximum_mttc_absolute_difference": 0.0
+  }
+}

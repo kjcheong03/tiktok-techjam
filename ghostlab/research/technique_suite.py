@@ -67,6 +67,17 @@ Diversification = Literal["off", "facet_mmr"]
 Normalizer = Literal["off", "catalog_v1"]
 RoutingVariant = Literal["off", "calibrated"]
 RecommendationHistory = Literal["off", "correction_scoped"]
+ActivationMode = Literal["always", "uncertain"]
+ResidualFeatureSet = Literal["rank", "metadata", "full_context"]
+ResidualModelVariant = Literal[
+    "regularized_logistic",
+    "hist_gbdt_d2_lr005",
+    "hist_gbdt_d3_lr005",
+    "hist_gbdt_d3_lr01",
+    "ensemble_logistic_gbdt_d2_lr005",
+    "ensemble_logistic_gbdt_d3_lr005",
+    "ensemble_logistic_gbdt_d3_lr01",
+]
 
 
 class CandidateRetriever(Protocol):
@@ -89,6 +100,7 @@ class UnifiedTechniqueConfig(BaseModel):
     learned_question_asset: str | None = None
     eig_candidate_k: int = Field(default=100, ge=20, le=400)
     question_value_margin: float = Field(default=0.0, ge=0.0, le=1.0)
+    question_max_turn: int = Field(default=10, ge=0, le=10)
     joint_policy_asset: str | None = None
 
     normalizer: Normalizer = "off"
@@ -101,6 +113,10 @@ class UnifiedTechniqueConfig(BaseModel):
     sparse_weights: tuple[float, float, float, float, float, float] | None = None
     sparse_weight: float = Field(default=0.75, ge=0.0, le=1.0)
     dense_weight: float = Field(default=0.25, ge=0.0, le=1.0)
+    retrieval_k: int = Field(default=200, ge=10, le=400)
+    rrf_constant: int = Field(default=60, ge=1, le=200)
+    dense_activation: ActivationMode = "always"
+    dense_activation_min_entropy: float = Field(default=0.0, ge=0.0, le=1.0)
     semantic_rescue_weight: float = Field(default=0.25, ge=0.0, le=1.0)
     learned_sparse_asset: str | None = None
     late_interaction_asset: str | None = None
@@ -110,6 +126,8 @@ class UnifiedTechniqueConfig(BaseModel):
     expansion_min_support: float = Field(default=0.4, gt=0.0, le=1.0)
     expansion_max_terms: int = Field(default=4, ge=0, le=20)
     expansion_max_added_ratio: float = Field(default=0.5, ge=0.0, le=1.0)
+    query_expansion_activation: ActivationMode = "always"
+    query_expansion_min_entropy: float = Field(default=0.0, ge=0.0, le=1.0)
 
     negative_evidence: bool = True
     provenance: bool = True
@@ -117,6 +135,7 @@ class UnifiedTechniqueConfig(BaseModel):
     recommendation_history: RecommendationHistory = "off"
     structured_filter: bool = False
     profile_prior_weight: float = Field(default=0.0, ge=0.0, le=1.0)
+    profile_prior_max_turn: int = Field(default=10, ge=0, le=10)
     quality_prior_weight: float = Field(default=0.2, ge=0.0, le=1.0)
 
     reranker: Reranker = "none"
@@ -126,12 +145,26 @@ class UnifiedTechniqueConfig(BaseModel):
     cross_encoder_model_path: str | None = None
     cross_encoder_weight: float = Field(default=0.0, ge=0.0, le=1.0)
     cross_encoder_rerank_k: int = Field(default=20, ge=1, le=200)
+    cross_encoder_activation: ActivationMode = "always"
+    cross_encoder_min_entropy: float = Field(default=0.0, ge=0.0, le=1.0)
+    cross_encoder_min_turn: int = Field(default=1, ge=1, le=10)
     diversification: Diversification = "off"
     diversification_weight: float = Field(default=0.85, ge=0.0, le=1.0)
     diversification_rerank_k: int = Field(default=30, ge=10, le=200)
     diversification_output_k: int = Field(default=10, ge=1, le=50)
     diversification_max_turn: int = Field(default=2, ge=1, le=9)
     diversification_max_constraints: int = Field(default=1, ge=0, le=10)
+
+    residual_reranker_enabled: bool = False
+    residual_model_asset: str | None = None
+    residual_feature_set: ResidualFeatureSet = "full_context"
+    residual_model_variant: ResidualModelVariant = "regularized_logistic"
+    residual_regularization: float = Field(default=0.2, gt=0.0, le=20.0)
+    residual_rerank_depth: int = Field(default=10, ge=2, le=10)
+    residual_model_weight: float = Field(default=1.0, ge=0.0, le=1.0)
+    residual_minimum_expected_gain: float = Field(default=0.0, ge=0.0, le=1.0)
+    residual_minimum_probability_margin: float = Field(default=0.0, ge=0.0, le=1.0)
+    residual_maximum_moved_ids: int = Field(default=10, ge=2, le=10)
 
     routing_variant: RoutingVariant = "off"
     router_asset: str | None = None
@@ -148,6 +181,7 @@ class UnifiedTechniqueConfig(BaseModel):
         "learned_sparse_asset",
         "late_interaction_asset",
         "router_asset",
+        "residual_model_asset",
     )
     @classmethod
     def safe_relative_path(cls, value: str | None) -> str | None:
@@ -271,6 +305,8 @@ class UnifiedTechniqueConfig(BaseModel):
             raise ValueError("cross-encoder fields require cross_encoder_enabled")
         if self.diversification_output_k > self.diversification_rerank_k:
             raise ValueError("diversification output depth cannot exceed rerank depth")
+        if not self.residual_reranker_enabled and self.residual_model_asset is not None:
+            raise ValueError("residual model asset requires residual reranking")
         return self
 
 
@@ -556,7 +592,7 @@ def build_suite_agent(
             max_active_constraints=config.diversification_max_constraints,
         )
 
-    return ExperimentalAgent(
+    agent = ExperimentalAgent(
         catalog_path,
         state_variant=config.state_variant,
         normalizer=config.normalizer,
@@ -567,6 +603,7 @@ def build_suite_agent(
         learned_question_model=learned_question_model,
         eig_policy=eig_policy,
         eig_candidate_k=config.eig_candidate_k,
+        question_max_turn=config.question_max_turn,
         joint_policy=joint_policy,
         routing_variant=config.routing_variant,
         calibrated_router=calibrated_router,
@@ -577,12 +614,17 @@ def build_suite_agent(
         semantic_rescue_weight=config.semantic_rescue_weight,
         sparse_weight=config.sparse_weight,
         dense_weight=config.dense_weight,
+        retrieval_k=config.retrieval_k,
+        rrf_constant=config.rrf_constant,
+        dense_activation=config.dense_activation,
+        dense_activation_min_entropy=config.dense_activation_min_entropy,
         sparse_weights=config.sparse_weights,
         negative_evidence=config.negative_evidence,
         provenance=config.provenance,
         override_invalidation=config.override_invalidation,
         structured_filter=config.structured_filter,
         profile_prior_weight=config.profile_prior_weight,
+        profile_prior_max_turn=config.profile_prior_max_turn,
         quality_prior_weight=config.quality_prior_weight,
         reranker="linear" if config.reranker == "linear" else "none",
         learned_reranker=learned_reranker,
@@ -590,7 +632,34 @@ def build_suite_agent(
         cross_encoder_reranker=cross_encoder,
         cross_encoder_weight=config.cross_encoder_weight,
         cross_encoder_rerank_k=config.cross_encoder_rerank_k,
+        cross_encoder_activation=config.cross_encoder_activation,
+        cross_encoder_min_entropy=config.cross_encoder_min_entropy,
+        cross_encoder_min_turn=config.cross_encoder_min_turn,
         query_expander=query_expander,
+        query_expansion_activation=config.query_expansion_activation,
+        query_expansion_min_entropy=config.query_expansion_min_entropy,
         diversifier=diversifier,
         recommendation_history=config.recommendation_history,
     )
+    if not config.residual_reranker_enabled:
+        return agent
+    if config.residual_model_asset is None:
+        raise ValueError("residual reranking requires a fold-fitted model asset")
+    from ghostlab.retrieval.residual import (
+        MembershipPreservingResidualReranker,
+        ResidualAgentAdapter,
+        ResidualPolicy,
+    )
+
+    residual = MembershipPreservingResidualReranker.from_asset(
+        catalog_path,
+        _project_path(config.residual_model_asset),
+        policy=ResidualPolicy(
+            rerank_depth=config.residual_rerank_depth,
+            model_weight=config.residual_model_weight,
+            minimum_expected_gain=config.residual_minimum_expected_gain,
+            minimum_probability_margin=config.residual_minimum_probability_margin,
+            maximum_moved_ids=config.residual_maximum_moved_ids,
+        ),
+    )
+    return ResidualAgentAdapter(agent, residual)

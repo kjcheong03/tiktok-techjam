@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import sys
 from pathlib import Path
 
 import pytest
@@ -12,9 +13,13 @@ from ghostlab.campaign.catalog import load_catalog
 from ghostlab.campaign.models import CandidateSpec
 from ghostlab.research.technique_suite import load_suite_config
 from ghostlab.runtime.selected import resolve_active_preset
+from scripts import run_autonomous_end_to_end
 
 ROOT = Path(__file__).resolve().parents[1]
 TEMPLATE = ROOT / "configs/campaigns/autonomous_state_v2_v1.template.json"
+TARGETED_TEMPLATE = (
+    ROOT / "configs/campaigns/adaptive_autonomous_augment_v1.template.json"
+)
 
 
 def test_complete_template_accounts_for_every_technique_and_minimum_trial() -> None:
@@ -29,6 +34,26 @@ def test_complete_template_accounts_for_every_technique_and_minimum_trial() -> N
     assert report.planned_structure_count <= 600
     assert report.materializable_structure_count > 300
     assert report.blocked_structure_count > 0
+
+
+def test_targeted_template_may_explicitly_omit_unrelated_runnable_techniques() -> None:
+    strict = build_admission_report(
+        project_root=ROOT,
+        template_path=TARGETED_TEMPLATE,
+        catalog=load_catalog(ROOT / "configs/techniques/catalog_v2.json"),
+        registry=default_binding_registry(),
+    )
+    targeted = build_admission_report(
+        project_root=ROOT,
+        template_path=TARGETED_TEMPLATE,
+        catalog=load_catalog(ROOT / "configs/techniques/catalog_v2.json"),
+        registry=default_binding_registry(),
+        require_all_runnable=False,
+    )
+    assert not strict.campaign_ready
+    assert targeted.campaign_ready
+    assert targeted.admitted_without_trial == ()
+    assert targeted.blocked_count == 0
 
 
 def test_dense_and_fusion_bindings_compose_with_deterministic_precedence() -> None:
@@ -74,3 +99,73 @@ def test_active_pointer_is_hash_bound_and_project_relative(tmp_path: Path) -> No
     )
     with pytest.raises(ValueError, match="hash"):
         resolve_active_preset(pointer)
+
+
+def _write_json(path: Path, value: object) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(value), encoding="utf-8")
+
+
+@pytest.mark.parametrize("confirmed", [True, False])
+def test_campaign_runs_before_proposal_handling(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+    *,
+    confirmed: bool,
+) -> None:
+    template = "configs/campaigns/adaptive.json"
+    campaign_id = "adaptive-test"
+    _write_json(tmp_path / template, {"campaign_id": campaign_id})
+    calls: list[str] = []
+
+    def fake_run(*arguments: str) -> None:
+        module = arguments[1]
+        calls.append(module)
+        if module == "scripts.run_autonomous_campaign":
+            evidence = tmp_path / "artifacts/campaigns" / campaign_id / "evidence.json"
+            candidates = (
+                [
+                    {"baseline_id": "configs/suites/baseline.json"},
+                    {"baseline_id": "configs/suites/baseline.json"},
+                    {"baseline_id": "configs/suites/baseline.json"},
+                ]
+                if confirmed
+                else []
+            )
+            _write_json(evidence, {"confirmed_top3": candidates})
+        if module == "scripts.materialize_campaign_top_three":
+            proposal_manifest = (
+                tmp_path
+                / "artifacts/proposals"
+                / campaign_id
+                / "proposal_manifest.json"
+            )
+            _write_json(
+                proposal_manifest,
+                {"candidates": [{"preset": {"path": "candidate.json"}}]},
+            )
+
+    monkeypatch.setattr(run_autonomous_end_to_end, "ROOT", tmp_path)
+    monkeypatch.setattr(run_autonomous_end_to_end, "MODE_TEMPLATES", {"full": template})
+    monkeypatch.setattr(run_autonomous_end_to_end, "_run", fake_run)
+    monkeypatch.setattr(sys, "argv", ["run_autonomous_end_to_end"])
+
+    run_autonomous_end_to_end.main()
+
+    assert calls[:4] == [
+        "scripts.preflight_autonomous",
+        "scripts.freeze_wave2_campaign",
+        "scripts.plan_wave2_campaign",
+        "scripts.run_autonomous_campaign",
+    ]
+    output = json.loads(capsys.readouterr().out)
+    if confirmed:
+        assert calls[-1] == "scripts.materialize_campaign_top_three"
+        assert output["prepare_commands"] == [
+            "uv run python -m scripts.prepare_candidate --preset candidate.json"
+        ]
+    else:
+        assert "scripts.materialize_campaign_top_three" not in calls
+        assert output["proposal_count"] == 0
+        assert output["retain_current_champion"] is True

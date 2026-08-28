@@ -18,6 +18,7 @@ from ghostlab.campaign.proposal_materializer import (
 from ghostlab.campaign.runner import CampaignCheckpoint
 from ghostlab.campaign.top_three import CandidatePackage, select_top_three
 from ghostlab.research.technique_suite import load_suite_config
+from ghostlab.retrieval.residual import TECHNIQUE_ID as RESIDUAL_TECHNIQUE_ID
 
 CONFIRMATION_STATUS = "independent_development_confirmation"
 EVIDENCE_CLASS = "prospective_disjoint_confirmation"
@@ -269,6 +270,17 @@ def materialize_confirmed_campaign_top_three(
 
     split = SplitEvidence.model_validate(evidence.get("split_evidence"))
     _validate_split_evidence(manifest, split, nested_file)
+    nested_payload = _json_object(nested_file, "nested split")
+    raw_outer_folds = nested_payload["outer_folds"]
+    assert isinstance(raw_outer_folds, list)
+    outer_folds = tuple(
+        tuple(str(sample_id) for sample_id in fold) for fold in raw_outer_folds
+    )
+    search_fit_ids = {
+        sample_id
+        for fold in split.search_outer_folds
+        for sample_id in outer_folds[fold]
+    }
     confirmation = IndependentConfirmation.model_validate(
         evidence.get("independent_confirmation")
     )
@@ -332,14 +344,19 @@ def materialize_confirmed_campaign_top_three(
         candidate_hash = candidate.canonical_hash()
         if record.get("candidate_hash") != candidate_hash:
             raise ValueError("confirmed safety candidate hash mismatch")
+        if any(item not in catalog.techniques for item in candidate.techniques):
+            raise ValueError("confirmed candidate contains an unknown technique")
+        inherited = set(manifest.techniques_for_preset(candidate.baseline_id))
+        additions = tuple(
+            item for item in candidate.techniques if item not in inherited
+        )
         if any(
-            item not in catalog.techniques
-            or not catalog.techniques[item].selection_safe
-            or catalog.techniques[item].fit_required
-            for item in candidate.techniques
+            not catalog.techniques[item].selection_safe
+            or (catalog.techniques[item].fit_required and item != RESIDUAL_TECHNIQUE_ID)
+            for item in additions
         ):
             raise ValueError(
-                "confirmed candidate contains an unsafe or fit-required technique"
+                "confirmed candidate contains an unsafe or unsupported fitted addition"
             )
         expected_job_ids = tuple(
             _job_id(candidate, fold, seed)
@@ -348,12 +365,46 @@ def materialize_confirmed_campaign_top_three(
         raw_job_ids = record.get("confirmation_job_ids")
         if not isinstance(raw_job_ids, list) or tuple(raw_job_ids) != expected_job_ids:
             raise ValueError("confirmed safety job IDs do not match frozen folds/seed")
-        for job_id in expected_job_ids:
+        residual_receipts = []
+        for fold, job_id in zip(
+            sorted(split.confirmation_outer_folds), expected_job_ids, strict=True
+        ):
             outcome = checkpoint.outcomes.get(job_id)
             if outcome is None or outcome.state != "complete" or outcome.score is None:
                 raise ValueError(
                     f"confirmed candidate lacks a complete confirmation checkpoint job: {candidate_id}"
                 )
+            if RESIDUAL_TECHNIQUE_ID in additions:
+                matches = tuple(
+                    item
+                    for item in outcome.fit_receipts
+                    if item.technique_id == RESIDUAL_TECHNIQUE_ID
+                )
+                if len(matches) != 1:
+                    raise ValueError(
+                        "residual proposal requires one fit receipt per confirmation job"
+                    )
+                receipt = matches[0]
+                asset = resolve_repository_path(
+                    root, receipt.asset_path, label="residual fitted asset"
+                )
+                if sha256_file(asset) != receipt.asset_sha256:
+                    raise ValueError(
+                        "residual fitted asset hash does not match receipt"
+                    )
+                if receipt.seed != seed:
+                    raise ValueError("residual fit receipt uses another seed")
+                if receipt.outer_fold != fold:
+                    raise ValueError("residual fit receipt uses another outer fold")
+                if receipt.train_sample_ids_sha256 != _ids_hash(search_fit_ids):
+                    raise ValueError("residual fit did not use the frozen search IDs")
+                if receipt.validation_sample_ids_sha256 != _ids_hash(
+                    set(outer_folds[fold])
+                ):
+                    raise ValueError(
+                        "residual fit receipt validation IDs do not match its fold"
+                    )
+                residual_receipts.append(receipt)
         evaluation = _evaluation(candidate, record.get("evaluation"))
         paired = _analysis(candidate, record.get("analysis"))
         if analysis_baseline is None:
@@ -372,6 +423,13 @@ def materialize_confirmed_campaign_top_three(
                 "confirmed proposal summary does not match detailed evidence"
             )
         config = _materialize_config(manifest, candidate, root)
+        if residual_receipts:
+            # Both confirmation jobs use the same frozen search partition and
+            # hyperparameters. Keep one independently confirmed fold-fitted asset
+            # as the reproducible proposal runtime asset.
+            config = config.model_copy(
+                update={"residual_model_asset": residual_receipts[0].asset_path}
+            )
         assets = _candidate_assets(config)
         extras = tuple(
             sorted(

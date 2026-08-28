@@ -930,10 +930,13 @@ The controller is deliberately not an unrestricted Cartesian-product script. It:
     review;
 11. keep the protected/private set inaccessible to the search controller.
 
-It does not yet automatically build/fold-fit every unavailable or `fit_required` asset,
-and its generic path uses prospective disjoint development confirmation rather than fully
-nested fold-local training. Those techniques remain recorded and default-off until their
-safe fit path exists. Blindly trying every possible combination is neither guaranteed to find the true
+It does not automatically build every unavailable or historical `fit_required` asset.
+The implemented exception is `ranking.top10_residual_reranker.v2`: the campaign cross-fits
+it inside search folds, fits only on the frozen search partition for F2, records hashed fit
+receipts, and tunes its feature set, logistic/GBDT/ensemble variant, regularization and
+safe activation gates. Other fitted techniques remain recorded and default-off for
+selection until their own safe fit path exists. Blindly trying every possible combination
+is neither guaranteed to find the true
 best policy nor statistically safe. The number of continuous parameters, fitted
 models, question trajectories and conditional routes is effectively unbounded, and
 repeated public-set selection will overfit. Autonomy should improve reproducibility,
@@ -975,3 +978,17 @@ Whenever a technique is added, update all of the following in the same commit:
 
 The preservation rule is permanent: **off is a default, not deletion; parked is a
 decision under known dependencies, not a universal rejection.**
+
+### 23.1 Adaptive membership-preserving residual ranker
+
+- Switch: `ranking.top10_residual_reranker.v2` / `residual_reranker_enabled=true`.
+- Runtime: `ghostlab/retrieval/residual.py`; it only permutes the existing Top 10 and
+  fails closed to the parent order.
+- Fold fitting: `ghostlab/training/residual.py` and
+  `ghostlab/training/campaign.py`; no evaluated session is used to fit its model.
+- Adaptive dimensions: feature subset, regularized logistic vs shallow histogram GBDT vs
+  equal-weight ensemble, regularization, rerank depth, parent/model blend, expected-gain
+  gate, probability-margin gate, and movement cap.
+- Evidence: `artifacts/reports/state_v2_adaptive_residual_v2.json` and
+  `docs/state_v2_adaptive_residual_v2_decision.md`.
+- Off behavior: no asset is loaded and the parent implementation is returned unchanged.

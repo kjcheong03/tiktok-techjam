@@ -350,6 +350,16 @@ def build_campaign_manifest(
         _string_path(payload, "nested_split_path"),
         label="nested split",
     )
+    search_space_value = payload.pop("search_space_path", None)
+    search_space_path = None
+    search_space_hash = None
+    if search_space_value is not None:
+        if not isinstance(search_space_value, str) or not search_space_value:
+            raise TypeError("search_space_path must be a non-empty string path")
+        search_space_path = resolve_repository_path(
+            project_root, search_space_value, label="conditional search space"
+        )
+        search_space_hash = sha256_file(search_space_path)
     dataset_hash, adaptive_hash, nested_hash = _validate_split_integrity(
         dataset_path, adaptive_path, nested_path
     )
@@ -362,6 +372,8 @@ def build_campaign_manifest(
             "dataset_hash": dataset_hash,
             "adaptive_split_hash": adaptive_hash,
             "nested_split_hash": nested_hash,
+            "search_space_path": search_space_value,
+            "search_space_hash": search_space_hash,
         }
     )
     _validate_fold_roles(nested_path, manifest)
@@ -411,6 +423,15 @@ def validate_frozen_manifest(
         "adaptive_split_hash": manifest.adaptive_split_hash,
         "nested_split_hash": manifest.nested_split_hash,
     }
+    if manifest.search_space_path is not None:
+        assert manifest.search_space_hash is not None
+        search_space_file = resolve_repository_path(
+            project_root,
+            manifest.search_space_path,
+            label="conditional search space",
+        )
+        expected["search_space_hash"] = sha256_file(search_space_file)
+        actual["search_space_hash"] = manifest.search_space_hash
     mismatches = sorted(key for key in expected if expected[key] != actual[key])
     if mismatches:
         raise ValueError(f"frozen manifest hash mismatch: {', '.join(mismatches)}")

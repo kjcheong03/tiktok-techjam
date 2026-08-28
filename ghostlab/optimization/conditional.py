@@ -15,12 +15,13 @@ class ConditionalParameter(BaseModel):
     low: float | int | None = None
     high: float | int | None = None
     choices: tuple[str | int | float | bool, ...] = ()
+    scale: Literal["linear", "log"] = "linear"
     requires_all: tuple[str, ...] = ()
     requires_any: tuple[str, ...] = ()
 
     @model_validator(mode="after")
     def valid_domain(self) -> ConditionalParameter:
-        Parameter(self.name, self.kind, self.low, self.high, self.choices)
+        Parameter(self.name, self.kind, self.low, self.high, self.choices, self.scale)
         return self
 
     def eligible(self, techniques: frozenset[str]) -> bool:
@@ -29,13 +30,15 @@ class ConditionalParameter(BaseModel):
         )
 
     def parameter(self) -> Parameter:
-        return Parameter(self.name, self.kind, self.low, self.high, self.choices)
+        return Parameter(
+            self.name, self.kind, self.low, self.high, self.choices, self.scale
+        )
 
 
 class ConditionalSearchSpace(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
-    schema_version: Literal[1] = 1
+    schema_version: Literal[1, 2] = 1
     parameters: tuple[ConditionalParameter, ...]
 
     @model_validator(mode="after")

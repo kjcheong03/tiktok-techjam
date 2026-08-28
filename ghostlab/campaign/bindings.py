@@ -17,6 +17,8 @@ from ghostlab.research.technique_suite import (
     QuestionVariant,
     RecommendationHistory,
     Reranker,
+    ResidualFeatureSet,
+    ResidualModelVariant,
     RetrievalRoute,
     RoutingVariant,
     StateVariant,
@@ -39,8 +41,59 @@ ASSET_FIELDS = frozenset(
         "reranker_model_asset",
         "cross_encoder_model_path",
         "router_asset",
+        "residual_model_asset",
     }
 )
+
+SPARSE_WEIGHT_FIELDS = (
+    "sparse_title_weight",
+    "sparse_categories_weight",
+    "sparse_features_weight",
+    "sparse_details_weight",
+    "sparse_store_weight",
+    "sparse_description_weight",
+)
+QUESTION_ORDERS: dict[str, tuple[AskAttribute, ...]] = {
+    "legacy_attribute": (
+        "material",
+        "color",
+        "style",
+        "use_case",
+        "feature",
+        "budget",
+        "size",
+    ),
+    "other_probe": (
+        "other",
+        "other",
+        "use_case",
+        "other",
+        "size",
+        "other",
+        "other",
+        "size",
+    ),
+    "need_first": (
+        "use_case",
+        "other",
+        "size",
+        "feature",
+        "budget",
+        "material",
+        "style",
+        "color",
+    ),
+    "size_first": (
+        "size",
+        "use_case",
+        "other",
+        "feature",
+        "budget",
+        "material",
+        "style",
+        "color",
+    ),
+}
 
 
 class TechniquePatch(BaseModel):
@@ -83,6 +136,16 @@ class TechniquePatch(BaseModel):
     router_asset: str | None = None
     component_fallback: bool | None = None
     recommendation_history: RecommendationHistory | None = None
+    residual_reranker_enabled: bool | None = None
+    residual_model_asset: str | None = None
+    residual_feature_set: ResidualFeatureSet | None = None
+    residual_model_variant: ResidualModelVariant | None = None
+    residual_regularization: float | None = None
+    residual_rerank_depth: int | None = None
+    residual_model_weight: float | None = None
+    residual_minimum_expected_gain: float | None = None
+    residual_minimum_probability_margin: float | None = None
+    residual_maximum_moved_ids: int | None = None
 
     @field_validator(*ASSET_FIELDS)
     @classmethod
@@ -187,7 +250,38 @@ class TechniqueBindingRegistry:
                     f"conflicting patches for {field}: {rendered}"
                 )
             value[field] = winners[0][1]
-        parameters = dict(candidate.parameters)
+        parameters: dict[str, object] = dict(candidate.parameters)
+        fusion_share = parameters.pop("fusion_sparse_share", None)
+        if fusion_share is not None:
+            if (
+                not isinstance(fusion_share, (int, float))
+                or not 0.0 <= float(fusion_share) <= 1.0
+            ):
+                raise ValueError("fusion_sparse_share must be between zero and one")
+            parameters["sparse_weight"] = float(fusion_share)
+            parameters["dense_weight"] = 1.0 - float(fusion_share)
+        sparse_fields = [parameters.pop(name, None) for name in SPARSE_WEIGHT_FIELDS]
+        if any(item is not None for item in sparse_fields):
+            if not all(isinstance(item, (int, float)) for item in sparse_fields):
+                raise ValueError(
+                    "all six sparse field weights must be provided together"
+                )
+            weights = tuple(
+                float(item) for item in sparse_fields if isinstance(item, (int, float))
+            )
+            if len(weights) != 6 or any(item < 0.0 for item in weights):
+                raise ValueError("sparse field weights must be six non-negative values")
+            parameters["sparse_weights"] = weights
+        question_order_id = parameters.pop("question_order_id", None)
+        if question_order_id is not None:
+            if not isinstance(question_order_id, str):
+                raise ValueError("question_order_id must be a string")
+            try:
+                parameters["question_order"] = QUESTION_ORDERS[question_order_id]
+            except KeyError as error:
+                raise ValueError(
+                    f"unknown question_order_id: {question_order_id}"
+                ) from error
         unknown = set(parameters) - set(UnifiedTechniqueConfig.model_fields)
         if unknown:
             raise ValueError(f"unknown candidate parameters: {sorted(unknown)}")
@@ -410,6 +504,22 @@ def default_binding_registry() -> TechniqueBindingRegistry:
                 reranker="metadata_gbdt", reranker_model_asset=metadata_model
             ),
             reason="local metadata GBDT asset",
+        ),
+        _composable(
+            "ranking.top10_residual_reranker.v2",
+            TechniquePatch(
+                residual_reranker_enabled=True,
+                residual_model_asset=None,
+                residual_feature_set="full_context",
+                residual_model_variant="regularized_logistic",
+                residual_regularization=0.2,
+                residual_rerank_depth=10,
+                residual_model_weight=1.0,
+                residual_minimum_expected_gain=0.025,
+                residual_minimum_probability_margin=0.0,
+                residual_maximum_moved_ids=10,
+            ),
+            reason=("fold-fitted membership-preserving Top-10 residual reranker"),
         ),
         _composable(
             "filter.structured",

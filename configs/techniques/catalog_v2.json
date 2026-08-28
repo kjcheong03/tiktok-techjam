@@ -445,6 +445,32 @@
       "retest_triggers": ["expansion_changed", "state_parser_changed"]
     },
     {
+      "id": "ranking.top10_residual_reranker.v2",
+      "family": "ranking",
+      "wave": 2,
+      "availability": "evaluated",
+      "source": "ghostlab/retrieval/residual.py",
+      "config_binding": "residual_reranker_enabled=true",
+      "execution_class": "gbdt",
+      "selection_safe": true,
+      "fit_required": true,
+      "mechanism_tags": [
+        "membership_preserving",
+        "residual_ranking",
+        "fold_local_fit"
+      ],
+      "retest_triggers": [
+        "parent_ranker_changed",
+        "state_features_changed",
+        "retriever_changed"
+      ],
+      "evidence_refs": [
+        "docs/state_v2_adaptive_residual_v2_decision.md",
+        "artifacts/reports/state_v2_adaptive_residual_v2.json"
+      ],
+      "resources": {"cpu": 2, "gpu": 0, "memory_gb": 3, "heavy_model": false}
+    },
+    {
       "id": "ranking.facet_diversity.v1",
       "family": "ranking",
       "wave": 2,

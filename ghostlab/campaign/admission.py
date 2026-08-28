@@ -12,6 +12,7 @@ from ghostlab.campaign.interaction_search import (
     SearchLimits,
     plan_standalones_and_pairs,
 )
+from ghostlab.campaign.models import CandidateSpec
 from ghostlab.research.technique_suite import load_suite_config
 
 AdmissionStatus = Literal[
@@ -75,6 +76,7 @@ def build_admission_report(
     template_path: Path,
     catalog: TechniqueCatalog,
     registry: TechniqueBindingRegistry,
+    require_all_runnable: bool = True,
 ) -> AdmissionReport:
     """Account for every catalog entry and fail visibly on missing runtime assets."""
 
@@ -86,9 +88,15 @@ def build_admission_report(
     discovery = tuple(
         preset for preset in presets if modes.get(preset, "composable") == "composable"
     )
-    if len(discovery) != 1:
-        raise ValueError("admission audit requires exactly one pure discovery anchor")
-    baseline = tuple(str(item) for item in template["baseline_techniques"])
+    if not discovery:
+        raise ValueError("admission audit requires at least one discovery anchor")
+    default_baseline = tuple(str(item) for item in template["baseline_techniques"])
+    baselines = {
+        str(preset): tuple(str(item) for item in technique_ids)
+        for preset, technique_ids in dict(
+            template.get("baseline_techniques_by_preset", {})
+        ).items()
+    }
     composable_ids = tuple(
         item
         for item in template["technique_ids"]
@@ -97,30 +105,41 @@ def build_admission_report(
         and item in catalog.techniques
         and catalog.techniques[item].executable
     )
-    candidate_budget = int(template["candidate_limit"]) - (len(presets) - 1)
-    plan = plan_standalones_and_pairs(
-        catalog,
-        baseline_id=discovery[0],
-        baseline_techniques=baseline,
-        technique_ids=composable_ids,
-        limits=SearchLimits(
-            max_order=int(template["max_order"]),
-            max_candidates=candidate_budget,
-            max_wall_seconds=float(template["max_wall_seconds"]),
-        ),
-    )
-    base_config = load_suite_config(root / discovery[0])
-    runnable = []
-    for candidate in plan.candidates:
-        additions = tuple(item for item in candidate.techniques if item not in baseline)
-        try:
-            registry.materialize(
-                base_config, candidate.model_copy(update={"techniques": additions})
+    candidate_budget = max(1, int(template["candidate_limit"]) - len(presets))
+    per_anchor = max(1, candidate_budget // len(discovery))
+    planned: list[CandidateSpec] = []
+    runnable: list[CandidateSpec] = []
+    for preset in discovery:
+        baseline = baselines.get(preset, default_baseline)
+        plan = plan_standalones_and_pairs(
+            catalog,
+            baseline_id=preset,
+            baseline_techniques=baseline,
+            technique_ids=composable_ids,
+            limits=SearchLimits(
+                max_order=int(template["max_order"]),
+                max_candidates=per_anchor,
+                max_wall_seconds=float(template["max_wall_seconds"]),
+            ),
+        )
+        planned.extend(plan.candidates)
+        base_config = load_suite_config(root / preset)
+        for candidate in plan.candidates:
+            additions = tuple(
+                item for item in candidate.techniques if item not in baseline
             )
-        except (TypeError, ValueError):
-            continue
-        runnable.append(candidate)
+            try:
+                registry.materialize(
+                    base_config,
+                    candidate.model_copy(update={"techniques": additions}),
+                )
+            except (TypeError, ValueError):
+                continue
+            runnable.append(candidate)
     covered = {item for candidate in runnable for item in candidate.techniques}
+    baseline_union = {
+        item for preset in discovery for item in baselines.get(preset, default_baseline)
+    }
     records: list[TechniqueAdmission] = []
     for technique_id, technique in sorted(catalog.techniques.items()):
         binding = registry.bindings.get(technique_id)
@@ -155,7 +174,8 @@ def build_admission_report(
             eligible = [
                 candidate
                 for candidate in runnable
-                if technique_id in candidate.techniques and technique_id not in baseline
+                if technique_id in candidate.techniques
+                and technique_id not in baseline_union
             ]
             if eligible:
                 best = min(
@@ -196,7 +216,8 @@ def build_admission_report(
         sorted(
             row.technique_id
             for row in admitted
-            if row.technique_id not in covered and row.technique_id not in baseline
+            if row.technique_id not in covered
+            and row.technique_id not in baseline_union
         )
     )
     return AdmissionReport(
@@ -204,13 +225,15 @@ def build_admission_report(
         template_path=template_path.relative_to(root).as_posix(),
         complete_catalog_accounting=(len(records) == len(catalog.techniques)),
         campaign_ready=(
-            not blockers and not runtime_omissions and not admitted_without_trial
+            not blockers
+            and (not require_all_runnable or not runtime_omissions)
+            and not admitted_without_trial
         ),
         admitted_count=len(admitted),
         blocked_count=len(blockers),
-        planned_structure_count=len(plan.candidates),
+        planned_structure_count=len(planned),
         materializable_structure_count=len(runnable),
-        blocked_structure_count=len(plan.candidates) - len(runnable),
+        blocked_structure_count=len(planned) - len(runnable),
         admitted_without_trial=admitted_without_trial,
         records=tuple(records),
     )

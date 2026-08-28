@@ -40,6 +40,11 @@ def main() -> None:
     parser.add_argument("--output", type=Path, default=DEFAULT_REPORT)
     parser.add_argument("--prepare-assets", action="store_true")
     parser.add_argument("--allow-blocked", action="store_true")
+    parser.add_argument(
+        "--allow-unselected",
+        action="store_true",
+        help="Allow an explicitly targeted campaign to omit otherwise runnable techniques",
+    )
     parser.add_argument("--verbose", action="store_true")
     args = parser.parse_args()
 
@@ -54,6 +59,7 @@ def main() -> None:
         template_path=template,
         catalog=load_catalog(catalog_path),
         registry=default_binding_registry(),
+        require_all_runnable=not args.allow_unselected,
     )
     output = args.output.resolve()
     output.parent.mkdir(parents=True, exist_ok=True)

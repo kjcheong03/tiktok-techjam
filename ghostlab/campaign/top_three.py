@@ -22,6 +22,7 @@ CONFIG_PATH_FIELDS = (
     "learned_sparse_asset",
     "late_interaction_asset",
     "router_asset",
+    "residual_model_asset",
 )
 
 

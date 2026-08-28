@@ -19,6 +19,8 @@ from ghostlab.campaign.proposal_from_campaign import (
 )
 from ghostlab.campaign.runner import CampaignCheckpoint
 from ghostlab.research.technique_suite import UnifiedTechniqueConfig
+from ghostlab.retrieval.residual import TECHNIQUE_ID as RESIDUAL_TECHNIQUE_ID
+from ghostlab.training.protocol import FitReceipt
 
 
 def _write(path: Path, value: object) -> None:
@@ -37,7 +39,7 @@ def _ids_hash(values: set[str]) -> str:
     return hashlib.sha256(encoded).hexdigest()
 
 
-def _fixture(root: Path) -> dict[str, str]:
+def _fixture(root: Path, *, include_residual: bool = False) -> dict[str, str]:
     baseline_id = "configs/suites/baseline.json"
     baseline = UnifiedTechniqueConfig(
         experiment_id="baseline",
@@ -54,7 +56,7 @@ def _fixture(root: Path) -> dict[str, str]:
         "prior.quality",
         "state.raw_history",
         "question.adaptive_heuristic",
-        "filter.structured",
+        RESIDUAL_TECHNIQUE_ID if include_residual else "filter.structured",
     )
     _write(
         root / "configs/techniques/catalog.json",
@@ -66,6 +68,8 @@ def _fixture(root: Path) -> dict[str, str]:
                     "family": item.split(".", 1)[0],
                     "availability": "available",
                     "execution_class": "core",
+                    "selection_safe": True,
+                    "fit_required": item == RESIDUAL_TECHNIQUE_ID,
                 }
                 for item in technique_ids
             ],
@@ -137,10 +141,16 @@ def _fixture(root: Path) -> dict[str, str]:
             techniques=(
                 "retrieval.sparse",
                 "prior.quality",
-                "filter.structured",
+                technique_ids[-1],
             ),
             complexity=1,
             generation="single",
+            parameters=(
+                ("residual_rerank_depth", 5),
+                ("residual_model_weight", 0.75),
+            )
+            if include_residual
+            else (),
         ),
     )
     scores = (0.64, 0.63, 0.625)
@@ -192,12 +202,30 @@ def _fixture(root: Path) -> dict[str, str]:
         )
         for fold in (1, 2):
             job_id = _job_id(candidate, fold, 11)
+            receipts: tuple[FitReceipt, ...] = ()
+            if include_residual and RESIDUAL_TECHNIQUE_ID in candidate.techniques:
+                asset = root / f"artifacts/models/residual-fold-{fold}.joblib"
+                asset.parent.mkdir(parents=True, exist_ok=True)
+                asset.write_bytes(f"fold-{fold}".encode())
+                receipts = (
+                    FitReceipt(
+                        technique_id=RESIDUAL_TECHNIQUE_ID,
+                        outer_fold=fold,
+                        inner_fold=0,
+                        seed=11,
+                        train_sample_ids_sha256=_ids_hash({"s0"}),
+                        validation_sample_ids_sha256=_ids_hash({f"s{fold}"}),
+                        asset_path=asset.relative_to(root).as_posix(),
+                        asset_sha256=_hash(asset),
+                    ),
+                )
             outcomes[job_id] = JobOutcome(
                 job_id=job_id,
                 state="complete",
                 score=score,
                 session_rewards=(score,),
                 scenario_scores={"buying": score},
+                fit_receipts=receipts,
             )
     checkpoint_path = root / "artifacts/campaign/checkpoint.json"
     checkpoint_path.write_text(
@@ -312,4 +340,32 @@ def test_rejects_missing_confirmed_checkpoint_job(tmp_path: Path) -> None:
     checkpoint["outcomes"].pop(next(iter(checkpoint["outcomes"])))
     _write(checkpoint_path, checkpoint)
     with pytest.raises(ValueError, match="confirmation checkpoint job"):
+        materialize_confirmed_campaign_top_three(project_root=tmp_path, **arguments)
+
+
+def test_packages_fold_fitted_residual_asset_from_verified_receipt(
+    tmp_path: Path,
+) -> None:
+    arguments = _fixture(tmp_path, include_residual=True)
+    bundle = materialize_confirmed_campaign_top_three(
+        project_root=tmp_path, **arguments
+    )
+    presets = [json.loads(path.read_text()) for path in bundle.preset_paths]
+    residual = next(item for item in presets if item["residual_reranker_enabled"])
+    assert residual["residual_model_asset"].startswith(
+        "artifacts/models/residual-fold-"
+    )
+    assert residual["residual_rerank_depth"] == 5
+    assert residual["residual_model_weight"] == 0.75
+
+
+def test_rejects_tampered_fold_fitted_residual_asset(tmp_path: Path) -> None:
+    arguments = _fixture(tmp_path, include_residual=True)
+    checkpoint = json.loads((tmp_path / arguments["checkpoint_path"]).read_text())
+    residual_outcome = next(
+        item for item in checkpoint["outcomes"].values() if item["fit_receipts"]
+    )
+    asset = tmp_path / residual_outcome["fit_receipts"][0]["asset_path"]
+    asset.write_bytes(b"tampered")
+    with pytest.raises(ValueError, match="asset hash"):
         materialize_confirmed_campaign_top_three(project_root=tmp_path, **arguments)

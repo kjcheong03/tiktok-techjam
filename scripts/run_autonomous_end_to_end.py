@@ -7,8 +7,11 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_TEMPLATE = "configs/campaigns/autonomous_state_v2_v1.template.json"
-PURE_BASELINE = "configs/suites/unfitted_keyword_search.json"
+MODE_TEMPLATES = {
+    "full": "configs/campaigns/adaptive_autonomous_full_v1.template.json",
+    "discover": "configs/campaigns/adaptive_autonomous_discovery_v1.template.json",
+    "augment": "configs/campaigns/adaptive_autonomous_augment_v1.template.json",
+}
 
 
 def _run(*arguments: str) -> None:
@@ -27,7 +30,11 @@ def main() -> None:
             "Prepare, freeze, resume, validate, and package one autonomous campaign"
         )
     )
-    parser.add_argument("--template", default=DEFAULT_TEMPLATE)
+    parser.add_argument("--mode", choices=tuple(MODE_TEMPLATES), default="full")
+    parser.add_argument(
+        "--template",
+        help="Advanced override; otherwise --mode selects a versioned template",
+    )
     parser.add_argument("--prepare-assets", action="store_true")
     parser.add_argument("--resume", action="store_true")
     parser.add_argument("--f1-candidates", type=int, default=24)
@@ -36,7 +43,8 @@ def main() -> None:
     parser.add_argument("--higher-order-rounds", type=int, default=2)
     args = parser.parse_args()
 
-    template = ROOT / args.template
+    template_argument = args.template or MODE_TEMPLATES[args.mode]
+    template = ROOT / template_argument
     template_payload = json.loads(template.read_text(encoding="utf-8"))
     campaign_id = str(template_payload["campaign_id"])
     campaign_root = Path("artifacts/campaigns") / campaign_id
@@ -50,12 +58,14 @@ def main() -> None:
         "-m",
         "scripts.preflight_autonomous",
         "--template",
-        args.template,
+        template_argument,
         "--output",
         (campaign_root / "admission.json").as_posix(),
     ]
     if args.prepare_assets:
         preflight.append("--prepare-assets")
+    if args.mode == "augment" and args.template is None:
+        preflight.append("--allow-unselected")
     _run(*preflight)
 
     manifest_exists = (ROOT / manifest).is_file()
@@ -66,7 +76,7 @@ def main() -> None:
             "-m",
             "scripts.freeze_wave2_campaign",
             "--template",
-            args.template,
+            template_argument,
             "--output",
             manifest.as_posix(),
         )
@@ -99,6 +109,25 @@ def main() -> None:
         "--higher-order-rounds",
         str(args.higher_order_rounds),
     )
+    campaign_evidence = json.loads((ROOT / evidence).read_text(encoding="utf-8"))
+    confirmed = campaign_evidence.get("confirmed_top3", [])
+    if len(confirmed) != 3:
+        print(
+            json.dumps(
+                {
+                    "automatic_promotion": False,
+                    "campaign_complete": True,
+                    "campaign_id": campaign_id,
+                    "proposal_count": 0,
+                    "safe_candidates_before_packaging": len(confirmed),
+                    "retain_current_champion": True,
+                },
+                indent=2,
+                sort_keys=True,
+            )
+        )
+        return
+    proposal_baseline = str(confirmed[0]["baseline_id"])
     _run(
         "-m",
         "scripts.materialize_campaign_top_three",
@@ -109,7 +138,7 @@ def main() -> None:
         "--checkpoint",
         checkpoint.as_posix(),
         "--baseline-id",
-        PURE_BASELINE,
+        proposal_baseline,
         "--output",
         proposals.as_posix(),
     )

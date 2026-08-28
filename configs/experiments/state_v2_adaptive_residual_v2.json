@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "experiment_id": "state_v2_adaptive_residual_v2",
+  "parent_commit": "8ef14f390d1e957baa9549145460e497222ef041",
+  "hypothesis": "A rank-aware, stability-selected, membership-preserving residual learner improves State Baseline V2 ordering without changing retrieval membership or conversation timing.",
+  "primary_parent": "configs/suites/state_baseline_v2_fixed.json",
+  "secondary_parent": "configs/suites/state_baseline_v2_ranked.json",
+  "primary_metric": "recommended_technical_score",
+  "split": "nested_v1",
+  "holdout_accessed": false,
+  "outcomes_observed": false,
+  "adaptive_algorithm": {
+    "rank_aware_sample_weighting": true,
+    "model_families": ["regularized_logistic", "shallow_histogram_gbdt"],
+    "feature_sets": ["rank", "metadata", "full_context"],
+    "single_and_pair_ensembles": true,
+    "model_shortlist": 6,
+    "adaptive_off_option": true,
+    "selection_objective": "mean_delta_plus_fold_lower_bound_minus_scenario_instability_and_activation_complexity",
+    "inner_minimum_nonnegative_folds": 3,
+    "inner_minimum_worst_scenario_delta": -0.005,
+    "rerank_depth": [3, 5, 10],
+    "model_weight": [0.5, 0.75, 1.0],
+    "minimum_expected_gain": [0.0, 0.01, 0.025, 0.05],
+    "minimum_probability_margin": [0.0, 0.02],
+    "maximum_moved_ids": [2, 4, 10]
+  },
+  "hard_invariants": {
+    "same_normalized_membership_each_turn": true,
+    "same_normalized_cardinality_each_turn": true,
+    "exact_hit_rate_at_10": true,
+    "exact_mttc": true,
+    "no_target_profile_scenario_or_future_runtime_features": true,
+    "outer_validation_excluded_from_every_fit": true
+  },
+  "promotion_gates": {
+    "minimum_oof_score_delta": 0.001,
+    "minimum_nonnegative_outer_folds": 4,
+    "minimum_scenario_delta": -0.005,
+    "maximum_membership_failures": 0,
+    "maximum_hit_rate_absolute_difference": 0.0,
+    "maximum_mttc_absolute_difference": 0.0,
+    "paired_interval_must_exclude_zero": true
+  }
+}

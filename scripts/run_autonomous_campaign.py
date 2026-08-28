@@ -15,6 +15,8 @@ from ghostlab.campaign.orchestrator import (
     verify_frozen_inputs,
 )
 from ghostlab.research.technique_suite import build_suite_agent
+from ghostlab.retrieval.residual import TECHNIQUE_ID as RESIDUAL_TECHNIQUE_ID
+from ghostlab.training.campaign import FoldSafeCandidateBuilder
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
@@ -92,6 +94,7 @@ def main() -> None:
     )
 
     campaign: AutonomousCampaign
+    fitted_builder: FoldSafeCandidateBuilder
 
     def evaluator_factory(candidates):  # type: ignore[no-untyped-def]
         return OfflineCampaignEvaluator(
@@ -99,6 +102,7 @@ def main() -> None:
             builder=lambda candidate: build_suite_agent(
                 campaign.materialize(candidate), product_catalog_path
             ),
+            fitted_builder=fitted_builder,
             dataset_path=dataset_path,
             catalog_path=product_catalog_path,
             adaptive_sample_ids=adaptive_ids,
@@ -117,7 +121,11 @@ def main() -> None:
         evidence_path=_project_path(args.evidence),
         outer_folds=outer_folds,
         project_root=PROJECT_ROOT,
+        search_space_path=Path(
+            manifest.search_space_path or "configs/search/wave2_weight_space_v1.json"
+        ),
         verified_input_hashes=verified,
+        fit_capable_techniques=frozenset({RESIDUAL_TECHNIQUE_ID}),
         options=CampaignOptions(
             f1_candidates=args.f1_candidates,
             f2_candidates=args.f2_candidates,
@@ -125,6 +133,15 @@ def main() -> None:
             higher_order_rounds=args.higher_order_rounds,
             bootstrap_resamples=args.bootstrap_resamples,
         ),
+    )
+    fitted_builder = FoldSafeCandidateBuilder(
+        materialize=campaign.materialize,
+        dataset_path=dataset_path,
+        catalog_path=product_catalog_path,
+        outer_folds=outer_folds,
+        search_outer_folds=manifest.search_outer_folds,
+        confirmation_outer_folds=manifest.confirmation_outer_folds,
+        campaign_id=manifest.campaign_id,
     )
     result = campaign.run()
     print(json.dumps(result, indent=2, sort_keys=True))

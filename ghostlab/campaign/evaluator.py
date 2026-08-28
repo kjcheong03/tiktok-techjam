@@ -19,8 +19,13 @@ from ghostlab.campaign.models import (
 )
 from ghostlab.competition.contract import AgentProtocol
 from ghostlab.research.replay import evaluate_replay, session_reward
+from ghostlab.training.protocol import FitReceipt
 
 CandidateBuilder = Callable[[CandidateSpec], AgentProtocol]
+FittedCandidateBuilder = Callable[
+    [CandidateSpec, CampaignJob, tuple[str, ...]],
+    tuple[AgentProtocol, tuple[FitReceipt, ...]],
+]
 _FORBIDDEN_PATH_MARKERS = ("f3", "holdout", "protected", "sealed")
 
 
@@ -108,6 +113,7 @@ class OfflineCampaignEvaluator:
         *,
         candidates: tuple[CandidateSpec, ...],
         builder: CandidateBuilder,
+        fitted_builder: FittedCandidateBuilder | None = None,
         dataset_path: str | Path,
         catalog_path: str | Path,
         adaptive_sample_ids: tuple[str, ...],
@@ -121,6 +127,7 @@ class OfflineCampaignEvaluator:
         _require_development_path(self.dataset_path)
         _require_development_path(self.catalog_path)
         self.builder = builder
+        self.fitted_builder = fitted_builder
         self.budgets = budgets
         self.candidates = {item.canonical_hash(): item for item in candidates}
         if len(self.candidates) != len(candidates):
@@ -191,7 +198,12 @@ class OfflineCampaignEvaluator:
         sample_ids = self._sample_ids(job)
         before_memory = _memory_mb()
         started = time.perf_counter()
-        timed = _TimedAgent(self.builder(candidate))
+        receipts: tuple[FitReceipt, ...] = ()
+        if self.fitted_builder is None:
+            agent = self.builder(candidate)
+        else:
+            agent, receipts = self.fitted_builder(candidate, job, sample_ids)
+        timed = _TimedAgent(agent)
         result = evaluate_replay(
             timed,
             [self.samples[sample_id] for sample_id in sample_ids],
@@ -215,4 +227,5 @@ class OfflineCampaignEvaluator:
             elapsed_seconds=elapsed,
             latency_p95_ms=_percentile_95(timed.latencies_ms),
             memory_mb=max(0.0, _memory_mb() - before_memory),
+            fit_receipts=receipts,
         )

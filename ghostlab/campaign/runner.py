@@ -31,6 +31,41 @@ def _save_checkpoint(path: Path, checkpoint: CampaignCheckpoint) -> None:
     temporary.replace(path)
 
 
+def _save_progress(
+    path: Path,
+    *,
+    jobs: tuple[CampaignJob, ...],
+    outcomes: dict[str, JobOutcome],
+) -> None:
+    relevant = [outcomes[job.job_id] for job in jobs if job.job_id in outcomes]
+    complete = [item for item in relevant if item.state == "complete"]
+    best = max(
+        (item for item in complete if item.score is not None),
+        key=lambda item: item.score if item.score is not None else float("-inf"),
+        default=None,
+    )
+    payload = {
+        "schema_version": 1,
+        "total_jobs": len(jobs),
+        "recorded": len(relevant),
+        "complete": len(complete),
+        "failed": sum(item.state == "failed" for item in relevant),
+        "highest_individual_job": None
+        if best is None
+        else {
+            "job_id": best.job_id,
+            "score": best.score,
+            "scenario_scores": best.scenario_scores,
+        },
+    }
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_suffix(path.suffix + ".tmp")
+    temporary.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+    temporary.replace(path)
+
+
 def load_checkpoint(path: Path, manifest_hash: str) -> CampaignCheckpoint:
     if not path.exists():
         return CampaignCheckpoint(manifest_hash=manifest_hash)
@@ -49,6 +84,7 @@ def run_jobs(
     resources: CampaignResources,
     checkpoint_path: Path,
     evaluator: Evaluator,
+    progress_path: Path | None = None,
 ) -> CampaignCheckpoint:
     """Run deterministic resource batches and atomically checkpoint every outcome."""
 
@@ -84,4 +120,6 @@ def run_jobs(
                 manifest_hash=manifest_hash, outcomes=outcomes
             )
             _save_checkpoint(checkpoint_path, checkpoint)
+            if progress_path is not None:
+                _save_progress(progress_path, jobs=jobs, outcomes=outcomes)
     return checkpoint

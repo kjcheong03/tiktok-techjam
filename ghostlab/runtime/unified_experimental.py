@@ -50,6 +50,7 @@ StateVariant = Literal[
     "baseline_v2",
 ]
 RecommendationHistory = Literal["off", "correction_scoped"]
+ActivationMode = Literal["always", "uncertain"]
 QuestionVariant = Literal[
     "none",
     "fixed",
@@ -120,6 +121,10 @@ class ExperimentalAgent:
         override_invalidation: bool = True,
         sparse_weight: float = 0.75,
         dense_weight: float = 0.25,
+        retrieval_k: int = 200,
+        rrf_constant: int = 60,
+        dense_activation: ActivationMode = "always",
+        dense_activation_min_entropy: float = 0.0,
         reranker: Literal["none", "linear"] = "none",
         question_order: tuple[str, ...] | None = None,
         repeat_last_question: bool = False,
@@ -127,6 +132,7 @@ class ExperimentalAgent:
         learned_question_model: LinearActionValueModel | None = None,
         eig_policy: CandidateEIGPolicy | None = None,
         eig_candidate_k: int = 100,
+        question_max_turn: int = 10,
         joint_policy: JointCandidatePolicy | None = None,
         routing_variant: Literal["off", "calibrated"] = "off",
         calibrated_router: CalibratedRouteModel | None = None,
@@ -136,6 +142,7 @@ class ExperimentalAgent:
         query_variant: QueryVariant | None = None,
         structured_filter: bool = False,
         profile_prior_weight: float = 0.0,
+        profile_prior_max_turn: int = 10,
         quality_prior_weight: float = 0.0,
         sparse_weights: tuple[float, float, float, float, float, float] | None = None,
         learned_reranker: CandidateReranker | None = None,
@@ -147,7 +154,12 @@ class ExperimentalAgent:
         cross_encoder_reranker: CrossEncoderReranker | None = None,
         cross_encoder_weight: float = 0.0,
         cross_encoder_rerank_k: int = 20,
+        cross_encoder_activation: ActivationMode = "always",
+        cross_encoder_min_entropy: float = 0.0,
+        cross_encoder_min_turn: int = 1,
         query_expander: QueryExpander | None = None,
+        query_expansion_activation: ActivationMode = "always",
+        query_expansion_min_entropy: float = 0.0,
         diversifier: CandidateDiversifier | None = None,
         recommendation_history: RecommendationHistory = "off",
     ) -> None:
@@ -210,6 +222,10 @@ class ExperimentalAgent:
         self.override_invalidation = override_invalidation
         self.sparse_weight = sparse_weight
         self.dense_weight = dense_weight
+        self.retrieval_k = retrieval_k
+        self.rrf_constant = rrf_constant
+        self.dense_activation = dense_activation
+        self.dense_activation_min_entropy = dense_activation_min_entropy
         self.reranker = (
             LinearLexicalReranker(catalog_path) if reranker == "linear" else None
         )
@@ -222,6 +238,7 @@ class ExperimentalAgent:
         if eig_candidate_k <= 0 or eig_candidate_k > 400:
             raise ValueError("EIG candidate depth must be between 1 and 400")
         self.eig_candidate_k = eig_candidate_k
+        self.question_max_turn = question_max_turn
         self.candidate_facets: CandidateFacetStore | None = None
         self.eig_policy: CandidateEIGPolicy | None = None
         if question_variant in {"candidate_eig", "reward_voi"}:
@@ -250,6 +267,7 @@ class ExperimentalAgent:
             CoverageAwareFilter(catalog_path) if structured_filter else None
         )
         self.profile_prior_weight = profile_prior_weight
+        self.profile_prior_max_turn = profile_prior_max_turn
         self.profile_prior = (
             ProfilePriorReranker(catalog_path) if profile_prior_weight > 0.0 else None
         )
@@ -270,7 +288,12 @@ class ExperimentalAgent:
         self.cross_encoder_reranker = cross_encoder_reranker
         self.cross_encoder_weight = cross_encoder_weight
         self.cross_encoder_rerank_k = cross_encoder_rerank_k
+        self.cross_encoder_activation = cross_encoder_activation
+        self.cross_encoder_min_entropy = cross_encoder_min_entropy
+        self.cross_encoder_min_turn = cross_encoder_min_turn
         self.query_expander = query_expander
+        self.query_expansion_activation = query_expansion_activation
+        self.query_expansion_min_entropy = query_expansion_min_entropy
         self.diversifier = diversifier
         if recommendation_history not in {"off", "correction_scoped"}:
             raise ValueError("unknown recommendation-history mode")
@@ -282,6 +305,39 @@ class ExperimentalAgent:
         self.last_runtime_inputs: dict[str, tuple[str, list[float]]] = {}
         self.question_trace: list[dict[str, object]] = []
         self.retrieval_trace: list[dict[str, object]] = []
+
+        if retrieval_k < 10 or retrieval_k > 400:
+            raise ValueError("retrieval depth must be between 10 and 400")
+        if rrf_constant <= 0:
+            raise ValueError("RRF constant must be positive")
+        for name, value in {
+            "dense_activation_min_entropy": dense_activation_min_entropy,
+            "query_expansion_min_entropy": query_expansion_min_entropy,
+            "cross_encoder_min_entropy": cross_encoder_min_entropy,
+        }.items():
+            if not 0.0 <= value <= 1.0:
+                raise ValueError(f"{name} must be between zero and one")
+
+    @staticmethod
+    def _activate(
+        mode: ActivationMode, *, entropy: float | None, minimum_entropy: float
+    ) -> bool:
+        """Use only observable retrieval uncertainty; missing signals fail open."""
+
+        return mode == "always" or entropy is None or entropy >= minimum_entropy
+
+    @staticmethod
+    def _remove_recorded_question(
+        state: ConversationState | SessionState, question: str | None
+    ) -> None:
+        if (
+            question is not None
+            and isinstance(state, ConversationState)
+            and state.asked_attributes
+            and state.asked_attributes[-1] == question
+        ):
+            state.asked_attributes.pop()
+        state.last_asked_attribute = None
 
     @staticmethod
     def _read_ids(path: str | Path) -> set[str]:
@@ -526,7 +582,7 @@ class ExperimentalAgent:
         state = self.sessions[session_id]
         query, question = self._query_and_question(state, user_message, turn)
         active_route: str = self.retrieval_route
-        retrieval_limit = 200
+        retrieval_limit = self.retrieval_k
         active_sparse_weight = self.sparse_weight
         active_dense_weight = self.dense_weight
         joint_features: dict[str, float] | None = None
@@ -593,8 +649,15 @@ class ExperimentalAgent:
         sparse_ids, sparse_scores = self._sparse_ids(
             session_id, query, turn, retrieval_limit
         )
+        sparse_signal = retrieval_signals(sparse_scores)
+        sparse_entropy = sparse_signal.normalized_entropy
+        expansion_active = self.query_expander is not None and self._activate(
+            self.query_expansion_activation,
+            entropy=sparse_entropy,
+            minimum_entropy=self.query_expansion_min_entropy,
+        )
         expansion_trace: dict[str, object] | None = None
-        if self.query_expander is not None:
+        if self.query_expander is not None and expansion_active:
             expansion = self.query_expander.expand(query, sparse_ids)
             expanded_query = expansion.expanded_query
             expansion_trace = {
@@ -606,6 +669,27 @@ class ExperimentalAgent:
                 sparse_ids, sparse_scores = self._sparse_ids(
                     session_id, query, turn, retrieval_limit
                 )
+                sparse_signal = retrieval_signals(sparse_scores)
+                sparse_entropy = sparse_signal.normalized_entropy
+        elif self.query_expander is not None:
+            expansion_trace = {
+                "reason": "uncertainty_gate",
+                "terms": [],
+                "activated": False,
+            }
+        dense_route = active_route in {
+            "dense",
+            "rrf",
+            "weighted",
+            "sparse_first_union",
+        }
+        dense_active = dense_route and self._activate(
+            self.dense_activation,
+            entropy=sparse_entropy,
+            minimum_entropy=self.dense_activation_min_entropy,
+        )
+        if dense_route and not dense_active:
+            active_route = "keyword"
         retrieval_scores: list[float] = sparse_scores
         if active_route == "keyword":
             ranked = sparse_ids
@@ -615,6 +699,7 @@ class ExperimentalAgent:
         elif active_route == "rrf":
             ranked = reciprocal_rank_fusion(
                 [sparse_ids, self._dense_ids(query, retrieval_limit)],
+                rank_constant=self.rrf_constant,
                 limit=retrieval_limit,
             )
         elif active_route == "weighted":
@@ -653,7 +738,11 @@ class ExperimentalAgent:
             )
         if self.reranker is not None:
             ranked = self.reranker.rerank(query, ranked)
-        if self.profile_prior is not None:
+        profile_prior_active = (
+            self.profile_prior is not None and turn <= self.profile_prior_max_turn
+        )
+        if profile_prior_active:
+            assert self.profile_prior is not None
             ranked = self.profile_prior.rerank(
                 session_id,
                 ranked,
@@ -668,7 +757,16 @@ class ExperimentalAgent:
             ranked = self.learned_reranker.rerank(
                 query, ranked, rerank_k=self.learned_rerank_k
             )
-        if self.cross_encoder_reranker is not None:
+        cross_encoder_active = (
+            self.cross_encoder_reranker is not None
+            and turn >= self.cross_encoder_min_turn
+            and self._activate(
+                self.cross_encoder_activation,
+                entropy=sparse_entropy,
+                minimum_entropy=self.cross_encoder_min_entropy,
+            )
+        )
+        if self.cross_encoder_reranker is not None and cross_encoder_active:
             ranked = self.cross_encoder_reranker.rerank(
                 query,
                 ranked,
@@ -705,6 +803,13 @@ class ExperimentalAgent:
                 "route": active_route,
                 "route_decision": route_decision,
                 "fallback_reason": fallback_reason,
+                "activation": {
+                    "sparse_entropy": sparse_entropy,
+                    "dense": dense_active,
+                    "query_expansion": expansion_active,
+                    "profile_prior": profile_prior_active,
+                    "cross_encoder": cross_encoder_active,
+                },
                 "retrieved": retrieved,
                 "ranked": list(ranked),
             }
@@ -763,6 +868,10 @@ class ExperimentalAgent:
             if question is not None:
                 state.asked_attributes.append(question)
             state.last_asked_attribute = question
+        if turn > self.question_max_turn:
+            self._remove_recorded_question(state, question)
+            question = None
+            question_reason = "question_horizon"
         self.question_trace.append(
             {
                 "session_id": session_id,
