@@ -74,6 +74,34 @@ commit intended implementation/configuration changes before starting a new campa
 campaign freezing rejects a dirty worktree so that all inputs belong to a reproducible
 commit.
 
+### Run the current champion
+
+The default competition-facing method is the validated guarded GBDT champion. When
+`configs/active_candidate.json` is absent, `starter.Agent` intentionally uses this frozen
+compiled runtime; an active-candidate pointer is only created after a later proposal is
+explicitly approved.
+
+After installing the dependencies and placing the released catalog at
+`data/catalog.jsonl`, evaluate exactly what `starter.Agent` will run:
+
+```bash
+uv run python -m evaluator.local_evaluator \
+  --output artifacts/reports/champion_results.json
+```
+
+To evaluate the champion's explicit research preset over the 200 public sessions:
+
+```bash
+uv run python -m scripts.run_unified_preset \
+  --config configs/suites/champion_guarded.json \
+  --output artifacts/reports/local_unified_champion.json
+```
+
+The selected candidate's grouped 150-session OOF technical score is `0.878963`; this is
+a development estimate, not a guaranteed private-leaderboard score. See
+[`docs/final_candidate_checkpoint.md`](docs/final_candidate_checkpoint.md) for its exact
+pipeline, validation evidence, limitations, hashes, and recovery information.
+
 ### 2. Run or resume the autonomous search
 
 ```bash
