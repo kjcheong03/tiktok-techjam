@@ -108,12 +108,48 @@ pipeline, validation evidence, limitations, hashes, and recovery information.
 ### 2. Choose and run an autonomous workflow
 
 Run these commands from the repository root after Step 1 passes and `git status` is clean.
-The three modes use separate campaign IDs and checkpoints:
+The commands below are **alternatives, not a sequence**. For normal use, choose exactly
+one. The copy-paste commands include macOS `caffeinate`; on Linux/WSL, omit only the
+`caffeinate -i` prefix:
+
+#### Essential choice A — rebuild from the pure baseline
+
+Use this when you want an unbiased search beginning with only current-message state, fixed
+questions, and keyword retrieval. It does not use State V2 or the historical champion as a
+search seed:
+
+```bash
+caffeinate -i uv run python -m scripts.run_autonomous_end_to_end \
+  --mode discover \
+  --prepare-assets
+```
+
+#### Essential choice B — improve the current system (recommended)
+
+Use this when the goal is the strongest new result. It searches both the pure baseline
+path and the composable State V2 path, and requires candidates to beat matched controls
+including the frozen champion:
+
+```bash
+caffeinate -i uv run python -m scripts.run_autonomous_end_to_end \
+  --mode full \
+  --prepare-assets
+```
+
+That is the only search command you need. If interrupted, run the same command again and
+it resumes. After completion, the terminal prints the proposal-preparation commands; run
+one only if you approve that proposal. Preparation prints the activation command, and
+activation prints the verification command. Monitoring, manual `augment` mode, explicit
+resume, and fresh-version creation below are optional operational details.
+
+The compiled champion is frozen and cannot safely accept individual switches, so
+“improve from champion” means search for a candidate that beats it—not mutate its compiled
+internals. The three available modes use separate campaign IDs and checkpoints:
 
 | Goal | Mode and campaign ID | Search anchors |
 |---|---|---|
 | Reconstruct from scratch without incumbent bias | `discover` / `adaptive_autonomous_discovery_v1` | Pure `state.current + question.fixed + retrieval.sparse` baseline only |
-| Improve the strongest composable incumbent | `augment` / `adaptive_autonomous_augment_v1` | State Baseline V2; compiled guarded champion is a control only |
+| Target only the strongest composable incumbent (optional) | `augment` / `adaptive_autonomous_augment_v1` | State Baseline V2; compiled guarded champion is a control only |
 | Maximize coverage (recommended) | `full` / `adaptive_autonomous_full_v1` | Pure baseline and State Baseline V2 independently; compiled champion is a control only |
 
 The compiled guarded champion cannot be patched safely because its internal techniques are
@@ -121,7 +157,7 @@ inseparable. Therefore, `augment` continues from State Baseline V2 rather than m
 compiled champion. `full` is the recommended comparison because it can discover a new path
 from the pure baseline without losing the opportunity to improve the incumbent.
 
-#### 2.1 Start a first fresh campaign
+#### 2.1 All first-run commands (reference)
 
 Pure-baseline discovery:
 
@@ -192,7 +228,7 @@ uv run python -m scripts.run_autonomous_end_to_end \
 
 This creates a separate manifest, checkpoint, evidence ledger, and proposal directory.
 
-#### 2.4 Monitor progress safely
+#### 2.4 Monitor progress safely (optional)
 
 Open a second terminal in the repository root. Set the ID to the mode being run, then view
 the atomically updated status every 30 seconds:
