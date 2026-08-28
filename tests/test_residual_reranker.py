@@ -3,9 +3,54 @@ from __future__ import annotations
 import pytest
 
 from ghostlab.retrieval.residual import (
+    ResidualAgentAdapter,
+    ResidualDecision,
     ResidualPolicy,
     membership_preserving_reorder,
 )
+from ghostlab.state.memory import ConversationState
+
+
+class _ParentAgent:
+    def __init__(self, recommendations: list[object]) -> None:
+        self.recommendations = recommendations
+        self.sessions = {"session": ConversationState("session", {})}
+        self.last_runtime_inputs = {"session": ("shoe", [1.0, 0.5])}
+        self.retrieval_trace: list[dict[str, object]] = []
+
+    def reset(self, session_id: str, user_profile: dict) -> None:
+        del session_id, user_profile
+
+    def respond(
+        self, session_id: str, user_message: str, turn: int, top_k: int
+    ) -> dict:
+        del session_id, user_message, turn, top_k
+        return {
+            "message": "matches",
+            "ask_attribute": None,
+            "recommendations": self.recommendations,
+            "usage": {"prompt_tokens": 0, "completion_tokens": 0},
+        }
+
+
+class _ReversingResidual:
+    def __init__(self, *, activate: bool = True) -> None:
+        self.activate = activate
+        self.observed: tuple[str, ...] | None = None
+
+    def rerank(
+        self, query: str, ranking: tuple[str, ...], **kwargs: object
+    ) -> ResidualDecision:
+        del query, kwargs
+        self.observed = ranking
+        reordered = tuple(reversed(ranking)) if self.activate else ranking
+        return ResidualDecision(
+            reordered,
+            self.activate,
+            "activated" if self.activate else "confidence_gate",
+            0.1 if self.activate else 0.0,
+            len(ranking) if self.activate else 0,
+        )
 
 
 def test_reorders_without_changing_membership() -> None:
@@ -58,3 +103,30 @@ def test_target_presence_is_invariant_for_every_possible_target() -> None:
     )
     for target in [*original, "ABSENT"]:
         assert (target in result.ranking) == (target in original)
+
+
+def test_runtime_adapter_extracts_ids_and_preserves_response_objects() -> None:
+    recommendations = [
+        {"parent_asin": "A", "score": 0.9},
+        {"parent_asin": "B", "score": 0.8},
+    ]
+    residual = _ReversingResidual()
+    response = ResidualAgentAdapter(
+        _ParentAgent(recommendations),
+        residual,  # type: ignore[arg-type]
+    ).respond("session", "shoe", 1, 10)
+
+    assert residual.observed == ("A", "B")
+    assert response["recommendations"] == [recommendations[1], recommendations[0]]
+    assert all(isinstance(item, dict) for item in response["recommendations"])
+
+
+def test_runtime_adapter_is_exactly_inert_when_gate_does_not_activate() -> None:
+    recommendations = [{"parent_asin": "A"}, {"parent_asin": "B"}]
+    parent = _ParentAgent(recommendations)
+    response = ResidualAgentAdapter(
+        parent,
+        _ReversingResidual(activate=False),  # type: ignore[arg-type]
+    ).respond("session", "shoe", 1, 10)
+
+    assert response["recommendations"] is recommendations

@@ -151,7 +151,7 @@ internals. The three available modes use separate campaign IDs and checkpoints:
 | Goal | Mode and campaign ID | Search anchors |
 |---|---|---|
 | Reconstruct from scratch without incumbent bias | `discover` / `adaptive_autonomous_discovery_v1` | Pure `state.current + question.fixed + retrieval.sparse` search anchor; frozen champion comparison control |
-| Target only the strongest composable incumbent (optional) | `augment` / `adaptive_autonomous_augment_v1` | State Baseline V2; compiled guarded champion is a control only |
+| Target only the strongest composable incumbent (optional) | `augment` / `adaptive_autonomous_augment_v2` | State Baseline V2; compiled guarded champion is a control only |
 | Maximize coverage (recommended) | `full` / `adaptive_autonomous_full_v1` | Pure baseline and State Baseline V2 independently; compiled champion is a control only |
 
 The compiled guarded champion cannot be patched safely because its internal techniques are
@@ -176,6 +176,11 @@ uv run python -m scripts.run_autonomous_end_to_end \
   --mode augment \
   --prepare-assets
 ```
+
+This command now starts or resumes `adaptive_autonomous_augment_v2`. The earlier
+`adaptive_autonomous_augment_v1` checkpoint is retained only as diagnostic evidence and
+must not be resumed because its residual-reranker responses used an invalid identifier
+encoding.
 
 Comprehensive search from both searchable anchors (recommended):
 

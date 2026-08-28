@@ -10,7 +10,7 @@ ROOT = Path(__file__).resolve().parents[1]
 MODE_TEMPLATES = {
     "full": "configs/campaigns/adaptive_autonomous_full_v1.template.json",
     "discover": "configs/campaigns/adaptive_autonomous_discovery_v1.template.json",
-    "augment": "configs/campaigns/adaptive_autonomous_augment_v1.template.json",
+    "augment": "configs/campaigns/adaptive_autonomous_augment_v2.template.json",
 }
 
 

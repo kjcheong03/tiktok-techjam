@@ -11,6 +11,8 @@ from ghostlab.campaign.models import (
     CandidateSpec,
     FidelityBudget,
 )
+from ghostlab.retrieval.residual import ResidualAgentAdapter, ResidualDecision
+from ghostlab.state.memory import ConversationState
 
 
 class TargetAgent:
@@ -27,6 +29,40 @@ class TargetAgent:
             "recommendations": ["target"],
             "usage": {"prompt_tokens": 0, "completion_tokens": 0},
         }
+
+
+class ResidualParentAgent:
+    def __init__(self) -> None:
+        self.sessions: dict[str, ConversationState] = {}
+        self.last_runtime_inputs: dict[str, tuple[str, list[float]]] = {}
+        self.retrieval_trace: list[dict[str, object]] = []
+
+    def reset(self, session_id: str, user_profile: dict) -> None:
+        self.sessions[session_id] = ConversationState(session_id, user_profile)
+        self.last_runtime_inputs[session_id] = ("shoe", [1.0, 0.5])
+
+    def respond(
+        self, session_id: str, user_message: str, turn: int, top_k: int
+    ) -> dict:
+        del session_id, user_message, turn, top_k
+        return {
+            "message": "matches",
+            "ask_attribute": None,
+            "recommendations": [
+                {"parent_asin": "other"},
+                {"parent_asin": "target"},
+            ],
+            "usage": {"prompt_tokens": 0, "completion_tokens": 0},
+        }
+
+
+class TargetFirstResidual:
+    def rerank(
+        self, query: str, ranking: tuple[str, ...], **kwargs: object
+    ) -> ResidualDecision:
+        del query, kwargs
+        assert ranking == ("other", "target")
+        return ResidualDecision(("target", "other"), True, "activated", 0.1, 2)
 
 
 def _candidate() -> CandidateSpec:
@@ -46,6 +82,14 @@ def _write_inputs(root: Path) -> tuple[Path, Path]:
             {
                 "parent_asin": "target",
                 "title": "shoe",
+                "categories": ["shoe"],
+            }
+        )
+        + "\n"
+        + json.dumps(
+            {
+                "parent_asin": "other",
+                "title": "other shoe",
                 "categories": ["shoe"],
             }
         )
@@ -166,3 +210,35 @@ def test_search_and_confirmation_folds_are_strictly_disjoint(tmp_path: Path) -> 
         )
     )
     assert len(confirmed.session_rewards) == 1
+
+
+def test_campaign_accepts_residual_adapter_reordered_response_objects(
+    tmp_path: Path,
+) -> None:
+    dataset, catalog = _write_inputs(tmp_path)
+    candidate = _candidate()
+    evaluator = OfflineCampaignEvaluator(
+        candidates=(candidate,),
+        builder=lambda _: ResidualAgentAdapter(
+            ResidualParentAgent(),
+            TargetFirstResidual(),  # type: ignore[arg-type]
+        ),
+        dataset_path=dataset,
+        catalog_path=catalog,
+        adaptive_sample_ids=("sample-0", "sample-1"),
+        outer_folds=(("sample-0",), ("sample-1",)),
+        budgets=FidelityBudget(f0=1, f1=2, f2=2),
+    )
+
+    outcome = evaluator(
+        CampaignJob(
+            job_id="residual-f0",
+            candidate_hash=candidate.canonical_hash(),
+            fidelity="f0",
+            seed=7,
+        )
+    )
+
+    assert outcome.state == "complete"
+    assert outcome.score == 1.0
+    assert outcome.hit_rate_at_10 == outcome.mrr == 1.0

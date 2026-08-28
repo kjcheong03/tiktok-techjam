@@ -74,3 +74,10 @@ selection using cross-fitted development predictions, a fit on all allowed
 development IDs, an immutable fit receipt, and exact runtime/off-state parity
 tests. The engine must continue to treat this technique as fit-required and must
 never reuse an evaluation-fold fit at deployment.
+
+## Campaign runtime correction
+
+The first `adaptive_autonomous_augment_v1` run exposed a response-encoding defect in the
+campaign adapter, not a modeling failure. That campaign is retired. The corrected adapter,
+regression evidence and replacement `adaptive_autonomous_augment_v2` campaign are recorded
+in [residual_campaign_adapter_recovery.md](residual_campaign_adapter_recovery.md).

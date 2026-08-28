@@ -274,7 +274,19 @@ class ResidualAgentAdapter:
         self, session_id: str, user_message: str, turn: int, top_k: int
     ) -> dict:
         response = self.parent.respond(session_id, user_message, turn, top_k)
-        original = tuple(str(item) for item in response.get("recommendations", ()))
+        recommendations = response.get("recommendations", ())
+        if not isinstance(recommendations, list):
+            return response
+        identifiers: list[str] = []
+        recommendations_by_id: dict[str, object] = {}
+        for item in recommendations:
+            value = item.get("parent_asin", "") if isinstance(item, dict) else item
+            identifier = str(value).strip()
+            if not identifier or identifier in recommendations_by_id:
+                return response
+            identifiers.append(identifier)
+            recommendations_by_id[identifier] = item
+        original = tuple(identifiers)
         state = self.parent.sessions.get(session_id)
         runtime = self.parent.last_runtime_inputs.get(session_id)
         if not isinstance(state, ConversationState) or runtime is None:
@@ -295,4 +307,15 @@ class ResidualAgentAdapter:
                 "moved_ids": decision.moved_ids,
             }
             self.parent.retrieval_trace[-1]["ranked"] = list(decision.ranking)
-        return {**response, "recommendations": list(decision.ranking)}
+        if not decision.activated:
+            return response
+        if len(decision.ranking) != len(original) or set(decision.ranking) != set(
+            original
+        ):
+            raise RuntimeError("residual adapter changed recommendation membership")
+        return {
+            **response,
+            "recommendations": [
+                recommendations_by_id[identifier] for identifier in decision.ranking
+            ],
+        }

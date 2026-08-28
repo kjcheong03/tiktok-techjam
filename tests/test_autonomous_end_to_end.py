@@ -18,8 +18,14 @@ from scripts import run_autonomous_end_to_end
 ROOT = Path(__file__).resolve().parents[1]
 TEMPLATE = ROOT / "configs/campaigns/autonomous_state_v2_v1.template.json"
 TARGETED_TEMPLATE = (
-    ROOT / "configs/campaigns/adaptive_autonomous_augment_v1.template.json"
+    ROOT / "configs/campaigns/adaptive_autonomous_augment_v2.template.json"
 )
+
+
+def test_augment_mode_uses_fresh_v2_campaign_after_residual_adapter_fix() -> None:
+    assert run_autonomous_end_to_end.MODE_TEMPLATES["augment"].endswith(
+        "adaptive_autonomous_augment_v2.template.json"
+    )
 
 
 def test_complete_template_accounts_for_every_technique_and_minimum_trial() -> None:
