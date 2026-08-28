@@ -19,6 +19,9 @@ class CandidateEvaluation:
     scenario_scores: dict[str, float]
     latency_p95_ms: float = 0.0
     memory_mb: float = 0.0
+    hit_rate_at_10: float | None = None
+    mrr: float | None = None
+    mttc: float | None = None
 
 
 @dataclass(frozen=True)

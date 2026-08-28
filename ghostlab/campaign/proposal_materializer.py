@@ -49,6 +49,7 @@ class CandidateRecord(TypedDict):
     tuned_parameters: dict[str, str | int | float | bool]
     configuration: dict[str, object]
     prepare_command: str
+    champion_comparison: dict[str, object] | None
 
 
 @dataclass(frozen=True)
@@ -129,6 +130,9 @@ def materialize_top_three(
         },
         "candidates": records,
         "excluded": [list(item) for item in selection.excluded],
+        "champion_comparison_required": all(
+            item["champion_comparison"] is not None for item in records
+        ),
         "automatic_promotion": False,
         "f3_access": "forbidden",
         "human_boundaries": ["gate_a", "one_shot_f3", "gate_b"],
@@ -220,6 +224,11 @@ def _candidate_record(
             "uv run python -m scripts.prepare_candidate --preset "
             + shlex.quote(preset_relative)
         ),
+        "champion_comparison": (
+            package.champion_comparison.model_dump(mode="json")
+            if package.champion_comparison is not None
+            else None
+        ),
     }
 
 
@@ -244,16 +253,30 @@ def _render_guide(
         "",
         "## Shortlist",
         "",
-        "| Role | Candidate | Score | Mean paired delta | 95% interval | p95 ms | MB | Complexity |",
-        "|---|---|---:|---:|---|---:|---:|---:|",
+        "| Role | Candidate | Score | Matched-anchor delta | Vs champion | Recommend promotion | 95% interval | p95 ms | MB | Complexity |",
+        "|---|---|---:|---:|---:|---|---|---:|---:|---:|",
     ]
     by_role = {item.role: item for item in selection.candidates}
     for role in ("score_leader", "robust_leader", "efficient_alternative"):
         item = by_role[role]
         interval = item.analysis.confidence_interval
+        champion_evidence = item.package.champion_comparison
+        champion_delta = (
+            "n/a"
+            if champion_evidence is None
+            else f"{champion_evidence.technical_score_delta:+.6f}"
+        )
+        promotion = (
+            "no evidence"
+            if champion_evidence is None
+            else "yes"
+            if champion_evidence.promotion_recommended
+            else "no"
+        )
         lines.append(
             f"| `{role}` | `{item.evaluation.candidate_id}` | "
             f"{item.evaluation.score:.6f} | {item.analysis.mean_delta:+.6f} | "
+            f"{champion_delta} | {promotion} | "
             f"[{interval[0]:.6f}, {interval[1]:.6f}] | "
             f"{item.evaluation.latency_p95_ms:.3f} | "
             f"{item.evaluation.memory_mb:.3f} | {item.evaluation.complexity} |"
@@ -285,6 +308,45 @@ def _render_guide(
                 f"- Prepare command: `{record['prepare_command']}`",
             ]
         )
+        comparison = record["champion_comparison"]
+        if comparison is not None:
+            candidate_metrics = comparison["candidate_metrics"]
+            champion_metrics = comparison["champion_metrics"]
+            assert isinstance(candidate_metrics, dict)
+            assert isinstance(champion_metrics, dict)
+            lines.extend(
+                [
+                    (
+                        "- Same-fold champion comparison: "
+                        f"candidate `{candidate_metrics['technical_score']:.6f}` vs "
+                        f"champion `{champion_metrics['technical_score']:.6f}`; "
+                        f"delta `{comparison['technical_score_delta']:+.6f}`"
+                    ),
+                    "- Champion decision flags: `"
+                    + json.dumps(
+                        {
+                            "beats_champion_point_estimate": comparison[
+                                "beats_champion_point_estimate"
+                            ],
+                            "statistically_supported": comparison[
+                                "statistically_supported"
+                            ],
+                            "no_material_scenario_regression": comparison[
+                                "no_material_scenario_regression"
+                            ],
+                            "fit_receipts_verified": comparison[
+                                "fit_receipts_verified"
+                            ],
+                            "promotion_recommended": comparison[
+                                "promotion_recommended"
+                            ],
+                            "automatic_promotion": False,
+                        },
+                        sort_keys=True,
+                    )
+                    + "`",
+                ]
+            )
         assets = record["assets"]
         evidence = record["evidence"]
         lines.append(

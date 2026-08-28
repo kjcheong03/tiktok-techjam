@@ -121,6 +121,7 @@ concrete nested experiment over factors `N/Q/J/R/E/X/D`.
 | `ghostlab/runtime/unified_experimental.py` | Unified switchable experimental runtime |
 | `ghostlab/runtime/component_fallback.py` | Component-scoped fallback implementation |
 | `ghostlab/runtime/trace.py` | Runtime observability/trace support |
+| `ghostlab/state/v2_view.py` | Immutable State V2 retrieval/ranking view and intent-scoped history controller |
 | `ghostlab/research/technique_suite.py` | Typed `UnifiedTechniqueConfig`, preset loading, suite factory, finite combination validation |
 | `scripts/run_unified_preset.py` | Evaluate one materialized unified preset against an optional registered split |
 
@@ -128,7 +129,7 @@ concrete nested experiment over factors `N/Q/J/R/E/X/D`.
 
 | Path | Responsibility |
 |---|---|
-| `ghostlab/campaign/models.py` | Immutable schemas for techniques, candidates, manifests, jobs, resources, and outcomes |
+| `ghostlab/campaign/models.py` | Immutable schemas for techniques, candidates, manifests, jobs, outcomes, and same-fold champion comparisons |
 | `ghostlab/campaign/freeze.py` | Repository-path safety, input/split/asset validation, clean-commit freeze, immutable write |
 | `ghostlab/campaign/catalog.py` | Load and hash the v1/v2 technique catalogs; classify historical/research techniques |
 | `ghostlab/campaign/bindings.py` | Exhaustive typed runtime binding registry and candidate materialization |
@@ -140,7 +141,7 @@ concrete nested experiment over factors `N/Q/J/R/E/X/D`.
 | `ghostlab/campaign/runner.py` | Threaded job execution and atomic manifest-bound checkpoints |
 | `ghostlab/campaign/evaluator.py` | Development-only replay, stratified fidelity samples, paired session rewards, latency and memory |
 | `ghostlab/campaign/controller.py` | Initial F0 stage and deterministic score/exploration promotion to later fidelities |
-| `ghostlab/campaign/orchestrator.py` | Manifest-driven F0/F1/F2 search, bounded HPO, resume, safety records, and proposal-only evidence |
+| `ghostlab/campaign/orchestrator.py` | Manifest-driven F0/F1/F2 search, bounded HPO, resume, safety records, same-fold champion evidence, and proposal-only output |
 | `ghostlab/campaign/interaction_search.py` | Standalones, pairs, diverse beams, reserve/resurrection, strict pruning, audit samples |
 | `ghostlab/campaign/analyze.py` | Paired bootstrap/randomization/scenario and interaction analysis |
 | `ghostlab/campaign/proposal.py` | Proposal records used by campaign reporting |
@@ -578,7 +579,10 @@ The CLI fails closed unless all of the following match:
 - candidate hashes and the exact completed checkpoint job IDs for every confirmation fold;
 - one common matched control and one common declared baseline preset;
 - selection-safe, non-fit-required techniques, typed materialization, existing assets,
-  paired/scenario/resource gates, and strictly positive paired mean delta.
+  paired/scenario/resource gates, and strictly positive paired mean delta;
+- when the manifest declares `configs/suites/champion_guarded.json`, a typed same-fold
+  champion comparison in both the detailed safety record and confirmed summary, with the
+  two records exactly equal.
 
 It reconstructs configs from the frozen baseline plus typed bindings, derives dependency
 extras/assets, references and hashes the campaign evidence/checkpoint, then writes three
@@ -599,11 +603,28 @@ The campaign leaderboard and the three proposals are deliberately different arti
   does not delete their code or switch identity.
 
 Techniques that require fold-local fitting may enter the current runner's F0/F1 mechanism
-screens, but are removed before F2. A `selection_safe=false` technique is rejected by the
-current freeze path and may be studied only through an explicitly controlled research
-runner, never as a selectable campaign candidate. Neither class can become a confirmed
-top-three package until the technique is selection-safe and any fitting procedure is
-implemented inside each outer-training fold and validated without protected data.
+screens, but are removed before F2 unless the catalog marks them selection-safe, the
+campaign has a declared fold-safe trainer, and every confirmation job supplies complete
+fit receipts. A `selection_safe=false` technique is rejected by the current freeze path
+and may be studied only through an explicitly controlled research runner, never as a
+selectable campaign candidate.
+
+#### 6.7.1 Candidate-versus-champion decision evidence
+
+The frozen champion is a comparison control, never a search seed and never an automatic
+winner. Every packaged candidate carries `champion_comparison` with candidate and champion
+technical score, Hit@10, MRR and MTTC, paired mean delta, bootstrap interval,
+randomization p-value, paired-session count, wins/ties/losses, scenario deltas and
+fit-receipt status. Component
+metrics are aggregated over exactly the same F2 jobs and session counts. A negative MTTC
+delta favors the candidate because lower MTTC is better.
+
+`promotion_recommended=true` requires a positive paired point estimate, a confidence
+interval wholly above zero, randomization p-value at most `0.05`, no material scenario
+regression and complete fit receipts. It remains decision support rather than authority:
+`automatic_promotion` is structurally fixed to `false`. The generated proposal README and
+`proposal_manifest.json` show these fields before a human runs `prepare_candidate`; the
+preparation receipt repeats the same comparison and recommendation.
 
 ### 6.8 Compare a materialized proposal bundle
 
@@ -760,6 +781,7 @@ The technical score is the organizer-aligned combination used by the evaluator:
 Minimum promotion evidence should include:
 
 - paired independent-confirmation session rewards against the exact matched anchor;
+- candidate and frozen champion component metrics on the exact same confirmation folds;
 - no material scenario regression beyond the predeclared threshold;
 - bootstrap interval and randomization result interpreted as uncertainty, not a magic
   pass/fail oracle;
@@ -792,10 +814,14 @@ its own technique baseline through `baseline_techniques_by_preset` and its own s
 - `composable`: compare the compatible runtime technique pool against this anchor.
 - `control_only`: emit only the anchor/control; do not add technique patches.
 
-`initial_stage()` divides the global candidate limit across anchors, builds a separate
-plan for each, concatenates them deterministically, and applies the global cap. Candidate
-analysis must always use the control with the same `baseline_id`; cross-anchor raw score
-differences are descriptive, not paired causal evidence.
+`initial_stage()` gives every `control_only` anchor exactly one slot, divides the remaining
+global candidate budget across the composable anchors, concatenates their plans
+deterministically, and applies the global cap. A comparison control therefore cannot halve
+or otherwise waste a composable anchor's discovery budget. Promotion reserves every
+matched control through F1 and F2 even when its score is low, then assigns the remaining
+bounded slots to challengers and pruning-audit exploration. Candidate analysis must always
+use the control with the same `baseline_id`; cross-anchor raw score differences are
+descriptive, not paired causal evidence.
 
 The current full template declares:
 
@@ -810,6 +836,11 @@ The current full template declares:
 This preserves historical systems as descriptive controls without allowing their fitted
 assets to leak into candidate selection. New combinations are searched from the unfitted
 keyword anchor.
+
+The discovery template uses the same pure composable anchor and now also declares the
+frozen champion as `control_only`. This does not bias or seed discovery; it guarantees that
+final discovery proposals contain a current, same-fold incumbent comparison rather than
+relying on the historical `0.878963` estimate.
 
 The pure anchor itself is explicit and reviewable in two places:
 

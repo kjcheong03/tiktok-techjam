@@ -8,6 +8,14 @@ The teammate State Baseline V2 is now a native, opt-in state/query/history famil
 complete mapping, exact parity hashes, presets, interaction evidence, and safe retest
 commands are in `docs/state_baseline_v2_integration.md`.
 
+The production boundary is `ghostlab/state/v2_view.py`. `StateBaselineV2` remains the sole
+owner of observations, corrections, active constraints, intent epochs, and query text.
+`V2SessionController` exposes an immutable `V2StateView` containing only query text, active
+constraints, the current intent epoch, already-shown IDs, asked attributes, no-preference
+attributes, and turn. Retrieval/ranking may consume this view but cannot mutate State V2;
+the controller applies intent-scoped recommendation history and clears it after a V2
+correction. The disabled boundary preserves the previous runtime exactly.
+
 Date: 2026-08-26
 Branch: `ghostlab/unified-techniques`
 Worktree: `techjam-unified/`

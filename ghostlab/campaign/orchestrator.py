@@ -24,8 +24,10 @@ from ghostlab.campaign.models import (
     CampaignJob,
     CampaignManifest,
     CandidateSpec,
+    ChampionComparison,
     Fidelity,
     JobOutcome,
+    MetricSnapshot,
 )
 from ghostlab.campaign.planner import backward_ablations
 from ghostlab.campaign.runner import CampaignCheckpoint, run_jobs
@@ -43,6 +45,7 @@ from ghostlab.research.technique_suite import (
 EvaluatorFactory = Callable[
     [tuple[CandidateSpec, ...]], Callable[[CampaignJob], JobOutcome]
 ]
+CHAMPION_PRESET = "configs/suites/champion_guarded.json"
 
 
 @dataclass(frozen=True)
@@ -129,6 +132,14 @@ def _efficient_proposal_key(
         -evaluation.score,
         candidate.candidate_id,
     )
+
+
+def _record_candidate_id(record: dict[str, object]) -> str | None:
+    candidate = record.get("candidate")
+    if not isinstance(candidate, dict):
+        return None
+    candidate_id = candidate.get("candidate_id")
+    return candidate_id if isinstance(candidate_id, str) else None
 
 
 def verify_frozen_inputs(
@@ -251,6 +262,22 @@ class AutonomousCampaign:
             if not required <= received:
                 return False
         return True
+
+    @staticmethod
+    def _weighted_metric(rows: list[JobOutcome], field: str) -> float | None:
+        values = [getattr(row, field) for row in rows]
+        if any(value is None for value in values):
+            return None
+        total = sum(len(row.session_rewards) for row in rows)
+        if total == 0:
+            return None
+        return (
+            sum(
+                float(value) * len(row.session_rewards)
+                for row, value in zip(rows, values, strict=True)
+            )
+            / total
+        )
 
     def materialize(self, candidate: CandidateSpec) -> UnifiedTechniqueConfig:
         baseline = self._baselines[candidate.baseline_id]
@@ -428,8 +455,81 @@ class AutonomousCampaign:
                 },
                 latency_p95_ms=max(row.latency_p95_ms for row in rows),
                 memory_mb=max(row.memory_mb for row in rows),
+                hit_rate_at_10=AutonomousCampaign._weighted_metric(
+                    rows, "hit_rate_at_10"
+                ),
+                mrr=AutonomousCampaign._weighted_metric(rows, "mrr"),
+                mttc=AutonomousCampaign._weighted_metric(rows, "mttc"),
             )
         return result
+
+    def _champion_comparison(
+        self,
+        candidate: CandidateEvaluation,
+        champion: CandidateEvaluation,
+        *,
+        fit_receipts_verified: bool,
+    ) -> ChampionComparison:
+        analysis = paired_analysis(
+            candidate,
+            champion,
+            resamples=self.options.bootstrap_resamples,
+            seed=self.manifest.seeds[0],
+        )
+        scenario_safe = all(
+            delta >= -self.options.maximum_scenario_regression
+            for delta in analysis.scenario_deltas.values()
+        )
+        statistically_supported = (
+            analysis.confidence_interval[0] > 0.0
+            and analysis.randomization_pvalue <= 0.05
+        )
+        beats = analysis.mean_delta > 0.0
+
+        def delta(left: float | None, right: float | None) -> float | None:
+            return None if left is None or right is None else left - right
+
+        return ChampionComparison(
+            champion_candidate_id=champion.candidate_id,
+            champion_baseline_id=CHAMPION_PRESET,
+            candidate_metrics=MetricSnapshot(
+                technical_score=candidate.score,
+                hit_rate_at_10=candidate.hit_rate_at_10,
+                mrr=candidate.mrr,
+                mttc=candidate.mttc,
+            ),
+            champion_metrics=MetricSnapshot(
+                technical_score=champion.score,
+                hit_rate_at_10=champion.hit_rate_at_10,
+                mrr=champion.mrr,
+                mttc=champion.mttc,
+            ),
+            technical_score_delta=candidate.score - champion.score,
+            hit_rate_at_10_delta=delta(
+                candidate.hit_rate_at_10, champion.hit_rate_at_10
+            ),
+            mrr_delta=delta(candidate.mrr, champion.mrr),
+            mttc_delta=delta(candidate.mttc, champion.mttc),
+            paired_mean_delta=analysis.mean_delta,
+            confidence_interval=analysis.confidence_interval,
+            randomization_pvalue=analysis.randomization_pvalue,
+            paired_session_count=len(candidate.session_rewards),
+            wins=analysis.wins,
+            ties=analysis.ties,
+            losses=analysis.losses,
+            scenario_deltas=analysis.scenario_deltas,
+            beats_champion_point_estimate=beats,
+            statistically_supported=statistically_supported,
+            maximum_scenario_regression=self.options.maximum_scenario_regression,
+            no_material_scenario_regression=scenario_safe,
+            fit_receipts_verified=fit_receipts_verified,
+            promotion_recommended=(
+                beats
+                and statistically_supported
+                and scenario_safe
+                and fit_receipts_verified
+            ),
+        )
 
     def _evidence(
         self, stage: CampaignStage, outcomes: dict[str, JobOutcome]
@@ -595,11 +695,29 @@ class AutonomousCampaign:
         limit: int,
     ) -> CampaignStage:
         selected: list[CandidateSpec] = []
-        discovery_count = sum(
-            self.manifest.search_mode_for_preset(preset) == "composable"
+        control_only = tuple(
+            preset
             for preset in self.manifest.baseline_presets
+            if self.manifest.search_mode_for_preset(preset) == "control_only"
         )
-        per_anchor = max(1, math.ceil(limit / max(1, discovery_count)))
+        composable = tuple(
+            preset
+            for preset in self.manifest.baseline_presets
+            if preset not in control_only
+        )
+        if limit < len(self.manifest.baseline_presets):
+            raise ValueError("promotion limit must provide one slot per anchor")
+        composable_budget = limit - len(control_only)
+        base_limit, extra_slots = (
+            divmod(composable_budget, len(composable)) if composable else (0, 0)
+        )
+        per_preset_limit = {
+            **{preset: 1 for preset in control_only},
+            **{
+                preset: base_limit + (index < extra_slots)
+                for index, preset in enumerate(composable)
+            },
+        }
         for offset, preset in enumerate(self.manifest.baseline_presets):
             candidates = tuple(
                 item for item in previous.candidates if item.baseline_id == preset
@@ -629,7 +747,7 @@ class AutonomousCampaign:
                 anchor_stage,
                 outcomes,
                 next_fidelity=fidelity,
-                candidate_limit=min(per_anchor, len(candidates)),
+                candidate_limit=min(per_preset_limit[preset], len(candidates)),
                 exploration_fraction=self.manifest.exploration_fraction,
                 seed=self.manifest.seeds[0] + offset,
                 outer_fold_count=len(self.outer_folds),
@@ -637,8 +755,7 @@ class AutonomousCampaign:
                 if fidelity == "f2"
                 else self.manifest.seeds,
             )
-            control = next(item for item in candidates if item.generation == "control")
-            selected.extend((*promoted.candidates, control))
+            selected.extend(promoted.candidates)
         unique = {item.canonical_hash(): item for item in selected}
         return self._stage(
             fidelity, tuple(sorted(unique.values(), key=lambda item: item.candidate_id))
@@ -817,6 +934,18 @@ class AutonomousCampaign:
     ) -> tuple[list[dict[str, object]], list[dict[str, object]]]:
         evaluations = self._evaluations(stage, checkpoint.outcomes)
         _, analyses = self._evidence(stage, checkpoint.outcomes)
+        champion_controls = tuple(
+            item
+            for item in stage.candidates
+            if item.generation == "control" and item.baseline_id == CHAMPION_PRESET
+        )
+        if len(champion_controls) > 1:
+            raise ValueError("campaign contains more than one frozen champion control")
+        champion_evaluation = (
+            evaluations.get(champion_controls[0].candidate_id)
+            if champion_controls
+            else None
+        )
         records: list[dict[str, object]] = []
         eligible: list[
             tuple[CandidateSpec, CandidateEvaluation, dict[str, object]]
@@ -832,6 +961,20 @@ class AutonomousCampaign:
                 for job_id in confirmation_job_ids
             )
             evaluation = evaluations.get(candidate.candidate_id)
+            fit_receipts_verified = self._fit_receipts_complete(
+                candidate, confirmation_job_ids, checkpoint.outcomes
+            )
+            champion_comparison = (
+                self._champion_comparison(
+                    evaluation,
+                    champion_evaluation,
+                    fit_receipts_verified=fit_receipts_verified,
+                )
+                if evaluation is not None
+                and champion_evaluation is not None
+                and candidate.baseline_id != CHAMPION_PRESET
+                else None
+            )
             if evaluation is None or not jobs_complete:
                 classification = "evaluation_incomplete"
                 reason = "one or more required jobs did not complete"
@@ -851,9 +994,7 @@ class AutonomousCampaign:
                 classification = "research_only_not_selection_safe"
                 reason = "catalog selection_safe/fit_required gate failed"
                 analysis = analyses.get(candidate.candidate_id)
-            elif not self._fit_receipts_complete(
-                candidate, confirmation_job_ids, checkpoint.outcomes
-            ):
+            elif not fit_receipts_verified:
                 classification = "fit_evidence_incomplete"
                 reason = "fold-fitted candidate lacks complete fit receipts"
                 analysis = analyses.get(candidate.candidate_id)
@@ -893,6 +1034,11 @@ class AutonomousCampaign:
                     if evaluation is not None
                     else None,
                     "analysis": analysis,
+                    "champion_comparison": (
+                        champion_comparison.model_dump(mode="json")
+                        if champion_comparison is not None
+                        else None
+                    ),
                     "classification": classification,
                     "reason": reason,
                 }
@@ -937,6 +1083,11 @@ class AutonomousCampaign:
         )
         proposals = []
         for role, (candidate, evaluation, analysis) in selected:
+            record = next(
+                item
+                for item in records
+                if _record_candidate_id(item) == candidate.candidate_id
+            )
             proposals.append(
                 {
                     "proposal_role": role,
@@ -944,6 +1095,7 @@ class AutonomousCampaign:
                     "baseline_id": candidate.baseline_id,
                     "score": evaluation.score,
                     "mean_delta": analysis["mean_delta"],
+                    "champion_comparison": record["champion_comparison"],
                     "classification": "package_eligible_proposal_only",
                     "candidate_hash": candidate.canonical_hash(),
                     "confirmation_job_ids": tuple(

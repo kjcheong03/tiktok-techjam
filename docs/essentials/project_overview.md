@@ -116,7 +116,9 @@ one. The copy-paste commands include macOS `caffeinate`; on Linux/WSL, omit only
 
 Use this when you want an unbiased search beginning with only current-message state, fixed
 questions, and keyword retrieval. It does not use State V2 or the historical champion as a
-search seed:
+search seed. The frozen champion is still replayed on the same confirmation folds as a
+read-only comparison control, so every final proposal shows whether it actually beats the
+incumbent:
 
 ```bash
 caffeinate -i uv run python -m scripts.run_autonomous_end_to_end \
@@ -127,8 +129,8 @@ caffeinate -i uv run python -m scripts.run_autonomous_end_to_end \
 #### Essential choice B — improve the current system (recommended)
 
 Use this when the goal is the strongest new result. It searches both the pure baseline
-path and the composable State V2 path, and requires candidates to beat matched controls
-including the frozen champion:
+path and the composable State V2 path, requires candidates to beat their exact matched
+search controls, and separately evaluates every finalist against the frozen champion:
 
 ```bash
 caffeinate -i uv run python -m scripts.run_autonomous_end_to_end \
@@ -148,7 +150,7 @@ internals. The three available modes use separate campaign IDs and checkpoints:
 
 | Goal | Mode and campaign ID | Search anchors |
 |---|---|---|
-| Reconstruct from scratch without incumbent bias | `discover` / `adaptive_autonomous_discovery_v1` | Pure `state.current + question.fixed + retrieval.sparse` baseline only |
+| Reconstruct from scratch without incumbent bias | `discover` / `adaptive_autonomous_discovery_v1` | Pure `state.current + question.fixed + retrieval.sparse` search anchor; frozen champion comparison control |
 | Target only the strongest composable incumbent (optional) | `augment` / `adaptive_autonomous_augment_v1` | State Baseline V2; compiled guarded champion is a control only |
 | Maximize coverage (recommended) | `full` / `adaptive_autonomous_full_v1` | Pure baseline and State Baseline V2 independently; compiled champion is a control only |
 
@@ -265,8 +267,16 @@ Replace `<campaign_id>` below with the chosen ID from the table:
 
 The wrapper finishes by printing zero or three `prepare_candidate` commands. Zero means
 that fewer than three candidates passed every confirmation gate; it deliberately retains
-the current champion rather than padding unsafe results. For a proposal you approve, copy
-and run exactly one printed command, for example:
+the current champion rather than padding unsafe results. Before choosing, inspect each
+candidate's `champion_comparison` in `proposal_manifest.json` or the generated proposal
+README. It reports candidate versus champion technical score, Hit@10, MRR, MTTC, paired
+mean delta, paired-session count, confidence interval, randomization p-value,
+wins/ties/losses, scenario deltas, fit-receipt status, and `promotion_recommended`. MTTC is
+lower-is-better, so a negative
+`mttc_delta` favors the candidate. `automatic_promotion` is always `false`; the historical
+`0.878963` is context only, while this comparison uses the exact same current F2 folds and
+runtime for both methods. For a proposal you approve, copy and run exactly one printed
+command, for example:
 
 ```bash
 uv run python -m scripts.prepare_candidate \
@@ -305,10 +315,17 @@ complete campaign, overfitting, pruning, proposal, activation, and recovery spec
 The executable pipeline is:
 
 ```text
-conversation state → query construction → sparse/dense retrieval → fusion
-                   → ranking/filtering/priors/diversity
-                   → question/termination policy → normalized Top-10 response
+State Baseline V2 (sole state writer + query builder)
+    → immutable V2StateView(query, constraints, intent epoch, shown IDs)
+    → GhostLab sparse/dense retrieval → fusion → ranking/filtering/priors/diversity
+    → V2-owned intent-scoped history filter → normalized Top-10 response
 ```
+
+`ghostlab/state/v2_view.py` is the boundary: GhostLab components can read the snapshot but
+cannot mutate State V2. `V2SessionController` owns recommendation-history filtering and
+clears shown IDs when State V2 advances the intent epoch. This preserves State V2's update,
+query, and correction semantics while allowing retrieval and ranking techniques to remain
+independently switchable.
 
 `configs/techniques/catalog_v2.json` extends the Wave 1 catalog and is the strategy
 source of truth. `ghostlab/campaign/bindings.py` is the runtime truth that maps a technique
@@ -451,9 +468,11 @@ versioned campaign then:
    stronger half per compatible family receives the second, and only survivors receive
    the remaining frozen seeds;
 8. uses backward ablation, add-back tests and paired interaction deltas to attribute gains;
-9. searches on three frozen outer folds (90 sessions), confirms finalists on two disjoint
-   folds (60 sessions), and never opens F3; and
-10. materializes exactly three independently confirmed, behaviorally distinct roles—score
+9. searches on three frozen outer folds (90 sessions), confirms finalists and the frozen
+   champion on the same two disjoint folds (60 sessions), and never opens F3;
+10. attaches a typed, internally validated candidate-versus-champion decision record to
+    every finalist without automatically promoting it; and
+11. materializes exactly three independently confirmed, behaviorally distinct roles—score
    leader, robust leader, and efficient alternative—from one matched anchor, or stops
    without padding unsafe candidates.
 

@@ -9,6 +9,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+from ghostlab.campaign.models import ChampionComparison
 from ghostlab.research.technique_suite import load_suite_config
 from ghostlab.runtime.selected import PROJECT_ROOT, sha256_file
 
@@ -21,6 +22,30 @@ def _safe_source(value: Path) -> Path:
     return source
 
 
+def _proposal_champion_comparison(source: Path) -> dict[str, object] | None:
+    manifest_path = source.parent / "proposal_manifest.json"
+    if not manifest_path.is_file():
+        return None
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    relative = source.relative_to(PROJECT_ROOT).as_posix()
+    for record in manifest.get("candidates", []):
+        if not isinstance(record, dict):
+            continue
+        preset = record.get("preset")
+        if isinstance(preset, dict) and preset.get("path") == relative:
+            if preset.get("sha256") != sha256_file(source):
+                raise ValueError("proposal preset hash does not match its manifest")
+            comparison = record.get("champion_comparison")
+            if comparison is None:
+                if manifest.get("champion_comparison_required") is True:
+                    raise ValueError(
+                        "proposal is missing its required champion comparison"
+                    )
+                return None
+            return ChampionComparison.model_validate(comparison).model_dump(mode="json")
+    return None
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Validate and stage a proposal without activating it"
@@ -30,6 +55,7 @@ def main() -> None:
     args = parser.parse_args()
 
     source = _safe_source(args.preset)
+    champion_comparison = _proposal_champion_comparison(source)
     config = load_suite_config(source)
     slug = re.sub(r"[^a-zA-Z0-9_.-]+", "-", config.experiment_id).strip("-")
     if not slug:
@@ -74,6 +100,13 @@ def main() -> None:
                     else report.relative_to(PROJECT_ROOT).as_posix()
                 ),
                 "next_activation_command": command,
+                "champion_comparison": champion_comparison,
+                "promotion_recommended": (
+                    champion_comparison.get("promotion_recommended")
+                    if champion_comparison is not None
+                    else None
+                ),
+                "automatic_promotion": False,
             },
             indent=2,
             sort_keys=True,

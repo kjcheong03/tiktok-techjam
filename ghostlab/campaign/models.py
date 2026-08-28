@@ -259,6 +259,9 @@ class JobOutcome(BaseModel):
     score: float | None = None
     session_rewards: tuple[float, ...] = ()
     scenario_scores: dict[str, float] = Field(default_factory=dict)
+    hit_rate_at_10: float | None = Field(default=None, ge=0.0, le=1.0)
+    mrr: float | None = Field(default=None, ge=0.0, le=1.0)
+    mttc: float | None = Field(default=None, ge=1.0, le=11.0)
     elapsed_seconds: float = Field(default=0.0, ge=0.0)
     latency_p95_ms: float = Field(default=0.0, ge=0.0)
     memory_mb: float = Field(default=0.0, ge=0.0)
@@ -271,4 +274,99 @@ class JobOutcome(BaseModel):
             raise ValueError("complete outcomes require a score")
         if self.state == "failed" and not self.error:
             raise ValueError("failed outcomes require an error")
+        return self
+
+
+class MetricSnapshot(BaseModel):
+    """Comparable aggregate metrics from one frozen evaluation population."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    technical_score: float
+    hit_rate_at_10: float | None = Field(default=None, ge=0.0, le=1.0)
+    mrr: float | None = Field(default=None, ge=0.0, le=1.0)
+    mttc: float | None = Field(default=None, ge=1.0, le=11.0)
+
+
+class ChampionComparison(BaseModel):
+    """Same-fold evidence shown to a human before any promotion decision."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    champion_candidate_id: str = Field(min_length=1)
+    champion_baseline_id: str = Field(min_length=1)
+    candidate_metrics: MetricSnapshot
+    champion_metrics: MetricSnapshot
+    technical_score_delta: float
+    hit_rate_at_10_delta: float | None = None
+    mrr_delta: float | None = None
+    mttc_delta: float | None = None
+    paired_mean_delta: float
+    confidence_interval: tuple[float, float]
+    randomization_pvalue: float = Field(ge=0.0, le=1.0)
+    paired_session_count: int = Field(gt=0)
+    wins: int = Field(ge=0)
+    ties: int = Field(ge=0)
+    losses: int = Field(ge=0)
+    scenario_deltas: dict[str, float] = Field(default_factory=dict)
+    beats_champion_point_estimate: bool
+    statistically_supported: bool
+    maximum_scenario_regression: float = Field(default=0.02, ge=0.0)
+    no_material_scenario_regression: bool
+    fit_receipts_verified: bool
+    promotion_recommended: bool
+    automatic_promotion: Literal[False] = False
+
+    @model_validator(mode="after")
+    def internally_consistent(self) -> ChampionComparison:
+        def close(left: float, right: float) -> bool:
+            return abs(left - right) <= 1e-9
+
+        expected_score_delta = (
+            self.candidate_metrics.technical_score
+            - self.champion_metrics.technical_score
+        )
+        if not close(self.technical_score_delta, expected_score_delta):
+            raise ValueError("champion technical-score delta is inconsistent")
+        for name, reported in (
+            ("hit_rate_at_10", self.hit_rate_at_10_delta),
+            ("mrr", self.mrr_delta),
+            ("mttc", self.mttc_delta),
+        ):
+            candidate = getattr(self.candidate_metrics, name)
+            champion = getattr(self.champion_metrics, name)
+            expected = (
+                None if candidate is None or champion is None else candidate - champion
+            )
+            if (reported is None) != (expected is None) or (
+                reported is not None
+                and expected is not None
+                and not close(reported, expected)
+            ):
+                raise ValueError(f"champion {name} delta is inconsistent")
+        if self.beats_champion_point_estimate != (self.paired_mean_delta > 0.0):
+            raise ValueError("champion point-estimate flag is inconsistent")
+        if self.confidence_interval[0] > self.confidence_interval[1]:
+            raise ValueError("champion confidence interval is reversed")
+        if self.wins + self.ties + self.losses != self.paired_session_count:
+            raise ValueError("champion paired outcome counts are inconsistent")
+        expected_support = (
+            self.confidence_interval[0] > 0.0 and self.randomization_pvalue <= 0.05
+        )
+        if self.statistically_supported != expected_support:
+            raise ValueError("champion statistical-support flag is inconsistent")
+        expected_scenario_safety = all(
+            delta >= -self.maximum_scenario_regression
+            for delta in self.scenario_deltas.values()
+        )
+        if self.no_material_scenario_regression != expected_scenario_safety:
+            raise ValueError("champion scenario-safety flag is inconsistent")
+        expected_recommendation = (
+            self.beats_champion_point_estimate
+            and self.statistically_supported
+            and self.no_material_scenario_regression
+            and self.fit_receipts_verified
+        )
+        if self.promotion_recommended != expected_recommendation:
+            raise ValueError("champion promotion recommendation is inconsistent")
         return self

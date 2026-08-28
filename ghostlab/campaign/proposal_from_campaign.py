@@ -10,7 +10,7 @@ from ghostlab.campaign.analyze import CandidateEvaluation, PairedAnalysis
 from ghostlab.campaign.bindings import ASSET_FIELDS, default_binding_registry
 from ghostlab.campaign.catalog import load_catalog
 from ghostlab.campaign.freeze import resolve_repository_path, sha256_file
-from ghostlab.campaign.models import CampaignManifest, CandidateSpec
+from ghostlab.campaign.models import CampaignManifest, CandidateSpec, ChampionComparison
 from ghostlab.campaign.proposal_materializer import (
     MaterializedProposalBundle,
     materialize_top_three,
@@ -26,6 +26,7 @@ CONFIRMATION_METHOD = "prospective_disjoint_development_confirmation"
 ELIGIBLE_CLASSIFICATION = "proposal_eligible"
 SUMMARY_CLASSIFICATION = "package_eligible_proposal_only"
 _ALLOWED_EXTRAS = frozenset({"core", "gbdt", "dense", "neural", "all"})
+CHAMPION_PRESET = "configs/suites/champion_guarded.json"
 
 
 class SplitEvidence(BaseModel):
@@ -60,6 +61,7 @@ class ConfirmedProposalSummary(BaseModel):
     classification: str
     candidate_hash: str = Field(pattern=r"^[0-9a-f]{64}$")
     confirmation_job_ids: tuple[str, ...] = Field(min_length=1)
+    champion_comparison: ChampionComparison | None = None
 
 
 def _json_object(path: Path, label: str) -> dict[str, object]:
@@ -250,6 +252,7 @@ def materialize_confirmed_campaign_top_three(
         checkpoint_file.read_text(encoding="utf-8")
     )
     manifest_hash = manifest.canonical_hash()
+    champion_comparison_required = CHAMPION_PRESET in manifest.baseline_presets
     if checkpoint.manifest_hash != manifest_hash:
         raise ValueError("checkpoint belongs to another frozen manifest")
     evidence = _json_object(evidence_file, "campaign evidence")
@@ -412,12 +415,22 @@ def materialize_confirmed_campaign_top_three(
         elif paired.baseline_id != analysis_baseline:
             raise ValueError("confirmed candidates do not share a matched control")
         summary = summary_by_id[candidate_id]
+        detailed_champion = (
+            ChampionComparison.model_validate(record["champion_comparison"])
+            if record.get("champion_comparison") is not None
+            else None
+        )
+        if champion_comparison_required and detailed_champion is None:
+            raise ValueError(
+                "confirmed proposal is missing its same-fold champion comparison"
+            )
         if (
             summary.baseline_id != baseline_id
             or summary.candidate_hash != candidate_hash
             or summary.confirmation_job_ids != expected_job_ids
             or abs(summary.score - evaluation.score) > 1e-12
             or abs(summary.mean_delta - paired.mean_delta) > 1e-12
+            or summary.champion_comparison != detailed_champion
         ):
             raise ValueError(
                 "confirmed proposal summary does not match detailed evidence"
@@ -465,6 +478,7 @@ def materialize_confirmed_campaign_top_three(
                 for item in candidate.techniques
             ),
             tuned_parameters=candidate.parameters,
+            champion_comparison=detailed_champion,
         )
 
     assert analysis_baseline is not None

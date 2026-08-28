@@ -32,6 +32,7 @@ from ghostlab.runtime.normalizer import normalize_response
 from ghostlab.state.memory import ConversationState
 from ghostlab.state.query import QueryVariant, build_query
 from ghostlab.state.query_expansion import QueryExpansion
+from ghostlab.state.v2_view import V2SessionController, V2StateView
 
 if TYPE_CHECKING:
     from ghostlab.policy.calibrated_router import CalibratedRouteModel
@@ -299,6 +300,8 @@ class ExperimentalAgent:
             raise ValueError("unknown recommendation-history mode")
         self.recommendation_history = recommendation_history
         self.sessions: dict[str, ConversationState | SessionState] = {}
+        self.v2_controllers: dict[str, V2SessionController] = {}
+        self.last_v2_views: dict[str, V2StateView] = {}
         self.shown_recommendations: dict[str, set[str]] = {}
         self.recommendation_epochs: dict[str, int] = {}
         self.stopped_sessions: set[str] = set()
@@ -357,7 +360,7 @@ class ExperimentalAgent:
         elif self.state_variant == "baseline_v2":
             from ghostlab.state.baseline_v2 import StateBaselineV2
 
-            self.sessions[session_id] = StateBaselineV2(
+            state = StateBaselineV2(
                 session_id,
                 user_profile,
                 multi_value=True,
@@ -365,6 +368,8 @@ class ExperimentalAgent:
                 provenance_enabled=self.provenance,
                 override_invalidation=self.override_invalidation,
             )
+            self.sessions[session_id] = state
+            self.v2_controllers[session_id] = V2SessionController(state)
         else:
             if self.normalizer == "catalog_v1":
                 from ghostlab.state.normalization import NormalizedConversationState
@@ -387,6 +392,9 @@ class ExperimentalAgent:
                     provenance_enabled=self.provenance,
                     override_invalidation=self.override_invalidation,
                 )
+        if self.state_variant != "baseline_v2":
+            self.v2_controllers.pop(session_id, None)
+        self.last_v2_views.pop(session_id, None)
         self.stopped_sessions.discard(session_id)
         self.last_runtime_inputs.pop(session_id, None)
         self.shown_recommendations[session_id] = set()
@@ -400,6 +408,9 @@ class ExperimentalAgent:
     ) -> list[str]:
         if self.recommendation_history == "off":
             return ranking
+        controller = self.v2_controllers.get(session_id)
+        if controller is not None:
+            return controller.filter_ranking(ranking)
         epoch = int(getattr(state, "intent_epoch", 0))
         if epoch != self.recommendation_epochs[session_id]:
             self.shown_recommendations[session_id].clear()
@@ -414,11 +425,16 @@ class ExperimentalAgent:
     ) -> None:
         if self.recommendation_history == "off":
             return
-        self.shown_recommendations[session_id].update(
+        identifiers = [
             str(item["parent_asin"])
             for item in response["recommendations"]
             if isinstance(item, dict) and item.get("parent_asin")
-        )
+        ]
+        controller = self.v2_controllers.get(session_id)
+        if controller is not None:
+            controller.record_shown(identifiers)
+            return
+        self.shown_recommendations[session_id].update(identifiers)
 
     def _query_and_question(
         self, state: ConversationState | SessionState, message: str, turn: int
@@ -533,8 +549,10 @@ class ExperimentalAgent:
 
     @staticmethod
     def _positive_constraints(
-        state: ConversationState | SessionState,
+        state: ConversationState | SessionState | V2StateView,
     ) -> dict[str, list[str]]:
+        if isinstance(state, V2StateView):
+            return state.positive_constraints()
         if not isinstance(state, ConversationState):
             return {}
         result: dict[str, list[str]] = {}
@@ -581,6 +599,13 @@ class ExperimentalAgent:
     ) -> dict:
         state = self.sessions[session_id]
         query, question = self._query_and_question(state, user_message, turn)
+        ranking_state: ConversationState | SessionState | V2StateView = state
+        controller = self.v2_controllers.get(session_id)
+        if controller is not None:
+            state_view = controller.snapshot(query_text=query, turn=turn)
+            self.last_v2_views[session_id] = state_view
+            ranking_state = state_view
+            query = state_view.query_text
         active_route: str = self.retrieval_route
         retrieval_limit = self.retrieval_k
         active_sparse_weight = self.sparse_weight
@@ -733,7 +758,7 @@ class ExperimentalAgent:
         if self.structured_filter is not None:
             ranked = self.structured_filter.apply(
                 ranked,
-                self._positive_constraints(state),
+                self._positive_constraints(ranking_state),
                 minimum_results=max(10, top_k),
             )
         if self.reranker is not None:
@@ -781,7 +806,7 @@ class ExperimentalAgent:
                     turn=turn,
                     active_constraint_count=sum(
                         len(values)
-                        for values in self._positive_constraints(state).values()
+                        for values in self._positive_constraints(ranking_state).values()
                     ),
                 ),
             )

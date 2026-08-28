@@ -224,6 +224,9 @@ class OfflineCampaignEvaluator:
                 name: statistics.fmean(values)
                 for name, values in sorted(scenarios.items())
             },
+            hit_rate_at_10=float(result["hit_rate_at_10"]),
+            mrr=float(result["mrr"]),
+            mttc=float(result["mttc"]),
             elapsed_seconds=elapsed,
             latency_p95_ms=_percentile_95(timed.latencies_ms),
             memory_mb=max(0.0, _memory_mb() - before_memory),

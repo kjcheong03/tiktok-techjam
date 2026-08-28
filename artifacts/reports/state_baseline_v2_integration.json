@@ -62,9 +62,10 @@
     "configs/suites/state_baseline_v2_ranked.json": "3d52681fcd855bca0ca59d2d8a6e0c91606a3a4a2b1934b865416fa066df45f8",
     "configs/suites/state_baseline_v2_raw_control.json": "a5df78d4568617667b373165752ff1470829eb896363984e89c6cf51f7ae36d7",
     "ghostlab/research/technique_suite.py": "ce1f2f79b8ac716656b0e883346159ea845d8b8ab71d0498c4e66c7826462c3d",
-    "ghostlab/runtime/unified_experimental.py": "10bdfc77df6b373902c9fa5d1e79e364c03bd5a40873c3888fc88f5b3f12df96",
+    "ghostlab/runtime/unified_experimental.py": "a479655bdd6231b605672fef64bd464edcb0a3b04b5e13b0d9d03054f8a13f18",
     "ghostlab/state/baseline_v2.py": "15fa43330d4026b8ffcdda7e6a4a9e7147926b8de75e3dd3c641ed2ac1f4824e",
-    "ghostlab/state/query.py": "c910eda8b9b3c9a5ea664aff2eb179b37587fc4efc8f913e90615a536c6977fd"
+    "ghostlab/state/query.py": "c910eda8b9b3c9a5ea664aff2eb179b37587fc4efc8f913e90615a536c6977fd",
+    "ghostlab/state/v2_view.py": "a9924287fddd32153c63a105b5030e29d83582f553119c2e98c617b1d8d3dce6"
   },
   "nested_split": "configs/splits/nested_v1.json",
   "parity": {
@@ -94,7 +95,7 @@
   "results": {
     "state_baseline_v2_fixed.json": {
       "config_path": "configs/suites/state_baseline_v2_fixed.json",
-      "configuration_sha256": "b11f6d4b09ca2d699f2b2b68db082bb1690504b52e5f628906057832e002f0b6",
+      "configuration_sha256": "05c51a72fcb72bd20c8b9ed7674ee0b9d0e4a4e67f7f1c57a006e6b092c0a6e7",
       "experiment_id": "state_baseline_v2_fixed_v1",
       "metrics": {
         "hit_rate_at_10": 0.94,
@@ -1334,7 +1335,7 @@
     },
     "state_baseline_v2_other.json": {
       "config_path": "configs/suites/state_baseline_v2_other.json",
-      "configuration_sha256": "45f4e64e4701bf43f228973d04c3788fae73cf7895eefd82c9f178d7902519e3",
+      "configuration_sha256": "1bc05aad25478920b517c08834134374f24d427d67c2a156f8a07633fd0efd7e",
       "experiment_id": "state_baseline_v2_other_v1",
       "metrics": {
         "hit_rate_at_10": 0.986667,
@@ -2574,7 +2575,7 @@
     },
     "state_baseline_v2_ranked.json": {
       "config_path": "configs/suites/state_baseline_v2_ranked.json",
-      "configuration_sha256": "88166e48d8f043a4308fda2ee38b895407ba591f3eda67bb74bea68370c37c08",
+      "configuration_sha256": "8a5d9aa2d63d07697e6969c2e480632d6bd084fd2352c6d414f4bcf44ceb3fd9",
       "experiment_id": "state_baseline_v2_ranked_interaction_v1",
       "metrics": {
         "hit_rate_at_10": 0.986667,
@@ -3814,7 +3815,7 @@
     },
     "state_baseline_v2_raw_control.json": {
       "config_path": "configs/suites/state_baseline_v2_raw_control.json",
-      "configuration_sha256": "00611c81cfb2e2104d789f9502ac1d7dfd7dbaa4001673534d281485215c704d",
+      "configuration_sha256": "5cd6212aff401ba786263b883182dfef8e3077b00ecc8206267b6baae615d7a6",
       "experiment_id": "state_baseline_v2_raw_control_v1",
       "metrics": {
         "hit_rate_at_10": 0.793333,

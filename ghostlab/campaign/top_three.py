@@ -7,6 +7,7 @@ from pathlib import Path, PurePath
 from typing import Literal
 
 from ghostlab.campaign.analyze import CandidateEvaluation, PairedAnalysis
+from ghostlab.campaign.models import ChampionComparison
 from ghostlab.research.technique_suite import UnifiedTechniqueConfig
 
 ProposalRole = Literal["score_leader", "robust_leader", "efficient_alternative"]
@@ -39,6 +40,7 @@ class CandidatePackage:
     enabled_techniques: tuple[str, ...] = ()
     technique_sources: tuple[tuple[str, str, str], ...] = ()
     tuned_parameters: tuple[tuple[str, str | int | float | bool], ...] = ()
+    champion_comparison: ChampionComparison | None = None
 
     def __post_init__(self) -> None:
         if not self.candidate_id:

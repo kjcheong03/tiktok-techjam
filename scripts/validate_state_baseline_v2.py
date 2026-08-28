@@ -37,6 +37,7 @@ REFERENCE_SESSION_HASHES = {
 INTEGRATION_INPUTS = (
     "ghostlab/state/baseline_v2.py",
     "ghostlab/state/query.py",
+    "ghostlab/state/v2_view.py",
     "ghostlab/runtime/unified_experimental.py",
     "ghostlab/research/technique_suite.py",
     "configs/suites/state_baseline_v2_raw_control.json",

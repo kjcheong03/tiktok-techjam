@@ -4,12 +4,17 @@ import hashlib
 import json
 from pathlib import Path
 
+import pytest
+
+from ghostlab.campaign.analyze import CandidateEvaluation
 from ghostlab.campaign.bindings import default_binding_registry
 from ghostlab.campaign.catalog import TechniqueCatalog, load_catalog
+from ghostlab.campaign.controller import initial_stage, promote_stage
 from ghostlab.campaign.models import (
     CampaignManifest,
     CampaignResources,
     CandidateSpec,
+    ChampionComparison,
     FidelityBudget,
     JobOutcome,
 )
@@ -237,6 +242,71 @@ def test_search_and_confirmation_jobs_use_disjoint_declared_folds(
     assert {job.outer_fold for job in f2.jobs} == {1, 4}
 
 
+def test_control_only_anchor_uses_one_slot_without_halving_search_budget() -> None:
+    champion_id = "configs/suites/champion_guarded.json"
+    pure_id = "configs/suites/keyword_research.json"
+    manifest = _manifest("question.candidate_eig.v1").model_copy(
+        update={
+            "baseline_presets": (champion_id, pure_id),
+            "baseline_techniques_by_preset": {
+                champion_id: ("retrieval.sparse", "prior.quality"),
+                pure_id: ("retrieval.sparse", "prior.quality"),
+            },
+            "baseline_search_modes": {
+                champion_id: "control_only",
+                pure_id: "composable",
+            },
+            "candidate_limit": 10,
+        }
+    )
+    _, stage = initial_stage(
+        load_catalog(ROOT / "configs/techniques/catalog_v2.json"), manifest
+    )
+    champion_candidates = [
+        item for item in stage.candidates if item.baseline_id == champion_id
+    ]
+    pure_candidates = [item for item in stage.candidates if item.baseline_id == pure_id]
+    assert len(champion_candidates) == 1
+    assert champion_candidates[0].generation == "control"
+    assert len(pure_candidates) > 1
+    assert len(stage.candidates) <= manifest.candidate_limit
+
+
+def test_promotion_preserves_low_scoring_matched_control() -> None:
+    catalog = load_catalog(ROOT / "configs/techniques/catalog_v2.json")
+    manifest = _manifest("question.candidate_eig.v1", "state.raw_history")
+    _, stage = initial_stage(catalog, manifest)
+    candidates_by_hash = {item.canonical_hash(): item for item in stage.candidates}
+    outcomes = {
+        job.job_id: JobOutcome(
+            job_id=job.job_id,
+            state="complete",
+            score=(
+                0.10
+                if candidates_by_hash[job.candidate_hash].generation == "control"
+                else 0.80
+            ),
+            session_rewards=(0.10,)
+            if candidates_by_hash[job.candidate_hash].generation == "control"
+            else (0.80,),
+        )
+        for job in stage.jobs
+    }
+    promoted = promote_stage(
+        catalog,
+        stage,
+        outcomes,
+        next_fidelity="f1",
+        candidate_limit=2,
+        exploration_fraction=0.0,
+        seed=11,
+        outer_fold_count=5,
+        seeds=(11,),
+    )
+    assert len(promoted.candidates) == 2
+    assert any(item.generation == "control" for item in promoted.candidates)
+
+
 def test_hpo_suggestions_jointly_bind_all_eligible_parameters(tmp_path: Path) -> None:
     campaign = _campaign(tmp_path, FakeEvaluatorFactory())
     root = CandidateSpec(
@@ -268,6 +338,134 @@ def test_behaviorally_identical_hpo_variants_do_not_fill_top_three(
 ) -> None:
     report = _campaign(tmp_path, FlatImprovementEvaluatorFactory()).run()
     assert report["confirmed_top3"] == []
+
+
+def test_same_fold_champion_comparison_reports_metrics_and_never_auto_promotes(
+    tmp_path: Path,
+) -> None:
+    campaign = _campaign(tmp_path, FakeEvaluatorFactory())
+    candidate = CandidateEvaluation(
+        candidate_id="candidate",
+        complexity=1,
+        score=0.82,
+        session_rewards=(0.80, 0.82, 0.84, 0.83, 0.81, 0.82),
+        scenario_scores={"buying": 0.83, "browsing": 0.81},
+        hit_rate_at_10=0.90,
+        mrr=0.61,
+        mttc=3.1,
+    )
+    champion = CandidateEvaluation(
+        candidate_id="frozen-champion",
+        complexity=0,
+        score=0.70,
+        session_rewards=(0.68, 0.70, 0.72, 0.71, 0.69, 0.70),
+        scenario_scores={"buying": 0.71, "browsing": 0.69},
+        hit_rate_at_10=0.84,
+        mrr=0.54,
+        mttc=3.8,
+    )
+
+    comparison = campaign._champion_comparison(
+        candidate, champion, fit_receipts_verified=True
+    )
+
+    assert comparison.candidate_metrics.technical_score == 0.82
+    assert comparison.champion_metrics.technical_score == 0.70
+    assert comparison.technical_score_delta == pytest.approx(0.12)
+    assert comparison.hit_rate_at_10_delta == pytest.approx(0.06)
+    assert comparison.mrr_delta == pytest.approx(0.07)
+    assert comparison.mttc_delta == pytest.approx(-0.7)
+    assert comparison.beats_champion_point_estimate is True
+    assert comparison.paired_session_count == 6
+    assert comparison.statistically_supported is True
+    assert comparison.promotion_recommended is True
+    assert comparison.automatic_promotion is False
+
+
+def test_champion_comparison_rejects_inconsistent_decision_flags() -> None:
+    valid = {
+        "champion_candidate_id": "champion",
+        "champion_baseline_id": "configs/suites/champion_guarded.json",
+        "candidate_metrics": {"technical_score": 0.8},
+        "champion_metrics": {"technical_score": 0.7},
+        "technical_score_delta": 0.1,
+        "paired_mean_delta": 0.1,
+        "confidence_interval": [0.05, 0.15],
+        "randomization_pvalue": 0.01,
+        "paired_session_count": 5,
+        "wins": 4,
+        "ties": 0,
+        "losses": 1,
+        "beats_champion_point_estimate": True,
+        "statistically_supported": True,
+        "no_material_scenario_regression": True,
+        "fit_receipts_verified": True,
+        "promotion_recommended": True,
+        "automatic_promotion": False,
+    }
+    ChampionComparison.model_validate(valid)
+    valid["promotion_recommended"] = False
+    with pytest.raises(ValueError, match="promotion recommendation"):
+        ChampionComparison.model_validate(valid)
+
+
+def test_campaign_keeps_champion_control_and_emits_same_fold_comparisons(
+    tmp_path: Path,
+) -> None:
+    champion_id = "configs/suites/champion_guarded.json"
+    pure_id = "configs/suites/keyword_research.json"
+    manifest = _manifest("question.candidate_eig.v1").model_copy(
+        update={
+            "baseline_presets": (champion_id, pure_id),
+            "baseline_techniques_by_preset": {
+                champion_id: ("retrieval.sparse", "prior.quality"),
+                pure_id: ("retrieval.sparse", "prior.quality"),
+            },
+            "baseline_search_modes": {
+                champion_id: "control_only",
+                pure_id: "composable",
+            },
+        }
+    )
+    campaign = AutonomousCampaign(
+        manifest=manifest,
+        catalog=load_catalog(ROOT / "configs/techniques/catalog_v2.json"),
+        registry=default_binding_registry(),
+        evaluator_factory=FakeEvaluatorFactory(),
+        checkpoint_path=tmp_path / "checkpoint.json",
+        evidence_path=tmp_path / "evidence.json",
+        outer_folds=(("a",), ("b",), ("c",), ("d",), ("e",)),
+        project_root=ROOT,
+        options=CampaignOptions(
+            f1_candidates=4,
+            f2_candidates=4,
+            hpo_trials_per_structure=0,
+            higher_order_rounds=0,
+            bootstrap_resamples=50,
+        ),
+    )
+
+    report = campaign.run()
+
+    champion_rows = [
+        item
+        for item in report["safety"]
+        if item["candidate"]["baseline_id"] == champion_id
+    ]
+    challenger_rows = [
+        item
+        for item in report["safety"]
+        if item["candidate"]["baseline_id"] == pure_id
+        and item["candidate"]["generation"] != "control"
+    ]
+    assert len(champion_rows) == 1
+    assert champion_rows[0]["classification"] == "anchor_control"
+    assert challenger_rows
+    assert all(item["champion_comparison"] is not None for item in challenger_rows)
+    assert all(
+        item["champion_comparison"]["automatic_promotion"] is False
+        for item in challenger_rows
+    )
 
 
 def test_fit_required_candidate_is_not_allowed_into_f2(tmp_path: Path) -> None:

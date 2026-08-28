@@ -8,9 +8,19 @@
   "protected_holdout_access": "forbidden",
   "search_outer_folds": [0, 2, 3],
   "confirmation_outer_folds": [1, 4],
-  "baseline_presets": ["configs/suites/unfitted_keyword_search.json"],
+  "baseline_presets": [
+    "configs/suites/champion_guarded.json",
+    "configs/suites/unfitted_keyword_search.json"
+  ],
   "baseline_techniques": ["state.current", "question.fixed", "retrieval.sparse"],
   "baseline_techniques_by_preset": {
+    "configs/suites/champion_guarded.json": [
+      "state.raw_history",
+      "retrieval.sparse",
+      "ranking.constraint_gbdt",
+      "prior.quality",
+      "guard.override_fallback"
+    ],
     "configs/suites/unfitted_keyword_search.json": [
       "state.current",
       "question.fixed",
@@ -18,6 +28,7 @@
     ]
   },
   "baseline_search_modes": {
+    "configs/suites/champion_guarded.json": "control_only",
     "configs/suites/unfitted_keyword_search.json": "composable"
   },
   "technique_ids": [

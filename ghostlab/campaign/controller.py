@@ -26,8 +26,25 @@ class CampaignStage:
 def initial_stage(
     catalog: TechniqueCatalog, manifest: CampaignManifest
 ) -> tuple[CandidatePlan, CampaignStage]:
-    anchor_count = len(manifest.baseline_presets)
-    per_anchor_limit = max(1, manifest.candidate_limit // anchor_count)
+    control_only = tuple(
+        preset
+        for preset in manifest.baseline_presets
+        if manifest.search_mode_for_preset(preset) == "control_only"
+    )
+    composable = tuple(
+        preset for preset in manifest.baseline_presets if preset not in control_only
+    )
+    required_slots = len(control_only) + len(composable)
+    if manifest.candidate_limit < required_slots:
+        raise ValueError("candidate limit must provide at least one slot per anchor")
+    composable_budget = manifest.candidate_limit - len(control_only)
+    base_limit, extra_slots = (
+        divmod(composable_budget, len(composable)) if composable else (0, 0)
+    )
+    composable_limits = {
+        preset: base_limit + (index < extra_slots)
+        for index, preset in enumerate(composable)
+    }
     plans = tuple(
         plan_candidates(
             catalog,
@@ -39,7 +56,11 @@ def initial_stage(
                 else manifest.technique_ids
             ),
             max_order=manifest.max_order,
-            candidate_limit=per_anchor_limit,
+            candidate_limit=(
+                1
+                if manifest.search_mode_for_preset(preset) == "control_only"
+                else composable_limits[preset]
+            ),
         )
         for preset in manifest.baseline_presets
     )
@@ -97,10 +118,19 @@ def promote_stage(
     if not ranked:
         raise ValueError("no completed candidate outcomes are available for promotion")
     limit = min(candidate_limit, len(ranked))
-    audit_count = min(limit - 1, round(limit * exploration_fraction))
-    exploit_count = limit - audit_count
-    selected = [item[0] for item in ranked[:exploit_count]]
-    remainder = [item[0] for item in ranked[exploit_count:]]
+    controls = [item for item in ranked if item[0].generation == "control"]
+    if len(controls) > limit:
+        raise ValueError("promotion limit cannot preserve every matched control")
+    challengers = [item for item in ranked if item[0].generation != "control"]
+    challenger_limit = limit - len(controls)
+    audit_count = min(
+        max(0, challenger_limit - 1),
+        round(challenger_limit * exploration_fraction),
+    )
+    exploit_count = challenger_limit - audit_count
+    selected = [item[0] for item in controls]
+    selected.extend(item[0] for item in challengers[:exploit_count])
+    remainder = [item[0] for item in challengers[exploit_count:]]
     rng = random.Random(seed)
     rng.shuffle(remainder)
     selected.extend(remainder[:audit_count])

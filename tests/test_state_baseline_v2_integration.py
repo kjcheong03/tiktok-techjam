@@ -170,6 +170,9 @@ def test_correction_scoped_history_filters_and_resets(tmp_path: Path) -> None:
         "A",
         "B",
     ]
+    assert agent.last_v2_views["session"].intent_epoch == 1
+    assert agent.last_v2_views["session"].shown_ids == frozenset()
+    assert agent.v2_controllers["session"].filter_ranking(["A", "B", "C"]) == ["C"]
 
 
 def test_exact_presets_build_native_unified_agents() -> None:

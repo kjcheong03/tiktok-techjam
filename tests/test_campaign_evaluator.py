@@ -102,6 +102,8 @@ def test_evaluator_runs_bounded_fidelities_and_outer_fold(tmp_path: Path) -> Non
     assert len(f0.session_rewards) == 1
     assert len(f2.session_rewards) == 1
     assert f0.score == f2.score == 1.0
+    assert f0.hit_rate_at_10 == f0.mrr == 1.0
+    assert f0.mttc == 1.0
     assert f0.latency_p95_ms >= 0.0
 
 
