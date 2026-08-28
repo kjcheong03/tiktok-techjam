@@ -54,7 +54,10 @@ one automatically.
 Supported platforms are macOS and Linux. On Windows, use WSL2 with Ubuntu; native Windows
 is not yet supported because Unix-specific resource measurement remains in the campaign
 runtime and the full workflow has not passed Windows CI. Use CPython 3.10 through 3.13
-(3.12 recommended), `uv`, Git, and the released `data/catalog.jsonl`.
+(3.12 recommended), `uv`, Git, and the released `data/catalog.jsonl`. Install `uv` first
+from its [official installation guide](https://docs.astral.sh/uv/getting-started/installation/)
+if `uv --version` is unavailable. `jq` is optional and used only by the live-monitoring
+command in Step 2.4.
 
 ### 1. Install and validate
 
@@ -102,55 +105,164 @@ a development estimate, not a guaranteed private-leaderboard score. See
 [`docs/final_candidate_checkpoint.md`](docs/final_candidate_checkpoint.md) for its exact
 pipeline, validation evidence, limitations, hashes, and recovery information.
 
-### 2. Run or resume the autonomous search
+### 2. Choose and run an autonomous workflow
+
+Run these commands from the repository root after Step 1 passes and `git status` is clean.
+The three modes use separate campaign IDs and checkpoints:
+
+| Goal | Mode and campaign ID | Search anchors |
+|---|---|---|
+| Reconstruct from scratch without incumbent bias | `discover` / `adaptive_autonomous_discovery_v1` | Pure `state.current + question.fixed + retrieval.sparse` baseline only |
+| Improve the strongest composable incumbent | `augment` / `adaptive_autonomous_augment_v1` | State Baseline V2; compiled guarded champion is a control only |
+| Maximize coverage (recommended) | `full` / `adaptive_autonomous_full_v1` | Pure baseline and State Baseline V2 independently; compiled champion is a control only |
+
+The compiled guarded champion cannot be patched safely because its internal techniques are
+inseparable. Therefore, `augment` continues from State Baseline V2 rather than mutating the
+compiled champion. `full` is the recommended comparison because it can discover a new path
+from the pure baseline without losing the opportunity to improve the incumbent.
+
+#### 2.1 Start a first fresh campaign
+
+Pure-baseline discovery:
 
 ```bash
-uv run python -m scripts.run_autonomous_end_to_end --prepare-assets
+uv run python -m scripts.run_autonomous_end_to_end \
+  --mode discover \
+  --prepare-assets
 ```
 
-The unchanged command defaults to `--mode full`: it searches independently from both the
-pure keyword baseline and the strongest composable State V2 incumbent, while keeping the
-compiled guarded champion as a matched control. Use `--mode discover` for an unbiased
-pure-baseline reconstruction or `--mode augment` for targeted incumbent improvement.
+Incumbent augmentation:
 
-The command prepares and verifies optional model assets, freezes the campaign and its
-42-parameter conditional search space, resumes content-addressed checkpoints, runs the
-bounded F0/F1/F2 search, and materializes three independently confirmed safe proposal
-roles or stops without padding the result. It prints one preparation command per
-proposal. The first dense index can take roughly
-20–25 minutes on CPU and the full campaign can take several hours. If interrupted, run
-the same command again; completed checkpoint jobs are reused.
+```bash
+uv run python -m scripts.run_autonomous_end_to_end \
+  --mode augment \
+  --prepare-assets
+```
 
-### 3. Review and prepare one proposal
+Comprehensive search from both searchable anchors (recommended):
 
-Review:
+```bash
+uv run python -m scripts.run_autonomous_end_to_end \
+  --mode full \
+  --prepare-assets
+```
 
-- `artifacts/campaigns/adaptive_autonomous_full_v1/admission.json`;
-- `artifacts/campaigns/adaptive_autonomous_full_v1/live_status.json`;
-- `artifacts/campaigns/adaptive_autonomous_full_v1/evidence.json`; and
-- `artifacts/proposals/adaptive_autonomous_full_v1/proposal_manifest.json`.
+`--prepare-assets` downloads or builds missing pinned optional assets and verifies every
+asset before admission. On macOS, optionally prevent system sleep only while the command
+runs:
 
-Choose one proposal and run its preparation command printed by Stage 2. Preparation
-revalidates and hashes the immutable preset, then prints its exact hash-bound activation
-command. Candidate-specific commands cannot be written here
-in advance because their IDs, paths, and hashes are campaign outputs.
+```bash
+caffeinate -i uv run python -m scripts.run_autonomous_end_to_end \
+  --mode full \
+  --prepare-assets
+```
+
+The wrapper performs preflight, freezes the selected versioned campaign and its
+42-parameter conditional search space, plans the bounded combinations, runs F0/F1/F2,
+checkpoints every completed job, and emits zero or three independently confirmed proposal
+roles. It never commits, pushes, opens F3, or activates a candidate. Initial dense-asset
+preparation can take roughly 20–25 minutes on CPU; a full campaign can take several hours.
+
+#### 2.2 Resume an interrupted campaign
+
+Run the exact same mode command again. If its `manifest.json` exists, the wrapper verifies
+the frozen hashes and reuses content-addressed completed jobs. It does not silently restart
+them. `--prepare-assets` may remain present; existing assets are verified rather than
+redownloaded. Add `--resume` only when you want the command to fail unless an existing
+manifest is present:
+
+```bash
+uv run python -m scripts.run_autonomous_end_to_end \
+  --mode full \
+  --resume
+```
+
+#### 2.3 Start another genuinely fresh campaign later
+
+Never delete, overwrite, or mix an existing campaign checkpoint. Copy the relevant
+template, increment both its filename and internal `campaign_id` (for example, from
+`adaptive_autonomous_full_v1` to `adaptive_autonomous_full_v2`), review and commit that
+new template, then run:
+
+```bash
+uv run python -m scripts.run_autonomous_end_to_end \
+  --template configs/campaigns/adaptive_autonomous_full_v2.template.json \
+  --prepare-assets
+```
+
+This creates a separate manifest, checkpoint, evidence ledger, and proposal directory.
+
+#### 2.4 Monitor progress safely
+
+Open a second terminal in the repository root. Set the ID to the mode being run, then view
+the atomically updated status every 30 seconds:
+
+```bash
+CAMPAIGN_ID=adaptive_autonomous_full_v1
+while true; do
+  clear
+  date
+  jq . "artifacts/campaigns/${CAMPAIGN_ID}/live_status.json"
+  sleep 30
+done
+```
+
+Press `Ctrl-C` to stop only the monitor. `total_jobs`, `complete`, and
+`highest_individual_job` describe the currently executing fidelity stage, so counts may
+change when the campaign advances. The final aggregate and scenario-safe decision is in
+`evidence.json`, not the live single-job maximum. To confirm macOS sleep prevention while
+the wrapped search is running, use `pmset -g assertions | grep -A4 caffeinate`.
+
+### 3. Review the completed campaign and prepare one proposal
+
+Replace `<campaign_id>` below with the chosen ID from the table:
+
+| Path | Purpose |
+|---|---|
+| `artifacts/campaigns/<campaign_id>/admission.json` | Every technique's admission, dependency, asset, and minimum-trial disposition |
+| `artifacts/campaigns/<campaign_id>/manifest.json` | Immutable commit, data, split, catalog, search-space, and campaign hashes |
+| `artifacts/campaigns/<campaign_id>/plan.json` | Planned structures and explicit compatibility skips |
+| `artifacts/campaigns/<campaign_id>/checkpoint.json` | Atomic per-job outcomes used for resume |
+| `artifacts/campaigns/<campaign_id>/live_status.json` | Current-stage progress and highest individual job |
+| `artifacts/campaigns/<campaign_id>/evidence.json` | Final F0/F1/F2 comparisons, receipts, safety gates, and confirmed Top 3 |
+| `artifacts/proposals/<campaign_id>/proposal_manifest.json` | Runnable proposal presets, techniques, parameters, assets, scores, and commands |
+
+The wrapper finishes by printing zero or three `prepare_candidate` commands. Zero means
+that fewer than three candidates passed every confirmation gate; it deliberately retains
+the current champion rather than padding unsafe results. For a proposal you approve, copy
+and run exactly one printed command, for example:
+
+```bash
+uv run python -m scripts.prepare_candidate \
+  --preset artifacts/proposals/<campaign_id>/<printed-preset>.json
+```
+
+Preparation copies the immutable preset into `configs/candidates/`, evaluates it on the
+development split, hashes it, and prints `next_activation_command`. It still does not
+activate anything.
 
 ### 4. Activate, verify, or roll back
 
-Only after human review, run the activation command printed by preparation. Activation
-prints the verification and rollback commands; run the verification command next. To
-reject the selection or recover from a failed verification, run:
+After human review, run the exact hash-bound `next_activation_command` printed by Step 3.
+It writes `configs/active_candidate.json` atomically and prints both the next verification
+and rollback commands. Run the printed verification command:
+
+```bash
+uv run python -m scripts.verify_active_candidate
+```
+
+If review or verification fails, restore the guarded champion:
 
 ```bash
 uv run python -m scripts.activate_candidate --rollback
 ```
 
-The autonomous wrapper never commits, pushes, reads the protected F3 holdout, or changes
-the active method by itself. Start with `docs/essentials/README.md` for the curated project
-reading order. Use `docs/essentials/unified_technique_operations.md` for every technique,
-dependency, switch, and retest rule, and
-`docs/essentials/autonomous_unified_system_reference.md` for the complete campaign,
-overfitting, pruning, proposal, activation, and recovery specification.
+The active pointer is the only selection state used by `starter.Agent`; campaign results
+alone never change the competition-facing method. Start with `docs/essentials/README.md`
+for the curated project reading order. Use
+`docs/essentials/unified_technique_operations.md` for every technique, dependency, switch,
+and retest rule, and `docs/essentials/autonomous_unified_system_reference.md` for the
+complete campaign, overfitting, pruning, proposal, activation, and recovery specification.
 
 ## Technical Architecture and Complete Strategy Surface
 
