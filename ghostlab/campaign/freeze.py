@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import subprocess
 from collections.abc import Mapping
 from pathlib import Path, PurePath
@@ -42,7 +43,8 @@ def resolve_repository_path(
     if relative.is_absolute() or ".." in relative.parts or not relative.name:
         raise ValueError(f"{label} must stay inside the project")
     lowered = "/".join(relative.parts).casefold()
-    if any(marker in lowered for marker in _FORBIDDEN_PATH_MARKERS):
+    path_tokens = frozenset(item for item in re.split(r"[^a-z0-9]+", lowered) if item)
+    if any(marker in path_tokens for marker in _FORBIDDEN_PATH_MARKERS):
         raise ValueError(f"{label} cannot reference protected data: {value}")
     root = project_root.resolve()
     resolved = (root / relative).resolve()

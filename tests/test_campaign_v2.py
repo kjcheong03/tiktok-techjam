@@ -226,6 +226,29 @@ class SchedulingAndResumeTests(unittest.TestCase):
             self.assertEqual(first, second)
             self.assertEqual(calls, ["a", "b"])
 
+    def test_runner_honors_stop_request_between_atomic_waves(self) -> None:
+        calls: list[str] = []
+
+        def evaluate(job: CampaignJob) -> JobOutcome:
+            calls.append(job.job_id)
+            return JobOutcome(job_id=job.job_id, state="complete", score=0.5)
+
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "checkpoint.json"
+            jobs = (self.job("a", heavy=True), self.job("b", heavy=True))
+            checkpoint = run_jobs(
+                jobs,
+                manifest_hash="manifest",
+                resources=CampaignResources(
+                    cpu_jobs=2, memory_gb=8, heavy_model_jobs=1
+                ),
+                checkpoint_path=path,
+                evaluator=evaluate,
+                stop_requested=lambda: bool(calls),
+            )
+            self.assertEqual(calls, ["a"])
+            self.assertEqual(set(checkpoint.outcomes), {"a"})
+
     def test_cache_rejects_corruption(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             cache = ContentAddressedCache(Path(directory))

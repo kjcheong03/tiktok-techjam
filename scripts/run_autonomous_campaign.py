@@ -61,8 +61,10 @@ def main() -> None:
     )
     parser.add_argument("--f1-candidates", type=int, default=24)
     parser.add_argument("--f2-candidates", type=int, default=6)
-    parser.add_argument("--hpo-trials-per-structure", type=int, default=8)
-    parser.add_argument("--higher-order-rounds", type=int, default=2)
+    parser.add_argument("--hpo-trials-per-structure", type=int, default=0)
+    parser.add_argument("--hpo-max-parameter-changes", type=int, default=3)
+    parser.add_argument("--hpo-trust-region", type=float, default=0.2)
+    parser.add_argument("--higher-order-rounds", type=int, default=1)
     parser.add_argument("--bootstrap-resamples", type=int, default=1000)
     args = parser.parse_args()
 
@@ -130,6 +132,8 @@ def main() -> None:
             f1_candidates=args.f1_candidates,
             f2_candidates=args.f2_candidates,
             hpo_trials_per_structure=args.hpo_trials_per_structure,
+            hpo_max_parameter_changes=args.hpo_max_parameter_changes,
+            hpo_trust_region=args.hpo_trust_region,
             higher_order_rounds=args.higher_order_rounds,
             bootstrap_resamples=args.bootstrap_resamples,
         ),

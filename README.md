@@ -206,6 +206,21 @@ checkpoints every completed job, and emits zero or three independently confirmed
 roles. It never commits, pushes, opens F3, or activates a candidate. Initial dense-asset
 preparation can take roughly 20–25 minutes on CPU; a full campaign can take several hours.
 
+Normal runs use one evidence-guided expansion after the initial F0 screen and skip HPO.
+This avoids the oversized second expansion and prevents broad parameter sampling from
+weakening an already strong F1 structure. HPO is an explicit opt-in and now performs
+blockwise local mutations around the materialized F1 defaults:
+
+```bash
+uv run python -m scripts.run_autonomous_end_to_end \
+  --mode full \
+  --prepare-assets \
+  --higher-order-rounds 1 \
+  --hpo-trials 4
+```
+
+Use `--higher-order-rounds 2` only as a deliberate, higher-cost research override.
+
 #### 2.2 Resume an interrupted campaign
 
 Run the exact same mode command again. If its `manifest.json` exists, the wrapper verifies
@@ -256,6 +271,20 @@ change when the campaign advances. The final aggregate and scenario-safe decisio
 `evidence.json`, not the live single-job maximum. To confirm macOS sleep prevention while
 the wrapped search is running, use `pmset -g assertions | grep -A4 caffeinate`.
 
+`live_status.json` also records `stage` and the active operator control. To bypass HPO
+without interrupting F0 or F1, run this in another terminal:
+
+```bash
+uv run python -m scripts.control_autonomous_campaign \
+  --campaign-id adaptive_autonomous_full_v1 \
+  --skip-hpo
+```
+
+If HPO is already running, the current atomic resource wave finishes, later HPO work is
+not scheduled, and the unchanged F1 roots continue to F2. During F2 the request is a
+reported no-op because HPO has already passed. Inspect the same control and live stage
+without changing anything by omitting `--skip-hpo`.
+
 ### 3. Review the completed campaign and prepare one proposal
 
 Replace `<campaign_id>` below with the chosen ID from the table:
@@ -267,6 +296,7 @@ Replace `<campaign_id>` below with the chosen ID from the table:
 | `artifacts/campaigns/<campaign_id>/plan.json` | Planned structures and explicit compatibility skips |
 | `artifacts/campaigns/<campaign_id>/checkpoint.json` | Atomic per-job outcomes used for resume |
 | `artifacts/campaigns/<campaign_id>/live_status.json` | Current-stage progress and highest individual job |
+| `artifacts/campaigns/<campaign_id>/control.json` | Atomic operator request such as `skip_hpo`; persists across resume |
 | `artifacts/campaigns/<campaign_id>/evidence.json` | Final F0/F1/F2 comparisons, receipts, safety gates, and confirmed Top 3 |
 | `artifacts/proposals/<campaign_id>/proposal_manifest.json` | Runnable proposal presets, techniques, parameters, assets, scores, and commands |
 

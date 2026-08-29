@@ -36,6 +36,8 @@ def _save_progress(
     *,
     jobs: tuple[CampaignJob, ...],
     outcomes: dict[str, JobOutcome],
+    stage: str | None = None,
+    control_path: Path | None = None,
 ) -> None:
     relevant = [outcomes[job.job_id] for job in jobs if job.job_id in outcomes]
     complete = [item for item in relevant if item.state == "complete"]
@@ -46,6 +48,7 @@ def _save_progress(
     )
     payload = {
         "schema_version": 1,
+        "stage": stage,
         "total_jobs": len(jobs),
         "recorded": len(relevant),
         "complete": len(complete),
@@ -58,6 +61,10 @@ def _save_progress(
             "scenario_scores": best.scenario_scores,
         },
     }
+    if control_path is not None:
+        from ghostlab.campaign.control import load_campaign_control
+
+        payload["control"] = load_campaign_control(control_path).model_dump(mode="json")
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary = path.with_suffix(path.suffix + ".tmp")
     temporary.write_text(
@@ -85,13 +92,26 @@ def run_jobs(
     checkpoint_path: Path,
     evaluator: Evaluator,
     progress_path: Path | None = None,
+    stage: str | None = None,
+    control_path: Path | None = None,
+    stop_requested: Callable[[], bool] | None = None,
 ) -> CampaignCheckpoint:
     """Run deterministic resource batches and atomically checkpoint every outcome."""
 
     checkpoint = load_checkpoint(checkpoint_path, manifest_hash)
     outcomes = dict(checkpoint.outcomes)
     pending = tuple(job for job in jobs if job.job_id not in outcomes)
+    if progress_path is not None:
+        _save_progress(
+            progress_path,
+            jobs=jobs,
+            outcomes=outcomes,
+            stage=stage,
+            control_path=control_path,
+        )
     for wave in schedule_waves(pending, resources):
+        if stop_requested is not None and stop_requested():
+            break
 
         def evaluate_one(job: CampaignJob) -> JobOutcome:
             try:
@@ -121,5 +141,13 @@ def run_jobs(
             )
             _save_checkpoint(checkpoint_path, checkpoint)
             if progress_path is not None:
-                _save_progress(progress_path, jobs=jobs, outcomes=outcomes)
+                _save_progress(
+                    progress_path,
+                    jobs=jobs,
+                    outcomes=outcomes,
+                    stage=stage,
+                    control_path=control_path,
+                )
+        if stop_requested is not None and stop_requested():
+            break
     return checkpoint

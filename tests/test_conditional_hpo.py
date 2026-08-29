@@ -129,6 +129,47 @@ class ConditionalHPOTests(unittest.TestCase):
         }
         self.assertFalse(any(name.startswith("residual_") for name in without_residual))
 
+    def test_local_hpo_changes_only_one_coherent_block_near_effective_defaults(
+        self,
+    ) -> None:
+        space = ConditionalSearchSpace.model_validate_json(
+            (
+                PROJECT_ROOT / "configs/search/adaptive_parameter_space_v1.json"
+            ).read_text(encoding="utf-8")
+        )
+        center = (
+            ("retrieval_k", 200),
+            ("sparse_title_weight", 2.0),
+            ("sparse_categories_weight", 8.0),
+            ("sparse_features_weight", 4.0),
+            ("sparse_details_weight", 2.5),
+            ("sparse_store_weight", 1.5),
+            ("sparse_description_weight", 1.0),
+            ("quality_prior_weight", 0.2),
+            ("rerank_k", 50),
+        )
+        suggestion = suggest_for_combination(
+            space,
+            ("retrieval.sparse", "prior.quality", "ranking.metadata_gbdt"),
+            (),
+            context=TuningContext(outer_fold=0, inner_fold=1),
+            seed=41,
+            center=center,
+            max_changes=3,
+            trust_region=0.2,
+            block_index=1,
+        )
+        names = {name for name, _ in suggestion}
+        retrieval_names = {"retrieval_k", *(name for name, _ in center if name.startswith("sparse_"))}
+        self.assertTrue(names)
+        self.assertLessEqual(names, retrieval_names)
+        sparse_values = [
+            float(value) for name, value in suggestion if name.startswith("sparse_")
+        ]
+        if sparse_values:
+            self.assertEqual(len(sparse_values), 6)
+            self.assertAlmostEqual(sum(sparse_values), 19.0)
+
 
 if __name__ == "__main__":
     unittest.main()

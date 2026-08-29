@@ -12,6 +12,7 @@ from ghostlab.campaign.freeze import (
     build_campaign_manifest,
     freeze_campaign,
     require_clean_worktree,
+    resolve_repository_path,
     sha256_file,
     validate_frozen_manifest,
 )
@@ -134,6 +135,22 @@ def test_protected_dataset_markers_are_rejected_before_read(
     template["dataset_path"] = f"data/{marker}/public.jsonl"
     with pytest.raises(ValueError, match="protected data"):
         build_campaign_manifest(tmp_path, template, parent_commit="a" * 40)
+
+
+def test_content_hash_containing_f3_is_not_mistaken_for_protected_data(
+    tmp_path: Path,
+) -> None:
+    path = tmp_path / "artifacts/fold_fits/123f3abc/model.joblib"
+    path.parent.mkdir(parents=True)
+    path.write_bytes(b"development-fit")
+
+    resolved = resolve_repository_path(
+        tmp_path,
+        "artifacts/fold_fits/123f3abc/model.joblib",
+        label="fold fitted model",
+    )
+
+    assert resolved == path
 
 
 def test_missing_runtime_baseline_asset_is_rejected(tmp_path: Path) -> None:

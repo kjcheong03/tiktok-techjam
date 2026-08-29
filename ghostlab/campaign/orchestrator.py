@@ -10,8 +10,13 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from ghostlab.campaign.analyze import CandidateEvaluation, paired_analysis
-from ghostlab.campaign.bindings import TechniqueBindingRegistry
+from ghostlab.campaign.bindings import (
+    QUESTION_ORDERS,
+    SPARSE_WEIGHT_FIELDS,
+    TechniqueBindingRegistry,
+)
 from ghostlab.campaign.catalog import TechniqueCatalog
+from ghostlab.campaign.control import load_campaign_control
 from ghostlab.campaign.controller import CampaignStage, promote_stage
 from ghostlab.campaign.interaction_search import (
     CandidateEvidence,
@@ -19,7 +24,7 @@ from ghostlab.campaign.interaction_search import (
     plan_higher_order_round,
     plan_standalones_and_pairs,
 )
-from ghostlab.campaign.jobs import build_jobs
+from ghostlab.campaign.jobs import build_jobs, candidate_resources
 from ghostlab.campaign.models import (
     CampaignJob,
     CampaignManifest,
@@ -60,8 +65,10 @@ class FrozenInputs:
 class CampaignOptions:
     f1_candidates: int = 24
     f2_candidates: int = 6
-    hpo_trials_per_structure: int = 8
-    higher_order_rounds: int = 2
+    hpo_trials_per_structure: int = 0
+    higher_order_rounds: int = 1
+    hpo_max_parameter_changes: int = 3
+    hpo_trust_region: float = 0.2
     maximum_scenario_regression: float = 0.02
     bootstrap_resamples: int = 1000
 
@@ -70,6 +77,10 @@ class CampaignOptions:
             raise ValueError("promotion limits must be positive")
         if self.hpo_trials_per_structure < 0 or self.higher_order_rounds < 0:
             raise ValueError("search limits cannot be negative")
+        if not 1 <= self.hpo_max_parameter_changes <= 3:
+            raise ValueError("HPO may change between one and three parameter groups")
+        if not 0.0 < self.hpo_trust_region <= 0.5:
+            raise ValueError("HPO trust region must be in (0, 0.5]")
         if self.maximum_scenario_regression < 0.0:
             raise ValueError("scenario regression limit cannot be negative")
         if self.bootstrap_resamples <= 0:
@@ -237,6 +248,13 @@ class AutonomousCampaign:
         }
         self._started = 0.0
 
+    @property
+    def control_path(self) -> Path:
+        return self.evidence_path.parent / "control.json"
+
+    def _skip_hpo_requested(self) -> bool:
+        return load_campaign_control(self.control_path).skip_hpo
+
     def _additions(self, candidate: CandidateSpec) -> tuple[str, ...]:
         inherited = set(self.manifest.techniques_for_preset(candidate.baseline_id))
         return tuple(item for item in candidate.techniques if item not in inherited)
@@ -288,12 +306,65 @@ class AutonomousCampaign:
         patch_candidate = candidate.model_copy(update={"techniques": additions})
         return self.registry.materialize(baseline, patch_candidate)
 
+    def _effective_hpo_parameters(
+        self, candidate: CandidateSpec
+    ) -> tuple[tuple[str, str | int | float | bool], ...]:
+        """Expose the actual materialized defaults as the local HPO centre."""
+
+        config = self.materialize(candidate)
+        raw = config.model_dump(mode="python")
+        inverse_orders = {value: key for key, value in QUESTION_ORDERS.items()}
+        values: dict[str, str | int | float | bool] = {}
+        for parameter in self.search_space.for_techniques(candidate.techniques):
+            name = parameter.name
+            if name == "question_order_id":
+                order = tuple(config.question_order)
+                if order in inverse_orders:
+                    values[name] = inverse_orders[order]
+            elif name == "fusion_sparse_share":
+                values[name] = config.sparse_weight
+            elif name in SPARSE_WEIGHT_FIELDS:
+                if config.sparse_weights is not None:
+                    values[name] = config.sparse_weights[SPARSE_WEIGHT_FIELDS.index(name)]
+            elif name in raw and isinstance(raw[name], (str, int, float, bool)):
+                values[name] = raw[name]
+        return tuple(sorted(values.items()))
+
     def _runnable(
         self, candidates: tuple[CandidateSpec, ...]
     ) -> tuple[tuple[CandidateSpec, ...], list[dict[str, object]]]:
         accepted: list[CandidateSpec] = []
         rejected: list[dict[str, object]] = []
         for candidate in candidates:
+            resources = candidate_resources(self.catalog, candidate)
+            limits = self.manifest.resources
+            excesses = {
+                name: {"requested": requested, "limit": limit}
+                for name, requested, limit in (
+                    ("cpu", resources.cpu, limits.cpu_jobs),
+                    ("gpu", resources.gpu, limits.gpu_jobs),
+                    ("memory_gb", resources.memory_gb, limits.memory_gb),
+                    (
+                        "heavy_model_jobs",
+                        int(resources.heavy_model),
+                        limits.heavy_model_jobs,
+                    ),
+                )
+                if requested > limit
+            }
+            if excesses:
+                rejected.append(
+                    {
+                        "candidate_id": candidate.candidate_id,
+                        "baseline_id": candidate.baseline_id,
+                        "classification": "resource_blocked",
+                        "reason": "candidate exceeds the frozen campaign resource envelope",
+                        "resources": resources.model_dump(mode="json"),
+                        "limits": limits.model_dump(mode="json"),
+                        "excesses": excesses,
+                    }
+                )
+                continue
             try:
                 self.materialize(candidate)
             except Exception as error:  # noqa: BLE001 - preflight evidence boundary
@@ -413,7 +484,13 @@ class AutonomousCampaign:
             jobs=jobs,
         )
 
-    def _run_stage(self, stage: CampaignStage) -> CampaignCheckpoint:
+    def _run_stage(
+        self,
+        stage: CampaignStage,
+        *,
+        stop_requested: Callable[[], bool] | None = None,
+        progress_stage: str | None = None,
+    ) -> CampaignCheckpoint:
         return run_jobs(
             stage.jobs,
             manifest_hash=self.manifest_hash,
@@ -421,6 +498,9 @@ class AutonomousCampaign:
             checkpoint_path=self.checkpoint_path,
             evaluator=self.evaluator_factory(stage.candidates),
             progress_path=self.evidence_path.parent / "live_status.json",
+            stage=progress_stage or stage.fidelity,
+            control_path=self.control_path,
+            stop_requested=stop_requested,
         )
 
     @staticmethod
@@ -784,11 +864,19 @@ class AutonomousCampaign:
             ):
                 family_roots[key] = candidate
             observations.setdefault(key, []).append(
-                Observation(candidate.parameters, evaluation.score)
+                Observation(self._effective_hpo_parameters(candidate), evaluation.score)
             )
 
         total_trials = self.options.hpo_trials_per_structure
-        if not family_roots or total_trials == 0:
+        if not family_roots or total_trials == 0 or self._skip_hpo_requested():
+            if self._skip_hpo_requested():
+                diagnostics.append(
+                    {
+                        "classification": "operator_control",
+                        "action": "skip_hpo",
+                        "effect": "f1_roots_preserved_and_forwarded_to_f2",
+                    }
+                )
             return stage, checkpoint, diagnostics
         batch_sizes = tuple(
             size
@@ -803,6 +891,15 @@ class AutonomousCampaign:
         known = {item.canonical_hash() for item in stage.candidates}
 
         for batch_index, batch_size in enumerate(batch_sizes):
+            if self._skip_hpo_requested():
+                diagnostics.append(
+                    {
+                        "classification": "operator_control",
+                        "action": "skip_remaining_hpo",
+                        "batch": batch_index,
+                    }
+                )
+                break
             proposed: list[CandidateSpec] = []
             for key, root in family_roots.items():
                 root_seed = int(root.canonical_hash()[:8], 16)
@@ -819,6 +916,10 @@ class AutonomousCampaign:
                             + trial
                         ),
                         exploration_fraction=self.manifest.exploration_fraction,
+                        center=self._effective_hpo_parameters(root),
+                        max_changes=self.options.hpo_max_parameter_changes,
+                        trust_region=self.options.hpo_trust_region,
+                        block_index=batch_index + trial,
                     )
                     if not parameters:
                         continue
@@ -849,7 +950,21 @@ class AutonomousCampaign:
             elimination_rungs = min(2, max(0, len(self.manifest.seeds) - 1))
             for rung, seed in enumerate(self.manifest.seeds):
                 added = self._stage_with_seeds("f1", survivors, (seed,))
-                checkpoint = self._run_stage(added)
+                checkpoint = self._run_stage(
+                    added,
+                    stop_requested=self._skip_hpo_requested,
+                    progress_stage="hpo",
+                )
+                if self._skip_hpo_requested():
+                    diagnostics.append(
+                        {
+                            "classification": "operator_control",
+                            "action": "skip_remaining_hpo",
+                            "batch": batch_index,
+                            "rung": rung,
+                        }
+                    )
+                    return stage, checkpoint, diagnostics
                 batch_jobs.extend(added.jobs)
                 accumulated_jobs.extend(added.jobs)
                 before = len(survivors)
@@ -906,16 +1021,45 @@ class AutonomousCampaign:
             survivor_evaluations = self._evaluations(
                 survivor_stage, checkpoint.outcomes
             )
+            improved_survivors: list[CandidateSpec] = []
             for candidate in survivors:
                 key = (candidate.baseline_id, candidate.techniques)
+                candidate_evaluation = survivor_evaluations[candidate.candidate_id]
+                parent = family_roots[key]
+                parent_evaluation = root_evaluations[parent.candidate_id]
+                scenario_safe = all(
+                    candidate_evaluation.scenario_scores.get(name, 0.0)
+                    - parent_evaluation.scenario_scores.get(name, 0.0)
+                    >= -self.options.maximum_scenario_regression
+                    for name in set(candidate_evaluation.scenario_scores)
+                    | set(parent_evaluation.scenario_scores)
+                )
+                if (
+                    candidate_evaluation.score <= parent_evaluation.score
+                    or not scenario_safe
+                ):
+                    diagnostics.append(
+                        {
+                            "classification": "hpo_parent_gate",
+                            "candidate_id": candidate.candidate_id,
+                            "parent_candidate_id": parent.candidate_id,
+                            "score_delta": (
+                                candidate_evaluation.score - parent_evaluation.score
+                            ),
+                            "scenario_safe": scenario_safe,
+                            "retained": False,
+                        }
+                    )
+                    continue
                 observations[key].append(
                     Observation(
-                        candidate.parameters,
-                        survivor_evaluations[candidate.candidate_id].score,
+                        self._effective_hpo_parameters(candidate),
+                        candidate_evaluation.score,
                     )
                 )
                 known.add(candidate.canonical_hash())
-            retained.extend(survivors)
+                improved_survivors.append(candidate)
+            retained.extend(improved_survivors)
 
         final_candidates = (*stage.candidates, *retained)
         final_hashes = {item.canonical_hash() for item in final_candidates}

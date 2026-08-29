@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 from pathlib import Path
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -62,6 +63,9 @@ class ConfirmedProposalSummary(BaseModel):
     candidate_hash: str = Field(pattern=r"^[0-9a-f]{64}$")
     confirmation_job_ids: tuple[str, ...] = Field(min_length=1)
     champion_comparison: ChampionComparison | None = None
+    proposal_role: Literal[
+        "score_leader", "robust_leader", "efficient_alternative"
+    ] | None = None
 
 
 def _json_object(path: Path, label: str) -> dict[str, object]:

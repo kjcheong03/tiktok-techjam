@@ -356,6 +356,22 @@ def test_materializes_only_independently_confirmed_campaign_candidates(
     )
 
 
+def test_materializer_accepts_strict_confirmed_proposal_roles(tmp_path: Path) -> None:
+    arguments = _fixture(tmp_path)
+    evidence_path = tmp_path / arguments["evidence_path"]
+    evidence = json.loads(evidence_path.read_text())
+    roles = ("score_leader", "robust_leader", "efficient_alternative")
+    for summary, role in zip(evidence["confirmed_top3"], roles, strict=True):
+        summary["proposal_role"] = role
+    _write(evidence_path, evidence)
+
+    bundle = materialize_confirmed_campaign_top_three(
+        project_root=tmp_path, **arguments
+    )
+
+    assert bundle.manifest_path.is_file()
+
+
 def test_materializes_same_fold_champion_evidence_for_human_review(
     tmp_path: Path,
 ) -> None:

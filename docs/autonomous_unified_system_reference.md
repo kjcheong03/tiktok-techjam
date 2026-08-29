@@ -500,8 +500,8 @@ uv run python -m scripts.run_autonomous_campaign \
   --evidence artifacts/reports/autonomous_full_v1.json \
   --f1-candidates 24 \
   --f2-candidates 6 \
-  --hpo-trials-per-structure 8 \
-  --higher-order-rounds 2 \
+  --hpo-trials-per-structure 0 \
+  --higher-order-rounds 1 \
   --bootstrap-resamples 1000
 ```
 
@@ -521,7 +521,8 @@ an execution input. Its current procedure is:
    anchor;
 4. run F0 and evidence-guided higher-order rounds on search-fold sessions;
 5. promote a bounded score-leading/exploration set to F1;
-6. run observation-informed bounded conditional HPO/racing on F1 search sessions;
+6. optionally run effective-default-centered, blockwise local HPO/racing on F1 search
+   sessions; the default is zero trials and the unchanged F1 roots remain eligible;
 7. remove candidates containing `selection_safe=false` or `fit_required=true` techniques,
    then promote the remaining bounded set to F2;
 8. evaluate the frozen finalists with one frozen seed only on the disjoint F2 confirmation

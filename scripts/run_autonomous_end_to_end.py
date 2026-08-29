@@ -39,8 +39,30 @@ def main() -> None:
     parser.add_argument("--resume", action="store_true")
     parser.add_argument("--f1-candidates", type=int, default=24)
     parser.add_argument("--f2-candidates", type=int, default=6)
-    parser.add_argument("--hpo-trials", type=int, default=8)
-    parser.add_argument("--higher-order-rounds", type=int, default=2)
+    parser.add_argument(
+        "--hpo-trials",
+        type=int,
+        default=0,
+        help="Local HPO trials per F1 structure; disabled by default",
+    )
+    parser.add_argument(
+        "--higher-order-rounds",
+        type=int,
+        default=1,
+        help="Evidence-guided expansions after initial F0; default skips round two",
+    )
+    parser.add_argument(
+        "--hpo-max-parameter-changes",
+        type=int,
+        default=3,
+        help="Maximum coherent parameter groups changed by each local HPO trial",
+    )
+    parser.add_argument(
+        "--hpo-trust-region",
+        type=float,
+        default=0.2,
+        help="Maximum local numeric perturbation fraction around the F1 parent",
+    )
     args = parser.parse_args()
 
     template_argument = args.template or MODE_TEMPLATES[args.mode]
@@ -106,6 +128,10 @@ def main() -> None:
         str(args.f2_candidates),
         "--hpo-trials-per-structure",
         str(args.hpo_trials),
+        "--hpo-max-parameter-changes",
+        str(args.hpo_max_parameter_changes),
+        "--hpo-trust-region",
+        str(args.hpo_trust_region),
         "--higher-order-rounds",
         str(args.higher_order_rounds),
     )
@@ -144,11 +170,35 @@ def main() -> None:
     )
     manifest_path = ROOT / proposals / "proposal_manifest.json"
     proposal_manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    records = proposal_manifest["candidates"]
     commands = [
         "uv run python -m scripts.prepare_candidate --preset "
         + str(record["preset"]["path"])
-        for record in proposal_manifest["candidates"]
+        for record in records
     ]
+    evidence_summaries = {
+        str(item["candidate_id"]): item for item in confirmed
+    }
+    candidate_summaries = []
+    for record in records:
+        candidate_id = str(record["candidate_id"])
+        summary = evidence_summaries[candidate_id]
+        comparison = summary.get("champion_comparison") or {}
+        candidate_summaries.append(
+            {
+                "candidate_id": candidate_id,
+                "role": record["role"],
+                "score": summary["score"],
+                "mean_delta_vs_matched_state_v2": summary["mean_delta"],
+                "technical_score_delta_vs_champion": comparison.get(
+                    "technical_score_delta"
+                ),
+                "promotion_recommended": comparison.get("promotion_recommended"),
+                "enabled_techniques": record["enabled_techniques"],
+                "tuned_parameters": record["tuned_parameters"],
+                "prepare_command": record["prepare_command"],
+            }
+        )
     print(
         json.dumps(
             {
@@ -156,6 +206,7 @@ def main() -> None:
                 "campaign_id": campaign_id,
                 "proposal_manifest": manifest_path.relative_to(ROOT).as_posix(),
                 "prepare_commands": commands,
+                "candidate_summaries": candidate_summaries,
                 "automatic_promotion": False,
             },
             indent=2,

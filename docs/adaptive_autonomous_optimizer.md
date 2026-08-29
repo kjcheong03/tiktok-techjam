@@ -73,10 +73,11 @@ the exhaustive inventory audit and admits all 36 runnable catalog entries with a
 4. F0 screens small, stratified budgets from each anchor.
 5. Higher-order search builds evidence-supported combinations up to order six and retains
    family-diverse and random-audit candidates.
-6. Conditional BOHB proposes parameter variants only for techniques present in a candidate.
-7. Seed-budget successive halving evaluates every HPO variant once, retains the stronger
-   half per compatible family for a second seed, and gives only survivors all remaining
-   seeds.
+6. HPO is disabled by default. When explicitly enabled, it materializes each F1 root's
+   effective runtime defaults and changes one coherent retrieval, ranking, or dialogue
+   block at a time within a bounded trust region. The unchanged F1 root remains eligible.
+7. Seed-budget successive halving evaluates opt-in local HPO variants, retains only
+   stronger family variants for additional seeds, and never forces an HPO result into F2.
 8. Backward leave-one-technique ablations test whether strong higher-order combinations
    actually need each member.
 9. F1 searches only the frozen search folds. F2 confirms finalists once on prospectively
@@ -116,6 +117,11 @@ partial group fails materialization rather than silently falling back. Question 
 selects only from four frozen legal sequences and materializes the complete tuple.
 Parameter conditions prevent unrelated techniques from receiving meaningless knobs.
 
+Local HPO changes at most three parameter groups per proposal. Categorical model-family
+changes are isolated, and the six sparse field weights form one normalized atomic group.
+The search radius defaults to 20% of each frozen domain. Broad full-space sampling is no
+longer used by the campaign orchestrator.
+
 ## Observable adaptive activation
 
 Dense retrieval, PRF, and cross-encoding support `always` and `uncertain` activation.
@@ -133,7 +139,8 @@ tests; they are not metadata-only parameters.
 - All turns from one session stay in one fold.
 - Search folds are `(0, 2, 3)`; confirmation folds are `(1, 4)`.
 - F2 is not reused for tuning after confirmation.
-- HPO seeds and ranges are frozen before execution.
+- Opt-in HPO seeds, ranges, local center, block and trust radius are deterministic.
+- The unchanged F1 parent stays in selection, so poor HPO trials cannot replace it.
 - The search-space content hash is part of the campaign manifest.
 - Candidates compare against the matched control from the same anchor.
 - Promotion uses paired session rewards and scenario-regression limits.
@@ -160,12 +167,26 @@ artifacts/campaigns/<campaign-id>/live_status.json
 ```
 
 It reports total, recorded, complete, failed, and the highest individual completed job.
+It also reports the current `stage` and atomic operator `control`.
 The aggregate, matched candidate leaderboards remain in `evidence.json` after stage
 aggregation; individual-job highs are not promotion evidence.
 
 If execution stops, rerun the exact same mode and template. To intentionally change a
 technique, parameter domain, split, or anchor, create a new campaign ID; never reuse an old
 checkpoint with changed search inputs.
+
+To skip HPO while F0/F1 is still running, or stop scheduling additional HPO waves after
+the current atomic wave, run:
+
+```bash
+uv run python -m scripts.control_autonomous_campaign \
+  --campaign-id <campaign-id> \
+  --skip-hpo
+```
+
+Run the same command without `--skip-hpo` for read-only status. A request during F2 is a
+no-op because HPO has already completed or been bypassed. The control file is atomic and
+survives checkpoint resume.
 
 ## Output and human promotion
 
@@ -196,6 +217,7 @@ a human runs the activation command.
 | BOHB sampler and log domains | `ghostlab/optimization/bohb.py` |
 | Campaign stages, halving, interactions, safety | `ghostlab/campaign/orchestrator.py` |
 | Atomic checkpoints and live progress | `ghostlab/campaign/runner.py` |
+| Atomic runtime operator controls | `ghostlab/campaign/control.py`; `scripts/control_autonomous_campaign.py` |
 | Frozen input/search-space validation | `ghostlab/campaign/freeze.py` |
 | Fold-safe fitted-asset contract | `ghostlab/training/protocol.py` |
 | Residual fold trainer and dispatch | `ghostlab/training/residual.py`; `ghostlab/training/campaign.py` |

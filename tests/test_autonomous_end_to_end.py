@@ -132,9 +132,17 @@ def test_campaign_runs_before_proposal_handling(
             evidence = tmp_path / "artifacts/campaigns" / campaign_id / "evidence.json"
             candidates = (
                 [
-                    {"baseline_id": "configs/suites/baseline.json"},
-                    {"baseline_id": "configs/suites/baseline.json"},
-                    {"baseline_id": "configs/suites/baseline.json"},
+                    {
+                        "candidate_id": f"candidate-{index}",
+                        "baseline_id": "configs/suites/baseline.json",
+                        "score": 0.9 - index * 0.01,
+                        "mean_delta": 0.1 - index * 0.01,
+                        "champion_comparison": {
+                            "technical_score_delta": 0.05 - index * 0.01,
+                            "promotion_recommended": True,
+                        },
+                    }
+                    for index in range(3)
                 ]
                 if confirmed
                 else []
@@ -149,7 +157,21 @@ def test_campaign_runs_before_proposal_handling(
             )
             _write_json(
                 proposal_manifest,
-                {"candidates": [{"preset": {"path": "candidate.json"}}]},
+                {
+                    "candidates": [
+                        {
+                            "candidate_id": "candidate-0",
+                            "role": "score_leader",
+                            "preset": {"path": "candidate.json"},
+                            "enabled_techniques": ["retrieval.sparse"],
+                            "tuned_parameters": {},
+                            "prepare_command": (
+                                "uv run python -m scripts.prepare_candidate "
+                                "--preset candidate.json"
+                            ),
+                        }
+                    ]
+                },
             )
 
     monkeypatch.setattr(run_autonomous_end_to_end, "ROOT", tmp_path)
@@ -170,6 +192,22 @@ def test_campaign_runs_before_proposal_handling(
         assert calls[-1] == "scripts.materialize_campaign_top_three"
         assert output["prepare_commands"] == [
             "uv run python -m scripts.prepare_candidate --preset candidate.json"
+        ]
+        assert output["candidate_summaries"] == [
+            {
+                "candidate_id": "candidate-0",
+                "role": "score_leader",
+                "score": 0.9,
+                "mean_delta_vs_matched_state_v2": 0.1,
+                "technical_score_delta_vs_champion": 0.05,
+                "promotion_recommended": True,
+                "enabled_techniques": ["retrieval.sparse"],
+                "tuned_parameters": {},
+                "prepare_command": (
+                    "uv run python -m scripts.prepare_candidate "
+                    "--preset candidate.json"
+                ),
+            }
         ]
     else:
         assert "scripts.materialize_campaign_top_three" not in calls

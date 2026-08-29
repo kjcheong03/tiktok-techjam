@@ -9,6 +9,7 @@ import pytest
 from ghostlab.campaign.analyze import CandidateEvaluation
 from ghostlab.campaign.bindings import default_binding_registry
 from ghostlab.campaign.catalog import TechniqueCatalog, load_catalog
+from ghostlab.campaign.control import request_skip_hpo
 from ghostlab.campaign.controller import initial_stage, promote_stage
 from ghostlab.campaign.models import (
     CampaignManifest,
@@ -221,6 +222,34 @@ def test_campaign_runs_f0_f1_f2_resumes_and_fails_closed(tmp_path: Path) -> None
     assert persisted["stage_counts"] == second["stage_counts"]
 
 
+def test_operator_can_skip_hpo_without_discarding_f1_or_f2(tmp_path: Path) -> None:
+    factory = FakeEvaluatorFactory()
+    campaign = _campaign(tmp_path, factory)
+    request_skip_hpo(campaign.control_path)
+
+    report = campaign.run()
+
+    diagnostics = report["conditional_hpo"]["diagnostics"]
+    assert diagnostics == [
+        {
+            "classification": "operator_control",
+            "action": "skip_hpo",
+            "effect": "f1_roots_preserved_and_forwarded_to_f2",
+        }
+    ]
+    assert report["stage_counts"]["f1"] > 0
+    assert report["stage_counts"]["f2"] > 0
+    assert not any(
+        "-hpo-" in item["candidate"]["candidate_id"] for item in report["safety"]
+    )
+
+
+def test_campaign_defaults_skip_second_expansion_and_hpo() -> None:
+    options = CampaignOptions()
+    assert options.higher_order_rounds == 1
+    assert options.hpo_trials_per_structure == 0
+
+
 def test_search_and_confirmation_jobs_use_disjoint_declared_folds(
     tmp_path: Path,
 ) -> None:
@@ -323,6 +352,58 @@ def test_hpo_suggestions_jointly_bind_all_eligible_parameters(tmp_path: Path) ->
     }
     margin = next(item for item in parameters if item.name == "question_value_margin")
     assert margin.low == 0.0
+
+
+def test_runnable_prunes_candidate_outside_frozen_resource_envelope(
+    tmp_path: Path,
+) -> None:
+    campaign = _campaign(
+        tmp_path,
+        FakeEvaluatorFactory(),
+        techniques=("retrieval.e5",),
+    )
+    campaign.manifest = campaign.manifest.model_copy(
+        update={
+            "resources": CampaignResources(
+                cpu_jobs=4,
+                gpu_jobs=0,
+                memory_gb=5.0,
+                heavy_model_jobs=1,
+            )
+        }
+    )
+    candidate = CandidateSpec(
+        candidate_id="oversized-e5",
+        baseline_id="configs/suites/keyword_research.json",
+        techniques=("retrieval.sparse", "prior.quality", "retrieval.e5"),
+        complexity=1,
+        generation="single",
+    )
+
+    accepted, rejected = campaign._runnable((candidate,))
+
+    assert accepted == ()
+    assert rejected == [
+        {
+            "candidate_id": "oversized-e5",
+            "baseline_id": "configs/suites/keyword_research.json",
+            "classification": "resource_blocked",
+            "reason": "candidate exceeds the frozen campaign resource envelope",
+            "resources": {
+                "cpu": 2,
+                "gpu": 0,
+                "memory_gb": 6.0,
+                "heavy_model": True,
+            },
+            "limits": {
+                "cpu_jobs": 4,
+                "gpu_jobs": 0,
+                "memory_gb": 5.0,
+                "heavy_model_jobs": 1,
+            },
+            "excesses": {"memory_gb": {"requested": 6.0, "limit": 5.0}},
+        }
+    ]
 
 
 def test_non_improving_candidate_is_not_a_confirmed_proposal(tmp_path: Path) -> None:
