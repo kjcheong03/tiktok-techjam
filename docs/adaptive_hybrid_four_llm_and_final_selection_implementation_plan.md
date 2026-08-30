@@ -11,6 +11,12 @@ Validation evidence:
 - the plan resolves to 45 trials: five arms × three depths × three weights;
 - Qwen2.5, Qwen3 and MiniLM assets are currently runnable; Gemma 3 and
   SmolLM2-1.7B are reported as unavailable until their pinned assets are fetched;
+- model availability is established from pinned manifest verification, not directory
+  existence, so a partial download cannot enter the experiment;
+- finalist selection remains invalid until all 45 configured trials have been attempted
+  exactly once; failed and timed-out trials remain recorded but are ineligible;
+- Qwen3 explicitly renders its chat template with `enable_thinking=False` because the
+  ranker scores the immediate yes/no next-token logits;
 - the pipeline plan resolves through split, fit, diversity, LLM study, development
   evaluation, baselines, validation, campaign, Top-3 packaging, finalist evaluation
   and comparison;
@@ -102,6 +108,18 @@ Each grid trial runs in an isolated worker process with a hard wall-clock deadli
 This makes peak-memory measurements comparable and prevents one hung model from
 blocking the full matrix.
 
+Before the first worker starts, every one of the four LLM assets and the MiniLM
+control must pass its pinned manifest or acquisition-receipt verification and expose
+the required configuration and weight files. After execution, the expected and actual
+`(model, depth, weight)` trial ledgers must match exactly. Worker failure and timeout
+records count as attempts but never as eligible configurations. Missing, duplicate or
+unexpected trials invalidate selection and prevent candidate configuration emission.
+
+Qwen3 is evaluated in non-thinking mode. Its model-specific chat template receives
+`enable_thinking=False`, and the effective setting is recorded in diagnostics. Other
+models retain their native chat template without receiving unsupported Qwen-specific
+arguments; prompt meaning remains identical across families.
+
 ### 3.5 Per-model and overall selection
 
 Choose each model family's optimum using development evidence and predeclared
@@ -178,6 +196,10 @@ If C is retained, no D activation command is valid.
 ### Phase B: focused behavioral tests
 
 - reject asymmetric model grids;
+- reject missing, duplicate or unexpected trial-ledger entries;
+- reject partial-download directories and any unverified required asset;
+- record failed/time-out trials as attempted but promotion-ineligible;
+- prove Qwen3 direct scoring uses `enable_thinking=False`;
 - reject mismatched paired candidate-pool hashes;
 - reject fewer or more than three frozen D configurations;
 - reject changed A/B/C/D/gates/manifest hashes before final selection;

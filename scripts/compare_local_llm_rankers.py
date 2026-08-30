@@ -9,6 +9,7 @@ import subprocess
 import sys
 import tempfile
 import time
+from collections import Counter
 from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Any, cast
@@ -26,6 +27,7 @@ from ghostlab.training.adaptive_lineage import (
     load_lineage_manifest,
     subset_corpus,
 )
+from scripts.fetch_optional_assets import verify as verify_asset
 from starter.agent import Agent
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -36,21 +38,25 @@ PROMPT_CONTRACT = (
 MODELS: dict[str, dict[str, str]] = {
     "qwen2.5-0.5b-instruct": {
         "path": "artifacts/cache/models/qwen2.5-0.5b-instruct",
+        "manifest": "configs/assets/qwen2_5_0_5b_instruct.json",
         "revision": "7ae557604adf67be50417f59c2c2f167def9a775",
         "backend": "qwen_causal_relevance",
     },
     "qwen3-0.6b": {
         "path": "artifacts/cache/models/qwen3-0.6b",
+        "manifest": "configs/assets/qwen3_0_6b.json",
         "revision": "c1899de289a04d12100db370d81485cdf75e47ca",
         "backend": "local_causal_relevance",
     },
     "gemma-3-1b-it": {
         "path": "artifacts/cache/models/gemma-3-1b-it",
+        "manifest": "configs/assets/gemma3_1b_it.json",
         "revision": "dcc83ea841ab6100d6b47a070329e1ba4cf78752",
         "backend": "local_causal_relevance",
     },
     "smollm2-1.7b-instruct": {
         "path": "artifacts/cache/models/smollm2-1.7b-instruct",
+        "manifest": "configs/assets/smollm2_1_7b_instruct.json",
         "revision": "31b70e2e869a7173562077fd711b654946d38674",
         "backend": "local_causal_relevance",
     },
@@ -58,6 +64,7 @@ MODELS: dict[str, dict[str, str]] = {
 MINILM_CONTROL = {
     "model_id": "minilm-cross-encoder-control",
     "path": "artifacts/cache/models/ms-marco-MiniLM-L6-v2",
+    "manifest": "configs/assets/cross_encoder_minilm.json",
     "revision": "233902d25c440f23af6f7d6e94d2946bac0bee0a",
     "backend": "minilm_cross_encoder_control",
 }
@@ -113,6 +120,83 @@ def symmetric_trial_matrix(
         for depth in depths
         for weight in weights
     )
+
+
+def required_asset_evidence(
+    model_definitions: Mapping[str, Mapping[str, str]], *, root: Path = ROOT
+) -> dict[str, object]:
+    """Verify pinned model assets; a partial download is never runnable."""
+
+    models: list[dict[str, object]] = []
+    for model_id, definition in model_definitions.items():
+        manifest_path = root / definition["manifest"]
+        destination = root / definition["path"]
+        try:
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            declared = root / str(manifest["destination"])
+            if declared.resolve() != destination.resolve():
+                raise RuntimeError("manifest destination does not match experiment path")
+            verification = verify_asset(manifest, destination)
+            if not (destination / "config.json").is_file():
+                raise RuntimeError("missing config.json")
+            if not any(destination.glob("*.safetensors")):
+                raise RuntimeError("missing model safetensors")
+        except (OSError, ValueError, KeyError, TypeError, RuntimeError) as error:
+            models.append(
+                {
+                    "model_id": model_id,
+                    "verified": False,
+                    "reason": f"{type(error).__name__}: {error}",
+                }
+            )
+            continue
+        models.append(
+            {
+                "model_id": model_id,
+                "verified": True,
+                **verification,
+            }
+        )
+    return {
+        "all_verified": bool(models)
+        and all(bool(item["verified"]) for item in models),
+        "models": models,
+    }
+
+
+def _trial_identity(item: Mapping[str, object]) -> tuple[str, int, float]:
+    return (
+        str(item["model_id"]),
+        _int_value(item["depth"]),
+        _float_value(item["weight"]),
+    )
+
+
+def trial_ledger_evidence(
+    expected: Sequence[Mapping[str, object]],
+    results: Sequence[Mapping[str, object]],
+) -> dict[str, object]:
+    """Prove every configured trial was attempted exactly once."""
+
+    expected_counts = Counter(_trial_identity(item) for item in expected)
+    actual_counts = Counter(_trial_identity(item) for item in results)
+    missing = sorted((expected_counts - actual_counts).elements())
+    unexpected = sorted((actual_counts - expected_counts).elements())
+    duplicates = sorted(
+        identity
+        for identity, count in actual_counts.items()
+        if count > expected_counts.get(identity, 0)
+    )
+    status_counts = Counter(str(item.get("status", "missing")) for item in results)
+    return {
+        "expected_trial_count": sum(expected_counts.values()),
+        "attempted_trial_count": sum(actual_counts.values()),
+        "all_trials_attempted_once": not missing and not unexpected and not duplicates,
+        "missing_trials": [list(item) for item in missing],
+        "unexpected_trials": [list(item) for item in unexpected],
+        "duplicate_trials": [list(item) for item in duplicates],
+        "status_counts": dict(sorted(status_counts.items())),
+    }
 
 
 def _development_fold_groups(
@@ -566,15 +650,24 @@ def main() -> None:
         "fold_sample_ids": [list(fold) for fold in fold_sample_ids],
         "component_timeout_ms": args.component_timeout_ms,
     }
-    unavailable: list[dict[str, str]] = []
+    asset_evidence = required_asset_evidence(model_definitions)
+    asset_status = {
+        str(item["model_id"]): bool(item["verified"])
+        for item in cast(list[dict[str, object]], asset_evidence["models"])
+    }
+    unavailable = [
+        {
+            "model_id": str(item["model_id"]),
+            "reason": str(item.get("reason", "asset verification failed")),
+        }
+        for item in cast(list[dict[str, object]], asset_evidence["models"])
+        if not bool(item["verified"])
+    ]
     runnable: list[dict[str, object]] = []
     for trial in matrix:
         model_id = str(trial["model_id"])
         definition = model_definitions[model_id]
-        path = ROOT / definition["path"]
-        if not path.is_dir():
-            if not any(item["model_id"] == model_id for item in unavailable):
-                unavailable.append({"model_id": model_id, "reason": "asset_missing"})
+        if not asset_status[model_id]:
             continue
         runnable.append({**common, **trial, "definition": definition})
     if args.plan_only:
@@ -587,6 +680,7 @@ def main() -> None:
                     "trial_count": len(matrix),
                     "runnable_trial_count": len(runnable),
                     "fold_sample_counts": [len(fold) for fold in fold_sample_ids],
+                    "asset_preflight": asset_evidence,
                     "unavailable": unavailable,
                 },
                 indent=2,
@@ -594,6 +688,14 @@ def main() -> None:
             )
         )
         return
+    if not bool(asset_evidence["all_verified"]):
+        details = "; ".join(
+            f"{item['model_id']}: {item['reason']}" for item in unavailable
+        )
+        raise RuntimeError(
+            "all four local LLMs and the MiniLM control must pass pinned-asset "
+            f"verification before comparison: {details}"
+        )
     results: list[dict[str, object]] = []
     with tempfile.TemporaryDirectory(prefix="local-llm-grid-") as temporary_value:
         temporary = Path(temporary_value)
@@ -613,14 +715,28 @@ def main() -> None:
                 flush=True,
             )
     complete = [item for item in results if item.get("status") == "complete"]
+    ledger_evidence = trial_ledger_evidence(matrix, results)
     paired_evidence = paired_trial_evidence(results)
     paired_candidate_pools = bool(paired_evidence["paired_candidate_pools"])
     paired_ordered_sessions = bool(paired_evidence["paired_ordered_sessions"])
-    winners = select_model_winners(complete) if paired_candidate_pools else ()
+    comparison_complete = bool(asset_evidence["all_verified"]) and bool(
+        ledger_evidence["all_trials_attempted_once"]
+    )
+    winners = (
+        select_model_winners(complete)
+        if comparison_complete and paired_candidate_pools and paired_ordered_sessions
+        else ()
+    )
     ranked_winners = tuple(sorted(winners, key=_trial_key))
+    selection_valid = (
+        bool(ranked_winners)
+        and comparison_complete
+        and paired_candidate_pools
+        and paired_ordered_sessions
+    )
     config_dir = ROOT / args.candidate_config_dir
     candidate_configs: list[dict[str, object]] = []
-    for rank, winner in enumerate(ranked_winners, start=1):
+    for rank, winner in enumerate(ranked_winners if selection_valid else (), start=1):
         path = config_dir / f"rank_{rank}_{winner['model_id']}.json"
         relative, canonical_hash = _model_config(ROOT / args.config, winner, path)
         candidate_configs.append(
@@ -646,7 +762,7 @@ def main() -> None:
                 },
             }
         )
-    selected = ranked_winners[0] if ranked_winners else None
+    selected = ranked_winners[0] if selection_valid else None
     selected_config = None
     selected_config_sha256 = None
     if selected is not None:
@@ -670,6 +786,9 @@ def main() -> None:
         "symmetric_grid": True,
         "grid_trial_count": len(matrix),
         "executed_trial_count": len(results),
+        "asset_preflight": asset_evidence,
+        "trial_ledger": ledger_evidence,
+        "comparison_complete": comparison_complete,
         "fold_sample_ids": [list(fold) for fold in fold_sample_ids],
         "fold_sample_counts": [len(fold) for fold in fold_sample_ids],
         "ordered_session_ids_sha256": _canonical_sha256(
@@ -690,9 +809,7 @@ def main() -> None:
         "selected": selected,
         "selected_config": selected_config,
         "selected_config_sha256": selected_config_sha256,
-        "selection_valid": bool(selected)
-        and paired_candidate_pools
-        and paired_ordered_sessions,
+        "selection_valid": selection_valid,
         "unrestricted_model_search_performed": False,
     }
     output = ROOT / args.output

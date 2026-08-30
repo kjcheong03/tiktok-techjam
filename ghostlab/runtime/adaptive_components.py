@@ -689,6 +689,13 @@ class SemanticActivationPolicy:
         return SemanticActivationDecision(False, "high_confidence_buying")
 
 
+def causal_chat_template_options(model_id: str) -> dict[str, object]:
+    """Return model-family options required by direct next-token scoring."""
+
+    normalized = model_id.lower().replace("-", "")
+    return {"enable_thinking": False} if "qwen3" in normalized else {}
+
+
 class CausalRelevanceScorer:
     """Batched local causal-LLM yes/no relevance scoring."""
 
@@ -734,6 +741,10 @@ class CausalRelevanceScorer:
         model: Any = AutoModelForCausalLM.from_pretrained(model_path, **model_options)
         self.model = model.to(self.device)
         self.model.eval()
+        self.chat_template_options = causal_chat_template_options(config.model_id)
+        self.thinking_mode = (
+            "disabled" if self.chat_template_options else "model_default"
+        )
         self.yes_token = self._single_token_label("yes")
         self.no_token = self._single_token_label("no")
         if self.yes_token == self.no_token:
@@ -758,6 +769,7 @@ class CausalRelevanceScorer:
                 [{"role": "user", "content": content}],
                 tokenize=False,
                 add_generation_prompt=True,
+                **self.chat_template_options,
             )
             if not isinstance(rendered, str) or not rendered:
                 raise ValueError("causal LLM chat template returned an invalid prompt")
@@ -942,6 +954,10 @@ class BoundedLocalLLMSemanticRanker:
                 hashlib.sha256(str(chat_template).encode()).hexdigest()
                 if chat_template
                 else None
+            ),
+            "thinking_mode": getattr(scorer, "thinking_mode", "not_loaded"),
+            "chat_template_options": dict(
+                getattr(scorer, "chat_template_options", {})
             ),
         }
 

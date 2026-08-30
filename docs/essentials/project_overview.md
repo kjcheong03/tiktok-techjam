@@ -479,6 +479,13 @@ MiniLM is the non-LLM control/fallback. Each family chooses its own best setting
 command emits a report and separate hash-bound candidate configurations; it does not
 overwrite the trained base config.
 
+The command refuses to start unless all five pinned assets verify completely. A model
+directory created by a partial download is not sufficient. Selection and candidate
+configuration emission require every configured `(model, depth, weight)` trial to have
+been attempted exactly once; failed or timed-out trials stay in the report but are not
+eligible. Qwen3 is rendered with `enable_thinking=False` so its immediate yes/no logits
+match the scorer contract.
+
 ## Run the architecture-safe GhostLab campaign
 
 Do not start this campaign until the 1,650-development fit finishes and the output config,
