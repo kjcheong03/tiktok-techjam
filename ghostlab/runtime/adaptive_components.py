@@ -40,7 +40,11 @@ from ghostlab.retrieval.gbdt import (
 from ghostlab.retrieval.multi_route import IntentRoute, MergedCandidatePool
 from ghostlab.retrieval.profile import ProfilePriorReranker
 from ghostlab.retrieval.sparse import query_terms
-from ghostlab.retrieval.union_features import SOURCE_AWARE_FEATURES, UnionFeatureStore
+from ghostlab.retrieval.union_features import (
+    SOURCE_AWARE_FEATURES,
+    UNION_FEATURES,
+    UnionFeatureStore,
+)
 from ghostlab.runtime.adaptive_config import (
     DiverseDenseTrackConfig,
     DualTrackRouterConfig,
@@ -72,8 +76,6 @@ class DualTrackRouter:
         marker = next(
             (item for item in self.config.browsing_markers if item in lowered), None
         )
-        if marker is not None:
-            return RouteDecision("browsing", 0.9, f"browsing_marker:{marker}")
         positive = [
             item
             for item in view.active_constraints
@@ -89,13 +91,24 @@ class DualTrackRouter:
         specificity = (
             len(positive)
             + self.config.exclusion_specificity_weight * exclusions
-            + 0.25 * hard
-            + 0.1 * explicit
+            + self.config.hard_specificity_weight * hard
+            + self.config.explicit_specificity_weight * explicit
         )
+        browsing_evidence = self.config.browsing_marker_weight if marker else 0.0
         threshold = max(
             float(self.config.buying_min_specific_constraints),
             self.config.buying_specificity_threshold,
         )
+        if marker is not None and browsing_evidence >= specificity:
+            confidence = min(0.95, 0.6 + 0.1 * (browsing_evidence - specificity + 1.0))
+            return RouteDecision(
+                "browsing",
+                confidence,
+                (
+                    f"observable_evidence:browsing={browsing_evidence:.2f}:"
+                    f"buying={specificity:.2f}:marker={marker}"
+                ),
+            )
         if specificity >= threshold:
             confidence = min(0.95, 0.65 + 0.1 * specificity)
             if view.intent_epoch:
@@ -104,7 +117,12 @@ class DualTrackRouter:
                     confidence - self.config.correction_confidence_penalty,
                 )
             return RouteDecision(
-                "buying", confidence, f"observable_specificity:{specificity:.2f}"
+                "buying",
+                confidence,
+                (
+                    f"observable_evidence:buying={specificity:.2f}:"
+                    f"browsing={browsing_evidence:.2f}"
+                ),
             )
         if not positive and exclusions == 0:
             return RouteDecision("browsing", 0.75, "open_ended_category_request")
@@ -173,9 +191,7 @@ class ConflictSafeContextAdapter:
             negative_values = state.constraint_values(polarity="exclude")
             constraints = tuple(state.active_constraints)
         terms = supplied_terms | overlay_terms
-        negative = frozenset(
-            query_terms(" ".join(negative_values), 80)
-        )
+        negative = frozenset(query_terms(" ".join(negative_values), 80))
         if not terms:
             return ProfileContext(terms, 0.0, "supplied_profile", False, "no_tags")
         if terms & negative:
@@ -320,9 +336,7 @@ class DiverseDenseTrack:
                     relevance.get(item.parent_asin, -math.inf), score
                 )
         if self.config.selection == "view_balanced":
-            selected = view_balanced_select(
-                view_rankings, relevance, output_k=output_k
-            )
+            selected = view_balanced_select(view_rankings, relevance, output_k=output_k)
         elif self.config.selection == "embedding_mmr":
             embeddings = {
                 identifier: self.index.embeddings[index]
@@ -458,9 +472,13 @@ class UnionAwareRanker:
             if _sha256(path) != config.model_sha256:
                 raise ValueError("union ranker asset hash mismatch")
             model = LambdaMARTModel.load(path)
-            self.reranker = LambdaMARTReranker(
-                self.union_features.base, model
-            )
+            if model.candidate_id == "adaptive_union_gbdt_1650_final_v1" and tuple(
+                model.feature_names
+            ) != tuple(UNION_FEATURES):
+                raise ValueError(
+                    "source-aware union model feature schema does not match runtime"
+                )
+            self.reranker = LambdaMARTReranker(self.union_features.base, model)
         elif config.backend == "rank_ensemble":
             assert config.model_path is not None
             assert config.model_sha256 is not None
@@ -521,7 +539,8 @@ class UnionAwareRanker:
                 else (predictions - low) / (high - low)
             )
             positions = {
-                identifier: index for index, identifier in enumerate(ranking[:head_size])
+                identifier: index
+                for index, identifier in enumerate(ranking[:head_size])
             }
             if (
                 pool.route == "buying"
@@ -542,7 +561,9 @@ class UnionAwareRanker:
             ordered = sorted(
                 ranking[:head_size],
                 key=lambda identifier: (
-                    -scores[identifier], positions[identifier], identifier
+                    -scores[identifier],
+                    positions[identifier],
+                    identifier,
                 ),
             )
             ranking = [*ordered, *ranking[head_size:]]
@@ -631,9 +652,7 @@ class CausalRelevanceScorer:
         }
         if use_mps:
             model_options["dtype"] = torch.float16
-        model: Any = AutoModelForCausalLM.from_pretrained(
-            model_path, **model_options
-        )
+        model: Any = AutoModelForCausalLM.from_pretrained(model_path, **model_options)
         self.model = model.to(self.device)
         self.model.eval()
         yes = self.tokenizer.encode(" yes", add_special_tokens=False)
@@ -672,7 +691,9 @@ class CausalRelevanceScorer:
             no_logits = logits[rows, positions, self.no_token]
             probabilities = self.torch.sigmoid(yes_logits - no_logits)
             values.extend(float(item) for item in probabilities.cpu())
-        if len(values) != len(ranking) or not all(math.isfinite(item) for item in values):
+        if len(values) != len(ranking) or not all(
+            math.isfinite(item) for item in values
+        ):
             raise ValueError("causal LLM returned invalid relevance scores")
         return tuple(values)
 
@@ -749,9 +770,8 @@ class BoundedLocalLLMSemanticRanker:
             scorer = self._llm()
             scores = scorer.scores(query, head)  # type: ignore[attr-defined]
             if (
-                (time.perf_counter() - primary_started) * 1000.0
-                > self.config.timeout_ms
-            ):
+                time.perf_counter() - primary_started
+            ) * 1000.0 > self.config.timeout_ms:
                 raise TimeoutError("causal LLM exceeded its deadline")
             ordered = blend_ranking(head, scores, weight=self.config.weight)
             result = [*ordered, *bounded[head_size:]]
@@ -850,9 +870,7 @@ class OverGeneralityGuidance:
         return RetrievalPreviewDecision(
             overloaded=overloaded,
             reason=(
-                "preview_overloaded"
-                if overloaded
-                else "preview_specific_or_bounded"
+                "preview_overloaded" if overloaded else "preview_specific_or_bounded"
             ),
             candidate_count=len(candidates),
             specific_constraint_count=specific,
@@ -888,11 +906,7 @@ class OverGeneralityGuidance:
             message=message,
             unavailable_attributes=profile_known_attributes,
         )
-        reason = (
-            f"overloaded:{question.reason}"
-            if overloaded
-            else question.reason
-        )
+        reason = f"overloaded:{question.reason}" if overloaded else question.reason
         return GuidanceDecision(
             overloaded=overloaded,
             ask_attribute=question.ask_attribute,

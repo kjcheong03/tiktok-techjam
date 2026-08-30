@@ -40,12 +40,20 @@ class AdaptiveEvaluation:
     fit_verified: bool = False
     gate_metrics: tuple[tuple[str, float], ...] = ()
     constraint_violations: int = 0
+    hit_rate_at_10: float = 0.0
+    mrr: float = 0.0
+    mttc: float = 0.0
+    lineage_cluster_ids: tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
         if not self.session_rewards:
             raise ValueError("adaptive evaluations require session-level rewards")
         if not 0.0 <= self.behavior_novelty <= 1.0:
             raise ValueError("behavior novelty must be in [0, 1]")
+        if self.lineage_cluster_ids and len(self.lineage_cluster_ids) != len(
+            self.session_rewards
+        ):
+            raise ValueError("lineage clusters must align with session rewards")
 
 
 @dataclass(frozen=True)
@@ -629,6 +637,11 @@ class AdaptiveGhostLabEngine:
                     fidelity=fidelity,
                     behavior_novelty=evaluation.behavior_novelty,
                     seed=self.seed,
+                    cluster_ids=(
+                        evaluation.lineage_cluster_ids
+                        if evaluation.lineage_cluster_ids
+                        else None
+                    ),
                 )
             )
             gate_failures: list[str] = []

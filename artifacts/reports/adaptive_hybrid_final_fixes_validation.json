@@ -1,0 +1,78 @@
+{
+  "all_required_checks_passed": true,
+  "checks": {
+    "browsing_route_exercised": true,
+    "buying_route_exercised": true,
+    "config_schema_valid": true,
+    "dense_diversity_behavior_measured": true,
+    "deterministic_response": true,
+    "deterministic_trace": true,
+    "diverse_dense_exercised": true,
+    "f3_accessed": false,
+    "factory_config_parity": true,
+    "final_report_config_matches": true,
+    "intent_override_changed_epoch": true,
+    "intent_override_scoped_history": true,
+    "literal_llm_changed_order": true,
+    "literal_llm_ranker_exercised": true,
+    "normal_browsing_union_exercised": true,
+    "offline_environment_forced": true,
+    "overload_cutoff_exercised": true,
+    "overload_normal_union_skipped": true,
+    "overload_reduced_dense_budget": true,
+    "overload_safe_merge_exercised": true,
+    "overload_safe_ranker_exercised": true,
+    "overload_semantic_decision_reached": true,
+    "overload_semantic_execution_skipped": true,
+    "profile_conflict_suppressed": true,
+    "profile_update_exposed": true,
+    "response_contract": true,
+    "selective_llm_has_activations": true,
+    "selective_llm_has_skips": true,
+    "starter_activation_untouched": true,
+    "three_source_buying_merge_exercised": true,
+    "union_fit_receipt_valid": true,
+    "union_model_hash_valid": true,
+    "union_model_oof_selected": true,
+    "zero_e2e_fallbacks": true
+  },
+  "config_sha256": "055d22a49d69b49d3769b0b3cfc99a033948322ce8f133acd1931ef0037092cd",
+  "metrics": {
+    "adaptive": {
+      "hit_rate_at_10": 1.0,
+      "mrr": 0.45,
+      "mttc": 3.166667,
+      "recommended_technical_score": 0.791667
+    },
+    "adaptive_vs_champion_score_delta": -0.10518499999999997,
+    "adaptive_vs_state_v2_score_delta": -0.10370199999999996,
+    "champion": {
+      "hit_rate_at_10": 0.98,
+      "mrr": 0.774839,
+      "mttc": 2.28,
+      "recommended_technical_score": 0.896852
+    },
+    "state_v2_precision": {
+      "hit_rate_at_10": 0.99,
+      "mrr": 0.746895,
+      "mttc": 2.185,
+      "recommended_technical_score": 0.895369
+    }
+  },
+  "promotion_status": "architecture_complete_optimization_required",
+  "runtime": {
+    "cold_initialization_seconds": 12.140984833007678,
+    "first_browsing_semantic_turn_ms": 55.64108298858628,
+    "peak_process_memory_mb": 4609.4375,
+    "turn_latency_ms": [
+      85.7564170146361,
+      62.64029198791832,
+      55.64108298858628,
+      944.8552500107326,
+      15.693791036028415
+    ],
+    "warm_mean_turn_ms": 269.7076040058164,
+    "warm_turn_p95_ms": 944.8552500107326
+  },
+  "schema_version": 1
+}

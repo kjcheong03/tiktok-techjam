@@ -23,6 +23,11 @@ from ghostlab.training.adaptive_datasets import (
     load_adaptive_training_corpus,
     progressive_stratified_samples,
 )
+from ghostlab.training.adaptive_lineage import (
+    cluster_ids_for_samples,
+    load_lineage_manifest,
+    subset_corpus,
+)
 from starter.agent import Agent
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -54,9 +59,7 @@ def _sha256(path: Path) -> str:
 
 def _fit_verified(config, candidate: CandidateSpec, registry) -> bool:  # type: ignore[no-untyped-def]
     required = [
-        item
-        for item in candidate.techniques
-        if registry.bindings[item].fit_required
+        item for item in candidate.techniques if registry.bindings[item].fit_required
     ]
     if not required:
         return True
@@ -93,10 +96,15 @@ def main() -> None:
         action="append",
         dest="datasets",
         help=(
-            "repeat for each evaluation JSONL; defaults to data/public_set.jsonl"
+            "repeat for each evaluation JSONL; defaults to the complete "
+            "200+1000+1000 corpus, then selects development by lineage"
         ),
     )
     parser.add_argument("--max-samples", type=int)
+    parser.add_argument(
+        "--lineage-manifest",
+        default="data/splits/adaptive_hybrid_lineage_75_25_v1.json",
+    )
     parser.add_argument("--candidate-limit", type=int, default=500)
     parser.add_argument("--beam-width", type=int, default=24)
     parser.add_argument("--max-extra-techniques", type=int)
@@ -163,8 +171,18 @@ def main() -> None:
             "hpo_trials_per_surviving_structure": args.hpo_trials_per_structure,
         }
     else:
-        dataset_paths = tuple(args.datasets or ("data/public_set.jsonl",))
-        corpus = load_adaptive_training_corpus(ROOT, dataset_paths)
+        dataset_paths = tuple(
+            args.datasets
+            or (
+                "data/public_set.jsonl",
+                "data/synthetic_1000_public_like.jsonl",
+                "data/independent_template_1000.jsonl",
+            )
+        )
+        complete_corpus = load_adaptive_training_corpus(ROOT, dataset_paths)
+        lineage_manifest_path = ROOT / args.lineage_manifest
+        lineage_manifest = load_lineage_manifest(lineage_manifest_path, complete_corpus)
+        corpus = subset_corpus(complete_corpus, lineage_manifest, "development")
         samples = progressive_stratified_samples(corpus, seed=args.seed)
         if args.max_samples is not None:
             samples = samples[: args.max_samples]
@@ -173,8 +191,11 @@ def main() -> None:
         evaluation_ordinal = 0
         checkpoint_path = ROOT / args.checkpoint
         checkpoint_signature = {
+            "evaluation_schema": 3,
             "config_sha256": baseline.canonical_hash(),
             "datasets": list(dataset_paths),
+            "lineage_manifest_sha256": _sha256(lineage_manifest_path),
+            "partition": "development",
             "sample_count": len(samples),
             "seed": args.seed,
         }
@@ -227,7 +248,9 @@ def main() -> None:
                     candidate_id=candidate.candidate_id,
                     fidelity=cast(Any, fidelity),
                     score=float(cached["score"]),
-                    session_rewards=tuple(float(item) for item in cached["session_rewards"]),
+                    session_rewards=tuple(
+                        float(item) for item in cached["session_rewards"]
+                    ),
                     behavior_novelty=float(cached.get("behavior_novelty", 0.0)),
                     latency_p95_ms=float(cached.get("latency_p95_ms", 0.0)),
                     fit_verified=bool(cached.get("fit_verified", False)),
@@ -235,8 +258,12 @@ def main() -> None:
                         (str(name), float(value))
                         for name, value in cached.get("gate_metrics", [])
                     ),
-                    constraint_violations=int(
-                        cached.get("constraint_violations", 0)
+                    constraint_violations=int(cached.get("constraint_violations", 0)),
+                    hit_rate_at_10=float(cached.get("hit_rate_at_10", 0.0)),
+                    mrr=float(cached.get("mrr", 0.0)),
+                    mttc=float(cached.get("mttc", 0.0)),
+                    lineage_cluster_ids=tuple(
+                        str(item) for item in cached.get("lineage_cluster_ids", [])
                     ),
                 )
             fractions = {"f0": 0.2, "f1": 0.5, "f2": 1.0}
@@ -270,9 +297,7 @@ def main() -> None:
             for sample, session in zip(selected_samples, sessions, strict=True):
                 reward = _session_reward(session)
                 sample_id = str(sample["sample_id"])
-                grouped_rewards[
-                    f"scenario:{sample['scenario_type']}"
-                ].append(reward)
+                grouped_rewards[f"scenario:{sample['scenario_type']}"].append(reward)
                 grouped_rewards[f"source:{corpus.origins[sample_id]}"].append(reward)
             gate_metrics = tuple(
                 (name, sum(values) / len(values))
@@ -292,6 +317,13 @@ def main() -> None:
                 fit_verified=_fit_verified(config, candidate, registry),
                 gate_metrics=gate_metrics,
                 constraint_violations=constraint_violations,
+                hit_rate_at_10=float(result["hit_rate_at_10"]),
+                mrr=float(result["mrr"]),
+                mttc=float(result["mttc"]),
+                lineage_cluster_ids=cluster_ids_for_samples(
+                    lineage_manifest,
+                    [str(item["sample_id"]) for item in selected_samples],
+                ),
             )
             checkpoint["evaluations"][checkpoint_key] = {
                 "candidate": _candidate_payload(candidate),
@@ -302,6 +334,10 @@ def main() -> None:
                 "fit_verified": evaluation.fit_verified,
                 "gate_metrics": list(evaluation.gate_metrics),
                 "constraint_violations": evaluation.constraint_violations,
+                "hit_rate_at_10": evaluation.hit_rate_at_10,
+                "mrr": evaluation.mrr,
+                "mttc": evaluation.mttc,
+                "lineage_cluster_ids": list(evaluation.lineage_cluster_ids),
                 "sample_count": count,
                 "completed_at_unix": time.time(),
             }
@@ -341,6 +377,15 @@ def main() -> None:
             "promotable_count": len(inventory.promotable),
             "dataset_sources": [source.__dict__ for source in corpus.sources],
             "sample_count": len(samples),
+            "partition": "development",
+            "lineage_manifest": args.lineage_manifest,
+            "lineage_manifest_sha256": _sha256(lineage_manifest_path),
+            "lineage_cluster_count": len(
+                {
+                    lineage_manifest.group_by_sample[str(item["sample_id"])]
+                    for item in samples
+                }
+            ),
             "fidelity_sample_counts": {
                 fidelity: max(1, round(len(samples) * fraction))
                 for fidelity, fraction in {"f0": 0.2, "f1": 0.5, "f2": 1.0}.items()
@@ -363,6 +408,13 @@ def main() -> None:
                         "mean_paired_delta": sum(item.paired_deltas)
                         / len(item.paired_deltas),
                         "latency_p95_ms": item.evaluation.latency_p95_ms,
+                        "hit_rate_at_10": item.evaluation.hit_rate_at_10,
+                        "mrr": item.evaluation.mrr,
+                        "mttc": item.evaluation.mttc,
+                        "gate_metrics": list(item.evaluation.gate_metrics),
+                        "constraint_violations": (
+                            item.evaluation.constraint_violations
+                        ),
                     }
                     for item in records
                 ]

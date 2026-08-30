@@ -22,6 +22,7 @@ from ghostlab.retrieval.quality import CatalogQualityReranker
 from ghostlab.retrieval.sparse import SparseIndex, query_terms
 from ghostlab.runtime.adaptive_components import (
     BoundedLocalLLMSemanticRanker,
+    BrowsingSafeRanker,
     ConflictSafeContextAdapter,
     DiverseDenseTrack,
     DualTrackRouter,
@@ -92,6 +93,12 @@ class AdaptiveTurnTrace:
     fallback_reason: str | None
     top_ids: tuple[str, ...]
     reason_codes: tuple[str, ...]
+    preview_executed: bool
+    safe_merge_executed: bool
+    safe_ranker_executed: bool
+    normal_union_executed: bool
+    semantic_decision_reached: bool
+    semantic_executed: bool
 
 
 @dataclass(frozen=True)
@@ -104,6 +111,8 @@ class AdaptiveCandidateSnapshot:
     route: str
     candidates: tuple[str, ...]
     overloaded: bool
+    pre_authority_candidates: tuple[str, ...] = ()
+    authority_removed_ids: tuple[str, ...] = ()
     evidence: tuple[CandidateEvidence, ...] = ()
     confirmed_match_count: dict[str, int] = field(default_factory=dict)
     unknown_constraint_count: dict[str, int] = field(default_factory=dict)
@@ -149,6 +158,11 @@ class AdaptiveHybridAgent:
         self.union_ranker = UnionAwareRanker(
             self.catalog_path,
             config.union_ranker,
+            project_root=self.project_root,
+        )
+        self.browsing_safe = BrowsingSafeRanker(
+            self.catalog_path,
+            config.browsing,
             project_root=self.project_root,
         )
         self.semantic = semantic_ranker or BoundedLocalLLMSemanticRanker(
@@ -401,7 +415,9 @@ class AdaptiveHybridAgent:
             profile_overlay_confidence=(
                 overlay.confidence if overlay is not None else 0.0
             ),
-            profile_overlay_epoch=(overlay.intent_epoch if overlay is not None else None),
+            profile_overlay_epoch=(
+                overlay.intent_epoch if overlay is not None else None
+            ),
         )
 
     @staticmethod
@@ -531,9 +547,7 @@ class AdaptiveHybridAgent:
                 session, query=query, message=user_message, turn=turn
             )
             try:
-                profile_context: ProfileContext = self.context_adapter.distil(
-                    view
-                )
+                profile_context: ProfileContext = self.context_adapter.distil(view)
             except Exception as error:  # noqa: BLE001 - context must fail closed
                 profile_context = ProfileContext(
                     frozenset(),
@@ -634,9 +648,7 @@ class AdaptiveHybridAgent:
             dense_selection = self.config.browsing.selection
             if route.route == "browsing" and fallback_reason is None:
                 try:
-                    dense = self._dense_candidates(
-                        view, overloaded=preview.overloaded
-                    )
+                    dense = self._dense_candidates(view, overloaded=preview.overloaded)
                     vector_ids = list(dense.identifiers)
                     vector_scores = dict(dense.relevance_scores)
                     query_views = dense.query_views
@@ -648,9 +660,7 @@ class AdaptiveHybridAgent:
 
             if route.route == "buying" and fallback_reason is None:
                 try:
-                    dense = self._dense_candidates(
-                        view, overloaded=preview.overloaded
-                    )
+                    dense = self._dense_candidates(view, overloaded=preview.overloaded)
                     vector_ids = list(dense.identifiers)
                     vector_scores = dict(dense.relevance_scores)
                     query_views = dense.query_views
@@ -701,6 +711,11 @@ class AdaptiveHybridAgent:
                 "unknown_metadata": 0,
                 "soft_preferences": 0,
             }
+            safe_merge_executed = False
+            safe_ranker_executed = False
+            normal_union_executed = False
+            semantic_decision_reached = False
+            semantic_executed = False
             if fallback_reason is not None:
                 ranking = self._safe_precision_ranking(
                     query, keyword_ids, category_hits, positive, negative, view
@@ -708,27 +723,55 @@ class AdaptiveHybridAgent:
                 reason_codes.extend(("fallback:complete_precision", fallback_reason))
             elif guidance.overloaded:
                 try:
-                    pool = self._merge(
-                        route,
-                        keyword_ids=keyword_ids,
-                        keyword_scores=keyword_scores,
-                        category_hits=category_hits,
+                    pool = merge_candidate_routes(
+                        route=route.route,
+                        keyword_ids=keyword_ids[
+                            : self.config.guidance.preview_keyword_k
+                        ],
+                        category_hits=category_hits[
+                            : self.config.guidance.preview_category_k
+                        ],
                         vector_ids=vector_ids,
+                        limit=self.config.browsing.overload_output_k,
+                        keyword_weight=(
+                            self.config.merger.buying_keyword_weight
+                            if route.route == "buying"
+                            else self.config.merger.browsing_keyword_weight
+                        ),
+                        category_weight=(
+                            self.config.merger.buying_category_weight
+                            if route.route == "buying"
+                            else self.config.merger.browsing_category_weight
+                        ),
+                        vector_weight=(
+                            self.config.merger.buying_vector_weight
+                            if route.route == "buying"
+                            else self.config.merger.browsing_vector_weight
+                        ),
+                        keyword_scores=keyword_scores,
                         vector_scores=vector_scores,
+                        strategy=self.config.merger.strategy,
+                        rrf_constant=self.config.merger.rrf_constant,
                     )
-                    authority = self.union_ranker.filter.enforce(
-                        pool.identifiers, view
-                    )
+                    safe_merge_executed = True
+                    pre_authority = tuple(pool.identifiers)
+                    authority = self.union_ranker.filter.enforce(pool.identifiers, view)
                     constraint_counts = authority.counts()
                     pool = pool.retain(authority.ranking)
                     contribution_counts = pool.contribution_counts()
-                    union_count = len(pool.candidates)
+                    union_count = 0
                     candidate_snapshot = AdaptiveCandidateSnapshot(
                         session_id=session_id,
                         turn=turn,
                         query=query,
                         route=route.route,
                         candidates=tuple(pool.identifiers),
+                        pre_authority_candidates=pre_authority,
+                        authority_removed_ids=tuple(
+                            identifier
+                            for identifier in pre_authority
+                            if identifier not in set(authority.ranking)
+                        ),
                         overloaded=True,
                         evidence=pool.candidates,
                         confirmed_match_count=authority.confirmed_match_count,
@@ -736,26 +779,16 @@ class AdaptiveHybridAgent:
                         soft_preference_count=authority.soft_preference_count,
                         profile_terms=profile_context.terms,
                     )
-                    ranking = self.union_ranker.rank(
-                        query,
-                        pool,
-                        positive_constraints=positive,
-                        negative_constraints=negative,
-                        context=view,
-                        authority=authority,
-                        profile_terms=(
-                            profile_context.terms
-                            if self.config.runtime_adaptation.union_profile_feature_enabled
-                            else frozenset()
-                        ),
+                    ranking = self.browsing_safe.rank(query, list(authority.ranking))
+                    safe_ranker_executed = True
+                    semantic_decision_reached = True
+                    semantic = SemanticRankingResult(
+                        ranking=tuple(ranking),
+                        changed=False,
+                        elapsed_ms=0.0,
+                        backend="skipped:overload_cutoff",
+                        activation_reason="overload_cutoff",
                     )
-                    ranking, optional_reasons = self._apply_optional_rankers(
-                        ranking, view
-                    )
-                    semantic = self._semantic_rank(
-                        query, ranking, route, view, overloaded=True
-                    )
-                    ranking = list(semantic.ranking)
                     active_sources = "_".join(
                         source
                         for source in ("keyword", "category", "vector")
@@ -765,10 +798,10 @@ class AdaptiveHybridAgent:
                         (
                             "overload:cutoff",
                             guidance.reason,
-                            f"merge:{active_sources}",
-                            "rank:union_aware",
-                            *optional_reasons,
-                            f"semantic:{semantic.backend}",
+                            f"safe_merge:{active_sources}",
+                            "rank:browsing_safe",
+                            "union:skipped_overload_cutoff",
+                            "semantic:skipped_overload_cutoff",
                         )
                     )
                 except Exception as error:  # noqa: BLE001 - required fallback
@@ -789,9 +822,8 @@ class AdaptiveHybridAgent:
                         vector_ids=vector_ids,
                         vector_scores=vector_scores,
                     )
-                    authority = self.union_ranker.filter.enforce(
-                        pool.identifiers, view
-                    )
+                    pre_authority = tuple(pool.identifiers)
+                    authority = self.union_ranker.filter.enforce(pool.identifiers, view)
                     constraint_counts = authority.counts()
                     pool = pool.retain(authority.ranking)
                     contribution_counts = pool.contribution_counts()
@@ -802,6 +834,12 @@ class AdaptiveHybridAgent:
                         query=query,
                         route=route.route,
                         candidates=tuple(pool.identifiers),
+                        pre_authority_candidates=pre_authority,
+                        authority_removed_ids=tuple(
+                            identifier
+                            for identifier in pre_authority
+                            if identifier not in set(authority.ranking)
+                        ),
                         overloaded=False,
                         evidence=pool.candidates,
                         confirmed_match_count=authority.confirmed_match_count,
@@ -822,12 +860,15 @@ class AdaptiveHybridAgent:
                             else frozenset()
                         ),
                     )
+                    normal_union_executed = True
                     ranking, optional_reasons = self._apply_optional_rankers(
                         ranking, view
                     )
                     semantic = self._semantic_rank(
                         query, ranking, route, view, overloaded=False
                     )
+                    semantic_decision_reached = True
+                    semantic_executed = not semantic.backend.startswith("skipped:")
                     ranking = list(semantic.ranking)
                     active_sources = "_".join(
                         source
@@ -851,13 +892,14 @@ class AdaptiveHybridAgent:
                         ("fallback:complete_precision", fallback_reason)
                     )
 
-            ranking = apply_profile_context(
-                self.profile,
-                session_id,
-                ranking,
-                profile_context,
-                self.config.runtime_adaptation,
-            )
+            if not guidance.overloaded:
+                ranking = apply_profile_context(
+                    self.profile,
+                    session_id,
+                    ranking,
+                    profile_context,
+                    self.config.runtime_adaptation,
+                )
             final_authority = self.union_ranker.filter.enforce(list(ranking), view)
             ranking = session.controller.filter_ranking(list(final_authority.ranking))
             reason_codes.append(
@@ -934,6 +976,12 @@ class AdaptiveHybridAgent:
                     fallback_reason=fallback_reason,
                     top_ids=identifiers,
                     reason_codes=tuple(reason_codes),
+                    preview_executed=True,
+                    safe_merge_executed=safe_merge_executed,
+                    safe_ranker_executed=safe_ranker_executed,
+                    normal_union_executed=normal_union_executed,
+                    semantic_decision_reached=semantic_decision_reached,
+                    semantic_executed=semantic_executed,
                 )
             )
             if candidate_snapshot is not None:

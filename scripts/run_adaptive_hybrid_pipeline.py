@@ -12,7 +12,16 @@ from pathlib import Path
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
-STAGE_ORDER = ("fit", "llm", "evaluate", "validate", "campaign")
+STAGE_ORDER = (
+    "split",
+    "fit",
+    "diversity",
+    "llm",
+    "evaluate",
+    "validate",
+    "campaign",
+    "package",
+)
 
 
 @dataclass(frozen=True)
@@ -34,11 +43,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
             "Run the adaptive structural fit, bounded LLM selection, public "
-            "evaluation, validation and GhostLab campaign as one resumable pipeline"
+            "evaluation, validation, GhostLab campaign and Top-3 packaging as one "
+            "resumable pipeline"
         )
     )
-    parser.add_argument("--from-stage", choices=STAGE_ORDER, default="fit")
-    parser.add_argument("--through-stage", choices=STAGE_ORDER, default="campaign")
+    parser.add_argument("--from-stage", choices=STAGE_ORDER, default="split")
+    parser.add_argument("--through-stage", choices=STAGE_ORDER, default="package")
     parser.add_argument(
         "--force-stage",
         action="append",
@@ -90,13 +100,13 @@ def _validate_args(args: argparse.Namespace) -> None:
 
 def stage_specs(args: argparse.Namespace) -> tuple[StageSpec, ...]:
     python = sys.executable
-    selected_config = "configs/adaptive_hybrid_1a_3b_2200_structural_v2_selected.json"
-    public_report = "artifacts/reports/adaptive_hybrid_structural_v2_public.json"
+    selected_config = "configs/adaptive_hybrid_1a_3b_1650_final_v1_selected.json"
+    public_report = "artifacts/reports/adaptive_hybrid_development_1650.json"
     validation_report = (
         "artifacts/reports/adaptive_hybrid_structural_v2_validation.json"
     )
-    campaign_report = "artifacts/reports/adaptive_hybrid_campaign_2200.json"
-    campaign_checkpoint = "artifacts/campaigns/adaptive_hybrid_2200/checkpoint.json"
+    campaign_report = "artifacts/reports/adaptive_hybrid_campaign_1650.json"
+    campaign_checkpoint = "artifacts/campaigns/adaptive_hybrid_1650_v1/checkpoint.json"
     campaign_command = [
         python,
         "scripts/run_adaptive_hybrid_campaign.py",
@@ -129,16 +139,32 @@ def stage_specs(args: argparse.Namespace) -> tuple[StageSpec, ...]:
         campaign_command.extend(("--max-samples", str(args.campaign_max_samples)))
     return (
         StageSpec(
+            "split",
+            (python, "scripts/build_adaptive_lineage_split.py"),
+            (
+                "data/splits/adaptive_hybrid_lineage_75_25_v1.json",
+                "artifacts/reports/adaptive_lineage_reconstruction_audit_v1.json",
+            ),
+        ),
+        StageSpec(
             "fit",
             (python, "scripts/train_adaptive_hybrid.py"),
             (
-                "configs/adaptive_hybrid_1a_3b_2200_structural_v2.json",
-                "artifacts/models/adaptive_union_gbdt_2200_structural_v2.json",
-                "artifacts/models/adaptive_union_gbdt_2200_structural_v2.fit_receipt.json",
-                "artifacts/models/adaptive_browsing_gbdt_2200_structural_v2.json",
-                "artifacts/models/adaptive_browsing_gbdt_2200_structural_v2.fit_receipt.json",
-                "artifacts/reports/adaptive_hybrid_training_2200_structural_v2.json",
+                "configs/adaptive_hybrid_1a_3b_1650_final_v1.json",
+                "artifacts/models/adaptive_union_gbdt_1650_final_v1.json",
+                "artifacts/models/adaptive_union_gbdt_1650_final_v1.fit_receipt.json",
+                "artifacts/reports/adaptive_hybrid_training_1650_final_v1.json",
             ),
+        ),
+        StageSpec(
+            "diversity",
+            (
+                python,
+                "scripts/validate_adaptive_diversity.py",
+                "--config",
+                "configs/adaptive_hybrid_1a_3b_1650_final_v1.json",
+            ),
+            ("artifacts/reports/adaptive_dense_diversity_v2.json",),
         ),
         StageSpec(
             "llm",
@@ -155,6 +181,16 @@ def stage_specs(args: argparse.Namespace) -> tuple[StageSpec, ...]:
                 "scripts/run_adaptive_hybrid.py",
                 "--config",
                 selected_config,
+                "--dataset",
+                "data/public_set.jsonl",
+                "--dataset",
+                "data/synthetic_1000_public_like.jsonl",
+                "--dataset",
+                "data/independent_template_1000.jsonl",
+                "--lineage-manifest",
+                "data/splits/adaptive_hybrid_lineage_75_25_v1.json",
+                "--partition",
+                "development",
                 "--output",
                 public_report,
             ),
@@ -170,13 +206,27 @@ def stage_specs(args: argparse.Namespace) -> tuple[StageSpec, ...]:
                 "--adaptive-report",
                 public_report,
                 "--training-report",
-                "artifacts/reports/adaptive_hybrid_training_2200_structural_v2.json",
+                "artifacts/reports/adaptive_hybrid_training_1650_final_v1.json",
                 "--output",
                 validation_report,
             ),
             (validation_report,),
         ),
         StageSpec("campaign", tuple(campaign_command), (campaign_report,)),
+        StageSpec(
+            "package",
+            (
+                python,
+                "scripts/package_adaptive_top_three.py",
+                "--campaign-report",
+                campaign_report,
+                "--base-config",
+                selected_config,
+                "--output",
+                "artifacts/reports/adaptive_hybrid_top3.json",
+            ),
+            ("artifacts/reports/adaptive_hybrid_top3.json",),
+        ),
     )
 
 

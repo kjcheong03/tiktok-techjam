@@ -241,7 +241,7 @@ def test_promotable_optional_rankers_execute_at_the_declared_hook(
     assert reasons.index("optional:prior.quality") < reasons.index("semantic:stub_llm")
 
 
-def test_overload_caps_retrieval_but_uses_llm_for_browsing_semantics(
+def test_overload_caps_retrieval_and_skips_full_rankers(
     tmp_path: Path,
 ) -> None:
     agent, _, semantic, _ = _agent(tmp_path, overload_min_candidates=10)
@@ -251,12 +251,15 @@ def test_overload_caps_retrieval_but_uses_llm_for_browsing_semantics(
     )
     trace = agent.traces[-1]
     assert trace.overloaded is True
-    assert semantic.calls == 1
+    assert semantic.calls == 0
     assert len(response["recommendations"]) == 10
     assert response["ask_attribute"] is not None
     assert "overload:cutoff" in trace.reason_codes
-    assert "rank:union_aware" in trace.reason_codes
-    assert "semantic:stub_llm" in trace.reason_codes
+    assert "rank:browsing_safe" in trace.reason_codes
+    assert "union:skipped_overload_cutoff" in trace.reason_codes
+    assert "semantic:skipped_overload_cutoff" in trace.reason_codes
+    assert trace.normal_union_executed is False
+    assert trace.semantic_executed is False
     assert all(
         trace.contribution_counts[source] > 0
         for source in ("keyword", "category", "vector")
@@ -275,7 +278,7 @@ def test_semantic_failure_uses_complete_precision_fallback(tmp_path: Path) -> No
     assert "fallback:complete_precision" in agent.traces[-1].reason_codes
 
 
-def test_overload_semantic_failure_uses_complete_precision_fallback(
+def test_overload_does_not_call_failing_semantic_ranker(
     tmp_path: Path,
 ) -> None:
     agent, _, semantic, _ = _agent(
@@ -286,9 +289,9 @@ def test_overload_semantic_failure_uses_complete_precision_fallback(
         "s", "I'm looking for running shoes, but I'm still exploring.", 1, 10
     )
     assert len(response["recommendations"]) == 10
-    assert semantic.calls == 1
-    assert agent.traces[-1].fallback_reason == "adaptive:RuntimeError"
-    assert "fallback:complete_precision" in agent.traces[-1].reason_codes
+    assert semantic.calls == 0
+    assert agent.traces[-1].fallback_reason is None
+    assert agent.traces[-1].semantic_backend == "skipped:overload_cutoff"
 
 
 @pytest.mark.parametrize(

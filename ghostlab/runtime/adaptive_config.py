@@ -32,6 +32,9 @@ class DualTrackRouterConfig(_RequiredConfig):
     buying_specificity_threshold: float = Field(default=1.0, ge=0.0, le=8.0)
     correction_confidence_penalty: float = Field(default=0.1, ge=0.0, le=0.5)
     exclusion_specificity_weight: float = Field(default=0.25, ge=0.0, le=1.0)
+    hard_specificity_weight: float = Field(default=0.25, ge=0.0, le=1.0)
+    explicit_specificity_weight: float = Field(default=0.1, ge=0.0, le=1.0)
+    browsing_marker_weight: float = Field(default=2.5, ge=0.0, le=8.0)
 
 
 class PrecisionTrackConfig(_RequiredConfig):
@@ -62,9 +65,9 @@ class DiverseDenseTrackConfig(_RequiredConfig):
     cache_dir: str = "artifacts/cache/dense"
     retrieval_per_view: int = Field(default=400, ge=10, le=1000)
     output_k: int = Field(default=200, ge=10, le=1000)
-    selection: Literal[
-        "multiview_max_relevance", "view_balanced", "embedding_mmr"
-    ] = "multiview_max_relevance"
+    selection: Literal["multiview_max_relevance", "view_balanced", "embedding_mmr"] = (
+        "multiview_max_relevance"
+    )
     mmr_relevance_weight: float = Field(default=0.85, ge=0.0, le=1.0)
     overload_retrieval_per_view: int = Field(default=80, ge=5, le=500)
     overload_output_k: int = Field(default=80, ge=5, le=500)

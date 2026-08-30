@@ -20,7 +20,6 @@ from ghostlab.training.adaptive_datasets import (
     AdaptiveTrainingCorpus,
     fold_manifest,
     load_adaptive_training_corpus,
-    stratified_outer_folds,
 )
 from ghostlab.training.adaptive_hybrid import (
     AdaptiveRankingGroup,
@@ -29,6 +28,11 @@ from ghostlab.training.adaptive_hybrid import (
     evaluate_group_ordering,
     ranking_dataset,
     sha256_file,
+)
+from ghostlab.training.adaptive_lineage import (
+    load_lineage_manifest,
+    manifest_outer_folds,
+    subset_corpus,
 )
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -54,8 +58,9 @@ class ModelTrainingResult:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
-            "Fit the adaptive union and Browsing rankers with nested, "
-            "source/scenario-stratified folds and emit a hash-bound config"
+            "Fit the adaptive union ranker with lineage-safe nested folds and "
+            "emit a hash-bound config. The overload safe ranker is intentionally "
+            "deterministic so cutoff turns do not invoke a fitted full ranker."
         )
     )
     parser.add_argument(
@@ -67,42 +72,36 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--config", default="configs/adaptive_hybrid_1a_3b_v1.json")
     parser.add_argument("--catalog", default="data/catalog.jsonl")
     parser.add_argument("--folds", type=int, default=5)
+    parser.add_argument(
+        "--lineage-manifest",
+        default="data/splits/adaptive_hybrid_lineage_75_25_v1.json",
+    )
     parser.add_argument("--max-rounds", type=int, default=100)
     parser.add_argument("--seed", type=int, default=20260830)
-    parser.add_argument(
-        "--policy-id", default="adaptive_hybrid_1a_3b_2200_structural_v2"
-    )
+    parser.add_argument("--policy-id", default="adaptive_hybrid_1a_3b_1650_final_v1")
     parser.add_argument(
         "--plan-only",
         action="store_true",
         help="validate datasets, folds and output paths without collecting or fitting",
     )
     parser.add_argument(
-        "--split-output", default="configs/splits/adaptive_2200_nested_v1.json"
+        "--split-output", default="configs/splits/adaptive_1650_group_nested_v1.json"
     )
     parser.add_argument(
         "--union-model-output",
-        default="artifacts/models/adaptive_union_gbdt_2200_structural_v2.json",
+        default="artifacts/models/adaptive_union_gbdt_1650_final_v1.json",
     )
     parser.add_argument(
         "--union-receipt-output",
-        default="artifacts/models/adaptive_union_gbdt_2200_structural_v2.fit_receipt.json",
-    )
-    parser.add_argument(
-        "--browsing-model-output",
-        default="artifacts/models/adaptive_browsing_gbdt_2200_structural_v2.json",
-    )
-    parser.add_argument(
-        "--browsing-receipt-output",
-        default="artifacts/models/adaptive_browsing_gbdt_2200_structural_v2.fit_receipt.json",
+        default="artifacts/models/adaptive_union_gbdt_1650_final_v1.fit_receipt.json",
     )
     parser.add_argument(
         "--output-config",
-        default="configs/adaptive_hybrid_1a_3b_2200_structural_v2.json",
+        default="configs/adaptive_hybrid_1a_3b_1650_final_v1.json",
     )
     parser.add_argument(
         "--report-output",
-        default="artifacts/reports/adaptive_hybrid_training_2200_structural_v2.json",
+        default="artifacts/reports/adaptive_hybrid_training_1650_final_v1.json",
     )
     return parser
 
@@ -408,11 +407,17 @@ def main() -> None:
     os.environ["TOKENIZERS_PARALLELISM"] = "false"
     started = time.perf_counter()
     datasets = tuple(args.datasets or DEFAULT_DATASETS)
-    corpus = load_adaptive_training_corpus(ROOT, datasets)
-    folds = stratified_outer_folds(corpus, fold_count=args.folds, seed=args.seed)
-    if len(corpus.samples) != 2200 and args.datasets is None:
+    complete_corpus = load_adaptive_training_corpus(ROOT, datasets)
+    lineage_manifest_path = _input_path(args.lineage_manifest)
+    lineage_manifest = load_lineage_manifest(lineage_manifest_path, complete_corpus)
+    corpus = subset_corpus(complete_corpus, lineage_manifest, "development")
+    folds = manifest_outer_folds(lineage_manifest)
+    if len(folds) != args.folds:
+        raise ValueError("requested fold count does not match the lineage manifest")
+    if len(corpus.samples) != 1650 and args.datasets is None:
         raise ValueError(
-            f"default adaptive corpus must contain 2200 samples, got {len(corpus.samples)}"
+            "default adaptive development corpus must contain 1650 samples, "
+            f"got {len(corpus.samples)}"
         )
 
     config_path = _input_path(args.config)
@@ -420,8 +425,6 @@ def main() -> None:
     split_path = _output_path(args.split_output)
     union_model_path = _output_path(args.union_model_output)
     union_receipt_path = _output_path(args.union_receipt_output)
-    browsing_model_path = _output_path(args.browsing_model_output)
-    browsing_receipt_path = _output_path(args.browsing_receipt_output)
     output_config_path = _output_path(args.output_config)
     report_path = _output_path(args.report_output)
 
@@ -440,7 +443,7 @@ def main() -> None:
                     "fold_sample_counts": [len(fold) for fold in folds],
                     "output_config": _relative(output_config_path),
                     "union_model": _relative(union_model_path),
-                    "browsing_model": _relative(browsing_model_path),
+                    "overload_safe_ranker": "deterministic_bounded_scorer",
                     "independent_template_consumed_for_training": any(
                         "independent_template" in source.path
                         for source in corpus.sources
@@ -453,6 +456,14 @@ def main() -> None:
         )
         return
     split_payload = fold_manifest(corpus, folds, seed=args.seed)
+    split_payload.update(
+        {
+            "partition": "development",
+            "lineage_manifest_path": _relative(lineage_manifest_path),
+            "lineage_manifest_sha256": sha256_file(lineage_manifest_path),
+            "group_safe": True,
+        }
+    )
     _write_json(split_path, split_payload)
     _, categories, products = catalog_index(catalog_path)
     groups, collection = collect_adaptive_ranking_groups(
@@ -472,29 +483,15 @@ def main() -> None:
         groups,
         folds,
         corpus.sample_ids,
-        candidate_id="adaptive_union_gbdt_2200_structural_v2",
+        candidate_id="adaptive_union_gbdt_1650_final_v1",
         route=None,
         overloaded=False,
         max_rounds=args.max_rounds,
         seed=args.seed,
     )
-    browsing = _cross_validate_and_fit(
-        groups,
-        folds,
-        corpus.sample_ids,
-        candidate_id="adaptive_browsing_gbdt_2200_structural_v2",
-        route="browsing",
-        overloaded=True,
-        max_rounds=args.max_rounds,
-        seed=args.seed + 1000,
-    )
-
     union_model_path.parent.mkdir(parents=True, exist_ok=True)
-    browsing_model_path.parent.mkdir(parents=True, exist_ok=True)
     union.model.save(union_model_path)
-    browsing.model.save(browsing_model_path)
     union_hash = sha256_file(union_model_path)
-    browsing_hash = sha256_file(browsing_model_path)
 
     union_config = baseline.union_ranker
     if union.selected:
@@ -505,9 +502,8 @@ def main() -> None:
                 "model_sha256": union_hash,
             }
         )
-    # Overload traverses the source-aware union ranker. The historical
-    # dense-only safe-ranker hook cannot consume this union schema, so it stays
-    # a deterministic fallback instead of binding an incompatible asset.
+    # A genuine overload cutoff must not invoke the normal learned union path.
+    # Keep its bounded safe scorer deterministic and separately observable.
     browsing_config = baseline.browsing.model_copy(
         update={
             "safe_ranker_backend": "deterministic",
@@ -530,7 +526,7 @@ def main() -> None:
         baseline, disable_browsing_safe=True
     ).canonical_hash()
     union_receipt = _receipt(
-        asset_id="adaptive_union_gbdt_2200_structural_v2",
+        asset_id="adaptive_union_gbdt_1650_final_v1",
         model_hash=union_hash,
         model_path=union_model_path,
         result=union,
@@ -542,21 +538,7 @@ def main() -> None:
         deployment_hash=deployment_hash,
         seed=args.seed,
     )
-    browsing_receipt = _receipt(
-        asset_id="adaptive_browsing_gbdt_2200_structural_v2",
-        model_hash=browsing_hash,
-        model_path=browsing_model_path,
-        result=browsing,
-        corpus=corpus,
-        split_path=split_path,
-        catalog_path=catalog_path,
-        baseline=baseline,
-        collection_hash=collection_hash,
-        deployment_hash=deployment_hash,
-        seed=args.seed + 1000,
-    )
     _write_json(union_receipt_path, union_receipt)
-    _write_json(browsing_receipt_path, browsing_receipt)
 
     def result_payload(result: ModelTrainingResult) -> dict[str, object]:
         return {
@@ -583,11 +565,15 @@ def main() -> None:
         "fold_count": len(folds),
         "collection": collection,
         "union": result_payload(union),
-        "browsing": result_payload(browsing),
+        "overload_safe_ranker": {
+            "backend": "deterministic",
+            "trained_asset": False,
+            "normal_union_bypassed_on_overload": True,
+        },
         "profile_awareness": {
             "runtime_profile_context_replayed": True,
             "conflict_safe_runtime_profile_stage_preserved": True,
-            "profile_feature_present_in_union_schema": "profile_match"
+            "profile_feature_present_in_union_schema": "profile_term_match"
             in UNION_FEATURES,
             "profile_channels_runtime_gated": True,
         },
@@ -595,9 +581,11 @@ def main() -> None:
         "output_config_sha256": deployment_hash,
         "union_model": _relative(union_model_path),
         "union_model_sha256": union_hash,
-        "browsing_model": _relative(browsing_model_path),
-        "browsing_model_sha256": browsing_hash,
         "holdout_accessed": False,
+        "lineage_manifest": _relative(lineage_manifest_path),
+        "lineage_manifest_sha256": sha256_file(lineage_manifest_path),
+        "partition": "development",
+        "group_safe_outer_folds": True,
         "independent_template_consumed_for_training": any(
             "independent_template" in source.path for source in corpus.sources
         ),

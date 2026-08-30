@@ -20,6 +20,8 @@ from ghostlab.runtime.adaptive_components import DiverseDenseTrack
 from ghostlab.runtime.adaptive_factory import load_adaptive_hybrid_config
 from ghostlab.state.baseline_v2 import StateBaselineV2
 from ghostlab.state.v2_view import V2SessionController
+from ghostlab.training.adaptive_datasets import load_adaptive_training_corpus
+from ghostlab.training.adaptive_lineage import load_lineage_manifest, subset_corpus
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -28,8 +30,14 @@ def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Compare deterministic dense selectors on identical E5 pools."
     )
-    parser.add_argument("--source", default="data/public_set.jsonl")
-    parser.add_argument("--config", default="configs/adaptive_hybrid_1a_3b_2200_v1.json")
+    parser.add_argument("--source", action="append", dest="sources")
+    parser.add_argument(
+        "--lineage-manifest",
+        default="data/splits/adaptive_hybrid_lineage_75_25_v1.json",
+    )
+    parser.add_argument(
+        "--config", default="configs/adaptive_hybrid_1a_3b_1650_final_v1.json"
+    )
     parser.add_argument("--max-samples", type=int, default=0)
     parser.add_argument(
         "--output", default="artifacts/reports/adaptive_dense_diversity_v2.json"
@@ -53,8 +61,18 @@ def main() -> None:
         raise ValueError("max-samples must be non-negative")
     os.environ["HF_HUB_OFFLINE"] = "1"
     os.environ["TRANSFORMERS_OFFLINE"] = "1"
-    source = ROOT / args.source
-    samples = [json.loads(line) for line in source.read_text(encoding="utf-8").splitlines()]
+    sources = tuple(
+        args.sources
+        or (
+            "data/public_set.jsonl",
+            "data/synthetic_1000_public_like.jsonl",
+            "data/independent_template_1000.jsonl",
+        )
+    )
+    complete = load_adaptive_training_corpus(ROOT, sources)
+    manifest = load_lineage_manifest(ROOT / args.lineage_manifest, complete)
+    corpus = subset_corpus(complete, manifest, "development")
+    samples = [item for _, item in sorted(corpus.samples.items())]
     samples = [item for item in samples if item.get("scenario_type") == "browsing"]
     if args.max_samples:
         samples = samples[: args.max_samples]
@@ -116,6 +134,14 @@ def main() -> None:
             name: [leaves.get(item, "unknown") for item in ids[:50]]
             for name, ids in selections.items()
         }
+        view_membership = {
+            identifier: {
+                view_name
+                for view_name, identifiers in rankings.items()
+                if identifier in identifiers
+            }
+            for identifier in candidates
+        }
         rows.append(
             {
                 "sample_id": sample["sample_id"],
@@ -124,8 +150,12 @@ def main() -> None:
                 "selectors": {
                     name: {
                         "ids": ids,
-                        "target_rank": (ids.index(target) + 1 if target in ids else None),
-                        "category_count_50": len({leaves.get(item, "") for item in ids[:50]}),
+                        "target_rank": (
+                            ids.index(target) + 1 if target in ids else None
+                        ),
+                        "category_count_50": len(
+                            {leaves.get(item, "") for item in ids[:50]}
+                        ),
                         "maximum_category_share_50": max(
                             (
                                 category_heads[name].count(item)
@@ -135,13 +165,20 @@ def main() -> None:
                             default=0.0,
                         ),
                         "mean_similarity_50": _mean_similarity(ids[:50], embedding_map),
+                        "represented_views_50": len(
+                            {
+                                view
+                                for identifier in ids[:50]
+                                for view in view_membership.get(identifier, set())
+                            }
+                        ),
                     }
                     for name, ids in selections.items()
                 },
             }
         )
 
-    summary: dict[str, object] = {}
+    summary: dict[str, dict[str, float]] = {}
     for selector in (
         "multiview_max_relevance",
         "view_balanced",
@@ -156,7 +193,7 @@ def main() -> None:
             / max(1, len(selector_rows))
             for depth in (50, 100, 200)
         }
-        summary[selector].update(  # type: ignore[union-attr]
+        summary[selector].update(
             {
                 "mean_category_count_50": statistics.fmean(
                     float(item["category_count_50"]) for item in selector_rows
@@ -168,6 +205,11 @@ def main() -> None:
                 )
                 if selector_rows
                 else 0.0,
+                "mean_represented_views_50": statistics.fmean(
+                    float(item["represented_views_50"]) for item in selector_rows
+                )
+                if selector_rows
+                else 0.0,
             }
         )
     control = summary["multiview_max_relevance"]
@@ -175,14 +217,21 @@ def main() -> None:
     for selector in ("view_balanced", "embedding_mmr"):
         candidate = summary[selector]
         decisions[selector] = {
-            "recall_200_preserved": candidate["recall_at_200"] >= control["recall_at_200"],  # type: ignore[index]
-            "redundancy_reduced": candidate["mean_pairwise_similarity_50"] < control["mean_pairwise_similarity_50"],  # type: ignore[index]
-            "category_coverage_improved": candidate["mean_category_count_50"] > control["mean_category_count_50"],  # type: ignore[index]
+            "recall_200_preserved": candidate["recall_at_200"]
+            >= control["recall_at_200"],
+            "redundancy_reduced": candidate["mean_pairwise_similarity_50"]
+            < control["mean_pairwise_similarity_50"],
+            "category_coverage_improved": candidate["mean_category_count_50"]
+            > control["mean_category_count_50"],
+            "view_coverage_preserved": candidate["mean_represented_views_50"]
+            >= control["mean_represented_views_50"],
         }
     payload = {
         "schema_version": 2,
         "evaluation_scope": "development_diagnostic_not_independent_claim",
-        "source": str(source.relative_to(ROOT)),
+        "sources": list(sources),
+        "partition": "development",
+        "lineage_manifest_sha256": manifest.manifest_sha256,
         "browsing_sessions": len(rows),
         "identical_retrieval_pools": True,
         "summary": summary,
@@ -191,8 +240,15 @@ def main() -> None:
     }
     output = ROOT / args.output
     output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    print(json.dumps({key: value for key, value in payload.items() if key != "per_session"}, indent=2))
+    output.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+    print(
+        json.dumps(
+            {key: value for key, value in payload.items() if key != "per_session"},
+            indent=2,
+        )
+    )
 
 
 if __name__ == "__main__":

@@ -16,6 +16,20 @@ ATTRIBUTE_KEYS = {
     "style": ("Style",),
     "brand": ("Brand", "Brand Name"),
 }
+CLOSED_WORLD_ATTRIBUTES = frozenset({"color", "size", "brand"})
+SEMANTIC_EQUIVALENTS: dict[str, tuple[frozenset[str], ...]] = {
+    "waterproof": (
+        frozenset({"waterproof"}),
+        frozenset({"water", "resistant"}),
+        frozenset({"gore", "tex"}),
+        frozenset({"weatherproof"}),
+    ),
+    "breathable": (
+        frozenset({"breathable"}),
+        frozenset({"ventilated"}),
+        frozenset({"moisture", "wicking"}),
+    ),
+}
 ConstraintStatus = Literal[
     "CONFIRMED_MATCH",
     "CONFIRMED_VIOLATION",
@@ -61,6 +75,21 @@ class ConstraintAuthorityResult:
 
 def _tokens(value: object) -> frozenset[str]:
     return frozenset(re.findall(r"[a-z0-9]+", str(value).casefold()))
+
+
+def _semantic_overlap(wanted: frozenset[str], known: frozenset[str]) -> bool:
+    if wanted & known:
+        return True
+    for concept, variants in SEMANTIC_EQUIVALENTS.items():
+        concept_requested = concept in wanted or any(
+            variant <= wanted for variant in variants
+        )
+        concept_known = concept in known or any(
+            variant <= known for variant in variants
+        )
+        if concept_requested and concept_known:
+            return True
+    return False
 
 
 class CoverageAwareFilter:
@@ -120,6 +149,7 @@ class CoverageAwareFilter:
     ) -> ConstraintDecision:
         product = self.products.get(identifier)
         values = tuple(constraint.values)
+
         def decision(status: ConstraintStatus, reason: str) -> ConstraintDecision:
             return ConstraintDecision(
                 parent_asin=identifier,
@@ -129,6 +159,7 @@ class CoverageAwareFilter:
                 status=status,
                 reason=reason,
             )
+
         if not self._is_authoritative(constraint):
             return decision("SOFT_PREFERENCE", "non_authoritative_preference")
         if product is None:
@@ -152,11 +183,27 @@ class CoverageAwareFilter:
             known = product.document_terms
         if not known or not wanted:
             return decision("UNKNOWN_METADATA", "attribute_unknown")
-        overlap = bool(known & wanted)
-        violates = overlap if constraint.polarity == "exclude" else not overlap
+        overlap = _semantic_overlap(wanted, known)
+        if overlap:
+            violates = constraint.polarity == "exclude"
+            return decision(
+                "CONFIRMED_VIOLATION" if violates else "CONFIRMED_MATCH",
+                (
+                    "approved_equivalent_or_literal_exclusion"
+                    if violates
+                    else "approved_equivalent_or_literal_match"
+                ),
+            )
+        if constraint.attribute in {"feature", "use_case", "other"}:
+            return decision("UNKNOWN_METADATA", "open_world_no_positive_evidence")
+        if constraint.polarity == "include" and (
+            constraint.attribute not in CLOSED_WORLD_ATTRIBUTES
+        ):
+            return decision("UNKNOWN_METADATA", "non_closed_world_disagreement")
+        violates = constraint.polarity == "include"
         return decision(
             "CONFIRMED_VIOLATION" if violates else "CONFIRMED_MATCH",
-            "catalog_attribute_comparison",
+            "closed_world_catalog_comparison",
         )
 
     def enforce(

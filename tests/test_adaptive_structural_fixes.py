@@ -71,9 +71,7 @@ def _catalog(path: Path) -> list[str]:
             "rating_number": None,
         },
     ]
-    path.write_text(
-        "".join(json.dumps(row) + "\n" for row in rows), encoding="utf-8"
-    )
+    path.write_text("".join(json.dumps(row) + "\n" for row in rows), encoding="utf-8")
     return [row["parent_asin"] for row in rows]
 
 
@@ -123,9 +121,7 @@ def test_constraint_authority_is_route_independent_and_preserves_unknowns(
             ),
         )
     )
-    result = CoverageAwareFilter(catalog).enforce(
-        ["OVER", "UNKNOWN", "MATCH"], context
-    )
+    result = CoverageAwareFilter(catalog).enforce(["OVER", "UNKNOWN", "MATCH"], context)
     assert result.ranking == ("MATCH", "UNKNOWN")
     assert result.violation_count == 1
     assert any(item.status == "UNKNOWN_METADATA" for item in result.decisions)
@@ -145,11 +141,53 @@ def test_known_exclusion_cannot_reappear_after_ranking(tmp_path: Path) -> None:
             ),
         )
     )
-    result = CoverageAwareFilter(catalog).enforce(
-        ["MATCH", "OVER", "UNKNOWN"], context
-    )
+    result = CoverageAwareFilter(catalog).enforce(["MATCH", "OVER", "UNKNOWN"], context)
     assert result.ranking == ("UNKNOWN",)
     assert result.violation_count == 2
+
+
+def test_open_world_feature_equivalence_and_absence_never_create_false_violation(
+    tmp_path: Path,
+) -> None:
+    catalog = tmp_path / "catalog.jsonl"
+    rows = [
+        {
+            "parent_asin": "GORE",
+            "title": "Trail shell",
+            "categories": ["Jackets"],
+            "features": ["GORE-TEX membrane"],
+            "details": {},
+            "description": "Outdoor shell",
+            "price": 90,
+        },
+        {
+            "parent_asin": "PLAIN",
+            "title": "Outdoor shell",
+            "categories": ["Jackets"],
+            "features": [],
+            "details": {},
+            "description": "General outdoor layer",
+            "price": 70,
+        },
+    ]
+    catalog.write_text(
+        "".join(json.dumps(row) + "\n" for row in rows), encoding="utf-8"
+    )
+    context = _context(
+        (
+            StructuredConstraint(
+                attribute="feature",
+                values=["waterproof"],
+                strength="hard",
+                source_turn=1,
+            ),
+        )
+    )
+    result = CoverageAwareFilter(catalog).enforce(["GORE", "PLAIN"], context)
+    assert result.ranking == ("GORE", "PLAIN")
+    assert result.violation_count == 0
+    statuses = {item.parent_asin: item.status for item in result.decisions}
+    assert statuses == {"GORE": "CONFIRMED_MATCH", "PLAIN": "UNKNOWN_METADATA"}
 
 
 class _BudgetDense:
@@ -221,8 +259,13 @@ def test_pre_dense_preview_selects_reduced_budget_and_reaches_pipeline(
     assert dense.overload_flags == [True]
     assert trace.preview_reason == "preview_overloaded"
     assert trace.dense_output_k == 2
-    assert "rank:union_aware" in trace.reason_codes
-    assert trace.semantic_backend == "test_llm"
+    assert "rank:browsing_safe" in trace.reason_codes
+    assert trace.safe_merge_executed
+    assert trace.safe_ranker_executed
+    assert not trace.normal_union_executed
+    assert trace.semantic_decision_reached
+    assert not trace.semantic_executed
+    assert trace.semantic_backend == "skipped:overload_cutoff"
 
 
 def test_dense_selectors_are_deterministic_and_mmr_reduces_duplicates() -> None:
@@ -336,12 +379,16 @@ def test_buying_residual_prevents_learned_model_from_overturning_sparse_head(
         ),
         project_root=tmp_path,
     )
-    assert residual.rank(
-        "shoes", pool, positive_constraints={}, negative_constraints={}
-    )[0] == "MATCH"
-    assert direct.rank(
-        "shoes", pool, positive_constraints={}, negative_constraints={}
-    )[0] == "OVER"
+    assert (
+        residual.rank("shoes", pool, positive_constraints={}, negative_constraints={})[
+            0
+        ]
+        == "MATCH"
+    )
+    assert (
+        direct.rank("shoes", pool, positive_constraints={}, negative_constraints={})[0]
+        == "OVER"
+    )
 
 
 class _FakeDenseIndex:
@@ -371,7 +418,9 @@ class _FakeDenseIndex:
         )
 
 
-def test_dense_track_exposes_view_evidence_and_selected_strategy(tmp_path: Path) -> None:
+def test_dense_track_exposes_view_evidence_and_selected_strategy(
+    tmp_path: Path,
+) -> None:
     context = AdaptiveTurnContext(
         query_text="complete request",
         active_constraints=(),

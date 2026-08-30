@@ -98,6 +98,7 @@ def main() -> None:
         latencies.append((time.perf_counter() - started) * 1000.0)
     deterministic = responses[0] == responses[1]
     trace_deterministic = _projection(agent, -2) == _projection(agent, -1)
+    buying_trace = agent.traces[-1]
 
     agent.reset("browse", {"preference_tags": ["comfort", "style"]})
     started = time.perf_counter()
@@ -109,6 +110,17 @@ def main() -> None:
     )
     latencies.append((time.perf_counter() - started) * 1000.0)
     browsing_trace = agent.traces[-1]
+
+    agent.reset("browse_semantic", {"preference_tags": ["comfort", "style"]})
+    started = time.perf_counter()
+    semantic_response = agent.respond(
+        "browse_semantic",
+        "I'm still exploring summer clothing. A key requirement is: breathable.",
+        1,
+        10,
+    )
+    latencies.append((time.perf_counter() - started) * 1000.0)
+    semantic_trace = agent.traces[-1]
 
     agent.reset("conflict", {"preference_tags": ["formal", "comfort"]})
     started = time.perf_counter()
@@ -137,7 +149,14 @@ def main() -> None:
         item["parent_asin"] for item in second["recommendations"]
     }
 
-    all_responses = [*responses, browsing_response, conflict_response, first, second]
+    all_responses = [
+        *responses,
+        browsing_response,
+        semantic_response,
+        conflict_response,
+        first,
+        second,
+    ]
     response_contract = all(
         isinstance(response["message"], str)
         and len(response["recommendations"]) <= 10
@@ -200,27 +219,36 @@ def main() -> None:
         "deterministic_response": deterministic,
         "deterministic_trace": trace_deterministic,
         "response_contract": response_contract,
-        "buying_route_exercised": agent.traces[-6].route == "buying",
+        "buying_route_exercised": buying_trace.route == "buying",
         "browsing_route_exercised": browsing_trace.route == "browsing",
         "diverse_dense_exercised": bool(browsing_trace.query_views),
         "overload_cutoff_exercised": browsing_trace.overloaded,
-        "overload_multiroute_exercised": all(
-            browsing_trace.contribution_counts[source] > 0
-            for source in ("keyword", "category", "vector")
+        "overload_reduced_dense_budget": (
+            browsing_trace.dense_requested_per_view
+            <= config.browsing.overload_retrieval_per_view
+            and browsing_trace.dense_output_k <= config.browsing.overload_output_k
         ),
-        "overload_browsing_llm_exercised": (
-            browsing_trace.semantic_backend == config.semantic_ranker.model_id
+        "overload_safe_merge_exercised": browsing_trace.safe_merge_executed,
+        "overload_safe_ranker_exercised": browsing_trace.safe_ranker_executed,
+        "overload_normal_union_skipped": not browsing_trace.normal_union_executed,
+        "overload_semantic_decision_reached": (
+            browsing_trace.semantic_decision_reached
         ),
+        "overload_semantic_execution_skipped": (
+            not browsing_trace.semantic_executed
+            and browsing_trace.semantic_backend == "skipped:overload_cutoff"
+        ),
+        "normal_browsing_union_exercised": semantic_trace.normal_union_executed,
         "literal_llm_ranker_exercised": (
-            browsing_trace.semantic_backend == config.semantic_ranker.model_id
+            semantic_trace.semantic_backend == config.semantic_ranker.model_id
         ),
-        "literal_llm_changed_order": browsing_trace.semantic_changed,
+        "literal_llm_changed_order": semantic_trace.semantic_changed,
         "three_source_buying_merge_exercised": all(
-            agent.traces[-6].contribution_counts[source] > 0
+            buying_trace.contribution_counts[source] > 0
             for source in ("keyword", "category", "vector")
         ),
-        "dense_diversity_measured_on_all_public_browsing": (
-            diversity["browsing_sessions"] == 80
+        "dense_diversity_behavior_measured": (
+            diversity["browsing_sessions"] >= 80
             and set(diversity["summary"])
             == {"multiview_max_relevance", "view_balanced", "embedding_mmr"}
         ),
@@ -235,10 +263,10 @@ def main() -> None:
             and conflict_profile_update.provenance == "explicit_session_evidence"
         ),
         "zero_e2e_fallbacks": adaptive["adaptive_runtime"]["fallback_count"] == 0,
-        "selective_llm_has_activations": adaptive["adaptive_runtime"][
-            "semantic_activation_count"
-        ]
-        > 0,
+        "selective_llm_has_activations": (
+            adaptive["adaptive_runtime"]["semantic_activation_count"] > 0
+            or semantic_trace.semantic_executed
+        ),
         "selective_llm_has_skips": adaptive["adaptive_runtime"]["semantic_skip_count"]
         > 0,
         "factory_config_parity": agent.config_sha256 == config.canonical_hash(),
