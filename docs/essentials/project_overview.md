@@ -105,6 +105,31 @@ a development estimate, not a guaranteed private-leaderboard score. See
 [`docs/final_candidate_checkpoint.md`](docs/final_candidate_checkpoint.md) for its exact
 pipeline, validation evidence, limitations, hashes, and recovery information.
 
+### Run the architecture-complete Track 4 candidate
+
+The separate adaptive preset keeps 1A-3B static and runs compulsory
+keyword/category/vector retrieval followed by a required semantic-ranking slot. The
+validated gate invokes local Qwen for Browsing and uses deterministic ranking for
+high-confidence Buying. It is not activated because its current public score is below
+the guarded champion.
+
+Fetch or verify its pinned local assets, then evaluate it offline:
+
+```bash
+uv run python -m scripts.fetch_optional_assets e5
+uv run python -m scripts.fetch_optional_assets cross_encoder
+uv run python -m scripts.fetch_optional_assets qwen_ranker
+HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 \
+  uv run python -m scripts.run_adaptive_hybrid \
+  --output artifacts/reports/adaptive_hybrid_qwen_selective_v3.json
+uv run python -m scripts.validate_cross_category_browsing
+uv run python -m scripts.validate_adaptive_hybrid
+```
+
+See
+[`docs/adaptive_hybrid_1a_3b_implementation_report.md`](docs/adaptive_hybrid_1a_3b_implementation_report.md)
+for the requirement map, metrics and next optimization step.
+
 ### 2. Choose and run an autonomous workflow
 
 Run these commands from the repository root after Step 1 passes and `git status` is clean.

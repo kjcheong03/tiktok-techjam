@@ -38,6 +38,20 @@ class FilterSignalEvidenceTest(unittest.TestCase):
             )
         self.assertEqual(result, ["a"])
 
+    def test_strict_filter_never_restores_known_violations(self) -> None:
+        products = [
+            {"parent_asin": "black", "details": {"Color": "Black"}},
+            {"parent_asin": "blue", "details": {"Color": "Blue"}},
+            {"parent_asin": "unknown", "details": {}},
+        ]
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "catalog.jsonl"
+            path.write_text("".join(json.dumps(item) + "\n" for item in products))
+            result = CoverageAwareFilter(path).apply_strict(
+                ["blue", "unknown", "black"], {"color": ["black"]}
+            )
+        self.assertEqual(result, ["black", "unknown"])
+
     def test_signals_have_explicit_missing_semantics(self) -> None:
         singleton = retrieval_signals([1.0])
         self.assertIsNone(singleton.top1_margin)

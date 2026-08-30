@@ -1,0 +1,68 @@
+{
+  "all_required_checks_passed": true,
+  "checks": {
+    "browsing_fit_receipt_valid": true,
+    "browsing_model_hash_valid": true,
+    "browsing_model_oof_selected": true,
+    "browsing_route_exercised": true,
+    "browsing_safe_ranker_exercised": true,
+    "buying_route_exercised": true,
+    "config_schema_valid": true,
+    "deterministic_response": true,
+    "deterministic_trace": true,
+    "diverse_dense_exercised": true,
+    "f3_accessed": false,
+    "factory_config_parity": true,
+    "final_report_config_matches": true,
+    "intent_override_changed_epoch": true,
+    "intent_override_scoped_history": true,
+    "offline_environment_forced": true,
+    "overload_cutoff_exercised": true,
+    "profile_conflict_suppressed": true,
+    "response_contract": true,
+    "semantic_ranker_exercised": true,
+    "starter_activation_untouched": true,
+    "union_fit_receipt_valid": true,
+    "union_model_hash_valid": true,
+    "union_model_oof_selected": true,
+    "zero_e2e_fallbacks": true
+  },
+  "config_sha256": "d8c21691f9635ae88019b06d76862a4a034172973096bf834c74ac9985a32e44",
+  "metrics": {
+    "adaptive": {
+      "hit_rate_at_10": 0.98,
+      "mrr": 0.697788,
+      "mttc": 2.185,
+      "recommended_technical_score": 0.875636
+    },
+    "adaptive_vs_champion_score_delta": -0.021216000000000013,
+    "adaptive_vs_state_v2_score_delta": -0.019733,
+    "champion": {
+      "hit_rate_at_10": 0.98,
+      "mrr": 0.774839,
+      "mttc": 2.28,
+      "recommended_technical_score": 0.896852
+    },
+    "state_v2_precision": {
+      "hit_rate_at_10": 0.99,
+      "mrr": 0.746895,
+      "mttc": 2.185,
+      "recommended_technical_score": 0.895369
+    }
+  },
+  "promotion_status": "architecture_complete_optimization_required",
+  "runtime": {
+    "cold_initialization_seconds": 12.047873791016173,
+    "first_semantic_turn_ms": 1009.3354580458254,
+    "peak_process_memory_mb": 3258.34375,
+    "turn_latency_ms": [
+      1009.3354580458254,
+      53.01837500883266,
+      65.4738750308752,
+      14.269917039200664
+    ],
+    "warm_mean_turn_ms": 44.25405569296951,
+    "warm_turn_p95_ms": 65.4738750308752
+  },
+  "schema_version": 1
+}

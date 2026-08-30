@@ -67,3 +67,35 @@ class ProfilePriorReranker:
             ),
         )
         return [*ordered, *ranking[rerank_k:]]
+
+    def rerank_terms(
+        self,
+        ranking: list[str],
+        terms: frozenset[str],
+        *,
+        weight: float,
+        rerank_k: int = 50,
+    ) -> list[str]:
+        if not 0.0 <= weight <= 1.0:
+            raise ValueError("profile prior weight must be between zero and one")
+        if not terms or weight == 0.0:
+            return list(ranking)
+        head = ranking[:rerank_k]
+        count = len(head)
+        original = {identifier: rank for rank, identifier in enumerate(head)}
+        scores = {}
+        for rank, identifier in enumerate(head):
+            base = 1.0 if count == 1 else 1.0 - rank / max(1, count - 1)
+            product_terms = self.product_terms.get(identifier, frozenset())
+            scores[identifier] = base + weight * len(terms & product_terms) / len(
+                terms
+            )
+        ordered = sorted(
+            head,
+            key=lambda identifier: (
+                -scores[identifier],
+                original[identifier],
+                identifier,
+            ),
+        )
+        return [*ordered, *ranking[rerank_k:]]

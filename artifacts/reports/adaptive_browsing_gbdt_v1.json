@@ -1,0 +1,111 @@
+{
+  "collection": {
+    "browsing_pools": 77,
+    "buying_pools": 1423,
+    "candidate_pools": 1500,
+    "candidate_rows": 396672,
+    "ordinary_merged_pools": 1424,
+    "overload_target_pools": 45,
+    "overload_turns": 76,
+    "pools_with_target": 1452,
+    "ranking_groups": 1452,
+    "sessions": 150,
+    "sessions_with_groups": 149,
+    "trajectory_turns": 1500
+  },
+  "elapsed_seconds": 66.06406891701045,
+  "experiment_id": "adaptive_browsing_gbdt_v1",
+  "fit_receipt_path": "artifacts/models/adaptive_browsing_gbdt_v1.fit_receipt.json",
+  "folds": [
+    {
+      "best_iteration": 8,
+      "candidate": {
+        "groups": 9,
+        "hit_rate_at_10": 0.7777777777777778,
+        "mrr": 0.4763285024154589
+      },
+      "control": {
+        "groups": 9,
+        "hit_rate_at_10": 0.1111111111111111,
+        "mrr": 0.030578719369163083
+      },
+      "outer_fold": 0
+    },
+    {
+      "best_iteration": 2,
+      "candidate": {
+        "groups": 8,
+        "hit_rate_at_10": 0.5,
+        "mrr": 0.24674608206872928
+      },
+      "control": {
+        "groups": 8,
+        "hit_rate_at_10": 0.125,
+        "mrr": 0.03561221063395858
+      },
+      "outer_fold": 1
+    },
+    {
+      "best_iteration": 1,
+      "candidate": {
+        "groups": 11,
+        "hit_rate_at_10": 0.8181818181818182,
+        "mrr": 0.5364622344094485
+      },
+      "control": {
+        "groups": 11,
+        "hit_rate_at_10": 0.36363636363636365,
+        "mrr": 0.0875798999581467
+      },
+      "outer_fold": 2
+    },
+    {
+      "best_iteration": 5,
+      "candidate": {
+        "groups": 7,
+        "hit_rate_at_10": 1.0,
+        "mrr": 0.5583333333333333
+      },
+      "control": {
+        "groups": 7,
+        "hit_rate_at_10": 0.42857142857142855,
+        "mrr": 0.1397767078094947
+      },
+      "outer_fold": 3
+    },
+    {
+      "best_iteration": 5,
+      "candidate": {
+        "groups": 10,
+        "hit_rate_at_10": 0.7,
+        "mrr": 0.22304761004420676
+      },
+      "control": {
+        "groups": 10,
+        "hit_rate_at_10": 0.1,
+        "mrr": 0.046914399209567276
+      },
+      "outer_fold": 4
+    }
+  ],
+  "holdout_accessed": false,
+  "model_path": "artifacts/models/adaptive_browsing_gbdt_v1.json",
+  "model_sha256": "429e5caf37ffa2d2d4ffc54adb47c847fce67ef3541acb42d089785eb9dd5767",
+  "oof_candidate": {
+    "groups": 45,
+    "hit_rate_at_10": 0.7555555555555555,
+    "mrr": 0.4066848709015177
+  },
+  "oof_control": {
+    "groups": 45,
+    "hit_rate_at_10": 0.2222222222222222,
+    "mrr": 0.06602368901546413
+  },
+  "oof_delta": {
+    "hit_rate_at_10": 0.5333333333333333,
+    "mrr": 0.3406611818860536
+  },
+  "schema_version": 1,
+  "selected_for_adaptive_config": true,
+  "selection_rule": "OOF Hit@10 non-regression and strict OOF MRR improvement on exact overloaded Browsing dense pools"
+}

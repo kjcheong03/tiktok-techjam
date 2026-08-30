@@ -84,3 +84,58 @@ class CoverageAwareFilter:
 
         filtered = [identifier for identifier in ranking if compatible(identifier)]
         return filtered if len(filtered) >= minimum_results else ranking
+
+    def apply_strict(
+        self,
+        ranking: list[str],
+        positive_constraints: dict[str, list[str]],
+        negative_constraints: dict[str, list[str]] | None = None,
+    ) -> list[str]:
+        """Never return known violations; rank missing metadata after matches."""
+        negative_constraints = negative_constraints or {}
+        budget_values = positive_constraints.get("budget", [])
+        budget_matches = [BUDGET_RE.search(value) for value in budget_values]
+        budget_max = next(
+            (float(match.group(1)) for match in budget_matches if match), None
+        )
+        desired = {
+            attribute: frozenset().union(*(_tokens(value) for value in values))
+            for attribute, values in positive_constraints.items()
+            if attribute in ATTRIBUTE_KEYS and values
+        }
+        excluded = {
+            attribute: frozenset().union(*(_tokens(value) for value in values))
+            for attribute, values in negative_constraints.items()
+            if attribute in ATTRIBUTE_KEYS and values
+        }
+
+        confirmed: list[str] = []
+        unknown: list[str] = []
+        for identifier in ranking:
+            product = self.products.get(identifier)
+            if product is None:
+                unknown.append(identifier)
+                continue
+            violation = False
+            incomplete = False
+            if budget_max is not None:
+                if product.price is None:
+                    incomplete = True
+                elif product.price > budget_max:
+                    violation = True
+            for attribute, wanted in desired.items():
+                known = product.values.get(attribute, frozenset())
+                if not known:
+                    incomplete = True
+                elif wanted and not known.intersection(wanted):
+                    violation = True
+            for attribute, forbidden in excluded.items():
+                known = product.values.get(attribute, frozenset())
+                if not known:
+                    incomplete = True
+                elif forbidden and known.intersection(forbidden):
+                    violation = True
+            if violation:
+                continue
+            (unknown if incomplete else confirmed).append(identifier)
+        return [*confirmed, *unknown]

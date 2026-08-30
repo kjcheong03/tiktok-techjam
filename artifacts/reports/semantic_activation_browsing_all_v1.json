@@ -1,0 +1,65 @@
+{
+  "sample_count": 200,
+  "hit_rate_at_10": 0.985,
+  "mrr": 0.578286,
+  "mttc": 2.045,
+  "efficiency": 0.8955,
+  "recommended_technical_score": 0.845086,
+  "reported_token_usage": {
+    "prompt_tokens": 0,
+    "completion_tokens": 0,
+    "total_tokens": 0
+  },
+  "scenario_metrics": {
+    "boundary": {
+      "sample_count": 10,
+      "hit_rate_at_10": 1.0,
+      "mrr": 0.582063,
+      "mttc": 2.5
+    },
+    "browsing": {
+      "sample_count": 80,
+      "hit_rate_at_10": 1.0,
+      "mrr": 0.477847,
+      "mttc": 1.625
+    },
+    "buying": {
+      "sample_count": 80,
+      "hit_rate_at_10": 0.9625,
+      "mrr": 0.604365,
+      "mttc": 1.725
+    },
+    "intent_override": {
+      "sample_count": 30,
+      "hit_rate_at_10": 1.0,
+      "mrr": 0.775317,
+      "mttc": 3.866667
+    }
+  },
+  "semantic_activation_study": {
+    "mode": "browsing_all",
+    "submission_eligible": false,
+    "architecture_capability_present": true,
+    "activation_counts": {
+      "skipped": 310,
+      "activated": 96
+    },
+    "scenario_activation_counts": {
+      "boundary": {
+        "activated": 16,
+        "skipped": 9
+      },
+      "browsing": {
+        "activated": 80,
+        "skipped": 50
+      },
+      "buying": {
+        "skipped": 135
+      },
+      "intent_override": {
+        "skipped": 116
+      }
+    },
+    "config_sha256": "6fb50660d01a1262f04b2ab4ccb1afcbe069bba09510600bbf90e30b7f65bfa3"
+  }
+}

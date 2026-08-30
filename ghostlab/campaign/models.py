@@ -155,7 +155,7 @@ class CampaignManifest(BaseModel):
         default_factory=dict
     )
     technique_ids: tuple[str, ...] = ()
-    max_order: int = Field(default=2, ge=1, le=8)
+    max_order: int = Field(default=2, ge=1, le=64)
     candidate_limit: int = Field(default=1000, ge=1)
     fidelity_budgets: FidelityBudget
     exploration_fraction: float = Field(default=0.2, ge=0.0, le=0.5)

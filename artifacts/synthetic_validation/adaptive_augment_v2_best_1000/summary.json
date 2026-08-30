@@ -1,0 +1,203 @@
+{
+  "audit": {
+    "catalog_sha256": "da979b05a68af864cb0dcf9ee6a81c010c7e66a57978ad286c7a2e005fc69a67",
+    "dataset_path": "data/synthetic_1000_public_like.jsonl",
+    "dataset_sha256": "3c49c100c79a1ec7ee30515041e0fc0b703d65626a3c98abcd8ebcd72cb3ab28",
+    "exact_asin_leakage_count_in_possible_dialogue": 0,
+    "exact_asin_leakage_ids": [],
+    "full_title_leakage_count_in_possible_dialogue": 2,
+    "full_title_leakage_ids": [
+      "synthetic_public_like_0003",
+      "synthetic_public_like_0086"
+    ],
+    "generator_semantics": "intent_card and behavior derived deterministically by published evaluator from grounded target catalog metadata",
+    "sample_count": 1000,
+    "scenario_distribution": {
+      "boundary": 50,
+      "browsing": 400,
+      "buying": 400,
+      "intent_override": 150
+    },
+    "schema_or_grounding_error_count": 0,
+    "schema_or_grounding_error_ids": [],
+    "unique_sample_ids": 1000,
+    "unique_targets": 1000
+  },
+  "candidate_provenance": {
+    "candidate_hash": "523d94bb03f1a245b1e7244594753ad2af6d87072fbeabcd68cf387268bdf801",
+    "candidate_id": "challenger-d4e040a07e6d",
+    "fit_receipt": {
+      "asset_path": "artifacts/campaigns/adaptive_autonomous_augment_v2/fold_fits/523d94bb03f1a245b1e7244594753ad2af6d87072fbeabcd68cf387268bdf801/05968a36e635b0f65603.joblib",
+      "asset_sha256": "8c1aafaa9d0ffad26a5daebfff10fe2ba4df9bcf12fedee2b3c9c1a7864d7cdb",
+      "inner_fold": 0,
+      "outer_fold": 1,
+      "schema_version": 1,
+      "seed": 20260826,
+      "technique_id": "ranking.top10_residual_reranker.v2",
+      "train_sample_ids_sha256": "062a28f73c28600c4810a2da4a0c38913a9acc76aa105fc655157aef43e589c0",
+      "validation_sample_ids_sha256": "9cdbf0d5219f787fbbce774db6d8fcf848f36d8a2db893ea6c7d635fd0371952"
+    },
+    "parameters": {},
+    "residual_asset": "artifacts/campaigns/adaptive_autonomous_augment_v2/fold_fits/523d94bb03f1a245b1e7244594753ad2af6d87072fbeabcd68cf387268bdf801/05968a36e635b0f65603.joblib",
+    "residual_asset_sha256": "8c1aafaa9d0ffad26a5daebfff10fe2ba4df9bcf12fedee2b3c9c1a7864d7cdb",
+    "techniques": [
+      "prior.quality",
+      "query.coverage_adaptive_v2",
+      "question.fixed",
+      "question.other_always",
+      "ranking.fixed_lexical",
+      "ranking.metadata_gbdt",
+      "ranking.top10_residual_reranker.v2",
+      "recommendation.correction_scoped_history",
+      "retrieval.sparse",
+      "state.baseline_v2"
+    ],
+    "warning": "This uses one independently confirmed fold-fitted residual asset, not a final all-development deployment fit."
+  },
+  "limitations": [
+    "Synthetic sessions are evaluator-derived from each target catalog record and are not independent human labels.",
+    "Two sessions can expose the full target title in possible generated dialogue; exact ASIN leakage is zero.",
+    "This is not the protected holdout and cannot establish private-set generalization.",
+    "Candidate uses an F2-confirmed fold-fitted residual asset; final deployment still requires an all-allowed-development fit receipt."
+  ],
+  "results": [
+    {
+      "caught_agent_exceptions": {
+        "examples": [],
+        "reset": 0,
+        "respond": 0
+      },
+      "configuration_sha256": "0e4caf34839caf70cc753f3fd9985e528d29f645e887c85a533254610777ba51",
+      "metrics": {
+        "efficiency": 0.8478,
+        "hit_rate_at_10": 0.988,
+        "mrr": 0.903128,
+        "mttc": 2.522,
+        "recommended_technical_score": 0.934498,
+        "scenario_metrics": {
+          "boundary": {
+            "hit_rate_at_10": 1.0,
+            "mrr": 0.872333,
+            "mttc": 3.26,
+            "sample_count": 50
+          },
+          "browsing": {
+            "hit_rate_at_10": 0.99,
+            "mrr": 0.905396,
+            "mttc": 2.41,
+            "sample_count": 400
+          },
+          "buying": {
+            "hit_rate_at_10": 0.99,
+            "mrr": 0.899215,
+            "mttc": 2.04,
+            "sample_count": 400
+          },
+          "intent_override": {
+            "hit_rate_at_10": 0.973333,
+            "mrr": 0.917778,
+            "mttc": 3.86,
+            "sample_count": 150
+          }
+        }
+      },
+      "name": "best_challenger_d4e040a07e6d",
+      "runtime": {
+        "elapsed_seconds": 58.493765000021085,
+        "milliseconds_per_session": 58.493765000021085
+      }
+    },
+    {
+      "caught_agent_exceptions": {
+        "examples": [],
+        "reset": 0,
+        "respond": 0
+      },
+      "configuration_sha256": "7960a730f6983d8be95cd01dfaa609165dd74f0c0fdc655229a160f15d3f363a",
+      "metrics": {
+        "efficiency": 0.8796,
+        "hit_rate_at_10": 0.988,
+        "mrr": 0.656903,
+        "mttc": 2.204,
+        "recommended_technical_score": 0.866991,
+        "scenario_metrics": {
+          "boundary": {
+            "hit_rate_at_10": 1.0,
+            "mrr": 0.573905,
+            "mttc": 2.94,
+            "sample_count": 50
+          },
+          "browsing": {
+            "hit_rate_at_10": 0.99,
+            "mrr": 0.642133,
+            "mttc": 2.0625,
+            "sample_count": 400
+          },
+          "buying": {
+            "hit_rate_at_10": 0.99,
+            "mrr": 0.62949,
+            "mttc": 1.675,
+            "sample_count": 400
+          },
+          "intent_override": {
+            "hit_rate_at_10": 0.973333,
+            "mrr": 0.797058,
+            "mttc": 3.746667,
+            "sample_count": 150
+          }
+        }
+      },
+      "name": "state_baseline_v2_ranked",
+      "runtime": {
+        "elapsed_seconds": 50.76506100001279,
+        "milliseconds_per_session": 50.76506100001279
+      }
+    },
+    {
+      "caught_agent_exceptions": {
+        "examples": [],
+        "reset": 0,
+        "respond": 0
+      },
+      "configuration_sha256": "c9eaa03575c0991512f1f0b3901c49ec206c74b8ff5d1bb1495057739c539fde",
+      "metrics": {
+        "efficiency": 0.8647,
+        "hit_rate_at_10": 0.971,
+        "mrr": 0.702125,
+        "mttc": 2.353,
+        "recommended_technical_score": 0.869077,
+        "scenario_metrics": {
+          "boundary": {
+            "hit_rate_at_10": 0.98,
+            "mrr": 0.638635,
+            "mttc": 3.06,
+            "sample_count": 50
+          },
+          "browsing": {
+            "hit_rate_at_10": 0.9725,
+            "mrr": 0.695433,
+            "mttc": 2.265,
+            "sample_count": 400
+          },
+          "buying": {
+            "hit_rate_at_10": 0.975,
+            "mrr": 0.687187,
+            "mttc": 1.775,
+            "sample_count": 400
+          },
+          "intent_override": {
+            "hit_rate_at_10": 0.953333,
+            "mrr": 0.780966,
+            "mttc": 3.893333,
+            "sample_count": 150
+          }
+        }
+      },
+      "name": "current_champion_guarded",
+      "runtime": {
+        "elapsed_seconds": 60.818132292013615,
+        "milliseconds_per_session": 60.818132292013615
+      }
+    }
+  ]
+}

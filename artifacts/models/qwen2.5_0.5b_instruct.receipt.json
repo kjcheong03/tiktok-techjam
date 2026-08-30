@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "model_id": "Qwen/Qwen2.5-0.5B-Instruct",
+  "revision": "7ae557604adf67be50417f59c2c2f167def9a775",
+  "license": "Apache-2.0",
+  "source": "https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct",
+  "local_path": "artifacts/cache/models/qwen2.5-0.5b-instruct",
+  "directory_sha256": "31b07963d699962dbbc9fdcb9d4cfaa496f5e56abc29c8e597e18195b87ebe77",
+  "network_required_at_runtime": false,
+  "runtime_role": "bounded deterministic causal-LLM relevance scoring",
+  "downloaded_files": [
+    "config.json",
+    "generation_config.json",
+    "merges.txt",
+    "model.safetensors",
+    "tokenizer.json",
+    "tokenizer_config.json",
+    "vocab.json"
+  ]
+}

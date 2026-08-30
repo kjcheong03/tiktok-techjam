@@ -11,6 +11,7 @@ MANIFESTS = {
     "minilm": ROOT / "configs/assets/minilm_control.json",
     "e5": ROOT / "configs/assets/e5_small_v2.json",
     "cross_encoder": ROOT / "configs/assets/cross_encoder_minilm.json",
+    "qwen_ranker": ROOT / "configs/assets/qwen2_5_0_5b_instruct.json",
 }
 RECEIPT = ".ghostlab_asset.json"
 SAFE_MODEL_PATTERNS = (

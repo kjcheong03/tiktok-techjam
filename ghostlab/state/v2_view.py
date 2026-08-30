@@ -47,9 +47,15 @@ class V2StateView:
     turn: int
 
     def positive_constraints(self) -> dict[str, list[str]]:
+        return self.constraints_by_polarity("include")
+
+    def negative_constraints(self) -> dict[str, list[str]]:
+        return self.constraints_by_polarity("exclude")
+
+    def constraints_by_polarity(self, polarity: str) -> dict[str, list[str]]:
         result: dict[str, list[str]] = {}
         for constraint in self.active_constraints:
-            if constraint.polarity != "include":
+            if constraint.polarity != polarity:
                 continue
             result.setdefault(constraint.attribute, []).extend(constraint.values)
         return result

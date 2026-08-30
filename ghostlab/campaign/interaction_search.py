@@ -28,8 +28,8 @@ class SearchLimits:
     seed: int = 20260826
 
     def __post_init__(self) -> None:
-        if not 1 <= self.max_order <= 8:
-            raise ValueError("max_order must be between one and eight")
+        if not 1 <= self.max_order <= 64:
+            raise ValueError("max_order must be between one and 64")
         if self.max_candidates <= 0 or self.beam_width <= 0:
             raise ValueError("candidate and beam bounds must be positive")
         if self.max_wall_seconds <= 0:

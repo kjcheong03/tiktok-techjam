@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "validation_kind": "category_blind_cross_category_browsing",
+  "uses_target_ids": false,
+  "uses_official_scenario_labels": false,
+  "all_scenarios_passed": true,
+  "scenarios": {
+    "warm_weather_wedding": {
+      "candidate_count": 200,
+      "query_views": [
+        "complete_request"
+      ],
+      "family_counts": {
+        "clothing": 108,
+        "footwear": 1,
+        "accessory": 1
+      },
+      "all_expected_families_recovered": true
+    },
+    "sunny_beach_holiday": {
+      "candidate_count": 200,
+      "query_views": [
+        "complete_request"
+      ],
+      "family_counts": {
+        "swimwear": 76,
+        "footwear": 9,
+        "sun_accessory": 22
+      },
+      "all_expected_families_recovered": true
+    },
+    "rainy_road_running": {
+      "candidate_count": 200,
+      "query_views": [
+        "complete_request"
+      ],
+      "family_counts": {
+        "running": 33,
+        "outerwear": 41,
+        "accessory": 11
+      },
+      "all_expected_families_recovered": true
+    }
+  }
+}

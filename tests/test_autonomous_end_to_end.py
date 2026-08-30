@@ -107,6 +107,28 @@ def test_active_pointer_is_hash_bound_and_project_relative(tmp_path: Path) -> No
         resolve_active_preset(pointer)
 
 
+def test_selected_runtime_can_build_hash_bound_adaptive_preset(
+    tmp_path: Path,
+) -> None:
+    from ghostlab.runtime.adaptive_hybrid import AdaptiveHybridAgent
+    from ghostlab.runtime.selected import SelectedRuntime
+
+    preset = ROOT / "configs/adaptive_hybrid_1a_3b_v1.json"
+    pointer = tmp_path / "active.json"
+    pointer.write_text(
+        json.dumps(
+            {
+                "schema_version": 1,
+                "preset_path": "configs/adaptive_hybrid_1a_3b_v1.json",
+                "preset_sha256": hashlib.sha256(preset.read_bytes()).hexdigest(),
+            }
+        ),
+        encoding="utf-8",
+    )
+    runtime = SelectedRuntime(pointer_path=pointer)
+    assert isinstance(runtime._runtime, AdaptiveHybridAgent)
+
+
 def _write_json(path: Path, value: object) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(value), encoding="utf-8")

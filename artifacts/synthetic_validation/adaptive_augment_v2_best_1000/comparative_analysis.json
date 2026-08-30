@@ -1,0 +1,62 @@
+{
+  "comparisons": {
+    "current_champion_guarded": {
+      "bootstrap_95_ci": [
+        0.056561,
+        0.074754
+      ],
+      "hit_rate_delta": 0.017,
+      "losses": 114,
+      "mrr_delta": 0.201003,
+      "mttc_delta": 0.169,
+      "paired_mean_reward_delta": 0.065421,
+      "technical_score_delta": 0.065421,
+      "ties": 482,
+      "wins": 404
+    },
+    "state_baseline_v2_ranked": {
+      "bootstrap_95_ci": [
+        0.061249,
+        0.073799
+      ],
+      "hit_rate_delta": 0.0,
+      "losses": 92,
+      "mrr_delta": 0.246225,
+      "mttc_delta": 0.318,
+      "paired_mean_reward_delta": 0.067507,
+      "technical_score_delta": 0.067507,
+      "ties": 473,
+      "wins": 435
+    }
+  },
+  "contaminated_ids": [
+    "synthetic_public_like_0003",
+    "synthetic_public_like_0086"
+  ],
+  "uncontaminated_metrics": {
+    "best_challenger_d4e040a07e6d": {
+      "efficiency": 0.847695,
+      "hit_rate_at_10": 0.987976,
+      "mrr": 0.902934,
+      "mttc": 2.523046,
+      "sample_count": 998,
+      "technical_score": 0.934407
+    },
+    "current_champion_guarded": {
+      "efficiency": 0.864629,
+      "hit_rate_at_10": 0.970942,
+      "mrr": 0.701528,
+      "mttc": 2.353707,
+      "sample_count": 998,
+      "technical_score": 0.868855
+    },
+    "state_baseline_v2_ranked": {
+      "efficiency": 0.879559,
+      "hit_rate_at_10": 0.987976,
+      "mrr": 0.656216,
+      "mttc": 2.204409,
+      "sample_count": 998,
+      "technical_score": 0.866764
+    }
+  }
+}

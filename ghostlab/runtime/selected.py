@@ -6,6 +6,7 @@ from pathlib import Path, PurePath
 
 from ghostlab.competition.contract import AgentProtocol
 from ghostlab.research.technique_suite import build_suite_agent, load_suite_config
+from ghostlab.runtime.adaptive_factory import build_adaptive_hybrid_agent
 from ghostlab.runtime.agent import GhostLabRuntime
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -58,7 +59,17 @@ class SelectedRuntime:
             self._runtime = GhostLabRuntime(catalog_path)
             self._fallback = None
         else:
-            self._runtime = build_suite_agent(load_suite_config(preset), catalog_path)
+            payload = json.loads(preset.read_text(encoding="utf-8"))
+            if payload.get("architecture") == "adaptive_hybrid_1a_3b_v1":
+                self._runtime = build_adaptive_hybrid_agent(
+                    catalog_path,
+                    config_path=preset,
+                    project_root=PROJECT_ROOT,
+                )
+            else:
+                self._runtime = build_suite_agent(
+                    load_suite_config(preset), catalog_path
+                )
             self._fallback = GhostLabRuntime(catalog_path)
 
     def reset(self, session_id: str, user_profile: dict) -> None:

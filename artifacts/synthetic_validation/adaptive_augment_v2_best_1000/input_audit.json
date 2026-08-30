@@ -1,0 +1,24 @@
+{
+  "catalog_sha256": "da979b05a68af864cb0dcf9ee6a81c010c7e66a57978ad286c7a2e005fc69a67",
+  "dataset_path": "data/synthetic_1000_public_like.jsonl",
+  "dataset_sha256": "3c49c100c79a1ec7ee30515041e0fc0b703d65626a3c98abcd8ebcd72cb3ab28",
+  "exact_asin_leakage_count_in_possible_dialogue": 0,
+  "exact_asin_leakage_ids": [],
+  "full_title_leakage_count_in_possible_dialogue": 2,
+  "full_title_leakage_ids": [
+    "synthetic_public_like_0003",
+    "synthetic_public_like_0086"
+  ],
+  "generator_semantics": "intent_card and behavior derived deterministically by published evaluator from grounded target catalog metadata",
+  "sample_count": 1000,
+  "scenario_distribution": {
+    "boundary": 50,
+    "browsing": 400,
+    "buying": 400,
+    "intent_override": 150
+  },
+  "schema_or_grounding_error_count": 0,
+  "schema_or_grounding_error_ids": [],
+  "unique_sample_ids": 1000,
+  "unique_targets": 1000
+}

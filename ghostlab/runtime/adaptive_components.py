@@ -1,0 +1,711 @@
+from __future__ import annotations
+
+import hashlib
+import math
+import time
+from collections.abc import Mapping, Sequence
+from dataclasses import dataclass
+from pathlib import Path
+from threading import Lock
+from typing import Any
+
+import numpy as np
+
+from ghostlab.competition.contract import AskAttribute
+from ghostlab.policy.adaptive_questions import AdaptiveQuestionPolicy
+from ghostlab.policy.candidate_statistics import (
+    CandidateFacetStore,
+    CandidateStatistics,
+)
+from ghostlab.policy.eig_questions import CandidateEIGPolicy
+from ghostlab.retrieval.cross_encoder import (
+    CrossEncoderReranker,
+    blend_ranking,
+    product_passage,
+)
+from ghostlab.retrieval.dense import E5_SMALL_V2, DenseIndex
+from ghostlab.retrieval.dense_diversity import max_relevance_select
+from ghostlab.retrieval.dense_query_views import build_dense_query_views
+from ghostlab.retrieval.ensemble import ModelRankEnsembleReranker, RankEnsembleAsset
+from ghostlab.retrieval.filters import CoverageAwareFilter
+from ghostlab.retrieval.gbdt import (
+    GBDTFeatureStore,
+    LambdaMARTModel,
+    LambdaMARTReranker,
+)
+from ghostlab.retrieval.multi_route import IntentRoute, MergedCandidatePool
+from ghostlab.retrieval.profile import ProfilePriorReranker
+from ghostlab.retrieval.sparse import query_terms
+from ghostlab.runtime.adaptive_config import (
+    DiverseDenseTrackConfig,
+    DualTrackRouterConfig,
+    LocalLLMSemanticRankerConfig,
+    ProactiveGuidanceConfig,
+    RuntimeAdaptationConfig,
+    UnionRankerConfig,
+)
+from ghostlab.state.baseline_v2 import StateBaselineV2
+from ghostlab.state.v2_view import V2StateView
+
+
+@dataclass(frozen=True)
+class RouteDecision:
+    route: IntentRoute
+    confidence: float
+    reason: str
+    abstained_to_precision: bool = False
+
+
+class DualTrackRouter:
+    """Observable, conservative Buying/Browsing router."""
+
+    def __init__(self, config: DualTrackRouterConfig) -> None:
+        self.config = config
+
+    def decide(self, view: V2StateView, current_message: str) -> RouteDecision:
+        lowered = current_message.casefold()
+        marker = next(
+            (item for item in self.config.browsing_markers if item in lowered), None
+        )
+        if marker is not None:
+            return RouteDecision("browsing", 0.9, f"browsing_marker:{marker}")
+        specific = sum(
+            constraint.attribute != "category"
+            and constraint.polarity == "include"
+            for constraint in view.active_constraints
+        )
+        if specific >= self.config.buying_min_specific_constraints:
+            return RouteDecision("buying", 0.9, "explicit_specific_constraint")
+        if specific == 0:
+            return RouteDecision("browsing", 0.75, "open_ended_category_request")
+        confidence = 0.55
+        if confidence < self.config.abstain_confidence:
+            return RouteDecision(
+                "buying", 1.0 - confidence, "low_confidence_precision_abstention", True
+            )
+        return RouteDecision("buying", confidence, "specificity_threshold")
+
+
+@dataclass(frozen=True)
+class ProfileContext:
+    terms: frozenset[str]
+    confidence: float
+    provenance: str
+    active: bool
+    reason: str
+
+
+@dataclass(frozen=True)
+class ProfileUpdate:
+    values: tuple[str, ...]
+    confidence: float
+    provenance: str
+    intent_epoch: int
+    conflicts: tuple[str, ...] = ()
+
+
+class ConflictSafeContextAdapter:
+    def __init__(self, config: RuntimeAdaptationConfig) -> None:
+        self.config = config
+
+    def distil(
+        self, state: StateBaselineV2, overlay: ProfileUpdate | None = None
+    ) -> ProfileContext:
+        raw_tags = state.user_profile.get("preference_tags")
+        tags = raw_tags if isinstance(raw_tags, (list, tuple, set)) else ()
+        supplied_terms = frozenset(
+            query_terms(" ".join(str(item) for item in tags), 40)
+        )
+        overlay_terms = frozenset(
+            query_terms(" ".join(overlay.values), 40)
+            if overlay is not None and overlay.intent_epoch == state.intent_epoch
+            else ()
+        )
+        terms = supplied_terms | overlay_terms
+        negative = frozenset(
+            query_terms(
+                " ".join(state.constraint_values(polarity="exclude")),
+                80,
+            )
+        )
+        if not terms:
+            return ProfileContext(terms, 0.0, "supplied_profile", False, "no_tags")
+        if terms & negative:
+            return ProfileContext(
+                terms,
+                self.config.profile_confidence,
+                "supplied_profile",
+                False,
+                "explicit_conflict",
+            )
+        explicit = sum(
+            item.attribute != "category" and item.polarity == "include"
+            for item in state.active_constraints
+        )
+        if explicit > self.config.maximum_explicit_constraints_for_profile:
+            return ProfileContext(
+                terms,
+                self.config.profile_confidence,
+                "supplied_profile",
+                False,
+                "explicit_intent_sufficient",
+            )
+        return ProfileContext(
+            terms,
+            self.config.profile_confidence,
+            "supplied_profile",
+            True,
+            "ambiguous_request_profile_context",
+        )
+
+    @staticmethod
+    def update(state: StateBaselineV2) -> ProfileUpdate:
+        supplied = frozenset(
+            query_terms(
+                " ".join(
+                    str(item)
+                    for item in (state.user_profile.get("preference_tags") or ())
+                ),
+                40,
+            )
+        )
+        excluded = frozenset(
+            query_terms(
+                " ".join(state.constraint_values(polarity="exclude")),
+                80,
+            )
+        )
+        values = tuple(
+            dict.fromkeys(
+                value
+                for item in state.active_constraints
+                if item.polarity == "include" and item.attribute != "category"
+                for value in item.values
+            )
+        )
+        return ProfileUpdate(
+            values=values,
+            confidence=1.0 if values else 0.0,
+            provenance="explicit_session_evidence",
+            intent_epoch=state.intent_epoch,
+            conflicts=tuple(sorted(supplied & excluded)),
+        )
+
+
+@dataclass(frozen=True)
+class DiverseDenseResult:
+    identifiers: tuple[str, ...]
+    relevance_scores: Mapping[str, float]
+    query_views: tuple[str, ...]
+    elapsed_ms: float
+
+
+class DiverseDenseTrack:
+    def __init__(
+        self,
+        catalog_path: str | Path,
+        config: DiverseDenseTrackConfig,
+        *,
+        project_root: Path,
+        index: DenseIndex | None = None,
+    ) -> None:
+        self.config = config
+        self.index = index or DenseIndex(
+            catalog_path,
+            E5_SMALL_V2,
+            cache_dir=project_root / config.cache_dir,
+            model_path=project_root / config.model_path,
+            local_files_only=True,
+        )
+
+    def search(self, view: V2StateView) -> DiverseDenseResult:
+        started = time.perf_counter()
+        views = build_dense_query_views(view)
+        candidates: list[str] = []
+        relevance: dict[str, float] = {}
+        for query_view in views:
+            result = self.index.search(
+                query_view.query_text, self.config.retrieval_per_view
+            )
+            for item in result.items:
+                candidates.append(item.parent_asin)
+                score = float(item.normalized_score or 0.0)
+                relevance[item.parent_asin] = max(
+                    relevance.get(item.parent_asin, -math.inf), score
+                )
+        selected = max_relevance_select(
+            candidates, relevance, output_k=self.config.output_k
+        )
+        return DiverseDenseResult(
+            identifiers=tuple(selected),
+            relevance_scores={item: relevance[item] for item in selected},
+            query_views=tuple(item.name for item in views),
+            elapsed_ms=(time.perf_counter() - started) * 1000.0,
+        )
+
+
+class BrowsingSafeRanker:
+    """Ranks an overloaded dense pool without invoking union or semantic stages."""
+
+    def __init__(
+        self,
+        catalog_path: str | Path,
+        config: DiverseDenseTrackConfig,
+        *,
+        project_root: Path,
+    ) -> None:
+        self.config = config
+        self.reranker: LambdaMARTReranker | None = None
+        if config.safe_ranker_backend == "gbdt":
+            assert config.safe_ranker_model_path is not None
+            assert config.safe_ranker_model_sha256 is not None
+            path = project_root / config.safe_ranker_model_path
+            if not path.is_file():
+                raise FileNotFoundError(f"missing Browsing safe ranker asset: {path}")
+            if _sha256(path) != config.safe_ranker_model_sha256:
+                raise ValueError("Browsing safe ranker asset hash mismatch")
+            self.reranker = LambdaMARTReranker(
+                GBDTFeatureStore(catalog_path), LambdaMARTModel.load(path)
+            )
+
+    def rank(self, query: str, ranking: list[str]) -> list[str]:
+        if self.reranker is None or self.config.safe_ranker_weight == 0.0:
+            return list(ranking)
+        count = min(self.config.safe_rerank_k, len(ranking))
+        head = ranking[:count]
+        matrix = self.reranker.features.matrix(
+            query, head, self.reranker.model.feature_names
+        )
+        predictions = self.reranker.model.predict(matrix)
+        low = float(predictions.min())
+        high = float(predictions.max())
+        learned = (
+            np.zeros(len(predictions), dtype=np.float64)
+            if math.isclose(low, high)
+            else (predictions - low) / (high - low)
+        )
+        weight = self.config.safe_ranker_weight
+        original = {identifier: rank for rank, identifier in enumerate(head)}
+        scores = {
+            identifier: (1.0 - weight)
+            * (1.0 if count == 1 else 1.0 - rank / (count - 1))
+            + weight * float(learned[rank])
+            for rank, identifier in enumerate(head)
+        }
+        ordered = sorted(
+            head,
+            key=lambda identifier: (
+                -scores[identifier],
+                original[identifier],
+                identifier,
+            ),
+        )
+        result = [*ordered, *ranking[count:]]
+        if len(result) != len(ranking) or set(result) != set(ranking):
+            raise ValueError("Browsing safe ranker changed candidate membership")
+        return result
+
+
+def _sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for block in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(block)
+    return digest.hexdigest()
+
+
+def _sha256_directory(path: Path) -> str:
+    digest = hashlib.sha256()
+    files = sorted(
+        item
+        for item in path.rglob("*")
+        if item.is_file() and ".cache" not in item.parts
+    )
+    for item in files:
+        digest.update(str(item.relative_to(path)).encode())
+        digest.update(b"\0")
+        with item.open("rb") as handle:
+            for block in iter(lambda: handle.read(1024 * 1024), b""):
+                digest.update(block)
+    return digest.hexdigest()
+
+
+class UnionAwareRanker:
+    def __init__(
+        self,
+        catalog_path: str | Path,
+        config: UnionRankerConfig,
+        *,
+        project_root: Path,
+    ) -> None:
+        self.config = config
+        self.filter = CoverageAwareFilter(catalog_path)
+        self.reranker: LambdaMARTReranker | ModelRankEnsembleReranker | None = None
+        if config.backend == "gbdt":
+            assert config.model_path is not None
+            assert config.model_sha256 is not None
+            path = project_root / config.model_path
+            if not path.is_file():
+                raise FileNotFoundError(f"missing union ranker asset: {path}")
+            if _sha256(path) != config.model_sha256:
+                raise ValueError("union ranker asset hash mismatch")
+            model = LambdaMARTModel.load(path)
+            self.reranker = LambdaMARTReranker(
+                GBDTFeatureStore(catalog_path), model
+            )
+        elif config.backend == "rank_ensemble":
+            assert config.model_path is not None
+            assert config.model_sha256 is not None
+            path = project_root / config.model_path
+            if not path.is_file():
+                raise FileNotFoundError(f"missing union ensemble asset: {path}")
+            if _sha256(path) != config.model_sha256:
+                raise ValueError("union ensemble asset hash mismatch")
+            self.reranker = ModelRankEnsembleReranker.from_asset(
+                GBDTFeatureStore(catalog_path),
+                RankEnsembleAsset.load(path),
+                project_root=project_root,
+            )
+
+    def rank(
+        self,
+        query: str,
+        pool: MergedCandidatePool,
+        *,
+        positive_constraints: dict[str, list[str]],
+        negative_constraints: dict[str, list[str]] | None = None,
+    ) -> list[str]:
+        ranking = pool.identifiers
+        if pool.route == "buying":
+            ranking = self.filter.apply_strict(
+                ranking,
+                positive_constraints,
+                negative_constraints,
+            )
+        if self.reranker is not None:
+            ranking = self.reranker.rerank(
+                query,
+                ranking,
+                rerank_k=min(self.config.rerank_k, len(ranking)),
+            )
+        return ranking
+
+
+@dataclass(frozen=True)
+class SemanticRankingResult:
+    ranking: tuple[str, ...]
+    changed: bool
+    elapsed_ms: float
+    backend: str
+    activation_reason: str = "semantic_ranking_required"
+
+
+@dataclass(frozen=True)
+class SemanticActivationDecision:
+    active: bool
+    reason: str
+
+
+class SemanticActivationPolicy:
+    """Keep the LLM slot mandatory while invoking it only for semantic need."""
+
+    def __init__(self, config: LocalLLMSemanticRankerConfig) -> None:
+        self.config = config
+
+    def decide(
+        self,
+        route: RouteDecision,
+        view: V2StateView,
+        *,
+        overloaded: bool,
+    ) -> SemanticActivationDecision:
+        if route.abstained_to_precision:
+            return SemanticActivationDecision(False, "precision_abstention")
+        if route.route == "browsing":
+            reason = (
+                "overloaded_browsing_semantic_retrieval"
+                if overloaded
+                else "browsing_semantic_retrieval"
+            )
+            return SemanticActivationDecision(True, reason)
+        del view
+        return SemanticActivationDecision(False, "high_confidence_buying")
+
+
+class CausalRelevanceScorer:
+    """Batched local causal-LLM yes/no relevance scoring."""
+
+    def __init__(
+        self,
+        documents: Mapping[str, str],
+        config: LocalLLMSemanticRankerConfig,
+        *,
+        project_root: Path,
+    ) -> None:
+        self.documents = documents
+        self.config = config
+        model_path = project_root / config.model_path
+        if not model_path.is_dir():
+            raise FileNotFoundError(f"missing causal LLM asset: {model_path}")
+        if _sha256_directory(model_path) != config.model_sha256:
+            raise ValueError("causal LLM asset hash mismatch")
+        import torch
+        from transformers import AutoModelForCausalLM, AutoTokenizer
+
+        self.torch = torch
+        use_mps = config.device == "mps" or (
+            config.device == "auto" and torch.backends.mps.is_available()
+        )
+        self.device = torch.device("mps" if use_mps else "cpu")
+        self.tokenizer = AutoTokenizer.from_pretrained(
+            model_path,
+            revision=config.model_revision,
+            local_files_only=True,
+        )
+        model_options: dict[str, object] = {
+            "revision": config.model_revision,
+            "local_files_only": True,
+            "low_cpu_mem_usage": True,
+        }
+        if use_mps:
+            model_options["dtype"] = torch.float16
+        model: Any = AutoModelForCausalLM.from_pretrained(
+            model_path, **model_options
+        )
+        self.model = model.to(self.device)
+        self.model.eval()
+        yes = self.tokenizer.encode(" yes", add_special_tokens=False)
+        no = self.tokenizer.encode(" no", add_special_tokens=False)
+        if len(yes) != 1 or len(no) != 1:
+            raise ValueError("causal LLM yes/no labels must each use one token")
+        self.yes_token = yes[0]
+        self.no_token = no[0]
+
+    def scores(self, query: str, ranking: Sequence[str]) -> tuple[float, ...]:
+        prompts = [
+            (
+                "You are a shopping relevance judge. Decide whether the product "
+                "matches the request and its constraints. Answer yes or no.\n"
+                f"Request: {query}\n"
+                f"Product: {self.documents.get(identifier, '')}\n"
+                "Relevant:"
+            )
+            for identifier in ranking
+        ]
+        values: list[float] = []
+        for start in range(0, len(prompts), self.config.batch_size):
+            batch = self.tokenizer(
+                prompts[start : start + self.config.batch_size],
+                padding=True,
+                truncation=True,
+                max_length=self.config.max_length,
+                return_tensors="pt",
+            )
+            batch = {key: value.to(self.device) for key, value in batch.items()}
+            with self.torch.inference_mode():
+                logits = self.model(**batch).logits
+            positions = batch["attention_mask"].sum(dim=1) - 1
+            rows = self.torch.arange(len(positions), device=self.device)
+            yes_logits = logits[rows, positions, self.yes_token]
+            no_logits = logits[rows, positions, self.no_token]
+            probabilities = self.torch.sigmoid(yes_logits - no_logits)
+            values.extend(float(item) for item in probabilities.cpu())
+        if len(values) != len(ranking) or not all(math.isfinite(item) for item in values):
+            raise ValueError("causal LLM returned invalid relevance scores")
+        return tuple(values)
+
+
+class BoundedLocalLLMSemanticRanker:
+    """Bounded local Transformer language-model stage for semantic ranking."""
+
+    def __init__(
+        self,
+        catalog_path: str | Path,
+        config: LocalLLMSemanticRankerConfig,
+        *,
+        project_root: Path,
+        reranker: CrossEncoderReranker | None = None,
+        llm_scorer: object | None = None,
+    ) -> None:
+        self.catalog_path = catalog_path
+        self.config = config
+        self.project_root = project_root
+        self._reranker = reranker
+        self._llm_scorer = llm_scorer
+        self._lock = Lock()
+        self.documents: dict[str, str] = {}
+        catalog_file = Path(catalog_path)
+        if catalog_file.is_file():
+            with catalog_file.open(encoding="utf-8") as handle:
+                import json
+
+                for line in handle:
+                    product = json.loads(line)
+                    self.documents[str(product["parent_asin"])] = product_passage(
+                        product
+                    )
+
+    def _model(self) -> CrossEncoderReranker:
+        if self._reranker is not None:
+            return self._reranker
+        with self._lock:
+            if self._reranker is None:
+                model_path = self.project_root / self.config.fallback_model_path
+                if not model_path.is_dir():
+                    raise FileNotFoundError(
+                        f"missing semantic model asset: {model_path}"
+                    )
+                self._reranker = CrossEncoderReranker(
+                    self.catalog_path,
+                    model_name=str(model_path),
+                    revision=self.config.fallback_model_revision,
+                    cache_folder=self.project_root / self.config.fallback_cache_dir,
+                    local_files_only=True,
+                )
+        return self._reranker
+
+    def _llm(self) -> object:
+        if self._llm_scorer is not None:
+            return self._llm_scorer
+        with self._lock:
+            if self._llm_scorer is None:
+                self._llm_scorer = CausalRelevanceScorer(
+                    self.documents,
+                    self.config,
+                    project_root=self.project_root,
+                )
+        return self._llm_scorer
+
+    def rank(self, query: str, ranking: list[str]) -> SemanticRankingResult:
+        started = time.perf_counter()
+        bounded = list(ranking)
+        head_size = min(self.config.rerank_k, len(bounded))
+        head = bounded[:head_size]
+        backend: str = self.config.backend
+        try:
+            primary_started = time.perf_counter()
+            scorer = self._llm()
+            scores = scorer.scores(query, head)  # type: ignore[attr-defined]
+            if (
+                (time.perf_counter() - primary_started) * 1000.0
+                > self.config.timeout_ms
+            ):
+                raise TimeoutError("causal LLM exceeded its deadline")
+            ordered = blend_ranking(head, scores, weight=self.config.weight)
+            result = [*ordered, *bounded[head_size:]]
+        except Exception:  # noqa: BLE001 - declared MiniLM fallback
+            result = self._model().rerank(
+                query,
+                bounded,
+                rerank_k=head_size,
+                weight=self.config.fallback_weight,
+            )
+            backend = "fallback_minilm_cross_encoder"
+        elapsed_ms = (time.perf_counter() - started) * 1000.0
+        if elapsed_ms > self.config.timeout_ms:
+            raise TimeoutError("local semantic ranking exceeded its deadline")
+        if len(result) != len(bounded) or set(result) != set(bounded):
+            raise ValueError("semantic ranker changed candidate membership")
+        return SemanticRankingResult(
+            ranking=tuple(result),
+            changed=result != bounded,
+            elapsed_ms=elapsed_ms,
+            backend=backend,
+        )
+
+
+@dataclass(frozen=True)
+class GuidanceDecision:
+    overloaded: bool
+    ask_attribute: AskAttribute | None
+    reason: str
+    values: Mapping[AskAttribute | None, float]
+
+
+class OverGeneralityGuidance:
+    def __init__(
+        self,
+        catalog_path: str | Path,
+        config: ProactiveGuidanceConfig,
+    ) -> None:
+        self.config = config
+        self.facets = CandidateFacetStore(catalog_path)
+        self.policy = CandidateEIGPolicy(
+            question_value_margin=config.question_value_margin,
+            max_question_turn=config.max_question_turn,
+            broad_discovery_turns=config.broad_discovery_turns,
+            fallback=AdaptiveQuestionPolicy(
+                initial_other_turns=0,
+                other_refresh_interval=0,
+                max_question_turn=config.max_question_turn,
+            ),
+        )
+
+    def decide(
+        self,
+        state: StateBaselineV2,
+        candidate_ids: list[str],
+        *,
+        turn: int,
+        message: str,
+    ) -> GuidanceDecision:
+        specific = sum(
+            item.attribute != "category" and item.polarity == "include"
+            for item in state.active_constraints
+        )
+        overloaded = (
+            len(candidate_ids) >= self.config.overload_min_candidates
+            and specific <= self.config.overload_max_specific_constraints
+        )
+        statistics: CandidateStatistics = self.facets.summarize(
+            candidate_ids, limit=self.config.question_candidate_k
+        )
+        question = self.policy.decide(
+            state, statistics, turn=turn, message=message
+        )
+        reason = (
+            f"overloaded:{question.reason}"
+            if overloaded
+            else question.reason
+        )
+        return GuidanceDecision(
+            overloaded=overloaded,
+            ask_attribute=question.ask_attribute,
+            reason=reason,
+            values=question.values,
+        )
+
+
+def apply_profile_context(
+    reranker: ProfilePriorReranker,
+    session_id: str,
+    ranking: list[str],
+    context: ProfileContext,
+    config: RuntimeAdaptationConfig,
+) -> list[str]:
+    if not context.active:
+        return ranking
+    del session_id
+    return reranker.rerank_terms(
+        ranking,
+        context.terms,
+        weight=config.profile_weight * context.confidence,
+        rerank_k=min(50, len(ranking)),
+    )
+
+
+__all__ = [
+    "BoundedLocalLLMSemanticRanker",
+    "ConflictSafeContextAdapter",
+    "DiverseDenseResult",
+    "DiverseDenseTrack",
+    "DualTrackRouter",
+    "GuidanceDecision",
+    "OverGeneralityGuidance",
+    "ProfileContext",
+    "ProfileUpdate",
+    "RouteDecision",
+    "SemanticRankingResult",
+    "UnionAwareRanker",
+    "apply_profile_context",
+]
