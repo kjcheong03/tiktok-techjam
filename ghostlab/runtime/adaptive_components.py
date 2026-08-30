@@ -654,6 +654,7 @@ class SemanticRankingResult:
     elapsed_ms: float
     backend: str
     activation_reason: str = "semantic_ranking_required"
+    failure_reason: str | None = None
 
 
 @dataclass(frozen=True)
@@ -690,6 +691,11 @@ class SemanticActivationPolicy:
 
 class CausalRelevanceScorer:
     """Batched local causal-LLM yes/no relevance scoring."""
+
+    PROMPT_MEANING = (
+        "shopping-relevance-v1: decide whether the product matches the request "
+        "and constraints; answer yes or no"
+    )
 
     def __init__(
         self,
@@ -728,22 +734,39 @@ class CausalRelevanceScorer:
         model: Any = AutoModelForCausalLM.from_pretrained(model_path, **model_options)
         self.model = model.to(self.device)
         self.model.eval()
-        yes = self.tokenizer.encode(" yes", add_special_tokens=False)
-        no = self.tokenizer.encode(" no", add_special_tokens=False)
-        if len(yes) != 1 or len(no) != 1:
-            raise ValueError("causal LLM yes/no labels must each use one token")
-        self.yes_token = yes[0]
-        self.no_token = no[0]
+        self.yes_token = self._single_token_label("yes")
+        self.no_token = self._single_token_label("no")
+        if self.yes_token == self.no_token:
+            raise ValueError("causal LLM yes/no labels resolve to the same token")
+
+    def _single_token_label(self, label: str) -> int:
+        for candidate in (f" {label}", label, f" {label.title()}", label.title()):
+            encoded = self.tokenizer.encode(candidate, add_special_tokens=False)
+            if len(encoded) == 1:
+                return int(encoded[0])
+        raise ValueError(f"causal LLM label-token incompatibility: {label}")
+
+    def _prompt(self, query: str, document: str) -> str:
+        content = (
+            "You are a shopping relevance judge. Decide whether the product "
+            "matches the request and its constraints. Answer yes or no.\n"
+            f"Request: {query}\n"
+            f"Product: {document}"
+        )
+        if getattr(self.tokenizer, "chat_template", None):
+            rendered = self.tokenizer.apply_chat_template(
+                [{"role": "user", "content": content}],
+                tokenize=False,
+                add_generation_prompt=True,
+            )
+            if not isinstance(rendered, str) or not rendered:
+                raise ValueError("causal LLM chat template returned an invalid prompt")
+            return rendered
+        return f"{content}\nRelevant:"
 
     def scores(self, query: str, ranking: Sequence[str]) -> tuple[float, ...]:
         prompts = [
-            (
-                "You are a shopping relevance judge. Decide whether the product "
-                "matches the request and its constraints. Answer yes or no.\n"
-                f"Request: {query}\n"
-                f"Product: {self.documents.get(identifier, '')}\n"
-                "Relevant:"
-            )
+            self._prompt(query, self.documents.get(identifier, ""))
             for identifier in ranking
         ]
         values: list[float] = []
@@ -789,6 +812,10 @@ class BoundedLocalLLMSemanticRanker:
         self._reranker = reranker
         self._llm_scorer = llm_scorer
         self._lock = Lock()
+        self.primary_attempts = 0
+        self.primary_successes = 0
+        self.fallback_count = 0
+        self.failure_counts: dict[str, int] = {}
         self.documents: dict[str, str] = {}
         catalog_file = Path(catalog_path)
         if catalog_file.is_file():
@@ -838,7 +865,26 @@ class BoundedLocalLLMSemanticRanker:
         head_size = min(self.config.rerank_k, len(bounded))
         head = bounded[:head_size]
         backend: str = self.config.model_id
+        failure_reason: str | None = None
         try:
+            if self.config.backend == "minilm_cross_encoder_control":
+                result = self._model().rerank(
+                    query,
+                    bounded,
+                    rerank_k=head_size,
+                    weight=self.config.fallback_weight,
+                )
+                backend = "minilm_cross_encoder_control"
+                elapsed_ms = (time.perf_counter() - started) * 1000.0
+                if len(result) != len(bounded) or set(result) != set(bounded):
+                    raise ValueError("semantic control changed candidate membership")
+                return SemanticRankingResult(
+                    ranking=tuple(result),
+                    changed=result != bounded,
+                    elapsed_ms=elapsed_ms,
+                    backend=backend,
+                )
+            self.primary_attempts += 1
             primary_started = time.perf_counter()
             scorer = self._llm()
             scores = scorer.scores(query, head)  # type: ignore[attr-defined]
@@ -848,7 +894,13 @@ class BoundedLocalLLMSemanticRanker:
                 raise TimeoutError("causal LLM exceeded its deadline")
             ordered = blend_ranking(head, scores, weight=self.config.weight)
             result = [*ordered, *bounded[head_size:]]
-        except Exception:  # noqa: BLE001 - declared MiniLM fallback
+            self.primary_successes += 1
+        except Exception as error:  # noqa: BLE001 - declared MiniLM fallback
+            failure_reason = type(error).__name__
+            self.failure_counts[failure_reason] = (
+                self.failure_counts.get(failure_reason, 0) + 1
+            )
+            self.fallback_count += 1
             result = self._model().rerank(
                 query,
                 bounded,
@@ -866,7 +918,32 @@ class BoundedLocalLLMSemanticRanker:
             changed=result != bounded,
             elapsed_ms=elapsed_ms,
             backend=backend,
+            failure_reason=failure_reason,
         )
+
+    def diagnostics(self) -> dict[str, object]:
+        scorer = self._llm_scorer
+        chat_template = (
+            getattr(getattr(scorer, "tokenizer", None), "chat_template", None)
+            if scorer is not None
+            else None
+        )
+        return {
+            "primary_attempts": self.primary_attempts,
+            "primary_successes": self.primary_successes,
+            "fallback_count": self.fallback_count,
+            "failure_counts": dict(sorted(self.failure_counts.items())),
+            "prompt_meaning": CausalRelevanceScorer.PROMPT_MEANING,
+            "prompt_meaning_sha256": hashlib.sha256(
+                CausalRelevanceScorer.PROMPT_MEANING.encode()
+            ).hexdigest(),
+            "chat_template_used": bool(chat_template),
+            "chat_template_sha256": (
+                hashlib.sha256(str(chat_template).encode()).hexdigest()
+                if chat_template
+                else None
+            ),
+        }
 
 
 @dataclass(frozen=True)

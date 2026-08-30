@@ -466,6 +466,8 @@ def test_bounded_semantic_stage_preserves_membership(tmp_path: Path) -> None:
     assert result.ranking == ("c", "b", "a")
     assert result.changed is True
     assert result.backend == "fallback_minilm_cross_encoder"
+    assert result.failure_reason == "FileNotFoundError"
+    assert ranker.diagnostics()["fallback_count"] == 1
 
 
 def test_actual_causal_llm_stage_is_primary(tmp_path: Path) -> None:
@@ -478,3 +480,24 @@ def test_actual_causal_llm_stage_is_primary(tmp_path: Path) -> None:
     result = ranker.rank("query", ["a", "b", "c"])
     assert result.ranking == ("c", "b", "a")
     assert result.backend == "qwen_causal_relevance"
+    assert result.failure_reason is None
+    assert ranker.diagnostics()["primary_successes"] == 1
+
+
+def test_minilm_semantic_control_is_a_primary_non_llm_arm(tmp_path: Path) -> None:
+    semantic = AdaptiveHybridConfig().semantic_ranker.model_copy(
+        update={"backend": "minilm_cross_encoder_control"}
+    )
+    ranker = BoundedLocalLLMSemanticRanker(
+        tmp_path / "missing.jsonl",
+        semantic,
+        project_root=tmp_path,
+        reranker=_PairRankerStub(),  # type: ignore[arg-type]
+    )
+    result = ranker.rank("query", ["a", "b", "c"])
+    diagnostics = ranker.diagnostics()
+    assert result.ranking == ("c", "b", "a")
+    assert result.backend == "minilm_cross_encoder_control"
+    assert result.failure_reason is None
+    assert diagnostics["primary_attempts"] == 0
+    assert diagnostics["fallback_count"] == 0

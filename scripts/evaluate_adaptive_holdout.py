@@ -7,7 +7,7 @@ import statistics
 import subprocess
 import sys
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from ghostlab.evaluation.statistics import bootstrap_mean_interval
 from ghostlab.optimization.racing import lineage_cluster_means
@@ -18,6 +18,15 @@ from ghostlab.training.adaptive_lineage import load_lineage_manifest, subset_cor
 from scripts.evaluate_adaptive_reference_baselines import evaluate_reference_systems
 
 ROOT = Path(__file__).resolve().parents[1]
+SELECTION_TIE_BREAK_ORDER = [
+    "recommended_technical_score:desc",
+    "mrr:desc",
+    "hit_rate_at_10:desc",
+    "mttc:asc",
+    "fallback_rate:asc",
+    "development_rank:asc",
+    "candidate_id:asc",
+]
 DEFAULT_DATASETS = (
     "data/public_set.jsonl",
     "data/synthetic_1000_public_like.jsonl",
@@ -372,44 +381,77 @@ def _system_entry(
     return entry
 
 
+def _selection_key(
+    frozen: dict[str, Any], report: dict[str, Any]
+) -> tuple[float | int | str, ...]:
+    runtime = report["adaptive_runtime"]
+    fallback_rate = int(runtime["fallback_count"]) / max(
+        1, int(runtime["trace_count"])
+    )
+    return (
+        -_metric(report, "recommended_technical_score"),
+        -_metric(report, "mrr"),
+        -_metric(report, "hit_rate_at_10"),
+        _metric(report, "mttc"),
+        fallback_rate,
+        int(frozen["development_rank"]),
+        str(frozen["candidate_id"]),
+    )
+
+
 def build_fair_holdout_report(
     *,
-    frozen: dict[str, Any],
+    frozen: list[dict[str, Any]],
+    selection_rule: dict[str, Any],
     reference_a: dict[str, Any],
     reference_b: dict[str, Any],
     control: dict[str, Any],
-    challenger: dict[str, Any],
+    challengers: list[dict[str, Any]],
     reference_a_path: str,
     reference_b_path: str,
     control_path: str,
-    challenger_path: str,
+    challenger_paths: list[str],
     control_config: str,
     control_config_sha256: str,
-    challenger_config_canonical_sha256: str,
-    gate_results: list[dict[str, Any]],
-    paired: dict[str, float | int],
+    challenger_config_canonical_sha256: list[str],
+    gate_results: list[list[dict[str, Any]]],
+    paired: list[dict[str, float | int]],
     pairwise: dict[str, dict[str, float | int]],
     receipt_path: str,
+    proposal_report_path: str | None = None,
+    proposal_report_sha256: str | None = None,
+    gates_sha256: str | None = None,
 ) -> dict[str, Any]:
-    contracts = [
-        report.get("evaluation_contract")
-        for report in (reference_a, reference_b, control, challenger)
-    ]
+    if selection_rule.get("tie_break_order") != SELECTION_TIE_BREAK_ORDER:
+        raise ValueError("final-selection tie-break order differs from frozen contract")
+    if not bool(selection_rule.get("no_post_selection_tuning")):
+        raise ValueError("final-selection contract must prohibit post-selection tuning")
+    if not (
+        len(frozen)
+        == len(challengers)
+        == len(challenger_paths)
+        == len(challenger_config_canonical_sha256)
+        == len(gate_results)
+        == len(paired)
+        == 3
+    ):
+        raise ValueError("final selection requires exactly three frozen D systems")
+    all_reports = (reference_a, reference_b, control, *challengers)
+    contracts = [report.get("evaluation_contract") for report in all_reports]
     if not all(isinstance(contract, dict) for contract in contracts):
         raise ValueError("A/B/C/D reports must include the shared evaluation contract")
     if any(contract != contracts[0] for contract in contracts[1:]):
         raise ValueError("A/B/C/D reports do not use an identical evaluation contract")
     ordered_ids = [
         [str(row["sample_id"]) for row in report.get("sessions", [])]
-        for report in (reference_a, reference_b, control, challenger)
+        for report in all_reports
     ]
     if len(ordered_ids[0]) != 550 or any(
         identifiers != ordered_ids[0] for identifiers in ordered_ids[1:]
     ):
         raise ValueError(
-            "A/B/C/D holdout reports must contain the same 550 ordered session IDs"
+            "A/B/C/D final-selection reports must contain the same 550 ordered session IDs"
         )
-    passed = all(bool(item["passed"]) for item in gate_results)
     systems = [
         _system_entry(
             system_id="A_official_stateless_bm25",
@@ -439,29 +481,95 @@ def build_fair_holdout_report(
             config_path=control_config,
             config_sha256=control_config_sha256,
         ),
-        _system_entry(
-            system_id=f"D_{frozen['candidate_id']}",
-            role="promotion_challenger",
-            champion_eligible=True,
-            report=challenger,
-            report_path=challenger_path,
-            config_path=str(frozen["config_path"]),
-            config_sha256=challenger_config_canonical_sha256,
-        ),
     ]
+    comparisons: list[dict[str, Any]] = []
+    for item, challenger, report_path, canonical_hash, gates, paired_stats in zip(
+        frozen,
+        challengers,
+        challenger_paths,
+        challenger_config_canonical_sha256,
+        gate_results,
+        paired,
+        strict=True,
+    ):
+        system_id = f"D_{item['candidate_id']}"
+        passed = all(bool(row["passed"]) for row in gates)
+        systems.append(
+            _system_entry(
+                system_id=system_id,
+                role="promotion_challenger",
+                champion_eligible=True,
+                report=challenger,
+                report_path=report_path,
+                config_path=str(item["config_path"]),
+                config_sha256=canonical_hash,
+            )
+        )
+        comparisons.append(
+            {
+                "control_system_id": "C_fixed_adaptive_architecture",
+                "challenger_system_id": system_id,
+                "candidate_id": item["candidate_id"],
+                "development_rank": item["development_rank"],
+                "all_gates_passed": passed,
+                "gates": gates,
+                "paired_lineage_cluster_statistics": paired_stats,
+            }
+        )
+    eligible = [
+        (item, challenger, comparison, canonical_hash, report_path)
+        for item, challenger, comparison, canonical_hash, report_path in zip(
+            frozen,
+            challengers,
+            comparisons,
+            challenger_config_canonical_sha256,
+            challenger_paths,
+            strict=True,
+        )
+        if comparison["all_gates_passed"]
+    ]
+    selected = min(
+        eligible, key=lambda value: _selection_key(value[0], value[1]), default=None
+    )
+    promoted = selected is not None
+    selected_system_id = (
+        str(selected[2]["challenger_system_id"])
+        if selected is not None
+        else "C_fixed_adaptive_architecture"
+    )
+    selected_candidate_id = (
+        str(selected[0]["candidate_id"]) if selected is not None else None
+    )
+    compatibility_challenger = (
+        {
+            "candidate_id": selected_candidate_id,
+            "config_path": selected[0]["config_path"],
+            "config_sha256": selected[3],
+            "config_file_sha256": selected[0]["config_sha256"],
+            "report_path": selected[4],
+            "metrics": _summary_metrics(selected[1]),
+        }
+        if selected is not None
+        else None
+    )
     return {
-        "schema_version": 2,
-        "evaluation_scope": "single_use_untouched_holdout",
-        "evaluation_partition": "holdout",
-        "holdout_accessed": True,
-        "holdout_sample_count": 550,
+        "schema_version": 3,
+        "evaluation_scope": "one_time_final_selection_set",
+        "evaluation_partition": "final_selection",
+        "final_selection_accessed": True,
+        "final_selection_sample_count": 550,
         "sample_count": 550,
         "evaluation_contract": contracts[0],
-        "system_count": 4,
+        "system_count": 6,
         "reference_count": 2,
-        "challenger_count": 1,
+        "challenger_count": 3,
         "control_count": 1,
-        "frozen_candidate_id": frozen["candidate_id"],
+        "frozen_candidate_ids": [item["candidate_id"] for item in frozen],
+        "frozen_inputs": {
+            "proposal_report_path": proposal_report_path,
+            "proposal_report_sha256": proposal_report_sha256,
+            "gates_sha256": gates_sha256,
+        },
         "comparison_semantics": {
             "same_ground": True,
             "same_ordered_session_ids": True,
@@ -471,35 +579,33 @@ def build_fair_holdout_report(
                 "A_official_stateless_bm25",
                 "B_state_baseline_v2_tagged_best",
             ],
-            "champion_selection_scope": "C versus D only",
-            "no_post_holdout_tuning": True,
+            "champion_selection_scope": "C versus three independently gated D systems",
+            "selection_set_is_unbiased_holdout": False,
+            "private_evaluation_is_unseen_generalization_test": True,
+            "no_post_selection_tuning": True,
         },
         "systems": systems,
         "pairwise_lineage_cluster_statistics": pairwise,
-        "promotion_comparison": {
-            "control_system_id": "C_fixed_adaptive_architecture",
-            "challenger_system_id": f"D_{frozen['candidate_id']}",
-            "gates": gate_results,
-            "paired_lineage_cluster_statistics": paired,
-        },
-        "all_gates_passed": passed,
-        "decision": "PROMOTE" if passed else "RETAIN_CONTROL",
+        "promotion_comparisons": comparisons,
+        "selection_rule": selection_rule,
+        "selected_system_id": selected_system_id,
+        "selected_candidate_id": selected_candidate_id,
+        "all_gates_passed": promoted,
+        "decision": "PROMOTE" if promoted else "RETAIN_CONTROL",
         # Compatibility fields retained for the explicit activation command.
-        "challenger": {
-            "config_path": frozen["config_path"],
-            "config_sha256": challenger_config_canonical_sha256,
-            "config_file_sha256": frozen["config_sha256"],
-            "report_path": challenger_path,
-            "metrics": _summary_metrics(challenger),
-        },
+        "challenger": compatibility_challenger,
         "control": {
             "config_path": control_config,
             "config_sha256": control_config_sha256,
             "report_path": control_path,
             "metrics": _summary_metrics(control),
         },
-        "gates": gate_results,
-        "paired_lineage_cluster_statistics": paired,
+        "gates": selected[2]["gates"] if selected is not None else [],
+        "paired_lineage_cluster_statistics": (
+            selected[2]["paired_lineage_cluster_statistics"]
+            if selected is not None
+            else None
+        ),
         "receipt": receipt_path,
     }
 
@@ -507,8 +613,8 @@ def build_fair_holdout_report(
 def main() -> None:
     parser = argparse.ArgumentParser(
         description=(
-            "Evaluate frozen A/B references plus one frozen C control and one frozen "
-            "D challenger once on holdout; promotion remains C-versus-D only"
+            "Evaluate A/B/C plus three frozen D systems exactly once on the "
+            "550-session final selection set"
         )
     )
     parser.add_argument(
@@ -547,16 +653,33 @@ def main() -> None:
     if receipt_path.exists() or output_path.exists():
         raise RuntimeError("holdout was already accessed; refusing a second evaluation")
     proposal = _load(proposal_path)
-    frozen = proposal.get("frozen_proposal")
-    if not isinstance(frozen, dict):
-        raise TypeError("development report has no single frozen proposal")
-    challenger_path = ROOT / str(frozen["config_path"])
-    if sha256_file(challenger_path) != frozen["config_sha256"]:
-        raise ValueError("frozen challenger config hash changed")
-    if frozen.get("lineage_manifest_sha256") != sha256_file(manifest_path):
-        raise ValueError("frozen proposal and holdout manifest do not match")
+    frozen = proposal.get("frozen_proposals")
+    if not isinstance(frozen, list) or len(frozen) != 3 or not all(
+        isinstance(item, dict) for item in frozen
+    ):
+        raise TypeError("development report must contain exactly three frozen proposals")
+    candidate_ids = [str(item["candidate_id"]) for item in frozen]
+    if len(set(candidate_ids)) != 3:
+        raise ValueError("frozen proposal candidate IDs must be unique")
+    challenger_paths = [ROOT / str(item["config_path"]) for item in frozen]
+    manifest_hash = sha256_file(manifest_path)
+    for item, challenger_path in zip(frozen, challenger_paths, strict=True):
+        if sha256_file(challenger_path) != item["config_sha256"]:
+            raise ValueError(
+                f"frozen challenger config hash changed: {item['candidate_id']}"
+            )
+        canonical = load_adaptive_hybrid_config(challenger_path).canonical_hash()
+        if canonical != item.get("config_canonical_sha256"):
+            raise ValueError(
+                f"frozen challenger canonical hash changed: {item['candidate_id']}"
+            )
+        if item.get("lineage_manifest_sha256") != manifest_hash:
+            raise ValueError("frozen proposal and final-selection manifest do not match")
+    frozen_dependencies = proposal.get("frozen_dependencies")
+    if not isinstance(frozen_dependencies, dict):
+        raise TypeError("development report has no frozen comparison dependencies")
     frozen_dependencies = verify_frozen_holdout_inputs(
-        frozen,
+        frozen_dependencies,
         control_config_path=ROOT / args.control_config,
         reference_a_path=ROOT / "baseline/official_reference.py",
         reference_b_path=ROOT / args.state_reference_config,
@@ -567,20 +690,32 @@ def main() -> None:
     manifest = load_lineage_manifest(manifest_path, corpus)
     if len(manifest.holdout_ids) != 550:
         raise ValueError("final holdout must contain exactly 550 sessions")
-    development_evidence = verify_development_evidence(
-        proposal,
-        challenger_path,
-        sha256_file(manifest_path),
-        manifest.holdout_ids,
-    )
+    development_evidence = [
+        {
+            "candidate_id": item["candidate_id"],
+            **verify_development_evidence(
+                proposal,
+                challenger_path,
+                manifest_hash,
+                manifest.holdout_ids,
+            ),
+        }
+        for item, challenger_path in zip(frozen, challenger_paths, strict=True)
+    ]
     receipt = {
-        "schema_version": 2,
+        "schema_version": 3,
         "status": "started",
-        "frozen_candidate_id": frozen["candidate_id"],
-        "challenger_config_file_sha256": frozen["config_sha256"],
-        "challenger_config_canonical_sha256": load_adaptive_hybrid_config(
-            challenger_path
-        ).canonical_hash(),
+        "protocol": "one_time_final_selection_set",
+        "frozen_candidates": [
+            {
+                "candidate_id": item["candidate_id"],
+                "development_rank": item["development_rank"],
+                "config_path": item["config_path"],
+                "config_file_sha256": item["config_sha256"],
+                "config_canonical_sha256": item["config_canonical_sha256"],
+            }
+            for item in frozen
+        ],
         "control_config_sha256": frozen_dependencies[
             "control_config_file_sha256"
         ],
@@ -595,6 +730,8 @@ def main() -> None:
         ],
         "lineage_manifest_sha256": sha256_file(manifest_path),
         "gates_sha256": frozen_dependencies["gates_sha256"],
+        "proposal_report_path": proposal_path.relative_to(ROOT).as_posix(),
+        "proposal_report_sha256": sha256_file(proposal_path),
         "holdout_ids_sha256": hashlib.sha256(
             "\n".join(sorted(manifest.holdout_ids)).encode()
         ).hexdigest(),
@@ -606,7 +743,10 @@ def main() -> None:
     reference_a_output = run_dir / "reference_a.json"
     reference_b_output = run_dir / "reference_b.json"
     control_output = run_dir / "control.json"
-    challenger_output = run_dir / "challenger.json"
+    challenger_outputs = [
+        run_dir / f"challenger_{index}_{item['candidate_id']}.json"
+        for index, item in enumerate(frozen, start=1)
+    ]
     holdout_corpus = subset_corpus(corpus, manifest, "holdout")
     holdout_samples = [
         holdout_corpus.samples[sample_id]
@@ -628,20 +768,38 @@ def main() -> None:
         datasets,
         args.lineage_manifest,
     )
-    _run_evaluation(
-        str(challenger_path.relative_to(ROOT)),
-        str(challenger_output.relative_to(ROOT)),
-        datasets,
-        args.lineage_manifest,
-    )
+    for challenger_path, challenger_output in zip(
+        challenger_paths, challenger_outputs, strict=True
+    ):
+        _run_evaluation(
+            str(challenger_path.relative_to(ROOT)),
+            str(challenger_output.relative_to(ROOT)),
+            datasets,
+            args.lineage_manifest,
+        )
     control = _load(control_output)
-    challenger = _load(challenger_output)
+    challengers = [_load(path) for path in challenger_outputs]
     gates = _load(gates_path)
+    if gates.get("evaluation_scope") != "one_time_final_selection_set":
+        raise ValueError("gates are not scoped to the one-time final selection set")
+    if int(gates.get("challenger_count", 0)) != 3:
+        raise ValueError("gates must require exactly three challengers")
+    if gates.get("selection_tie_break_order") != SELECTION_TIE_BREAK_ORDER:
+        raise ValueError("gates contain an unsupported final-selection tie-break order")
+    if not bool(gates.get("no_post_selection_tuning")):
+        raise ValueError("gates must prohibit post-selection tuning")
+    if proposal.get("selection_rule", {}).get("tie_break_order") != gates.get(
+        "selection_tie_break_order"
+    ):
+        raise ValueError("frozen proposal and gates use different tie-break orders")
     holdout_group_by_sample = {
         sample_id: manifest.group_by_sample[sample_id]
         for sample_id in manifest.holdout_ids
     }
-    paired = paired_cluster_statistics(challenger, control, holdout_group_by_sample)
+    paired = [
+        paired_cluster_statistics(challenger, control, holdout_group_by_sample)
+        for challenger in challengers
+    ]
     pairwise = {
         "B_minus_A": paired_cluster_statistics(
             reference_b, reference_a, holdout_group_by_sample
@@ -649,32 +807,53 @@ def main() -> None:
         "C_minus_B": paired_cluster_statistics(
             control, reference_b, holdout_group_by_sample
         ),
-        "D_minus_C": paired,
+        **{
+            f"D_{item['candidate_id']}_minus_C": stats
+            for item, stats in zip(frozen, paired, strict=True)
+        },
     }
-    gate_results = compare_reports(challenger, control, gates, paired)
+    gate_results = [
+        compare_reports(challenger, control, gates, stats)
+        for challenger, stats in zip(challengers, paired, strict=True)
+    ]
+    receipt_candidates = cast(
+        list[dict[str, Any]], receipt["frozen_candidates"]
+    )
     report = build_fair_holdout_report(
         frozen=frozen,
+        selection_rule=dict(proposal["selection_rule"]),
         reference_a=reference_a,
         reference_b=reference_b,
         control=control,
-        challenger=challenger,
+        challengers=challengers,
         reference_a_path=str(reference_a_output.relative_to(ROOT)),
         reference_b_path=str(reference_b_output.relative_to(ROOT)),
         control_path=str(control_output.relative_to(ROOT)),
-        challenger_path=str(challenger_output.relative_to(ROOT)),
+        challenger_paths=[str(path.relative_to(ROOT)) for path in challenger_outputs],
         control_config=args.control_config,
         control_config_sha256=str(receipt["control_config_sha256"]),
-        challenger_config_canonical_sha256=str(
-            receipt["challenger_config_canonical_sha256"]
-        ),
+        challenger_config_canonical_sha256=[
+            str(item["config_canonical_sha256"])
+            for item in receipt_candidates
+        ],
         gate_results=gate_results,
         paired=paired,
         pairwise=pairwise,
         receipt_path=str(receipt_path.relative_to(ROOT)),
+        proposal_report_path=str(proposal_path.relative_to(ROOT)),
+        proposal_report_sha256=str(receipt["proposal_report_sha256"]),
+        gates_sha256=str(receipt["gates_sha256"]),
     )
     _write_json(output_path, report)
     _write_json(
-        receipt_path, {**receipt, "status": "complete", "decision": report["decision"]}
+        receipt_path,
+        {
+            **receipt,
+            "status": "complete",
+            "decision": report["decision"],
+            "selected_system_id": report["selected_system_id"],
+            "selected_candidate_id": report["selected_candidate_id"],
+        },
     )
     print(json.dumps(report, indent=2, sort_keys=True))
 

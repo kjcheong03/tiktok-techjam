@@ -8,7 +8,7 @@ challenger; GhostLab can tune required implementations and race compatible addit
 
 The final 1,650-development fit, bounded LLM family comparison, and large GhostLab
 campaign are deliberately deferred. They are optimization/model-selection work, not
-missing runtime implementation. The 550-session lineage-safe holdout remains untouched,
+missing runtime implementation. The 550-session final selection set remains unaccessed,
 the previous active candidate was not modified, and F3 was not accessed.
 
 ## Problem-statement coverage
@@ -38,9 +38,9 @@ Ask-only deferral is not the default architecture.
 | Buying precision could be overturned | Added sparse-dominant residual mode with bounded learned influence and route-independent authority | Adversarial learned-ranker test cannot overturn the protected sparse head or hard constraints |
 | Turn context was only partly immutable | Router, retrieval, guidance, ranking, clarification and profile adaptation consume one frozen per-turn context | Frozen-dataclass and atomic commit tests pass |
 | Profile adaptation was too weak/decorative | Added optional profile query view, union feature and question suppression plus explicit update attributes | Conflict, query-view, feature and question tests pass; explicit current intent remains dominant |
-| LLM configuration lacked a controlled family study | Added pinned SmolLM2 and Qwen3 assets, generic local-causal backend, Qwen depth study and same-pipeline comparison script | Qwen, SmolLM2 and Qwen3 all load offline and return finite relevance scores; full comparison is deferred |
+| LLM configuration lacked a controlled family study | Added pinned manifests for Qwen2.5, Qwen3, Gemma 3 1B IT and SmolLM2-1.7B, a generic local-causal backend, symmetric depth/weight grids, isolated workers and MiniLM control/fallback | Plan validates 45 paired trials; installed Qwen/MiniLM assets are runnable, while missing Gemma/SmolLM2 assets are reported explicitly; the full comparison is deferred |
 | GhostLab could reject required architecture | Added compulsory/adaptive classifications, preflight architecture audit, fit receipts, resumable checkpoints and source/scenario/constraint gates | Plan contains all 19 compulsory capabilities in every one of 28 initial candidates |
-| Final comparison could drift after development | Finalist validation uses the shared 1,650-session evaluator; packaging freezes D, control C, A/B definitions, gates and lineage hashes before holdout | Tests reject changed control paths/hashes and mismatched evaluation contracts/session order before any holdout receipt is written |
+| Final comparison could drift after development | Finalist validation uses the shared 1,650-session evaluator; packaging freezes D1-D3, C, A/B definitions, gates, tie-breaks and lineage hashes before final selection | Tests reject changed paths/hashes and mismatched evaluation contracts/session order before any access receipt is written |
 
 ## Diverse-dense result
 
@@ -115,7 +115,7 @@ deferred optimization. No partial campaign is presented as a completed result.
 
 ## Code-quality validation
 
-- Full regression suite: 457 passed, 1 skipped.
+- Full regression suite: 464 passed, 1 skipped.
 - Repository-wide Ruff: clean.
 - Focused mypy over the changed trainer, LLM comparison and validator: clean.
 - `git diff --check`: clean.
@@ -126,14 +126,15 @@ deferred optimization. No partial campaign is presented as a completed result.
 
 1. Complete the 1,650-development five-fold structural fit using lineage-preserving
    outer and inner folds. Historical 2,200-session artifacts are not eligible because
-   they consumed what is now the untouched holdout. No incomplete model is bound or
+   they consumed what is now the one-time final selection set. No incomplete model is bound or
    claimed.
-2. Run the bounded local-LLM comparison after the fitted candidate pools are frozen:
-   Qwen Top 10/20/30, then SmolLM2 and Qwen3 at the winning depth.
+2. Run the symmetric bounded local-LLM comparison after fitted candidate pools are
+   frozen: Qwen2.5, Qwen3, Gemma 3 1B IT and SmolLM2-1.7B all receive the same
+   Top-10/20/30 depth and weight grid; MiniLM remains the non-LLM control/fallback.
 3. Use the emitted selected LLM config for a full public run and validation.
 4. Run the resumable F0/F1/F2 GhostLab campaign with grouped source/scenario gates.
-5. Package up to three development finalists, freeze exactly one D plus control C and
-   every holdout dependency, then run the 550-session holdout once.
+5. Package exactly three eligible development finalists, freeze D1-D3 plus A/B/C,
+   gates and tie-breaks, then run the 550-session final selection once.
 6. Review the final champion manually; do not auto-write the active-candidate pointer.
 
 ## Reproduction sequence

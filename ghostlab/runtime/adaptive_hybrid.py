@@ -83,6 +83,7 @@ class AdaptiveTurnTrace:
     semantic_activation_reason: str
     semantic_changed: bool
     semantic_elapsed_ms: float
+    semantic_failure_reason: str | None
     profile_active: bool
     profile_reason: str
     profile_update_values: tuple[str, ...]
@@ -444,6 +445,7 @@ class AdaptiveHybridAgent:
                 elapsed_ms=ranked.elapsed_ms,
                 backend=ranked.backend,
                 activation_reason=activation.reason,
+                failure_reason=ranked.failure_reason,
             )
         return SemanticRankingResult(
             ranking=tuple(ranking),
@@ -966,6 +968,7 @@ class AdaptiveHybridAgent:
                     semantic_activation_reason=semantic.activation_reason,
                     semantic_changed=semantic.changed,
                     semantic_elapsed_ms=semantic.elapsed_ms,
+                    semantic_failure_reason=semantic.failure_reason,
                     profile_active=profile_context.active,
                     profile_reason=profile_context.reason,
                     profile_update_values=profile_update.values,

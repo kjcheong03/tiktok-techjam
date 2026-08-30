@@ -12,8 +12,10 @@ MANIFESTS = {
     "e5": ROOT / "configs/assets/e5_small_v2.json",
     "cross_encoder": ROOT / "configs/assets/cross_encoder_minilm.json",
     "qwen_ranker": ROOT / "configs/assets/qwen2_5_0_5b_instruct.json",
-    "smollm2_ranker": ROOT / "configs/assets/smollm2_360m_instruct.json",
+    "smollm2_ranker": ROOT / "configs/assets/smollm2_1_7b_instruct.json",
+    "smollm2_360m_ranker": ROOT / "configs/assets/smollm2_360m_instruct.json",
     "qwen3_ranker": ROOT / "configs/assets/qwen3_0_6b.json",
+    "gemma3_ranker": ROOT / "configs/assets/gemma3_1b_it.json",
 }
 RECEIPT = ".ghostlab_asset.json"
 SAFE_MODEL_PATTERNS = (

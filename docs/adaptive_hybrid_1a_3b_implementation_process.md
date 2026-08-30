@@ -149,9 +149,9 @@ receipts are supplied.
 
 The three source files still contain 2,200 sessions, but the immutable lineage
 manifest assigns complete cross-source families to either 1,650 development sessions
-or the untouched 550-session holdout. Development outer and inner folds also preserve
-whole lineage groups. No holdout ID may enter fitting, HPO, racing or finalist
-selection.
+or the one-time 550-session final selection set. Development outer and inner folds
+also preserve whole lineage groups. No final-selection ID may enter fitting, HPO,
+racing or development finalist selection.
 
 Use the checkpointed wrapper for the normal sequence:
 
@@ -172,10 +172,10 @@ artifacts/reports/adaptive_hybrid_training_1650_final_v1.json
 After bounded LLM selection, GhostLab races architecture-valid additions and
 combinations only on development. The F0/F1/F2 populations use 20%, 50% and 100% of
 development—330, 825 and 1,650 sessions before any explicit resource cap. Up to three
-finalists are re-evaluated on the identical ordered development ground. Exactly one D
-challenger is then frozen together with control C, A/B reference definitions, promotion
-gates and the lineage manifest. Only that frozen C/D pair is eligible for the one-time
-550-session holdout comparison; A/B remain explanatory references.
+finalists are re-evaluated on the identical ordered development ground. Exactly three D
+configurations are then frozen together with control C, A/B reference definitions,
+promotion gates, tie-breaks and the lineage manifest. A/B/C plus all three D finalists
+are evaluated once on the 550-session final selection set; A/B remain explanatory.
 
 ## Static workflow contract
 
@@ -867,8 +867,9 @@ Use only lineage-safe development sessions. Compare:
 3. C: complete fixed Adaptive Hybrid 1A-3B control; and
 4. D1-D3: development-selected GhostLab finalists.
 
-A/B are explanatory. Choose and freeze exactly one D from development evidence; only
-the frozen C/D pair is eligible for the one-time holdout promotion decision.
+A/B are explanatory. Freeze exactly three D configurations using development evidence.
+On the one-time 550-session final selection set, gate each D against C and choose among
+passing D systems using only the predeclared tie-breaks; otherwise retain C.
 
 Report HitRate@10, MRR, MTTC, Efficiency and TechnicalScore, plus direct 1A-3B
 behaviour: route counts, candidate-route contribution, local-LLM ordering changes,

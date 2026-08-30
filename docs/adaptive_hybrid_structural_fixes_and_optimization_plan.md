@@ -19,7 +19,8 @@ The governing rule remains:
 The implementation will proceed phase by phase. Each phase must pass its declared
 validation gate before the next phase starts. Candidate-pool changes are completed
 before retraining so only the 1,650-session development partition is replayed and
-fitted for the final structural revision. The 550-session holdout remains untouched.
+fitted for the final structural revision. The 550-session final selection set remains
+unaccessed during development.
 
 ## Current baseline and preservation boundary
 
@@ -521,7 +522,8 @@ The three source files contain 2,200 sessions, partitioned by complete lineage g
 | **Total** | **1,650** | **550** | **2,200** |
 
 Only the 1,650 development sessions enter fitting, HPO, racing or finalist selection.
-The 550 holdout is opened once after a single D and control C are hash-frozen.
+The 550 final selection set is opened once after A/B/C, exactly three D configurations,
+the gates and tie-break order are hash-frozen.
 
 Complete sessions and target IDs stay inside one outer fold. The target is used
 only as an offline label after candidate generation. Runtime collection receives
@@ -758,8 +760,8 @@ Conditions 1 and 2 are already satisfied. Phase 0 will machine-record condition 
 Phases 0-6 are implemented. Phase 7 was validated with a successful 200-session
 structural smoke fit. A historical 2,200-session attempt was stopped and is not a final
 artifact. The current protocol fits and selects only on 1,650 lineage-safe development
-sessions, freezes one challenger plus the C control and all holdout dependencies, then
-permits a single 550-session holdout evaluation. Phases 8-9 have complete code paths,
+sessions, freezes three challengers plus A/B/C and all final-selection dependencies,
+then permits one 550-session final selection. Phases 8-9 have complete code paths,
 pinned assets, tests and plan validation; their expensive model-selection and campaign
 executions are deliberately deferred until after the user starts the final training run.
 

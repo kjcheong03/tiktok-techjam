@@ -21,12 +21,12 @@ same required capability, and add compatible optional techniques.
 - Current active runtime: legacy frozen guarded champion until explicit activation
 - Adaptive candidate: architecture-complete but not automatically activated
 - Protected F3/private holdout: not accessed
-- Latest regression result: 451 passed, 1 skipped; Ruff and focused mypy checks clean
+- Latest regression result: 464 passed, 1 skipped; Ruff and focused mypy checks clean
 
 The legacy guarded champion remains a deployment fallback, not the matched control for
 the new architecture. C (the fixed adaptive architecture) is the GhostLab promotion
-control; D is the single frozen challenger. A GhostLab result never changes the active
-agent automatically.
+control; D1-D3 are the three frozen finalists. A GhostLab result never changes the
+active agent automatically.
 
 ## Challenge contract
 
@@ -266,11 +266,11 @@ uv run python dashboard/server.py
 
 Open <http://127.0.0.1:8787/dashboard/>. The dashboard discovers compatible reports in
 `artifacts/reports/` automatically and also accepts JSON files by import or drag-and-drop.
-When the final fair-comparison report exists, the dashboard features its four systems
-on one shared evaluation ground: A/B are reference-only and C/D are the
-control/challenger. A, B and C stay pinned while the displayed D finalist is selected
-from a challenger dropdown; a final holdout report fixes that dropdown to the single
-frozen D. Only the C-versus-D result can change the champion.
+When the final fair-comparison report exists, the dashboard features six systems on one
+shared evaluation ground: A/B are reference-only, C is the control, and D1-D3 are the
+frozen challengers. A, B and C stay pinned while the displayed D is selected from the
+dropdown; the final-selection result identifies the one selected passing D, or retains
+C. Only a D-versus-C gate result can change the champion.
 See `dashboard/README.md` for supported report shapes and port configuration.
 
 The protected F3/private data must never be used for routing, ranking, HPO, selection or
@@ -288,7 +288,7 @@ final fitting or selection:
 | Independent-template synthetic | 1,000 | 400 | 400 | 150 | 50 |
 | **Total** | **2,200** | **880** | **880** | **330** | **110** |
 
-| Source | Development | Untouched holdout |
+| Source | Development | One-time final selection |
 |---|---:|---:|
 | Official public development | 150 | 50 |
 | Public-like synthetic | 750 | 250 |
@@ -315,7 +315,7 @@ lineage reconstruction and 1,650-session development fit
   -> full public evaluation
   -> end-to-end validation
   -> resumable GhostLab F0/F1/F2 campaign
-  -> development Top-3 diagnostics and exactly one frozen holdout proposal
+  -> freeze exactly three development-selected D configurations
   -> matched full-development evaluation of D1-D3
   -> fair A/B/C plus selectable-D comparison
 ```
@@ -381,15 +381,16 @@ profile/response handling, Top-K and turn limits in a hash-bound evaluation cont
 The published `evaluator.local_evaluator.evaluate` remains unchanged as the reference,
 with parity tests proving that the shared harness produces identical core outcomes.
 
-Top-3 numbers are development selection evidence. The one-time 550-session holdout run
-evaluates frozen A and B reference arms plus the single frozen C control and D proposal
-on the same ordered sessions, catalog and evaluator contract. A and B are explanatory
-only: promotion is decided exclusively by the predeclared C-versus-D gates. The holdout
-result must never be fed back into GhostLab to select another challenger.
+Top-3 numbers are development selection evidence. The one-time 550-session final
+selection run evaluates frozen A and B reference arms, C, and all three frozen D
+configurations on the same ordered sessions, catalog and evaluator contract. A and B
+are explanatory only. Each D is independently gated against C, and the winner is chosen
+only by the frozen tie-break order. The 550 is therefore a final selection set, not an
+unbiased holdout, and its result must never be fed back into GhostLab for more tuning.
 
-After reviewing the frozen proposal, run the one-time comparison. Activation accepts
-only a matching, passing report containing the frozen A/B references and exactly one
-challenger/control pair:
+After reviewing the frozen Top-3 package, run the one-time comparison. Activation
+accepts only the selected, passing D from a matching report containing A/B, C, and all
+three frozen challengers:
 
 ```bash
 PYTHONPATH=. .venv/bin/python scripts/evaluate_adaptive_holdout.py
@@ -466,15 +467,17 @@ The union model is bound into the output configuration only if it passes out-of-
 Hit@10 non-regression, strict MRR improvement, and protected-slice gates. Rejected
 evidence is retained in the training report.
 
-After the structural fit succeeds, tune Qwen depth and compare the bounded model family:
+After the structural fit succeeds, run the symmetric bounded model-family comparison:
 
 ```bash
 PYTHONPATH=. .venv/bin/python scripts/compare_local_llm_rankers.py
 ```
 
-This tunes Qwen at Top 10/20/30 and bounded weights, then compares SmolLM2 and Qwen3 only
-at the winning Qwen setting. It emits a report and a separate hash-bound selected configuration;
-it does not overwrite the trained base config.
+Qwen2.5-0.5B, Qwen3-0.6B, Gemma 3 1B IT and SmolLM2-1.7B each receive the same
+Top-10/20/30 depth and bounded-weight grid on paired development candidate pools.
+MiniLM is the non-LLM control/fallback. Each family chooses its own best setting. The
+command emits a report and separate hash-bound candidate configurations; it does not
+overwrite the trained base config.
 
 ## Run the architecture-safe GhostLab campaign
 
@@ -534,9 +537,9 @@ F0 starts with 62 candidates and may expand up to the 500-candidate cap. F1 reta
 most 24 roots and adds two local HPO trials per non-control root, for at most 70 F1
 evaluations. F2 evaluates at most six finalists.
 
-This uses the entire development partition for final selection without spending F2
-evaluation on every weak F0 candidate. The untouched holdout is excluded from every
-fidelity.
+This uses the entire development partition for GhostLab fitting and finalist selection
+without spending F2 evaluation on every weak F0 candidate. The 550-session final
+selection set is excluded from every development fidelity.
 
 ### Racing non-regression gates
 
@@ -546,9 +549,9 @@ gates in addition to the combined paired session reward:
 - official-public performance must not materially regress;
 - Buying, Browsing and Intent Override must not materially regress;
 - sparse F0 Boundary evidence must produce `HOLD_MORE_DATA`, not permanent rejection;
-- one challenger is frozen from F2 over all 1,650 development sessions;
-- frozen A/B reference arms and exactly that challenger/control pair may access the
-  550-session holdout once; only C versus D affects promotion.
+- exactly three challengers are frozen from F2 over all 1,650 development sessions;
+- frozen A/B references, C, and all three D finalists may access the 550-session final
+  selection set once; each D is gated against C before immutable tie-breaking.
 
 The exhaustive default campaign is expected to take hours on one Mac. Retrieval/Qwen
 caching and lower early candidate caps are valid engineering optimizations only when they
@@ -641,7 +644,7 @@ actually sent to the user.
 | `scripts/build_adaptive_system_comparison.py` | Unified A/B/C and optional D1-D3 report |
 | `scripts/train_adaptive_hybrid.py` | Development-only source-aware union ranker trainer |
 | `scripts/run_adaptive_hybrid_campaign.py` | Architecture-safe GhostLab runner |
-| `scripts/evaluate_adaptive_holdout.py` | Guarded one-time challenger/control holdout comparison |
+| `scripts/evaluate_adaptive_holdout.py` | Guarded one-time A/B/C plus three-D final selection |
 | `docs/adaptive_hybrid_1a_3b_implementation_process.md` | Detailed process |
 | `docs/adaptive_hybrid_1a_3b_implementation_report.md` | Evidence and decisions |
 

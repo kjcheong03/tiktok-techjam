@@ -209,6 +209,18 @@ def main() -> None:
             trace.semantic_backend.startswith("skipped:") for trace in agent.traces
         ),
         "semantic_change_count": sum(trace.semantic_changed for trace in agent.traces),
+        "semantic_failure_counts": {
+            reason: sum(
+                trace.semantic_failure_reason == reason for trace in agent.traces
+            )
+            for reason in sorted(
+                {
+                    trace.semantic_failure_reason
+                    for trace in agent.traces
+                    if trace.semantic_failure_reason is not None
+                }
+            )
+        },
         "profile_activation_count": sum(trace.profile_active for trace in agent.traces),
     }
     output = root / args.output

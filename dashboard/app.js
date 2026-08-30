@@ -76,7 +76,7 @@ function extractReport(payload, fallbackName, source) {
     const context = {
       partition: payload.evaluation_partition || (String(payload.evaluation_scope || "").includes("holdout") ? "holdout" : null),
       sampleCount: payload.sample_count ?? payload.holdout_sample_count ?? null,
-      holdoutAccessed: payload.holdout_accessed ?? String(payload.evaluation_scope || "").includes("holdout"),
+      holdoutAccessed: payload.final_selection_accessed ?? payload.holdout_accessed ?? String(payload.evaluation_scope || "").includes("holdout"),
     };
     const runs = payload.systems.filter(hasMetrics).map((system, index) => normalizeRun(
       system, system.system_id || `${fallbackName} · system ${index + 1}`, source,
@@ -96,6 +96,7 @@ function extractReport(payload, fallbackName, source) {
         gatesPassed: payload.all_gates_passed ?? null,
         source,
         challengerIds: runs.filter((run) => run.role.includes("challenger")).map((run) => run.id),
+        selectedSystemId: payload.selected_system_id || null,
       },
     };
   }
@@ -121,7 +122,8 @@ function addRuns(runs, meta = null) {
     state.runs = [];
     state.activeId = null;
     state.comparisonMeta = meta;
-    state.selectedChallengerId = meta.challengerIds?.[0] || null;
+    state.selectedChallengerId = runs.find((run) => run.systemId === meta.selectedSystemId)?.id
+      || meta.challengerIds?.[0] || null;
   } else if (state.comparisonMeta) {
     state.comparisonMeta = null;
     state.selectedChallengerId = null;
@@ -250,7 +252,9 @@ function renderComparisonContract() {
     `${partition} partition`, `${meta.sampleCount ?? "—"} shared sessions`,
     meta.sameOrderedIds ? "same ordered IDs" : "ID parity unknown",
     meta.sameEvaluator ? "same evaluator" : "evaluator parity unknown",
-    meta.holdoutAccessed ? "holdout accessed once" : "holdout sealed",
+    meta.holdoutAccessed
+      ? (partition === "final selection" ? "final selection accessed once" : "holdout accessed once")
+      : (partition === "final selection" ? "final selection sealed" : "holdout sealed"),
   ];
   elements.comparisonContractBadges.innerHTML = badges.map((badge, index) =>
     `<span class="contract-badge ${index >= 2 && meta.fair ? "safe" : ""}">${escapeHtml(badge)}</span>`).join("");

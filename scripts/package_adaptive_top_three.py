@@ -26,6 +26,17 @@ def _file_sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def _development_eligible(record: dict[str, Any]) -> bool:
+    return (
+        record.get("decision") == "PROMOTE"
+        and not record.get("gate_failures")
+        and int(record.get("constraint_violations", 0)) == 0
+        and (
+            not bool(record.get("fit_required")) or bool(record.get("fit_verified"))
+        )
+    )
+
+
 def package_top_three(
     campaign_report_path: Path,
     base_config_path: Path,
@@ -49,6 +60,7 @@ def package_top_three(
         item
         for item in records
         if item.get("candidate", {}).get("generation") != "control"
+        and _development_eligible(item)
     ]
     challengers.sort(
         key=lambda item: (
@@ -58,8 +70,11 @@ def package_top_three(
         )
     )
     selected = challengers[:3]
-    if not selected:
-        raise ValueError("campaign F2 stage contains no challenger")
+    if len(selected) != 3:
+        raise ValueError(
+            "final-selection protocol requires exactly three development-eligible "
+            "D challengers"
+        )
 
     output_dir.mkdir(parents=True, exist_ok=True)
     finalists: list[dict[str, Any]] = []
@@ -78,14 +93,7 @@ def package_top_three(
         validation_report = (
             f"artifacts/reports/finalists/{candidate.candidate_id}_validation.json"
         )
-        eligible = (
-            record.get("decision") == "PROMOTE"
-            and not record.get("gate_failures")
-            and int(record.get("constraint_violations", 0)) == 0
-            and (
-                not bool(record.get("fit_required")) or bool(record.get("fit_verified"))
-            )
-        )
+        eligible = _development_eligible(record)
         digest = _file_sha256(config_path)
         evaluation_command = (
             "PYTHONPATH=. .venv/bin/python scripts/run_adaptive_hybrid.py "
@@ -146,7 +154,15 @@ def package_top_three(
             }
         )
 
-    recommended = next((item for item in finalists if item["promotion_eligible"]), None)
+    recommended = finalists[0]
+    final_selection_contract = json.loads(HOLDOUT_GATES.read_text(encoding="utf-8"))
+    tie_break_order = final_selection_contract.get("selection_tie_break_order")
+    if not isinstance(tie_break_order, list) or not tie_break_order:
+        raise ValueError("final-selection gates must define selection_tie_break_order")
+    if int(final_selection_contract.get("challenger_count", 0)) != 3:
+        raise ValueError("final-selection gates must require exactly three challengers")
+    if not bool(final_selection_contract.get("no_post_selection_tuning")):
+        raise ValueError("final-selection gates must prohibit post-selection tuning")
     manifest_hash = (
         _file_sha256(lineage_manifest_path)
         if lineage_manifest_path is not None and lineage_manifest_path.is_file()
@@ -167,55 +183,64 @@ def package_top_three(
         "gates_path": HOLDOUT_GATES.relative_to(ROOT).as_posix(),
         "gates_sha256": _file_sha256(HOLDOUT_GATES),
     }
+    frozen_proposals = [
+        {
+            "development_rank": item["rank"],
+            "candidate_id": item["candidate_id"],
+            "config_path": item["config_path"],
+            "config_sha256": item["config_sha256"],
+            "config_canonical_sha256": load_adaptive_hybrid_config(
+                ROOT / str(item["config_path"])
+            ).canonical_hash(),
+            "lineage_manifest_sha256": manifest_hash,
+            "final_selection_accessed": False,
+        }
+        for item in finalists
+    ]
     report: dict[str, Any] = {
-        "schema_version": 2,
+        "schema_version": 3,
         "architecture": baseline.architecture,
         "campaign_report": campaign_report_path.relative_to(ROOT).as_posix(),
         "requested_challenger_count": 3,
         "packaged_challenger_count": len(finalists),
-        "recommended_candidate_id": (
-            recommended["candidate_id"] if recommended is not None else None
-        ),
-        "recommendation": (
-            "freeze_one_for_single_holdout_evaluation"
-            if recommended is not None
-            else "retain_current_champion"
-        ),
+        "recommended_candidate_id": recommended["candidate_id"],
+        "recommendation": "freeze_top_three_for_one_time_final_selection",
         "automatic_activation": False,
         "selection_evidence": {
             "datasets": campaign.get("dataset_sources", []),
             "sample_count": campaign.get("sample_count"),
             "selection_data_held_out": False,
-            "untouched_holdout_exists": True,
+            "one_time_final_selection_set_exists": True,
             "nested_oof_is_permanent_holdout": False,
             "f3_accessed": False,
             "note": (
                 "Only the 1,650-session development partition may participate in "
                 "fitting and campaign selection. The 550-session holdout remains "
-                "untouched until exactly one challenger is frozen."
+                "unaccessed until exactly three challengers and the immutable "
+                "selection rule are frozen. It is a final selection set, not an "
+                "unbiased holdout."
             ),
         },
-        "frozen_proposal": (
-            {
-                "candidate_id": recommended["candidate_id"],
-                "config_path": recommended["config_path"],
-                "config_sha256": recommended["config_sha256"],
-                "lineage_manifest_sha256": manifest_hash,
-                "holdout_accessed": False,
-                **frozen_dependencies,
-            }
-            if recommended is not None
-            else None
-        ),
+        "frozen_dependencies": frozen_dependencies,
+        "frozen_proposals": frozen_proposals,
+        "selection_rule": {
+            "gates_applied_independently_against": "C_fixed_adaptive_architecture",
+            "eligible_systems": ["C_fixed_adaptive_architecture", "D1", "D2", "D3"],
+            "reference_only_systems": [
+                "A_official_stateless_bm25",
+                "B_state_baseline_v2_tagged_best",
+            ],
+            "tie_break_order": tie_break_order,
+            "no_post_selection_tuning": True,
+        },
         "promotion_process": [
-            "Choose and freeze exactly one eligible finalist using development evidence only.",
+            "Freeze exactly three eligible D finalists using development evidence only.",
             (
-                "Evaluate frozen A/B references plus only the frozen finalist and "
-                "frozen control once on the 550-session holdout; promotion remains "
-                "C versus D only."
+                "Evaluate frozen A/B references, C and all three frozen D finalists "
+                "once on the 550-session final selection set."
             ),
-            "Require the predeclared holdout gates and artifact hashes to pass.",
-            "Run activation with that holdout report; activation is never automatic.",
+            "Apply the predeclared gates to every D versus C and use only the frozen tie-breaks.",
+            "Run activation only for the selected winner; activation is never automatic.",
             "Run verify_active and the full test-suite command.",
         ],
         "finalists": finalists,

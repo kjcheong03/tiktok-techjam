@@ -3,11 +3,11 @@
 ## Status and purpose
 
 This document is the authoritative plan for the last structural corrections,
-optimization safeguards, data split, final GhostLab search, holdout evaluation and
+optimization safeguards, data split, final GhostLab search, final selection and
 champion activation for the Adaptive Hybrid Track 4 system.
 
 **Status (2026-08-31): the structural implementation is wired and undergoing final
-validation. The long 1,650-session fit, full GhostLab campaign, one-time holdout and
+validation. The long 1,650-session fit, full GhostLab campaign, one-time final selection and
 champion activation have not been run.**
 
 Implemented in this pass:
@@ -18,8 +18,8 @@ Implemented in this pass:
   observable router evidence and behavior-based validation traces;
 - source-aware union training, target-survival/source/route audits, diversity
   validation and bounded local-LLM depth/weight/family comparison; and
-- development Top-3 diagnostics, one hash-frozen proposal, predeclared gates,
-  a one-time lineage-cluster-aware holdout runner and holdout-gated activation.
+- development Top-3 freezing, predeclared gates and tie-breaks,
+  a one-time lineage-cluster-aware final-selection runner and gated activation.
 
 Final model training must begin only after the implementation checks below pass.
 
@@ -44,21 +44,18 @@ The following decisions are fixed before implementation or final training:
 3. Use 1,650 development sessions for every form of fitting and selection.
 4. Keep 550 sessions inaccessible to fitting, LLM selection, HPO, racing, pruning
    and challenger generation.
-5. GhostLab may rank and report a development Top 3, but it must freeze exactly one
-   proposed challenger before the 550-session holdout is opened.
-6. Evaluate frozen A/B reference arms and exactly the frozen C control and D challenger
-   on the holdout, once. A/B are explanatory only; only C versus D affects promotion.
-7. If the challenger fails any predeclared promotion gate, retain the control. Do
-   not evaluate the second- or third-ranked development challenger on the same
-   holdout.
+5. GhostLab ranks development candidates and freezes exactly three complete D
+   configurations before the 550-session final selection set is opened.
+6. Evaluate frozen A/B references, C and all three D configurations once on the same
+   550 ordered sessions. A/B are explanatory only; each D is gated against C.
+7. Choose among passing D configurations only by the frozen tie-break order. If none
+   passes, retain C. Do not tune or replace any system after seeing the 550 results.
 8. Never access F3 or organiser-private labels during development.
-9. Never activate a candidate automatically from a campaign or holdout script.
+9. Never activate a candidate automatically from a campaign or final-selection script.
 
-Evaluating three challengers and selecting the best on the 550 would make the 550 a
-final selection set. The freeze-one procedure preserves it as an untouched local
-holdout for one predeclared challenger-versus-control test. Frozen A/B reference arms
-may be measured in the same one-time event because they are never selectable and cannot
-alter the C-versus-D decision.
+Evaluating three challengers and selecting among them makes the 550 a one-time final
+selection set, not an unbiased holdout. The organiser-private evaluation remains the
+unseen generalization test.
 
 ## Fixed 1A-3B architecture boundary
 
@@ -141,10 +138,10 @@ six-technique ceiling on the eventual champion.
 | Like-for-like evidence | Some historical reports compare different scopes | Require identical IDs, config and simulator conditions for every reported delta |
 | Final artifacts | Hash and activation mechanisms exist; clean-checkout parity is incomplete | Bind dataset, split, schema, model, config, report and trace hashes and reproduce offline |
 
-The development packager now freezes the selected D file hash, control C file and
-canonical hashes, A/B reference hashes, promotion-gate hash and lineage-manifest hash
-before holdout access. The holdout runner verifies all of them before creating its access
-receipt. The generated finalist validator references the current 1,650-development
+The development packager now freezes all three D file and canonical hashes, control C,
+A/B reference hashes, promotion-gate and tie-break contract, and lineage-manifest hash
+before final-selection access. The runner verifies all of them before creating its
+access receipt. The generated finalist validator references the current 1,650-development
 training report rather than an obsolete 2,200-session artifact.
 
 ## Explicit coverage of the supplied review
@@ -174,7 +171,7 @@ change and an acceptance condition in this document.
 | Semantic candidate rescue | Evaluate depths 10, 20 and 30 after the union ranker is frozen | The chosen setting improves MRR or rescues ranks 11-30 without excessive latency or destabilizing strong head results | Fix 7 |
 | Constraint-removal audit | Record evaluator-side target status before and after authority and at final output, separated by constraint type | Zero confirmed output violations and no material increase in incorrectly removed targets | Fix 2 and Fix 4 |
 | Like-for-like evaluation | Evaluate control and candidate on identical IDs, candidate pools, simulator conditions and configs | Every reported delta carries matching population/config hashes | Development-only GhostLab and one-time holdout sections |
-| Route-specific promotion gates | Gate overall evidence plus Buying, Browsing, Intent Override and Boundary metrics, constraints, fallback and latency | No protected slice breaches its predeclared regression tolerance | One-time 550-session holdout evaluation |
+| Route-specific promotion gates | Gate overall evidence plus Buying, Browsing, Intent Override and Boundary metrics, constraints, fallback and latency | No protected slice breaches its predeclared regression tolerance | One-time 550-session final selection |
 | Final artifact verification | Hash data, split, schema, models, config and reports; reproduce from a clean offline checkout | Final report, selected config, fitted models and runtime trace form one matching reproducible hash chain | Phase 6 |
 
 ## Fix 1: genuine overload cutoff
@@ -588,8 +585,8 @@ All development reporting uses four explicitly different roles:
 A, B and C must be evaluated on identical ordered development sample IDs. The final
 development comparison includes A, B, C and the available D1-D3 finalists, but A and B
 cannot be promoted because they do not implement the complete compulsory workflow.
-Champion selection is restricted to C versus D. The one-time holdout report contains
-A/B/C/D for a same-ground comparison, but A and B remain reference-only.
+Champion selection is restricted to C versus D. The one-time final-selection report
+contains A/B/C/D1-D3 on the same ground, but A and B remain reference-only.
 
 Every comparable A/B/C/D run uses one shared research evaluator entrypoint. Its report
 contract hashes the ordered session IDs, catalog, shared harness, published evaluator,
@@ -606,7 +603,7 @@ The reproducible outputs are:
 - `artifacts/reports/adaptive_system_comparison_1650.json` plus `.md` for the unified
   human-readable table.
 
-## Development-only GhostLab and freeze-one proposal
+## Development-only GhostLab and frozen Top-3 proposal
 
 GhostLab uses all 1,650 development sessions through its normal progressive fidelity
 process and group-safe nested fitting procedures. Every outer/inner fold is assigned at
@@ -614,8 +611,8 @@ the verified-lineage level before expanding to sessions. Out-of-fold estimates r
 selection bias inside development but are not called holdout results. Racing confidence
 uses lineage-cluster resampling rather than independent session resampling.
 
-The development campaign may produce a Top 3 report for diagnosis. It then applies all
-predeclared development gates and freezes exactly one `proposed_challenger`:
+The development campaign applies all predeclared development gates and freezes exactly
+three entries in `frozen_proposals`. Each contains:
 
 - immutable materialized config;
 - config SHA-256 and canonical hash;
@@ -626,46 +623,42 @@ predeclared development gates and freezes exactly one `proposed_challenger`:
 - control identity; and
 - split-manifest development hash.
 
-The proposal report must explicitly state that ranks two and three are not eligible for
-holdout evaluation in the same experiment. If the proposed challenger fails holdout,
-the outcome is “retain control,” not “try the next challenger.”
-
 After packaging, D1-D3 are re-evaluated on the same ordered full-development sessions,
 catalog, seed and shared evaluator contract as A/B/C. These matched runs power the
 dashboard challenger dropdown and like-for-like development table. Original GhostLab
-fold/racing metrics remain separate selection evidence; matched re-evaluation cannot
-change which single D was already frozen for holdout.
+fold/racing metrics remain separate selection evidence. The package also freezes C,
+A/B definitions, gates and the complete tie-break order before any 550 access.
 
 Proposed path:
 
-`artifacts/reports/adaptive_hybrid_frozen_proposal_v1.json`
+`artifacts/reports/adaptive_hybrid_top3.json`
 
-## One-time 550-session holdout evaluation
+## One-time 550-session final selection
 
 The holdout runner is a separate command and process. It consumes only:
 
-- the frozen proposal report;
-- the hash-bound proposed challenger;
+- the frozen Top-3 report;
+- the three hash-bound D configurations;
 - the frozen matched control;
 - the frozen official stateless BM25 reference definition;
 - the frozen tagged-best State Baseline V2 reference definition;
-- the split manifest's holdout partition; and
+- the split manifest's 550-session final-selection partition; and
 - a predeclared promotion-gate configuration.
 
 It refuses to run when:
 
-- more than one challenger is requested;
+- anything other than exactly three frozen challengers is requested;
 - any config/model/hash differs from the proposal;
 - the proposal was generated from a different development manifest;
-- any holdout ID appears in a fit receipt or campaign checkpoint;
+- any final-selection ID appears in a fit receipt or campaign checkpoint;
 - promotion gates are missing or were changed after the proposal freeze; or
-- an incompatible completed holdout receipt already exists.
+- a final-selection access receipt or result already exists.
 
 ### Required reports
 
-Report all four frozen systems on identical ordered sessions, with A/B marked
-reference-only and C/D marked control/challenger. Report per-system metrics and paired
-B-minus-A, C-minus-B and D-minus-C deltas for:
+Report all six frozen systems on identical ordered sessions, with A/B marked
+reference-only, C as control and D1-D3 as challengers. Report per-system metrics and
+paired B-minus-A, C-minus-B and each D-minus-C delta for:
 
 1. official public 50;
 2. public-like synthetic 250;
@@ -673,7 +666,7 @@ B-minus-A, C-minus-B and D-minus-C deltas for:
 4. combined 550 using natural source weights; and
 5. source macro average so synthetic volume cannot hide an official-source issue.
 
-Paired holdout uncertainty must also use lineage-cluster resampling. The 50 public
+Paired final-selection uncertainty must use lineage-cluster resampling. The 50 public
 sessions and their 250 public-like variants represent 50 related public-derived
 clusters, not 300 independent observations. The 250 independent-template sessions
 represent 50 additional five-session clusters.
@@ -695,7 +688,7 @@ Metrics include:
 
 ### Predeclared promotion logic
 
-Promotion thresholds must be stored and hashed before the holdout runs. They must cover:
+Promotion thresholds must be stored and hashed before final selection runs. They cover:
 
 - zero confirmed final-output constraint violations;
 - no breach of Buying Hit@10 or MRR non-regression tolerances;
@@ -706,17 +699,17 @@ Promotion thresholds must be stored and hashed before the holdout runs. They mus
 - complete architecture/artifact validation.
 
 The exact numeric tolerances must be chosen from development/control variability and
-committed before holdout access. They may not be adjusted after observing the 550.
+committed before final-selection access. They may not be adjusted after observing the 550.
 
 Possible outcomes are only:
 
 ```text
-PROMOTE_FROZEN_CHALLENGER
+PROMOTE
 RETAIN_CONTROL
-INVALID_HOLDOUT_RUN
 ```
 
-The holdout report is not fed back into GhostLab.
+An invalid run fails without a selection decision. The final-selection report is not
+fed back into GhostLab.
 
 ## Phase-by-phase implementation and validation
 
@@ -802,7 +795,7 @@ Implementation after Phases 1-3 pass:
 - run diversity/recall comparison;
 - run bounded LLM selection and rescue audit;
 - run GhostLab racing, pruning, HPO and combinations; and
-- generate development Top 3 then freeze one challenger.
+- freeze exactly three development-selected complete D configurations.
 
 Gate:
 
@@ -812,27 +805,28 @@ Gate:
   lineage;
 - racing confidence intervals use lineage-cluster resampling;
 - protected route gates pass on development;
-- one and only one proposal is frozen; and
-- no holdout access receipt exists yet.
+- exactly three D proposals plus A/B/C dependencies and tie-breaks are frozen; and
+- no final-selection access receipt exists yet.
 
-### Phase 5: one-time holdout comparison
+### Phase 5: one-time final selection
 
 Implementation:
 
-- evaluate frozen A/B references and the frozen C/D control/challenger pair on identical
-  ordered 550 sessions, one catalog and one evaluator contract;
+- evaluate frozen A/B references, C and D1-D3 on identical ordered 550 sessions, one
+  catalog and one evaluator contract;
 - generate per-source, route, combined and macro evidence;
-- apply immutable promotion gates only to C versus D; and
+- apply immutable promotion gates separately to every D versus C and select among
+  passers using only the frozen tie-break order; and
 - write a one-time access receipt.
 
 Gate:
 
-- exactly four frozen systems were evaluated, containing two ineligible references and
-  exactly one promotion-eligible control/challenger pair;
+- exactly six frozen systems were evaluated: two ineligible references, one control and
+  three challengers;
 - exactly 50/250/250 sessions were consumed;
 - paired uncertainty uses the verified holdout lineage clusters;
 - no training or tuning occurred;
-- all hashes and IDs match the frozen proposal; and
+- all hashes and IDs match the frozen Top-3 proposal; and
 - the outcome is one of the three allowed statuses.
 
 ### Phase 6: activation and clean reproduction
@@ -868,12 +862,12 @@ Gate:
 | Union schema | Fit/runtime feature names, order and hash identical |
 | Semantic rescue | Ranks 11-30 rescue and strong-head loss audit |
 | Profile safety | Ambiguity-only use, explicit conflict suppression and provenance |
-| Split leakage | Cross-source lineage, profile family, sample and target disjointness across holdout and every development fold |
+| Split leakage | Cross-source lineage, profile family, sample and target disjointness across final selection and every development fold |
 | Group-safe nested validation | No lineage crosses outer/inner fitting, OOF, early-stopping, calibration or HPO boundaries |
-| Cluster-aware statistics | Racing and holdout intervals resample whole lineage groups rather than individual related sessions |
+| Cluster-aware statistics | Racing and final-selection intervals resample whole lineage groups rather than individual related sessions |
 | Like-for-like | Identical session IDs/configuration for every delta |
-| Freeze-one | Only one challenger hash allowed into holdout |
-| Holdout one-time | Frozen A/B references + one C/D control/challenger pair, immutable C-versus-D gates and receipt |
+| Freeze Top 3 | Exactly three development-selected D hashes are frozen before final selection |
+| Final selection one-time | Frozen A/B/C/D1-D3, per-D C gates, immutable tie-breaks and access receipt |
 | Artifact integrity | Clean-checkout hash and offline runtime parity |
 
 ## Required artifacts
@@ -915,12 +909,11 @@ Stop before final training when any of the following is true:
 - fit/runtime feature schemas differ;
 - protected Buying behavior has an unresolved regression;
 - LLM comparison is not like-for-like;
-- more than one challenger is proposed for holdout; or
+- the final-selection package does not contain exactly three challengers; or
 - artifact hashes do not form one reproducible chain.
 
-Stop after holdout and retain the control when the frozen challenger fails a promotion
-gate. Do not reopen GhostLab and test another challenger against the same 550 while
-continuing to call it an untouched holdout.
+Stop after final selection and retain C when no frozen D passes. Do not reopen GhostLab,
+retune settings or introduce another challenger after seeing the 550 results.
 
 ## Definition of done
 
@@ -928,16 +921,17 @@ This plan is complete only when:
 
 1. all required runtime and validator fixes are implemented and tested;
 2. the immutable lineage-safe split contains exactly 1,650 development and 550
-   untouched holdout sessions;
+   one-time final-selection sessions;
 3. the reconstruction script and audit verify all claimed lineage groups;
 4. all fitting and GhostLab selection use only development IDs and group-safe
    outer/inner partitions;
 5. the normal architecture and genuine overload exception are behaviorally proven;
-6. one challenger is frozen using development evidence and cluster-aware statistics;
-7. the holdout evaluates frozen A/B references and only that C/D challenger/control
-   pair once, with promotion based solely on C versus D;
+6. exactly three D configurations are frozen using development evidence and
+   cluster-aware statistics;
+7. final selection evaluates frozen A/B/C/D1-D3 once, gates every D against C and uses
+   only the frozen tie-break order;
 8. the predeclared gates produce an auditable promote-or-retain result;
 9. any promoted champion passes the complete suite and clean offline reproduction;
 10. F3 remains sealed; and
-11. documentation accurately distinguishes development, out-of-fold, holdout and
-    organiser-private evidence.
+11. documentation accurately distinguishes development, out-of-fold, final-selection
+    and organiser-private evidence.

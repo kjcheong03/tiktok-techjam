@@ -153,36 +153,72 @@ def _fair_report(score: float) -> dict:
     }
 
 
+def _frozen_three() -> list[dict]:
+    return [
+        {
+            "development_rank": index,
+            "candidate_id": f"challenger-test-{index}",
+            "config_path": f"configs/finalist-{index}.json",
+            "config_sha256": f"file-hash-{index}",
+        }
+        for index in range(1, 4)
+    ]
+
+
+def _selection_rule() -> dict:
+    return {
+        "tie_break_order": [
+            "recommended_technical_score:desc",
+            "mrr:desc",
+            "hit_rate_at_10:desc",
+            "mttc:asc",
+            "fallback_rate:asc",
+            "development_rank:asc",
+            "candidate_id:asc",
+        ],
+        "no_post_selection_tuning": True,
+    }
+
+
 def test_fair_holdout_report_keeps_references_out_of_promotion() -> None:
-    reports = [_fair_report(score) for score in (0.4, 0.6, 0.8, 0.82)]
+    reports = [_fair_report(score) for score in (0.4, 0.6, 0.8, 0.82, 0.84, 0.83)]
+    for report in reports:
+        report["adaptive_runtime"] = {"trace_count": 10, "fallback_count": 0}
     report = build_fair_holdout_report(
-        frozen={
-            "candidate_id": "challenger-test",
-            "config_path": "configs/finalist.json",
-            "config_sha256": "file-hash",
-        },
+        frozen=_frozen_three(),
+        selection_rule=_selection_rule(),
         reference_a=reports[0],
         reference_b=reports[1],
         control=reports[2],
-        challenger=reports[3],
+        challengers=reports[3:],
         reference_a_path="a.json",
         reference_b_path="b.json",
         control_path="c.json",
-        challenger_path="d.json",
+        challenger_paths=["d1.json", "d2.json", "d3.json"],
         control_config="configs/control.json",
         control_config_sha256="control-hash",
-        challenger_config_canonical_sha256="challenger-canonical-hash",
-        gate_results=[{"gate": "score", "passed": True}],
-        paired={"mean_paired_delta": 0.02},
+        challenger_config_canonical_sha256=["canonical-1", "canonical-2", "canonical-3"],
+        gate_results=[
+            [{"gate": "score", "passed": True}],
+            [{"gate": "score", "passed": True}],
+            [{"gate": "score", "passed": True}],
+        ],
+        paired=[
+            {"mean_paired_delta": 0.02},
+            {"mean_paired_delta": 0.04},
+            {"mean_paired_delta": 0.03},
+        ],
         pairwise={
             "B_minus_A": {"mean_paired_delta": 0.2},
             "C_minus_B": {"mean_paired_delta": 0.2},
-            "D_minus_C": {"mean_paired_delta": 0.02},
+            "D_challenger-test-1_minus_C": {"mean_paired_delta": 0.02},
+            "D_challenger-test-2_minus_C": {"mean_paired_delta": 0.04},
+            "D_challenger-test-3_minus_C": {"mean_paired_delta": 0.03},
         },
         receipt_path="receipt.json",
     )
 
-    assert report["system_count"] == 4
+    assert report["system_count"] == 6
     assert report["reference_count"] == 2
     assert report["comparison_semantics"]["same_ground"] is True
     assert [item["champion_eligible"] for item in report["systems"]] == [
@@ -190,67 +226,134 @@ def test_fair_holdout_report_keeps_references_out_of_promotion() -> None:
         False,
         True,
         True,
+        True,
+        True,
     ]
-    assert report["promotion_comparison"]["control_system_id"].startswith("C_")
-    assert report["challenger"]["config_sha256"] == "challenger-canonical-hash"
-    assert report["challenger"]["config_file_sha256"] == "file-hash"
+    assert len(report["promotion_comparisons"]) == 3
+    assert all(
+        item["control_system_id"].startswith("C_")
+        for item in report["promotion_comparisons"]
+    )
+    assert report["selected_candidate_id"] == "challenger-test-2"
+    assert report["challenger"]["config_sha256"] == "canonical-2"
+    assert report["challenger"]["config_file_sha256"] == "file-hash-2"
     assert report["decision"] == "PROMOTE"
 
 
-def test_fair_holdout_report_rejects_mismatched_session_order() -> None:
-    reports = [_fair_report(score) for score in (0.4, 0.6, 0.8, 0.82)]
-    reports[1]["sessions"] = list(reversed(reports[1]["sessions"]))
-    with pytest.raises(ValueError, match="same 550 ordered session IDs"):
+def test_fair_holdout_report_retains_control_when_every_d_fails() -> None:
+    reports = [_fair_report(score) for score in (0.4, 0.6, 0.8, 0.82, 0.84, 0.83)]
+    for report in reports:
+        report["adaptive_runtime"] = {"trace_count": 10, "fallback_count": 0}
+    report = build_fair_holdout_report(
+        frozen=_frozen_three(),
+        selection_rule=_selection_rule(),
+        reference_a=reports[0],
+        reference_b=reports[1],
+        control=reports[2],
+        challengers=reports[3:],
+        reference_a_path="a.json",
+        reference_b_path="b.json",
+        control_path="c.json",
+        challenger_paths=["d1.json", "d2.json", "d3.json"],
+        control_config="configs/control.json",
+        control_config_sha256="control-hash",
+        challenger_config_canonical_sha256=["hash-1", "hash-2", "hash-3"],
+        gate_results=[
+            [{"gate": "score", "passed": False}],
+            [{"gate": "score", "passed": False}],
+            [{"gate": "score", "passed": False}],
+        ],
+        paired=[{}, {}, {}],
+        pairwise={},
+        receipt_path="receipt.json",
+    )
+
+    assert report["decision"] == "RETAIN_CONTROL"
+    assert report["selected_system_id"] == "C_fixed_adaptive_architecture"
+    assert report["selected_candidate_id"] is None
+    assert report["challenger"] is None
+
+
+def test_fair_holdout_report_rejects_changed_tie_break_order() -> None:
+    reports = [_fair_report(score) for score in (0.4, 0.6, 0.8, 0.82, 0.84, 0.83)]
+    for report in reports:
+        report["adaptive_runtime"] = {"trace_count": 10, "fallback_count": 0}
+    changed = _selection_rule()
+    changed["tie_break_order"] = list(reversed(changed["tie_break_order"]))
+    with pytest.raises(ValueError, match="tie-break order"):
         build_fair_holdout_report(
-            frozen={
-                "candidate_id": "challenger-test",
-                "config_path": "configs/finalist.json",
-                "config_sha256": "file-hash",
-            },
+            frozen=_frozen_three(),
+            selection_rule=changed,
             reference_a=reports[0],
             reference_b=reports[1],
             control=reports[2],
-            challenger=reports[3],
+            challengers=reports[3:],
             reference_a_path="a.json",
             reference_b_path="b.json",
             control_path="c.json",
-            challenger_path="d.json",
+            challenger_paths=["d1.json", "d2.json", "d3.json"],
             control_config="configs/control.json",
             control_config_sha256="control-hash",
-            challenger_config_canonical_sha256="challenger-hash",
-            gate_results=[],
-            paired={},
+            challenger_config_canonical_sha256=["hash-1", "hash-2", "hash-3"],
+            gate_results=[[], [], []],
+            paired=[{}, {}, {}],
+            pairwise={},
+            receipt_path="receipt.json",
+        )
+
+
+def test_fair_holdout_report_rejects_mismatched_session_order() -> None:
+    reports = [_fair_report(score) for score in (0.4, 0.6, 0.8, 0.82, 0.84, 0.83)]
+    for report in reports:
+        report["adaptive_runtime"] = {"trace_count": 10, "fallback_count": 0}
+    reports[1]["sessions"] = list(reversed(reports[1]["sessions"]))
+    with pytest.raises(ValueError, match="same 550 ordered session IDs"):
+        build_fair_holdout_report(
+            frozen=_frozen_three(),
+            selection_rule=_selection_rule(),
+            reference_a=reports[0],
+            reference_b=reports[1],
+            control=reports[2],
+            challengers=reports[3:],
+            reference_a_path="a.json",
+            reference_b_path="b.json",
+            control_path="c.json",
+            challenger_paths=["d1.json", "d2.json", "d3.json"],
+            control_config="configs/control.json",
+            control_config_sha256="control-hash",
+            challenger_config_canonical_sha256=["hash-1", "hash-2", "hash-3"],
+            gate_results=[[], [], []],
+            paired=[{}, {}, {}],
             pairwise={},
             receipt_path="receipt.json",
         )
 
 
 def test_fair_holdout_report_rejects_different_evaluator_contract() -> None:
-    reports = [_fair_report(score) for score in (0.4, 0.6, 0.8, 0.82)]
+    reports = [_fair_report(score) for score in (0.4, 0.6, 0.8, 0.82, 0.84, 0.83)]
+    for report in reports:
+        report["adaptive_runtime"] = {"trace_count": 10, "fallback_count": 0}
     reports[3]["evaluation_contract"] = {
         "harness_id": "different-v2",
         "contract_sha256": "different-contract",
     }
     with pytest.raises(ValueError, match="identical evaluation contract"):
         build_fair_holdout_report(
-            frozen={
-                "candidate_id": "challenger-test",
-                "config_path": "configs/finalist.json",
-                "config_sha256": "file-hash",
-            },
+            frozen=_frozen_three(),
+            selection_rule=_selection_rule(),
             reference_a=reports[0],
             reference_b=reports[1],
             control=reports[2],
-            challenger=reports[3],
+            challengers=reports[3:],
             reference_a_path="a.json",
             reference_b_path="b.json",
             control_path="c.json",
-            challenger_path="d.json",
+            challenger_paths=["d1.json", "d2.json", "d3.json"],
             control_config="configs/control.json",
             control_config_sha256="control-hash",
-            challenger_config_canonical_sha256="challenger-hash",
-            gate_results=[],
-            paired={},
+            challenger_config_canonical_sha256=["hash-1", "hash-2", "hash-3"],
+            gate_results=[[], [], []],
+            paired=[{}, {}, {}],
             pairwise={},
             receipt_path="receipt.json",
         )

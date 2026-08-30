@@ -184,7 +184,7 @@ def build_comparison(
             "champion_selection_scope": "C versus D only",
             "A_and_B_purpose": "explanatory reference baselines only",
             "top_three_purpose": (
-                "development finalists; freeze exactly one before one-time holdout"
+                "development finalists; freeze exactly three before final selection"
             ),
         },
         "paired_reward_deltas": paired_deltas,
@@ -201,7 +201,7 @@ def _markdown(report: dict[str, Any]) -> str:
         "",
         (
             "All rows use the same 1,650-session lineage-safe development partition. "
-            "The untouched 550-session holdout was not accessed."
+            "The 550-session final selection set was not accessed."
         ),
         "",
         "| System | Role | Champion eligible | Hit@10 | MRR | MTTC | Technical score |",

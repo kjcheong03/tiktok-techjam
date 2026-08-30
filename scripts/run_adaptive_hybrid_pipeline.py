@@ -180,7 +180,7 @@ def stage_specs(args: argparse.Namespace) -> tuple[StageSpec, ...]:
             "llm",
             (python, "scripts/compare_local_llm_rankers.py"),
             (
-                "artifacts/reports/local_llm_ranker_comparison_v1.json",
+                "artifacts/reports/local_llm_ranker_comparison_v2.json",
                 selected_config,
             ),
         ),

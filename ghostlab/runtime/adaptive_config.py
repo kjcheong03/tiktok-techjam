@@ -206,9 +206,11 @@ class LocalLLMSemanticRankerConfig(_RequiredConfig):
     component: Literal["bounded_local_llm_semantic_ranker"] = (
         "bounded_local_llm_semantic_ranker"
     )
-    backend: Literal["qwen_causal_relevance", "local_causal_relevance"] = (
-        "qwen_causal_relevance"
-    )
+    backend: Literal[
+        "qwen_causal_relevance",
+        "local_causal_relevance",
+        "minilm_cross_encoder_control",
+    ] = "qwen_causal_relevance"
     model_id: str = Field(default="qwen_causal_relevance", min_length=1)
     model_path: str = "artifacts/cache/models/qwen2.5-0.5b-instruct"
     model_revision: str = "7ae557604adf67be50417f59c2c2f167def9a775"

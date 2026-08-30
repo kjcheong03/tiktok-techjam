@@ -1,5 +1,17 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
+  "evaluation_scope": "one_time_final_selection_set",
+  "challenger_count": 3,
+  "selection_tie_break_order": [
+    "recommended_technical_score:desc",
+    "mrr:desc",
+    "hit_rate_at_10:desc",
+    "mttc:asc",
+    "fallback_rate:asc",
+    "development_rank:asc",
+    "candidate_id:asc"
+  ],
+  "no_post_selection_tuning": true,
   "combined_score_min_delta": 0.0,
   "buying_hit_at_10_max_regression": 0.01,
   "buying_mrr_max_regression": 0.01,

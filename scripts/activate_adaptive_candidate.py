@@ -49,21 +49,43 @@ def main() -> None:
     )
     if finalist is None or not finalist.get("promotion_eligible"):
         raise ValueError("preset is not an eligible finalist in the Top-3 report")
-    frozen = top3.get("frozen_proposal")
-    if not isinstance(frozen, dict) or frozen.get("candidate_id") != finalist.get(
-        "candidate_id"
-    ):
-        raise ValueError("preset is not the single challenger frozen before holdout")
+    frozen = top3.get("frozen_proposals")
+    if not isinstance(frozen, list) or len(frozen) != 3:
+        raise ValueError("Top-3 report did not freeze exactly three challengers")
+    frozen_item = next(
+        (
+            item
+            for item in frozen
+            if item.get("candidate_id") == finalist.get("candidate_id")
+            and item.get("config_path") == args.preset
+            and item.get("config_sha256") == actual
+        ),
+        None,
+    )
+    if frozen_item is None:
+        raise ValueError("preset is not one of the three frozen challengers")
     if holdout.get("decision") != "PROMOTE" or not holdout.get("all_gates_passed"):
-        raise ValueError("single-use holdout evaluation did not authorize promotion")
-    if holdout.get("challenger", {}).get("config_sha256") != config.canonical_hash():
+        raise ValueError("one-time final selection did not authorize promotion")
+    challenger = holdout.get("challenger")
+    if not isinstance(challenger, dict) or challenger.get(
+        "config_sha256"
+    ) != config.canonical_hash():
         raise ValueError("holdout report belongs to a different finalist config")
-    if holdout.get("frozen_candidate_id") != finalist.get("candidate_id"):
-        raise ValueError("holdout report evaluated a different frozen challenger")
-    if holdout.get("challenger_count") != 1 or holdout.get("control_count") != 1:
+    if holdout.get("selected_candidate_id") != finalist.get("candidate_id"):
+        raise ValueError("preset is not the selected final-selection winner")
+    if set(holdout.get("frozen_candidate_ids", [])) != {
+        str(item["candidate_id"]) for item in frozen
+    }:
+        raise ValueError("final-selection report used a different frozen Top 3")
+    if holdout.get("challenger_count") != 3 or holdout.get("control_count") != 1:
         raise ValueError(
-            "holdout report did not compare exactly one challenger/control"
+            "final-selection report did not compare exactly three challengers and C"
         )
+    frozen_inputs = holdout.get("frozen_inputs")
+    if not isinstance(frozen_inputs, dict) or frozen_inputs.get(
+        "proposal_report_sha256"
+    ) != sha256_file(_resolve(args.top3_report)):
+        raise ValueError("final-selection report belongs to a different Top-3 package")
 
     payload = {
         "schema_version": 1,

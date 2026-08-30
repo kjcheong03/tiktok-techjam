@@ -72,10 +72,19 @@ def test_packages_three_ranked_challengers_without_activation() -> None:
         assert report["recommended_candidate_id"] == "challenger-test-1"
         assert report["automatic_activation"] is False
         assert report["selection_evidence"]["selection_data_held_out"] is False
-        assert report["selection_evidence"]["untouched_holdout_exists"] is True
-        assert report["frozen_proposal"]["candidate_id"] == "challenger-test-1"
-        assert report["frozen_proposal"]["holdout_accessed"] is False
-        frozen = report["frozen_proposal"]
+        assert report["selection_evidence"][
+            "one_time_final_selection_set_exists"
+        ] is True
+        assert [item["candidate_id"] for item in report["frozen_proposals"]] == [
+            "challenger-test-1",
+            "challenger-test-2",
+            "challenger-test-3",
+        ]
+        assert all(
+            item["final_selection_accessed"] is False
+            for item in report["frozen_proposals"]
+        )
+        frozen = report["frozen_dependencies"]
         control = ROOT / frozen["control_config_path"]
         assert frozen["control_config_file_sha256"] == hashlib.sha256(
             control.read_bytes()
@@ -84,6 +93,8 @@ def test_packages_three_ranked_challengers_without_activation() -> None:
         assert frozen["reference_a_implementation_sha256"]
         assert frozen["reference_b_config_sha256"]
         assert frozen["gates_sha256"]
+        assert report["selection_rule"]["no_post_selection_tuning"] is True
+        assert len(report["selection_rule"]["tie_break_order"]) == 7
         validation = report["finalists"][0]["commands"]["validate"]
         assert "adaptive_hybrid_training_1650_final_v1.json" in validation
         assert "training_2200" not in validation
