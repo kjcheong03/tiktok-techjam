@@ -114,7 +114,7 @@ deferred optimization. No partial campaign is presented as a completed result.
 
 ## Code-quality validation
 
-- Full regression suite: 431 passed, 1 skipped.
+- Full regression suite: 433 passed, 1 skipped.
 - Repository-wide Ruff: clean.
 - Focused mypy over the changed trainer, LLM comparison and validator: clean.
 - `git diff --check`: clean.
@@ -135,26 +135,19 @@ deferred optimization. No partial campaign is presented as a completed result.
 ## Reproduction sequence
 
 ```bash
-# 1. Full structural fit (creates structural_v2 models/config/receipts)
-PYTHONPATH=. .venv/bin/python scripts/train_adaptive_hybrid.py
+# Inspect the complete dependency plan without executing it.
+PYTHONPATH=. .venv/bin/python scripts/run_adaptive_hybrid_pipeline.py --show-plan
 
-# 2. Bounded Qwen-depth and local-LLM family comparison
-PYTHONPATH=. .venv/bin/python scripts/compare_local_llm_rankers.py
+# Run or resume fit -> LLM selection -> evaluation -> validation -> campaign.
+PYTHONPATH=. .venv/bin/python scripts/run_adaptive_hybrid_pipeline.py
 
-# 3. Full public evaluation using the comparison's selected config
-PYTHONPATH=. .venv/bin/python scripts/run_adaptive_hybrid.py \
-  --config configs/adaptive_hybrid_1a_3b_2200_structural_v2_selected.json \
-  --output artifacts/reports/adaptive_hybrid_structural_v2_public.json
-
-# 4. Complete implementation validator
-PYTHONPATH=. .venv/bin/python scripts/validate_adaptive_hybrid.py \
-  --config configs/adaptive_hybrid_1a_3b_2200_structural_v2_selected.json
-
-# 5. Architecture-safe GhostLab campaign (use README budgets/checkpoint command)
-PYTHONPATH=. .venv/bin/python scripts/run_adaptive_hybrid_campaign.py \
-  --config configs/adaptive_hybrid_1a_3b_2200_structural_v2_selected.json \
-  --plan-only
+# Optional: stop after final validation and defer the long GhostLab campaign.
+PYTHONPATH=. .venv/bin/python scripts/run_adaptive_hybrid_pipeline.py \
+  --through-stage validate
 ```
+
+The constituent scripts remain directly runnable for isolated diagnosis, but normal
+operation should use the checkpointed wrapper so dependency order cannot be skipped.
 
 ## Machine-readable evidence
 

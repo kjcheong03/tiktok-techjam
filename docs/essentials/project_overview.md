@@ -21,7 +21,7 @@ same required capability, and add compatible optional techniques.
 - Default competition-facing runtime: frozen guarded champion
 - Adaptive candidate: architecture-complete but not automatically activated
 - Protected F3/private holdout: not accessed
-- Latest regression result: 431 passed, 1 skipped; Ruff and focused mypy checks clean
+- Latest regression result: 433 passed, 1 skipped; Ruff and focused mypy checks clean
 
 The guarded champion remains the comparison control because the current adaptive
 candidate trails it on public MRR. A GhostLab result never changes the active agent
@@ -273,6 +273,55 @@ training or model selection, it must no longer be claimed as independent validat
 All current examples are catalog-grounded clothing-domain sessions; this corpus does not
 by itself establish generalization to unrelated catalog domains.
 
+## One-command fit and optimization pipeline
+
+The recommended entrypoint runs every dependent stage in the safe order:
+
+```text
+2,200-session structural fit
+  -> bounded local-LLM selection
+  -> full public evaluation
+  -> end-to-end validation
+  -> resumable GhostLab F0/F1/F2 campaign
+```
+
+Inspect the exact commands and outputs without running anything:
+
+```bash
+PYTHONPATH=. .venv/bin/python scripts/run_adaptive_hybrid_pipeline.py --show-plan
+```
+
+Run the entire pipeline on macOS while preventing sleep:
+
+```bash
+mkdir -p artifacts/logs
+
+nohup caffeinate -dimsu env PYTHONPATH=. .venv/bin/python \
+  scripts/run_adaptive_hybrid_pipeline.py \
+  > artifacts/logs/adaptive_hybrid_pipeline.log 2>&1 &
+
+echo $!
+```
+
+Monitor overall and stage-specific progress:
+
+```bash
+tail -f artifacts/logs/adaptive_hybrid_pipeline.log
+tail -f artifacts/logs/adaptive_hybrid_pipeline/fit.log
+```
+
+The wrapper writes
+`artifacts/campaigns/adaptive_hybrid_pipeline/checkpoint.json`. If interrupted, run the
+same command again: completed stages with matching signatures and outputs are skipped,
+while the GhostLab stage resumes its per-evaluation checkpoint. Use
+`--through-stage validate` to finish model fitting and validation without starting the
+long campaign. Use `--force-stage llm` (repeatable) only when intentionally rerunning a
+completed stage.
+
+This is one user-facing command, not one mixed statistical fit. Each stage remains
+isolated so models are frozen before selection, failures are attributable, and runtime
+labels cannot leak backward into training.
+
 ## Fit the new-architecture rankers on 2,200 sessions
 
 The trainer replays the actual State V2, router, retrieval and merge path for all 2,200
@@ -504,6 +553,7 @@ actually sent to the user.
 | `ghostlab/optimization/adaptive_campaign.py` | F0/F1/F2 race engine |
 | `ghostlab/training/adaptive_hybrid.py` | Runtime-pool collection and ranking data |
 | `ghostlab/training/adaptive_datasets.py` | Multi-source loading and balanced folds |
+| `scripts/run_adaptive_hybrid_pipeline.py` | One-command checkpointed fit/selection/validation/campaign wrapper |
 | `scripts/train_adaptive_hybrid.py` | Unified 2,200-session ranker trainer |
 | `scripts/run_adaptive_hybrid_campaign.py` | Architecture-safe GhostLab runner |
 | `docs/adaptive_hybrid_1a_3b_implementation_process.md` | Detailed process |
