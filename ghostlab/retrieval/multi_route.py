@@ -38,6 +38,18 @@ class MergedCandidatePool:
             for source in ("keyword", "category", "vector")
         }
 
+    def retain(self, identifiers: Sequence[str]) -> MergedCandidatePool:
+        allowed = set(identifiers)
+        by_id = {item.parent_asin: item for item in self.candidates}
+        return MergedCandidatePool(
+            route=self.route,
+            candidates=tuple(
+                by_id[identifier]
+                for identifier in identifiers
+                if identifier in allowed and identifier in by_id
+            ),
+        )
+
 
 def _percentile(rank: int, count: int) -> float:
     return 1.0 if count <= 1 else 1.0 - (rank - 1) / (count - 1)

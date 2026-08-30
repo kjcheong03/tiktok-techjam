@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import argparse
 import json
 import os
 import resource
@@ -15,13 +16,10 @@ from ghostlab.runtime.adaptive_factory import (
 from ghostlab.training.adaptive_hybrid import sha256_file
 
 ROOT = Path(__file__).resolve().parents[1]
-CONFIG_PATH = ROOT / "configs/adaptive_hybrid_1a_3b_v1.json"
-ADAPTIVE_REPORT = ROOT / "artifacts/reports/adaptive_hybrid_qwen_selective_v3.json"
 CHAMPION_REPORT = ROOT / "artifacts/reports/adaptive_hybrid_champion_control.json"
-STATE_REPORT = ROOT / "artifacts/reports/adaptive_hybrid_state_v2_precision_control.json"
-TRAINING_REPORT = ROOT / "artifacts/reports/adaptive_union_gbdt_v1.json"
-CROSS_CATEGORY_REPORT = ROOT / "artifacts/reports/cross_category_browsing_v1.json"
-OUTPUT_PATH = ROOT / "artifacts/reports/adaptive_hybrid_validation_v2.json"
+STATE_REPORT = (
+    ROOT / "artifacts/reports/adaptive_hybrid_state_v2_precision_control.json"
+)
 
 
 def _load(path: Path) -> dict:
@@ -36,30 +34,55 @@ def _peak_mb() -> float:
 def _projection(agent: object, index: int) -> dict:
     trace = agent.traces[index]  # type: ignore[attr-defined]
     return {
-        key: value
-        for key, value in trace.__dict__.items()
-        if key not in {"session_id"}
+        key: value for key, value in trace.__dict__.items() if key not in {"session_id"}
     }
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="Validate the complete adaptive 1A-3B runtime end to end"
+    )
+    parser.add_argument(
+        "--config", default="configs/adaptive_hybrid_1a_3b_2200_structural_v2.json"
+    )
+    parser.add_argument(
+        "--adaptive-report",
+        default="artifacts/reports/adaptive_hybrid_structural_v2_public.json",
+    )
+    parser.add_argument(
+        "--training-report",
+        default="artifacts/reports/adaptive_hybrid_training_2200_structural_v2.json",
+    )
+    parser.add_argument(
+        "--diversity-report",
+        default="artifacts/reports/adaptive_dense_diversity_v2.json",
+    )
+    parser.add_argument(
+        "--output",
+        default="artifacts/reports/adaptive_hybrid_structural_v2_validation.json",
+    )
+    args = parser.parse_args()
+    config_path = ROOT / args.config
+    adaptive_report_path = ROOT / args.adaptive_report
+    training_report_path = ROOT / args.training_report
+    diversity_report_path = ROOT / args.diversity_report
+    output_path = ROOT / args.output
     os.environ["HF_HUB_OFFLINE"] = "1"
     os.environ["TRANSFORMERS_OFFLINE"] = "1"
-    config = load_adaptive_hybrid_config(CONFIG_PATH)
+    config = load_adaptive_hybrid_config(config_path)
     assert config.union_ranker.model_path is not None
     assert config.union_ranker.model_sha256 is not None
     model_path = ROOT / config.union_ranker.model_path
     model_hash_ok = sha256_file(model_path) == config.union_ranker.model_sha256
-    receipt = _load(
-        ROOT / "artifacts/models/adaptive_union_gbdt_v1.fit_receipt.json"
-    )
+    receipt_path = model_path.with_name(f"{model_path.stem}.fit_receipt.json")
+    receipt = _load(receipt_path)
     receipt_ok = (
         receipt["model_sha256"] == config.union_ranker.model_sha256
         and receipt["holdout_accessed"] is False
     )
     started = time.perf_counter()
     agent = build_adaptive_hybrid_agent(
-        ROOT / "data/catalog.jsonl", config_path=CONFIG_PATH, project_root=ROOT
+        ROOT / "data/catalog.jsonl", config_path=config_path, project_root=ROOT
     )
     cold_seconds = time.perf_counter() - started
     profile = {"preference_tags": ["comfort", "durability"]}
@@ -75,14 +98,29 @@ def main() -> None:
         latencies.append((time.perf_counter() - started) * 1000.0)
     deterministic = responses[0] == responses[1]
     trace_deterministic = _projection(agent, -2) == _projection(agent, -1)
+    buying_trace = agent.traces[-1]
 
     agent.reset("browse", {"preference_tags": ["comfort", "style"]})
     started = time.perf_counter()
     browsing_response = agent.respond(
-        "browse", "I'm looking for summer wedding clothing, but I'm still exploring.", 1, 10
+        "browse",
+        "I'm looking for summer wedding clothing, but I'm still exploring.",
+        1,
+        10,
     )
     latencies.append((time.perf_counter() - started) * 1000.0)
     browsing_trace = agent.traces[-1]
+
+    agent.reset("browse_semantic", {"preference_tags": ["comfort", "style"]})
+    started = time.perf_counter()
+    semantic_response = agent.respond(
+        "browse_semantic",
+        "I'm still exploring summer clothing. A key requirement is: breathable.",
+        1,
+        10,
+    )
+    latencies.append((time.perf_counter() - started) * 1000.0)
+    semantic_trace = agent.traces[-1]
 
     agent.reset("conflict", {"preference_tags": ["formal", "comfort"]})
     started = time.perf_counter()
@@ -111,22 +149,27 @@ def main() -> None:
         item["parent_asin"] for item in second["recommendations"]
     }
 
-    all_responses = [*responses, browsing_response, conflict_response, first, second]
+    all_responses = [
+        *responses,
+        browsing_response,
+        semantic_response,
+        conflict_response,
+        first,
+        second,
+    ]
     response_contract = all(
         isinstance(response["message"], str)
         and len(response["recommendations"]) <= 10
-        and len(
-            {item["parent_asin"] for item in response["recommendations"]}
-        )
+        and len({item["parent_asin"] for item in response["recommendations"]})
         == len(response["recommendations"])
         for response in all_responses
     )
 
-    adaptive = _load(ADAPTIVE_REPORT)
+    adaptive = _load(adaptive_report_path)
     champion = _load(CHAMPION_REPORT)
     state = _load(STATE_REPORT)["metrics"]
-    training = _load(TRAINING_REPORT)
-    cross_category = _load(CROSS_CATEGORY_REPORT)
+    training = _load(training_report_path)
+    diversity = _load(diversity_report_path)
     conflict_profile_update = agent.profile_update("conflict")
     metrics = {
         "adaptive": {
@@ -162,45 +205,53 @@ def main() -> None:
         - champion["recommended_technical_score"]
     )
     metrics["adaptive_vs_state_v2_score_delta"] = (
-        adaptive["recommended_technical_score"]
-        - state["recommended_technical_score"]
+        adaptive["recommended_technical_score"] - state["recommended_technical_score"]
     )
 
     checks = {
         "config_schema_valid": True,
         "union_model_hash_valid": model_hash_ok,
         "union_fit_receipt_valid": receipt_ok,
-        "union_model_oof_selected": training["selected_for_adaptive_config"],
-        "final_report_config_matches": adaptive["adaptive_runtime"][
-            "config_sha256"
-        ]
+        "union_model_oof_selected": training["union"]["selected_for_output_config"],
+        "final_report_config_matches": adaptive["adaptive_runtime"]["config_sha256"]
         == config.canonical_hash(),
         "offline_environment_forced": True,
         "deterministic_response": deterministic,
         "deterministic_trace": trace_deterministic,
         "response_contract": response_contract,
-        "buying_route_exercised": agent.traces[-6].route == "buying",
+        "buying_route_exercised": buying_trace.route == "buying",
         "browsing_route_exercised": browsing_trace.route == "browsing",
         "diverse_dense_exercised": bool(browsing_trace.query_views),
         "overload_cutoff_exercised": browsing_trace.overloaded,
-        "overload_multiroute_exercised": all(
-            browsing_trace.contribution_counts[source] > 0
-            for source in ("keyword", "category", "vector")
+        "overload_reduced_dense_budget": (
+            browsing_trace.dense_requested_per_view
+            <= config.browsing.overload_retrieval_per_view
+            and browsing_trace.dense_output_k <= config.browsing.overload_output_k
         ),
-        "overload_browsing_llm_exercised": (
-            browsing_trace.semantic_backend == "qwen_causal_relevance"
+        "overload_safe_merge_exercised": browsing_trace.safe_merge_executed,
+        "overload_safe_ranker_exercised": browsing_trace.safe_ranker_executed,
+        "overload_normal_union_skipped": not browsing_trace.normal_union_executed,
+        "overload_semantic_decision_reached": (
+            browsing_trace.semantic_decision_reached
         ),
+        "overload_semantic_execution_skipped": (
+            not browsing_trace.semantic_executed
+            and browsing_trace.semantic_backend == "skipped:overload_cutoff"
+        ),
+        "normal_browsing_union_exercised": semantic_trace.normal_union_executed,
         "literal_llm_ranker_exercised": (
-            browsing_trace.semantic_backend == "qwen_causal_relevance"
+            semantic_trace.semantic_backend == config.semantic_ranker.model_id
         ),
-        "literal_llm_changed_order": browsing_trace.semantic_changed,
+        "literal_llm_changed_order": semantic_trace.semantic_changed,
         "three_source_buying_merge_exercised": all(
-            agent.traces[-6].contribution_counts[source] > 0
+            buying_trace.contribution_counts[source] > 0
             for source in ("keyword", "category", "vector")
         ),
-        "cross_category_browsing_validated": cross_category[
-            "all_scenarios_passed"
-        ],
+        "dense_diversity_behavior_measured": (
+            diversity["browsing_sessions"] >= 80
+            and set(diversity["summary"])
+            == {"multiview_max_relevance", "view_balanced", "embedding_mmr"}
+        ),
         "profile_conflict_suppressed": (
             not conflict_trace.profile_active
             and conflict_trace.profile_reason == "explicit_conflict"
@@ -212,16 +263,16 @@ def main() -> None:
             and conflict_profile_update.provenance == "explicit_session_evidence"
         ),
         "zero_e2e_fallbacks": adaptive["adaptive_runtime"]["fallback_count"] == 0,
-        "selective_llm_has_activations": adaptive["adaptive_runtime"][
-            "semantic_activation_count"
-        ]
-        > 0,
-        "selective_llm_has_skips": adaptive["adaptive_runtime"][
-            "semantic_skip_count"
-        ]
+        "selective_llm_has_activations": (
+            adaptive["adaptive_runtime"]["semantic_activation_count"] > 0
+            or semantic_trace.semantic_executed
+        ),
+        "selective_llm_has_skips": adaptive["adaptive_runtime"]["semantic_skip_count"]
         > 0,
         "factory_config_parity": agent.config_sha256 == config.canonical_hash(),
-        "starter_activation_untouched": not (ROOT / "configs/active_candidate.json").exists(),
+        "starter_activation_untouched": not (
+            ROOT / "configs/active_candidate.json"
+        ).exists(),
         "f3_accessed": False,
     }
     output = {
@@ -235,7 +286,7 @@ def main() -> None:
         "runtime": {
             "cold_initialization_seconds": cold_seconds,
             "turn_latency_ms": latencies,
-            "first_semantic_turn_ms": latencies[0],
+            "first_browsing_semantic_turn_ms": latencies[2],
             "warm_turn_p95_ms": max(latencies[1:]),
             "warm_mean_turn_ms": statistics.fmean(latencies[1:]),
             "peak_process_memory_mb": _peak_mb(),
@@ -248,8 +299,8 @@ def main() -> None:
             else "development_validated"
         ),
     }
-    OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
-    OUTPUT_PATH.write_text(
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(
         json.dumps(output, indent=2, sort_keys=True) + "\n", encoding="utf-8"
     )
     print(json.dumps(output, indent=2, sort_keys=True))

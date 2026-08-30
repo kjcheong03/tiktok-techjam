@@ -21,7 +21,7 @@ same required capability, and add compatible optional techniques.
 - Default competition-facing runtime: frozen guarded champion
 - Adaptive candidate: architecture-complete but not automatically activated
 - Protected F3/private holdout: not accessed
-- Latest regression result: 421 passed, 1 skipped; Ruff and focused mypy checks clean
+- Latest regression result: 439 passed, 1 skipped; Ruff and focused mypy checks clean
 
 The guarded champion remains the comparison control because the current adaptive
 candidate trails it on public MRR. A GhostLab result never changes the active agent
@@ -138,15 +138,18 @@ as the required LLM.
 ## GhostLab integration
 
 GhostLab remains the research and optimization engine, but it cannot delete required
-architecture. The current technique catalog contains 75 records:
+architecture. The current technique catalog contains 88 records. In the adaptive
+registry, 19 compulsory capabilities define the fixed workflow and 17 optional
+techniques are eligible to race or combine. The remaining records are retained as
+controls, research procedures, or explicitly unavailable historical bindings.
 
 | Classification | Count | Meaning |
 |---|---:|---|
-| Compulsory | 11 | Always represented in the fixed workflow |
-| Promotable | 12 | Runnable alternative/addition that may race and combine |
+| Compulsory | 19 | Always represented in the fixed workflow |
+| Promotable | 17 | Runnable alternative/addition that may race and combine |
 | Control-only | 25 | Diagnostic evidence; cannot replace a required capability |
 | Research-only | 16 | Search, evaluation and evidence procedures |
-| Unavailable | 11 | Preserved with blocking reason and retest trigger |
+| Unavailable | 11 | Preserved with a blocker and retest trigger |
 
 The engine:
 
@@ -162,6 +165,41 @@ There is no six-technique champion limit. The current catalog produces 62 valid 
 control/single/pair candidates; higher-order search is globally capped at 500 candidates.
 Fit-required historical rankers may be evaluated, but remain promotion-ineligible until
 refitted against the new candidate pools with verified disjoint-fold receipts.
+
+### Runnable and research technique inventory
+
+The inventory below is exhaustive for techniques with an operational default binding.
+Unavailable records remain in the machine-readable catalog with their blockers, but are
+deliberately omitted here so this section cannot imply that they are runnable.
+
+Anchor/control techniques: `guard.override_fallback`, `query.expansion_guard.v1`,
+`ranking.constraint_gbdt`, `ranking.deep_dense_gbdt`, `ranking.mmr_early.v1`,
+`ranking.neural_gbdt`, `ranking.pairwise_linear`, `routing.decision_list`,
+`routing.joint_route.v1`, `routing.observable_stump`, `routing.route_table`,
+`state.attribute_ontology.v1`.
+
+Composable techniques: `filter.structured`, `fusion.rank_stack.v1`, `fusion.rrf`,
+`fusion.sparse_first_union`, `fusion.weighted`, `policy.joint_observable.v1`,
+`prior.profile`, `prior.quality`, `query.catalog_prf.v1`,
+`query.coverage_adaptive_v2`, `query.structured`,
+`question.adaptive_heuristic`, `question.candidate_eig.v1`, `question.fixed`,
+`question.learned_linear`, `question.other_always`, `ranking.cross_encoder`,
+`ranking.facet_diversity.v1`, `ranking.fixed_lexical`,
+`ranking.fold_ensemble.v1`, `ranking.metadata_gbdt`,
+`ranking.reward_lambdamart.v1`, `ranking.top10_residual_reranker.v2`,
+`ranking.turn_aware_lambdamart.v1`,
+`recommendation.correction_scoped_history`, `retrieval.e5`, `retrieval.minilm`,
+`retrieval.sparse`, `state.baseline_v2`, `state.catalog_normalizer.v1`,
+`state.compressed`, `state.confidence_gated_constraints.v1`, `state.current`,
+`state.multi`, `state.raw_history`, `termination.reward_aware.v1`.
+
+Research and optimizer techniques: `evaluation.grouped_splits`,
+`evaluation.paired_statistics`, `evidence.decision_store`,
+`research.counterfactual`, `research.counterfactual_expert.v2`,
+`research.leakage_firewall`, `research.replay`, `search.bohb.v1`,
+`search.crossover`, `search.evidence_allocator`, `search.expert_iteration.v1`,
+`search.family_ucb`, `search.hyperband.v1`, `search.multifidelity_racing`,
+`search.random_grid_beam`, `search.typed_patches`.
 
 The older flat unified/autonomous campaign remains in the repository as a control and
 historical research system. It does not define this branch's submission architecture.
@@ -183,6 +221,8 @@ published SHA-256 value. Fetch the pinned optional assets:
 uv run python -m scripts.fetch_optional_assets e5
 uv run python -m scripts.fetch_optional_assets cross_encoder
 uv run python -m scripts.fetch_optional_assets qwen_ranker
+uv run python -m scripts.fetch_optional_assets smollm2_ranker
+uv run python -m scripts.fetch_optional_assets qwen3_ranker
 ```
 
 Runtime loading is forced offline after assets are present.
@@ -200,7 +240,7 @@ uv run pytest -q
 Run focused architecture and behavior checks:
 
 ```bash
-PYTHONPATH=. .venv/bin/python scripts/validate_cross_category_browsing.py
+PYTHONPATH=. .venv/bin/python scripts/validate_adaptive_diversity.py
 PYTHONPATH=. .venv/bin/python scripts/validate_adaptive_hybrid.py
 ```
 
@@ -209,8 +249,9 @@ Evaluate the adaptive runtime on the 200 public sessions:
 ```bash
 HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 \
   PYTHONPATH=. .venv/bin/python scripts/run_adaptive_hybrid.py \
-  --config configs/adaptive_hybrid_1a_3b_v1.json \
-  --output artifacts/reports/adaptive_hybrid_public.json
+  --config configs/adaptive_hybrid_structural_smoke.json \
+  --max-samples 20 \
+  --output artifacts/reports/adaptive_hybrid_structural_e2e_smoke.json
 ```
 
 ### Results dashboard
@@ -231,7 +272,8 @@ debugging.
 
 ## Development datasets
 
-The 2,200-session fitting corpus contains:
+The complete 2,200-session corpus is partitioned by verified lineage group before any
+final fitting or selection:
 
 | Source | Samples | Buying | Browsing | Override | Boundary |
 |---|---:|---:|---:|---:|---:|
@@ -240,22 +282,118 @@ The 2,200-session fitting corpus contains:
 | Independent-template synthetic | 1,000 | 400 | 400 | 150 | 50 |
 | **Total** | **2,200** | **880** | **880** | **330** | **110** |
 
+| Source | Development | Untouched holdout |
+|---|---:|---:|
+| Official public development | 150 | 50 |
+| Public-like synthetic | 750 | 250 |
+| Independent-template synthetic | 750 | 250 |
+| **Total** | **1,650** | **550** |
+
+Each official row remains with its five public-like variants, and each independent
+five-session family remains intact. The same lineage grouping is enforced in every
+development outer/inner fold and in clustered racing statistics.
+
 All 2,200 target products are distinct. Once the independent-template set is used for
 training or model selection, it must no longer be claimed as independent validation.
 All current examples are catalog-grounded clothing-domain sessions; this corpus does not
 by itself establish generalization to unrelated catalog domains.
 
-## Fit the new-architecture rankers on 2,200 sessions
+## One-command fit and optimization pipeline
 
-The trainer replays the actual State V2, router, retrieval and merge path for all 2,200
-sessions. It then trains:
+The recommended entrypoint runs every dependent stage in the safe order:
 
-1. the union GBDT for ordinary merged pools; and
-2. the Browsing-safe GBDT for overloaded diverse-dense pools.
+```text
+lineage reconstruction and 1,650-session development fit
+  -> identical-pool dense diversity validation
+  -> bounded local-LLM selection
+  -> full public evaluation
+  -> end-to-end validation
+  -> resumable GhostLab F0/F1/F2 campaign
+  -> development Top-3 diagnostics and exactly one frozen holdout proposal
+```
+
+Inspect the exact commands and outputs without running anything:
+
+```bash
+PYTHONPATH=. .venv/bin/python scripts/run_adaptive_hybrid_pipeline.py --show-plan
+```
+
+Run the entire pipeline on macOS while preventing sleep:
+
+```bash
+mkdir -p artifacts/logs
+
+nohup caffeinate -dimsu env PYTHONPATH=. .venv/bin/python \
+  scripts/run_adaptive_hybrid_pipeline.py \
+  > artifacts/logs/adaptive_hybrid_pipeline.log 2>&1 &
+
+echo $!
+```
+
+Monitor overall and stage-specific progress:
+
+```bash
+tail -f artifacts/logs/adaptive_hybrid_pipeline.log
+tail -f artifacts/logs/adaptive_hybrid_pipeline/fit.log
+```
+
+The wrapper writes
+`artifacts/campaigns/adaptive_hybrid_pipeline/checkpoint.json`. If interrupted, run the
+same command again: completed stages with matching signatures and outputs are skipped,
+while the GhostLab stage resumes its per-evaluation checkpoint. Use
+`--through-stage validate` to finish model fitting and validation without starting the
+long campaign. Use `--force-stage llm` (repeatable) only when intentionally rerunning a
+completed stage.
+
+This is one user-facing command, not one mixed statistical fit. Each stage remains
+isolated so models are frozen before selection, failures are attributable, and runtime
+labels cannot leak backward into training.
+
+The development output is `artifacts/reports/adaptive_hybrid_top3.json`. It contains up to
+three F2-evaluated non-control challengers, their Hit@10/MRR/MTTC/technical score,
+paired delta, latency, gates, materialized config hashes, and exact commands to evaluate,
+validate, and manually activate each eligible finalist. The pipeline never activates a
+champion automatically.
+
+The final `compare` stage writes
+`artifacts/reports/adaptive_system_comparison_1650.json` and the matching Markdown
+table. It shows A (official stateless BM25), B (the tagged-best State Baseline V2 native
+reproduction), C (the fixed adaptive architecture), and the available D1-D3 GhostLab
+finalists on the same 1,650 development sessions. A and B are explanatory baselines;
+only C and D participate in champion selection.
+
+Top-3 numbers are development selection evidence. Only the single frozen proposal and
+the frozen control may be evaluated once on the 550-session holdout. The holdout result
+must never be fed back into GhostLab to select another challenger.
+
+After reviewing the frozen proposal, run the one-time comparison. Activation accepts
+only a matching, passing one-challenger/one-control holdout report:
+
+```bash
+PYTHONPATH=. .venv/bin/python scripts/evaluate_adaptive_holdout.py
+```
+
+Then use the frozen finalist's `activate_after_validation` command from the Top-3
+report. Roll back with:
+
+```bash
+PYTHONPATH=. .venv/bin/python -m scripts.activate_candidate --rollback
+```
+
+## Fit the new-architecture ranker on 1,650 development sessions
+
+The trainer loads all three sources only to verify the immutable manifest, then replays
+the actual State V2, router, retrieval and merge path for the 1,650 development
+sessions. It trains:
+
+1. the source-aware union GBDT for ordinary merged pools.
+
+Overloaded turns deliberately use a deterministic bounded safe scorer and skip the
+normal union GBDT and local LLM, so no redundant overload model is trained.
 
 The target ID creates the offline label only after candidate generation. It is never
 passed into runtime retrieval or ranker features. Only target-containing pools can form
-supervised LambdaMART groups, so receipts report both the 2,200 replayed sessions and the
+supervised LambdaMART groups, so receipts report both the 1,650 replayed sessions and the
 exact eligible ranking-session count.
 
 The semantic ranker is an identity step during pre-semantic pool collection. E5, Qwen,
@@ -274,7 +412,7 @@ mkdir -p artifacts/logs
 
 nohup caffeinate -dimsu env PYTHONPATH=. .venv/bin/python \
   scripts/train_adaptive_hybrid.py \
-  > artifacts/logs/adaptive_hybrid_training_2200.log 2>&1 &
+  > artifacts/logs/adaptive_hybrid_training_1650.log 2>&1 &
 
 echo $!
 ```
@@ -282,40 +420,52 @@ echo $!
 Monitor it:
 
 ```bash
-tail -f artifacts/logs/adaptive_hybrid_training_2200.log
+tail -f artifacts/logs/adaptive_hybrid_training_1650.log
 ```
 
 The first detailed line appears only after candidate-pool collection. A typical Apple
 Silicon run is expected to take roughly 40–90 minutes and several GB of memory.
 
+The repository contains implementation and smoke evidence, not a completed final
+1,650-session fit. Do not treat the paths below as selected assets until the trainer
+finishes and their receipts validate.
+
 Training emits:
 
 ```text
-configs/adaptive_hybrid_1a_3b_2200_v1.json
-configs/splits/adaptive_2200_nested_v1.json
-artifacts/models/adaptive_union_gbdt_2200_v1.json
-artifacts/models/adaptive_union_gbdt_2200_v1.fit_receipt.json
-artifacts/models/adaptive_browsing_gbdt_2200_v1.json
-artifacts/models/adaptive_browsing_gbdt_2200_v1.fit_receipt.json
-artifacts/reports/adaptive_hybrid_training_2200_v1.json
+configs/adaptive_hybrid_1a_3b_1650_final_v1.json
+configs/splits/adaptive_1650_group_nested_v1.json
+artifacts/models/adaptive_union_gbdt_1650_final_v1.json
+artifacts/models/adaptive_union_gbdt_1650_final_v1.fit_receipt.json
+artifacts/reports/adaptive_hybrid_training_1650_final_v1.json
 ```
 
-Each model is bound into the output configuration only if it passes out-of-fold Hit@10
-non-regression and strict MRR improvement. Both models are still fitted and reported so
-rejected evidence is retained.
+The union model is bound into the output configuration only if it passes out-of-fold
+Hit@10 non-regression, strict MRR improvement, and protected-slice gates. Rejected
+evidence is retained in the training report.
+
+After the structural fit succeeds, tune Qwen depth and compare the bounded model family:
+
+```bash
+PYTHONPATH=. .venv/bin/python scripts/compare_local_llm_rankers.py
+```
+
+This tunes Qwen at Top 10/20/30 and bounded weights, then compares SmolLM2 and Qwen3 only
+at the winning Qwen setting. It emits a report and a separate hash-bound selected configuration;
+it does not overwrite the trained base config.
 
 ## Run the architecture-safe GhostLab campaign
 
-Do not start this campaign until 2,200-sample fitting finishes and the output config,
+Do not start this campaign until the 1,650-development fit finishes and the output config,
 models and receipts are validated.
 
 Architecture-only plan:
 
 ```bash
 PYTHONPATH=. .venv/bin/python scripts/run_adaptive_hybrid_campaign.py \
-  --config configs/adaptive_hybrid_1a_3b_2200_v1.json \
+  --config configs/adaptive_hybrid_1a_3b_1650_final_v1_selected.json \
   --plan-only \
-  --output artifacts/reports/adaptive_hybrid_campaign_plan_2200.json
+  --output artifacts/reports/adaptive_hybrid_campaign_plan_1650.json
 ```
 
 Full campaign:
@@ -325,7 +475,7 @@ mkdir -p artifacts/logs
 
 nohup caffeinate -dimsu env PYTHONPATH=. .venv/bin/python \
   scripts/run_adaptive_hybrid_campaign.py \
-  --config configs/adaptive_hybrid_1a_3b_2200_v1.json \
+  --config configs/adaptive_hybrid_1a_3b_1650_final_v1_selected.json \
   --dataset data/public_set.jsonl \
   --dataset data/synthetic_1000_public_like.jsonl \
   --dataset data/independent_template_1000.jsonl \
@@ -335,8 +485,8 @@ nohup caffeinate -dimsu env PYTHONPATH=. .venv/bin/python \
   --f1-candidates 24 \
   --f2-candidates 6 \
   --hpo-trials-per-structure 2 \
-  --output artifacts/reports/adaptive_hybrid_campaign_2200.json \
-  > artifacts/logs/adaptive_hybrid_campaign_2200.log 2>&1 &
+  --output artifacts/reports/adaptive_hybrid_campaign_1650.json \
+  > artifacts/logs/adaptive_hybrid_campaign_1650.log 2>&1 &
 
 echo $!
 ```
@@ -351,31 +501,31 @@ and scenario:
 
 | Phase | Public | Public-like | Independent-template | Total per candidate |
 |---|---:|---:|---:|---:|
-| F0 | 40 | 200 | 200 | 440 |
-| F1 | 100 | 500 | 500 | 1,100 |
-| F2 | 200 | 1,000 | 1,000 | 2,200 |
+| F0 | 30 | 150 | 150 | 330 |
+| F1 | 75 | 375 | 375 | 825 |
+| F2 | 150 | 750 | 750 | 1,650 |
 
-F0 contains 176 Buying, 176 Browsing, 66 Intent Override and 22 Boundary sessions. F1
-contains 440 Buying, 440 Browsing, 165 Intent Override and 55 Boundary sessions.
+Each fidelity prefix is deterministically balanced across source and scenario; exact
+counts are written to the campaign plan and checkpoint.
 
 F0 starts with 62 candidates and may expand up to the 500-candidate cap. F1 retains at
 most 24 roots and adds two local HPO trials per non-control root, for at most 70 F1
 evaluations. F2 evaluates at most six finalists.
 
-This uses the entire corpus for final selection without spending full-data evaluation on
-every weak F0 candidate. Increasing early percentages reduces variance but does not
-remove synthetic-data bias.
+This uses the entire development partition for final selection without spending F2
+evaluation on every weak F0 candidate. The untouched holdout is excluded from every
+fidelity.
 
-### Current racing limitation
+### Racing non-regression gates
 
-The runner constructs balanced source/scenario prefixes, but its promotion statistic is
-currently the combined paired session reward. Before treating a long campaign as final
-selection evidence, add or independently apply source/scenario non-regression gates:
+The runner constructs balanced source/scenario prefixes and applies grouped promotion
+gates in addition to the combined paired session reward:
 
 - official-public performance must not materially regress;
 - Buying, Browsing and Intent Override must not materially regress;
 - sparse F0 Boundary evidence must produce `HOLD_MORE_DATA`, not permanent rejection;
-- final promotion must use F2 over all 2,200 sessions.
+- one challenger is frozen from F2 over all 1,650 development sessions;
+- only that challenger and the control may access the 550-session holdout once.
 
 The exhaustive default campaign is expected to take hours on one Mac. Retrieval/Qwen
 caching and lower early candidate caps are valid engineering optimizations only when they
@@ -391,8 +541,9 @@ The runtime is profile-aware in two ways:
 
 Profile influence activates only when the request remains ambiguous and explicit intent
 is insufficient. Explicit exclusions suppress conflicting profile terms, and current
-session intent always overrides profile history. The GBDTs do not use profile fields as
-direct learned features; profile influence is a separate conflict-safe ranking stage.
+session intent always overrides profile history. The source-aware GBDT schema includes a
+bounded profile-match feature, but activation remains separately gated and tunable; the
+conflict-safe runtime stage is authoritative.
 
 ## Selected public evidence
 
@@ -449,7 +600,9 @@ actually sent to the user.
 
 | Path | Purpose |
 |---|---|
-| `configs/adaptive_hybrid_1a_3b_v1.json` | Current hash-bound adaptive config |
+| `configs/adaptive_hybrid_1a_3b_v1.json` | Implemented architecture baseline |
+| `configs/adaptive_hybrid_structural_smoke.json` | Validation-only 200-session fitted smoke config |
+| `configs/adaptive_hybrid_1a_3b_1650_final_v1.json` | Development-only trainer output |
 | `configs/techniques/catalog_v2.json` | Complete technique inventory |
 | `ghostlab/runtime/adaptive_hybrid.py` | Fixed 1A–3B coordinator |
 | `ghostlab/runtime/adaptive_config.py` | Typed required configuration contract |
@@ -459,8 +612,13 @@ actually sent to the user.
 | `ghostlab/optimization/adaptive_campaign.py` | F0/F1/F2 race engine |
 | `ghostlab/training/adaptive_hybrid.py` | Runtime-pool collection and ranking data |
 | `ghostlab/training/adaptive_datasets.py` | Multi-source loading and balanced folds |
-| `scripts/train_adaptive_hybrid.py` | Unified 2,200-session ranker trainer |
+| `ghostlab/training/adaptive_lineage.py` | Cross-source lineage reconstruction and group-safe partitions |
+| `scripts/run_adaptive_hybrid_pipeline.py` | One-command checkpointed fit/selection/validation/campaign wrapper |
+| `scripts/evaluate_adaptive_reference_baselines.py` | Like-for-like development evaluation of A and B |
+| `scripts/build_adaptive_system_comparison.py` | Unified A/B/C and optional D1-D3 report |
+| `scripts/train_adaptive_hybrid.py` | Development-only source-aware union ranker trainer |
 | `scripts/run_adaptive_hybrid_campaign.py` | Architecture-safe GhostLab runner |
+| `scripts/evaluate_adaptive_holdout.py` | Guarded one-time challenger/control holdout comparison |
 | `docs/adaptive_hybrid_1a_3b_implementation_process.md` | Detailed process |
 | `docs/adaptive_hybrid_1a_3b_implementation_report.md` | Evidence and decisions |
 

@@ -7,6 +7,7 @@ from ghostlab.competition.contract import AskAttribute
 from ghostlab.policy.adaptive_questions import AdaptiveQuestionPolicy, QuestionContext
 from ghostlab.policy.candidate_statistics import CandidateStatistics
 from ghostlab.state.memory import ConversationState
+from ghostlab.state.v2_view import V2StateView
 
 
 @dataclass(frozen=True)
@@ -49,11 +50,12 @@ class CandidateEIGPolicy:
 
     def decide(
         self,
-        state: ConversationState,
+        state: ConversationState | V2StateView,
         statistics: CandidateStatistics,
         *,
         turn: int,
         message: str,
+        unavailable_attributes: frozenset[str] = frozenset(),
     ) -> EIGQuestionDecision:
         if turn > self.max_question_turn:
             return EIGQuestionDecision(None, "question_budget_exhausted", {None: 0.0})
@@ -66,6 +68,7 @@ class CandidateEIGPolicy:
             active
             | set(state.asked_attributes)
             | state.no_preference_attributes
+            | set(unavailable_attributes)
         )
         legal = {
             attribute
@@ -98,7 +101,10 @@ class CandidateEIGPolicy:
                     turn=turn,
                     message=message,
                     active_attributes=frozenset(
-                        item.attribute for item in state.active_values()
+                        {
+                            *(item.attribute for item in state.active_values()),
+                            *unavailable_attributes,
+                        }
                     ),
                     asked_attributes=frozenset(state.asked_attributes),
                     no_preference_attributes=frozenset(

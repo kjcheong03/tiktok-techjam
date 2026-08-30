@@ -1,0 +1,99 @@
+from __future__ import annotations
+
+import argparse
+import json
+import os
+from pathlib import Path, PurePath
+
+from ghostlab.optimization.adaptive_hybrid import AdaptiveArchitectureAudit
+from ghostlab.runtime.adaptive_factory import load_adaptive_hybrid_config
+from ghostlab.runtime.selected import ACTIVE_POINTER, PROJECT_ROOT, sha256_file
+
+
+def _resolve(value: str) -> Path:
+    relative = PurePath(value)
+    if relative.is_absolute() or ".." in relative.parts or not relative.name:
+        raise ValueError("path must stay inside the project")
+    path = (PROJECT_ROOT / relative).resolve()
+    path.relative_to(PROJECT_ROOT.resolve())
+    if not path.is_file():
+        raise FileNotFoundError(path)
+    return path
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="Manually activate a tested, eligible adaptive finalist"
+    )
+    parser.add_argument("--preset", required=True)
+    parser.add_argument("--expected-sha256", required=True)
+    parser.add_argument("--top3-report", required=True)
+    parser.add_argument("--holdout-report", required=True)
+    args = parser.parse_args()
+
+    preset = _resolve(args.preset)
+    top3 = json.loads(_resolve(args.top3_report).read_text(encoding="utf-8"))
+    holdout = json.loads(_resolve(args.holdout_report).read_text(encoding="utf-8"))
+    config = AdaptiveArchitectureAudit.validate(load_adaptive_hybrid_config(preset))
+    actual = sha256_file(preset)
+    if actual != args.expected_sha256:
+        raise ValueError("finalist config hash changed; refusing activation")
+    finalist = next(
+        (
+            item
+            for item in top3.get("finalists", [])
+            if item.get("config_path") == args.preset
+            and item.get("config_sha256") == actual
+        ),
+        None,
+    )
+    if finalist is None or not finalist.get("promotion_eligible"):
+        raise ValueError("preset is not an eligible finalist in the Top-3 report")
+    frozen = top3.get("frozen_proposal")
+    if not isinstance(frozen, dict) or frozen.get("candidate_id") != finalist.get(
+        "candidate_id"
+    ):
+        raise ValueError("preset is not the single challenger frozen before holdout")
+    if holdout.get("decision") != "PROMOTE" or not holdout.get("all_gates_passed"):
+        raise ValueError("single-use holdout evaluation did not authorize promotion")
+    if holdout.get("challenger", {}).get("config_sha256") != config.canonical_hash():
+        raise ValueError("holdout report belongs to a different finalist config")
+    if holdout.get("frozen_candidate_id") != finalist.get("candidate_id"):
+        raise ValueError("holdout report evaluated a different frozen challenger")
+    if holdout.get("challenger_count") != 1 or holdout.get("control_count") != 1:
+        raise ValueError(
+            "holdout report did not compare exactly one challenger/control"
+        )
+
+    payload = {
+        "schema_version": 1,
+        "preset_path": preset.relative_to(PROJECT_ROOT).as_posix(),
+        "preset_sha256": actual,
+    }
+    ACTIVE_POINTER.parent.mkdir(parents=True, exist_ok=True)
+    temporary = ACTIVE_POINTER.with_suffix(".json.tmp")
+    temporary.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+    os.replace(temporary, ACTIVE_POINTER)
+    print(
+        json.dumps(
+            {
+                "activated": payload,
+                "candidate_id": finalist["candidate_id"],
+                "verify_command": (
+                    "PYTHONPATH=. .venv/bin/python scripts/verify_active_candidate.py"
+                ),
+                "rollback_command": (
+                    "PYTHONPATH=. .venv/bin/python -m "
+                    "scripts.activate_candidate --rollback"
+                ),
+            },
+            indent=2,
+            sort_keys=True,
+        )
+    )
+
+
+if __name__ == "__main__":
+    main()

@@ -10,7 +10,9 @@ from typing import Literal
 from ghostlab.state.baseline_v2 import StateBaselineV2, StructuredConstraint
 from ghostlab.state.v2_view import ConstraintView, V2StateView
 
-DenseQueryViewName = Literal["complete_request", "use_case", "features_style"]
+DenseQueryViewName = Literal[
+    "complete_request", "use_case", "features_style", "profile_context"
+]
 ConstraintLike = StructuredConstraint | ConstraintView
 
 _USE_CASE_ATTRIBUTES = ("occasion", "use_case")

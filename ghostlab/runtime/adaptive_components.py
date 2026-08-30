@@ -4,7 +4,7 @@ import hashlib
 import math
 import time
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from threading import Lock
 from typing import Any
@@ -24,10 +24,14 @@ from ghostlab.retrieval.cross_encoder import (
     product_passage,
 )
 from ghostlab.retrieval.dense import E5_SMALL_V2, DenseIndex
-from ghostlab.retrieval.dense_diversity import max_relevance_select
-from ghostlab.retrieval.dense_query_views import build_dense_query_views
+from ghostlab.retrieval.dense_diversity import (
+    embedding_mmr_select,
+    max_relevance_select,
+    view_balanced_select,
+)
+from ghostlab.retrieval.dense_query_views import DenseQueryView, build_dense_query_views
 from ghostlab.retrieval.ensemble import ModelRankEnsembleReranker, RankEnsembleAsset
-from ghostlab.retrieval.filters import CoverageAwareFilter
+from ghostlab.retrieval.filters import ConstraintAuthorityResult, CoverageAwareFilter
 from ghostlab.retrieval.gbdt import (
     GBDTFeatureStore,
     LambdaMARTModel,
@@ -36,6 +40,11 @@ from ghostlab.retrieval.gbdt import (
 from ghostlab.retrieval.multi_route import IntentRoute, MergedCandidatePool
 from ghostlab.retrieval.profile import ProfilePriorReranker
 from ghostlab.retrieval.sparse import query_terms
+from ghostlab.retrieval.union_features import (
+    SOURCE_AWARE_FEATURES,
+    UNION_FEATURES,
+    UnionFeatureStore,
+)
 from ghostlab.runtime.adaptive_config import (
     DiverseDenseTrackConfig,
     DualTrackRouterConfig,
@@ -44,8 +53,8 @@ from ghostlab.runtime.adaptive_config import (
     RuntimeAdaptationConfig,
     UnionRankerConfig,
 )
-from ghostlab.state.baseline_v2 import StateBaselineV2
-from ghostlab.state.v2_view import V2StateView
+from ghostlab.state.baseline_v2 import StateBaselineV2, StructuredConstraint
+from ghostlab.state.v2_view import AdaptiveTurnContext, ConstraintView, V2StateView
 
 
 @dataclass(frozen=True)
@@ -67,18 +76,57 @@ class DualTrackRouter:
         marker = next(
             (item for item in self.config.browsing_markers if item in lowered), None
         )
-        if marker is not None:
-            return RouteDecision("browsing", 0.9, f"browsing_marker:{marker}")
-        specific = sum(
-            constraint.attribute != "category"
-            and constraint.polarity == "include"
-            for constraint in view.active_constraints
+        positive = [
+            item
+            for item in view.active_constraints
+            if item.attribute != "category" and item.polarity == "include"
+        ]
+        exclusions = sum(item.polarity == "exclude" for item in view.active_constraints)
+        hard = sum(
+            item.strength == "hard" or item.attribute == "budget" for item in positive
         )
-        if specific >= self.config.buying_min_specific_constraints:
-            return RouteDecision("buying", 0.9, "explicit_specific_constraint")
-        if specific == 0:
+        explicit = sum(
+            item.provenance in {"explicit", "simulator_answer"} for item in positive
+        )
+        specificity = (
+            len(positive)
+            + self.config.exclusion_specificity_weight * exclusions
+            + self.config.hard_specificity_weight * hard
+            + self.config.explicit_specificity_weight * explicit
+        )
+        browsing_evidence = self.config.browsing_marker_weight if marker else 0.0
+        threshold = max(
+            float(self.config.buying_min_specific_constraints),
+            self.config.buying_specificity_threshold,
+        )
+        if marker is not None and browsing_evidence >= specificity:
+            confidence = min(0.95, 0.6 + 0.1 * (browsing_evidence - specificity + 1.0))
+            return RouteDecision(
+                "browsing",
+                confidence,
+                (
+                    f"observable_evidence:browsing={browsing_evidence:.2f}:"
+                    f"buying={specificity:.2f}:marker={marker}"
+                ),
+            )
+        if specificity >= threshold:
+            confidence = min(0.95, 0.65 + 0.1 * specificity)
+            if view.intent_epoch:
+                confidence = max(
+                    self.config.abstain_confidence,
+                    confidence - self.config.correction_confidence_penalty,
+                )
+            return RouteDecision(
+                "buying",
+                confidence,
+                (
+                    f"observable_evidence:buying={specificity:.2f}:"
+                    f"browsing={browsing_evidence:.2f}"
+                ),
+            )
+        if not positive and exclusions == 0:
             return RouteDecision("browsing", 0.75, "open_ended_category_request")
-        confidence = 0.55
+        confidence = min(0.8, 0.5 + 0.1 * specificity)
         if confidence < self.config.abstain_confidence:
             return RouteDecision(
                 "buying", 1.0 - confidence, "low_confidence_precision_abstention", True
@@ -102,6 +150,7 @@ class ProfileUpdate:
     provenance: str
     intent_epoch: int
     conflicts: tuple[str, ...] = ()
+    attributes: tuple[str, ...] = ()
 
 
 class ConflictSafeContextAdapter:
@@ -109,25 +158,40 @@ class ConflictSafeContextAdapter:
         self.config = config
 
     def distil(
-        self, state: StateBaselineV2, overlay: ProfileUpdate | None = None
+        self,
+        state: StateBaselineV2 | AdaptiveTurnContext,
+        overlay: ProfileUpdate | None = None,
     ) -> ProfileContext:
-        raw_tags = state.user_profile.get("preference_tags")
-        tags = raw_tags if isinstance(raw_tags, (list, tuple, set)) else ()
-        supplied_terms = frozenset(
-            query_terms(" ".join(str(item) for item in tags), 40)
-        )
-        overlay_terms = frozenset(
-            query_terms(" ".join(overlay.values), 40)
-            if overlay is not None and overlay.intent_epoch == state.intent_epoch
-            else ()
-        )
-        terms = supplied_terms | overlay_terms
-        negative = frozenset(
-            query_terms(
-                " ".join(state.constraint_values(polarity="exclude")),
-                80,
+        constraints: Sequence[StructuredConstraint | ConstraintView]
+        if isinstance(state, AdaptiveTurnContext):
+            supplied_terms = state.supplied_profile_terms
+            overlay_terms = frozenset(
+                query_terms(" ".join(state.profile_overlay_values), 40)
+                if state.profile_overlay_epoch == state.intent_epoch
+                else ()
             )
-        )
+            negative_values = [
+                value
+                for item in state.active_constraints
+                if item.polarity == "exclude"
+                for value in item.values
+            ]
+            constraints = state.active_constraints
+        else:
+            raw_tags = state.user_profile.get("preference_tags")
+            tags = raw_tags if isinstance(raw_tags, (list, tuple, set)) else ()
+            supplied_terms = frozenset(
+                query_terms(" ".join(str(item) for item in tags), 40)
+            )
+            overlay_terms = frozenset(
+                query_terms(" ".join(overlay.values), 40)
+                if overlay is not None and overlay.intent_epoch == state.intent_epoch
+                else ()
+            )
+            negative_values = state.constraint_values(polarity="exclude")
+            constraints = tuple(state.active_constraints)
+        terms = supplied_terms | overlay_terms
+        negative = frozenset(query_terms(" ".join(negative_values), 80))
         if not terms:
             return ProfileContext(terms, 0.0, "supplied_profile", False, "no_tags")
         if terms & negative:
@@ -140,7 +204,7 @@ class ConflictSafeContextAdapter:
             )
         explicit = sum(
             item.attribute != "category" and item.polarity == "include"
-            for item in state.active_constraints
+            for item in constraints
         )
         if explicit > self.config.maximum_explicit_constraints_for_profile:
             return ProfileContext(
@@ -183,12 +247,20 @@ class ConflictSafeContextAdapter:
                 for value in item.values
             )
         )
+        attributes = tuple(
+            dict.fromkeys(
+                item.attribute
+                for item in state.active_constraints
+                if item.polarity == "include" and item.attribute != "category"
+            )
+        )
         return ProfileUpdate(
             values=values,
             confidence=1.0 if values else 0.0,
             provenance="explicit_session_evidence",
             intent_epoch=state.intent_epoch,
             conflicts=tuple(sorted(supplied & excluded)),
+            attributes=attributes,
         )
 
 
@@ -198,6 +270,11 @@ class DiverseDenseResult:
     relevance_scores: Mapping[str, float]
     query_views: tuple[str, ...]
     elapsed_ms: float
+    per_view_ranks: Mapping[str, Mapping[str, int]] = field(default_factory=dict)
+    per_view_scores: Mapping[str, Mapping[str, float]] = field(default_factory=dict)
+    requested_per_view: int = 0
+    output_k: int = 0
+    selection: str = "multiview_max_relevance"
 
 
 class DiverseDenseTrack:
@@ -218,29 +295,73 @@ class DiverseDenseTrack:
             local_files_only=True,
         )
 
-    def search(self, view: V2StateView) -> DiverseDenseResult:
+    def search(
+        self, view: V2StateView, *, overloaded: bool = False
+    ) -> DiverseDenseResult:
         started = time.perf_counter()
-        views = build_dense_query_views(view)
+        views = list(build_dense_query_views(view))
+        if (
+            self.config.profile_query_view_enabled
+            and isinstance(view, AdaptiveTurnContext)
+            and view.supplied_profile_terms
+        ):
+            profile_query = " ".join(sorted(view.supplied_profile_terms))
+            if profile_query.casefold() not in {
+                item.query_text.casefold() for item in views
+            }:
+                views.append(DenseQueryView("profile_context", profile_query))
+        retrieval_per_view = (
+            self.config.overload_retrieval_per_view
+            if overloaded
+            else self.config.retrieval_per_view
+        )
+        output_k = self.config.overload_output_k if overloaded else self.config.output_k
         candidates: list[str] = []
         relevance: dict[str, float] = {}
+        per_view_ranks: dict[str, dict[str, int]] = {}
+        per_view_scores: dict[str, dict[str, float]] = {}
+        view_rankings: dict[str, list[str]] = {}
         for query_view in views:
-            result = self.index.search(
-                query_view.query_text, self.config.retrieval_per_view
-            )
+            result = self.index.search(query_view.query_text, retrieval_per_view)
+            view_rankings[query_view.name] = []
+            per_view_ranks[query_view.name] = {}
+            per_view_scores[query_view.name] = {}
             for item in result.items:
                 candidates.append(item.parent_asin)
+                view_rankings[query_view.name].append(item.parent_asin)
                 score = float(item.normalized_score or 0.0)
+                per_view_ranks[query_view.name][item.parent_asin] = item.rank
+                per_view_scores[query_view.name][item.parent_asin] = score
                 relevance[item.parent_asin] = max(
                     relevance.get(item.parent_asin, -math.inf), score
                 )
-        selected = max_relevance_select(
-            candidates, relevance, output_k=self.config.output_k
-        )
+        if self.config.selection == "view_balanced":
+            selected = view_balanced_select(view_rankings, relevance, output_k=output_k)
+        elif self.config.selection == "embedding_mmr":
+            embeddings = {
+                identifier: self.index.embeddings[index]
+                for index, identifier in enumerate(self.index.identifiers)
+                if identifier in relevance
+            }
+            selected = embedding_mmr_select(
+                candidates,
+                relevance,
+                embeddings,
+                output_k=output_k,
+                relevance_weight=self.config.mmr_relevance_weight,
+            )
+        else:
+            selected = max_relevance_select(candidates, relevance, output_k=output_k)
         return DiverseDenseResult(
             identifiers=tuple(selected),
             relevance_scores={item: relevance[item] for item in selected},
             query_views=tuple(item.name for item in views),
             elapsed_ms=(time.perf_counter() - started) * 1000.0,
+            per_view_ranks=per_view_ranks,
+            per_view_scores=per_view_scores,
+            requested_per_view=retrieval_per_view,
+            output_k=output_k,
+            selection=self.config.selection,
         )
 
 
@@ -340,6 +461,7 @@ class UnionAwareRanker:
     ) -> None:
         self.config = config
         self.filter = CoverageAwareFilter(catalog_path)
+        self.union_features = UnionFeatureStore(GBDTFeatureStore(catalog_path))
         self.reranker: LambdaMARTReranker | ModelRankEnsembleReranker | None = None
         if config.backend == "gbdt":
             assert config.model_path is not None
@@ -350,9 +472,13 @@ class UnionAwareRanker:
             if _sha256(path) != config.model_sha256:
                 raise ValueError("union ranker asset hash mismatch")
             model = LambdaMARTModel.load(path)
-            self.reranker = LambdaMARTReranker(
-                GBDTFeatureStore(catalog_path), model
-            )
+            if model.candidate_id == "adaptive_union_gbdt_1650_final_v1" and tuple(
+                model.feature_names
+            ) != tuple(UNION_FEATURES):
+                raise ValueError(
+                    "source-aware union model feature schema does not match runtime"
+                )
+            self.reranker = LambdaMARTReranker(self.union_features.base, model)
         elif config.backend == "rank_ensemble":
             assert config.model_path is not None
             assert config.model_sha256 is not None
@@ -374,19 +500,76 @@ class UnionAwareRanker:
         *,
         positive_constraints: dict[str, list[str]],
         negative_constraints: dict[str, list[str]] | None = None,
+        context: V2StateView | None = None,
+        authority: ConstraintAuthorityResult | None = None,
+        profile_terms: frozenset[str] = frozenset(),
     ) -> list[str]:
         ranking = pool.identifiers
-        if pool.route == "buying":
+        if context is not None:
+            authority = authority or self.filter.enforce(ranking, context)
+            ranking = list(authority.ranking)
+            pool = pool.retain(ranking)
+        elif pool.route == "buying":
             ranking = self.filter.apply_strict(
                 ranking,
                 positive_constraints,
                 negative_constraints,
             )
-        if self.reranker is not None:
+        if isinstance(self.reranker, LambdaMARTReranker):
+            head_size = min(self.config.rerank_k, len(ranking))
+            head_pool = pool.retain(ranking[:head_size])
+            if set(self.reranker.model.feature_names) & set(SOURCE_AWARE_FEATURES):
+                matrix = self.union_features.matrix(
+                    query,
+                    head_pool,
+                    self.reranker.model.feature_names,
+                    authority=authority,
+                    profile_terms=profile_terms,
+                )
+            else:
+                matrix = self.reranker.features.matrix(
+                    query, ranking[:head_size], self.reranker.model.feature_names
+                )
+            predictions = self.reranker.model.predict(matrix)
+            low = float(predictions.min()) if len(predictions) else 0.0
+            high = float(predictions.max()) if len(predictions) else 0.0
+            learned = (
+                np.zeros(len(predictions), dtype=np.float64)
+                if math.isclose(low, high)
+                else (predictions - low) / (high - low)
+            )
+            positions = {
+                identifier: index
+                for index, identifier in enumerate(ranking[:head_size])
+            }
+            if (
+                pool.route == "buying"
+                and self.config.buying_mode == "sparse_dominant_residual"
+            ):
+                weight = self.config.buying_residual_weight
+                scores = {
+                    identifier: (1.0 - weight)
+                    * (1.0 - positions[identifier] / max(1, head_size - 1))
+                    + weight * float(learned[index])
+                    for index, identifier in enumerate(ranking[:head_size])
+                }
+            else:
+                scores = {
+                    identifier: float(learned[index])
+                    for index, identifier in enumerate(ranking[:head_size])
+                }
+            ordered = sorted(
+                ranking[:head_size],
+                key=lambda identifier: (
+                    -scores[identifier],
+                    positions[identifier],
+                    identifier,
+                ),
+            )
+            ranking = [*ordered, *ranking[head_size:]]
+        elif self.reranker is not None:
             ranking = self.reranker.rerank(
-                query,
-                ranking,
-                rerank_k=min(self.config.rerank_k, len(ranking)),
+                query, ranking, rerank_k=min(self.config.rerank_k, len(ranking))
             )
         return ranking
 
@@ -469,9 +652,7 @@ class CausalRelevanceScorer:
         }
         if use_mps:
             model_options["dtype"] = torch.float16
-        model: Any = AutoModelForCausalLM.from_pretrained(
-            model_path, **model_options
-        )
+        model: Any = AutoModelForCausalLM.from_pretrained(model_path, **model_options)
         self.model = model.to(self.device)
         self.model.eval()
         yes = self.tokenizer.encode(" yes", add_special_tokens=False)
@@ -510,7 +691,9 @@ class CausalRelevanceScorer:
             no_logits = logits[rows, positions, self.no_token]
             probabilities = self.torch.sigmoid(yes_logits - no_logits)
             values.extend(float(item) for item in probabilities.cpu())
-        if len(values) != len(ranking) or not all(math.isfinite(item) for item in values):
+        if len(values) != len(ranking) or not all(
+            math.isfinite(item) for item in values
+        ):
             raise ValueError("causal LLM returned invalid relevance scores")
         return tuple(values)
 
@@ -581,15 +764,14 @@ class BoundedLocalLLMSemanticRanker:
         bounded = list(ranking)
         head_size = min(self.config.rerank_k, len(bounded))
         head = bounded[:head_size]
-        backend: str = self.config.backend
+        backend: str = self.config.model_id
         try:
             primary_started = time.perf_counter()
             scorer = self._llm()
             scores = scorer.scores(query, head)  # type: ignore[attr-defined]
             if (
-                (time.perf_counter() - primary_started) * 1000.0
-                > self.config.timeout_ms
-            ):
+                time.perf_counter() - primary_started
+            ) * 1000.0 > self.config.timeout_ms:
                 raise TimeoutError("causal LLM exceeded its deadline")
             ordered = blend_ranking(head, scores, weight=self.config.weight)
             result = [*ordered, *bounded[head_size:]]
@@ -622,6 +804,15 @@ class GuidanceDecision:
     values: Mapping[AskAttribute | None, float]
 
 
+@dataclass(frozen=True)
+class RetrievalPreviewDecision:
+    overloaded: bool
+    reason: str
+    candidate_count: int
+    specific_constraint_count: int
+    score_flatness: float
+
+
 class OverGeneralityGuidance:
     def __init__(
         self,
@@ -641,33 +832,81 @@ class OverGeneralityGuidance:
             ),
         )
 
+    def preview(
+        self,
+        context: AdaptiveTurnContext,
+        keyword_ids: Sequence[str],
+        keyword_scores: Sequence[float],
+        category_ids: Sequence[str],
+    ) -> RetrievalPreviewDecision:
+        """Cheap deterministic overload decision made before dense expansion."""
+
+        candidates = list(
+            dict.fromkeys(
+                [
+                    *keyword_ids[: self.config.preview_keyword_k],
+                    *category_ids[: self.config.preview_category_k],
+                ]
+            )
+        )
+        specific = sum(
+            item.attribute != "category" and item.polarity == "include"
+            for item in context.active_constraints
+        )
+        bounded_scores = list(keyword_scores[: self.config.preview_keyword_k])
+        if len(bounded_scores) < 2 or max(bounded_scores) <= 0.0:
+            flatness = 1.0 if candidates else 0.0
+        else:
+            high = max(bounded_scores)
+            low = min(bounded_scores)
+            flatness = max(0.0, min(1.0, 1.0 - (high - low) / high))
+        threshold = min(
+            self.config.overload_min_candidates, self.config.preview_min_candidates
+        )
+        overloaded = (
+            len(candidates) >= threshold
+            and specific <= self.config.overload_max_specific_constraints
+        )
+        return RetrievalPreviewDecision(
+            overloaded=overloaded,
+            reason=(
+                "preview_overloaded" if overloaded else "preview_specific_or_bounded"
+            ),
+            candidate_count=len(candidates),
+            specific_constraint_count=specific,
+            score_flatness=flatness,
+        )
+
     def decide(
         self,
-        state: StateBaselineV2,
+        state: StateBaselineV2 | AdaptiveTurnContext,
         candidate_ids: list[str],
         *,
         turn: int,
         message: str,
+        overloaded: bool | None = None,
+        profile_known_attributes: frozenset[str] = frozenset(),
     ) -> GuidanceDecision:
         specific = sum(
             item.attribute != "category" and item.polarity == "include"
             for item in state.active_constraints
         )
-        overloaded = (
-            len(candidate_ids) >= self.config.overload_min_candidates
-            and specific <= self.config.overload_max_specific_constraints
-        )
+        if overloaded is None:
+            overloaded = (
+                len(candidate_ids) >= self.config.overload_min_candidates
+                and specific <= self.config.overload_max_specific_constraints
+            )
         statistics: CandidateStatistics = self.facets.summarize(
             candidate_ids, limit=self.config.question_candidate_k
         )
         question = self.policy.decide(
-            state, statistics, turn=turn, message=message
+            state,
+            statistics,
+            turn=turn,
+            message=message,
+            unavailable_attributes=profile_known_attributes,
         )
-        reason = (
-            f"overloaded:{question.reason}"
-            if overloaded
-            else question.reason
-        )
+        reason = f"overloaded:{question.reason}" if overloaded else question.reason
         return GuidanceDecision(
             overloaded=overloaded,
             ask_attribute=question.ask_attribute,
@@ -704,6 +943,7 @@ __all__ = [
     "OverGeneralityGuidance",
     "ProfileContext",
     "ProfileUpdate",
+    "RetrievalPreviewDecision",
     "RouteDecision",
     "SemanticRankingResult",
     "UnionAwareRanker",

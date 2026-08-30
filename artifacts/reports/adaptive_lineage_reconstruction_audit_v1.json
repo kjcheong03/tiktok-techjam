@@ -1,0 +1,20 @@
+{
+  "algorithm": "adaptive_lineage_reconstruction_v1",
+  "candidate_group_count": 400,
+  "duplicate_members": [],
+  "family_group_counts": {
+    "independent_template": 200,
+    "public_derived": 200
+  },
+  "limitations": [
+    "generator template_family metadata is absent",
+    "public lineage is reconstructed from verified row ordering plus exact scenario/difficulty/profile equality",
+    "independent lineage is reconstructed from exact scenario/profile families"
+  ],
+  "member_count": 2200,
+  "mismatches": [],
+  "missing_members": [],
+  "schema_version": 1,
+  "status": "verified",
+  "unexpected_members": []
+}

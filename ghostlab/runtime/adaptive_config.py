@@ -29,6 +29,12 @@ class DualTrackRouterConfig(_RequiredConfig):
         "recommend something",
     )
     abstain_confidence: float = Field(default=0.6, ge=0.5, le=1.0)
+    buying_specificity_threshold: float = Field(default=1.0, ge=0.0, le=8.0)
+    correction_confidence_penalty: float = Field(default=0.1, ge=0.0, le=0.5)
+    exclusion_specificity_weight: float = Field(default=0.25, ge=0.0, le=1.0)
+    hard_specificity_weight: float = Field(default=0.25, ge=0.0, le=1.0)
+    explicit_specificity_weight: float = Field(default=0.1, ge=0.0, le=1.0)
+    browsing_marker_weight: float = Field(default=2.5, ge=0.0, le=8.0)
 
 
 class PrecisionTrackConfig(_RequiredConfig):
@@ -59,7 +65,13 @@ class DiverseDenseTrackConfig(_RequiredConfig):
     cache_dir: str = "artifacts/cache/dense"
     retrieval_per_view: int = Field(default=400, ge=10, le=1000)
     output_k: int = Field(default=200, ge=10, le=1000)
-    selection: Literal["multiview_max_relevance"] = "multiview_max_relevance"
+    selection: Literal["multiview_max_relevance", "view_balanced", "embedding_mmr"] = (
+        "multiview_max_relevance"
+    )
+    mmr_relevance_weight: float = Field(default=0.85, ge=0.0, le=1.0)
+    overload_retrieval_per_view: int = Field(default=80, ge=5, le=500)
+    overload_output_k: int = Field(default=80, ge=5, le=500)
+    profile_query_view_enabled: bool = False
     safe_ranker_backend: Literal["deterministic", "gbdt"] = "deterministic"
     safe_ranker_model_path: str | None = None
     safe_ranker_model_sha256: str | None = None
@@ -72,6 +84,10 @@ class DiverseDenseTrackConfig(_RequiredConfig):
             not self.safe_ranker_model_path or not self.safe_ranker_model_sha256
         ):
             raise ValueError("GBDT Browsing safe ranking requires a pinned local model")
+        if self.overload_retrieval_per_view > self.retrieval_per_view:
+            raise ValueError("overload dense depth cannot exceed normal dense depth")
+        if self.overload_output_k > self.output_k:
+            raise ValueError("overload output depth cannot exceed normal output depth")
         return self
 
 
@@ -143,6 +159,10 @@ class UnionRankerConfig(_RequiredConfig):
         "d1c336a3b7fd0fa13d7d5bd5ef87c97503fd339ff0682723a6485baded35f59c"
     )
     rerank_k: int = Field(default=320, ge=10, le=1000)
+    buying_mode: Literal["direct", "sparse_dominant_residual"] = (
+        "sparse_dominant_residual"
+    )
+    buying_residual_weight: float = Field(default=0.25, ge=0.0, le=0.49)
 
     @model_validator(mode="after")
     def gbdt_asset_is_declared(self) -> UnionRankerConfig:
@@ -181,7 +201,10 @@ class LocalLLMSemanticRankerConfig(_RequiredConfig):
     component: Literal["bounded_local_llm_semantic_ranker"] = (
         "bounded_local_llm_semantic_ranker"
     )
-    backend: Literal["qwen_causal_relevance"] = "qwen_causal_relevance"
+    backend: Literal["qwen_causal_relevance", "local_causal_relevance"] = (
+        "qwen_causal_relevance"
+    )
+    model_id: str = Field(default="qwen_causal_relevance", min_length=1)
     model_path: str = "artifacts/cache/models/qwen2.5-0.5b-instruct"
     model_revision: str = "7ae557604adf67be50417f59c2c2f167def9a775"
     model_sha256: str = (
@@ -203,12 +226,16 @@ class LocalLLMSemanticRankerConfig(_RequiredConfig):
 
 class ProactiveGuidanceConfig(_RequiredConfig):
     component: Literal["over_generality_guidance"] = "over_generality_guidance"
-    overload_min_candidates: int = Field(default=180, ge=10, le=1000)
+    overload_min_candidates: int = Field(default=180, ge=2, le=1000)
     overload_max_specific_constraints: int = Field(default=0, ge=0, le=8)
     question_candidate_k: int = Field(default=100, ge=10, le=500)
     question_value_margin: float = Field(default=0.0, ge=0.0, le=1.0)
     broad_discovery_turns: int = Field(default=2, ge=0, le=4)
     max_question_turn: int = Field(default=8, ge=1, le=9)
+    preview_keyword_k: int = Field(default=40, ge=5, le=200)
+    preview_category_k: int = Field(default=30, ge=5, le=200)
+    preview_min_candidates: int = Field(default=30, ge=2, le=400)
+    preview_score_flatness: float = Field(default=0.65, ge=0.0, le=1.0)
 
 
 class RuntimeAdaptationConfig(_RequiredConfig):
@@ -218,6 +245,8 @@ class RuntimeAdaptationConfig(_RequiredConfig):
     profile_confidence: float = Field(default=0.6, ge=0.0, le=1.0)
     profile_weight: float = Field(default=0.08, ge=0.0, le=0.5)
     maximum_explicit_constraints_for_profile: int = Field(default=0, ge=0, le=8)
+    profile_question_suppression_enabled: bool = False
+    union_profile_feature_enabled: bool = False
 
 
 class AdaptiveOrchestrationConfig(_RequiredConfig):

@@ -91,7 +91,7 @@ _COMPULSORY: dict[str, tuple[AdaptiveStage, str]] = {
     ),
     "filter.structured": (
         "union_ranking",
-        "required hard-constraint authority on the Buying path",
+        "required route-independent hard-constraint authority",
     ),
     "ranking.cross_encoder": (
         "semantic_ranking",
@@ -116,6 +116,38 @@ _COMPULSORY: dict[str, tuple[AdaptiveStage, str]] = {
     "guard.override_fallback": (
         "orchestration",
         "required complete-precision fallback on adaptive component failure",
+    ),
+    "routing.dual_track_observable.v1": (
+        "routing",
+        "required observable Buying/Browsing route decision",
+    ),
+    "retrieval.category_independent.v1": (
+        "retrieval",
+        "required independent category candidate route",
+    ),
+    "fusion.multi_route_union.v1": (
+        "merge",
+        "required keyword/category/vector union with provenance",
+    ),
+    "ranking.source_aware_union.v1": (
+        "union_ranking",
+        "required source-aware union ranking feature contract",
+    ),
+    "ranking.local_llm_semantic.v1": (
+        "semantic_ranking",
+        "required bounded local-LLM semantic ranking slot",
+    ),
+    "guidance.pre_dense_overload.v1": (
+        "guidance",
+        "required pre-dense overload cutoff and question action",
+    ),
+    "adaptation.profile_update.v1": (
+        "adaptation",
+        "required conflict-safe profile update with confidence and provenance",
+    ),
+    "orchestration.atomic_commit.v1": (
+        "orchestration",
+        "required validated selected-action-only atomic commit",
     ),
 }
 
@@ -170,6 +202,21 @@ def _promotable_patches(project_root: Path) -> dict[str, AdaptiveTechniquePatch]
         "query.catalog_prf.v1": _patch(("extensions.query_prf_enabled", True)),
         "ranking.facet_diversity.v1": _patch(
             ("extensions.facet_diversity_enabled", True)
+        ),
+        "retrieval.dense_view_balanced.v1": _patch(
+            ("browsing.selection", "view_balanced")
+        ),
+        "retrieval.dense_embedding_mmr.v1": _patch(
+            ("browsing.selection", "embedding_mmr")
+        ),
+        "prior.profile_query_view.v1": _patch(
+            ("browsing.profile_query_view_enabled", True)
+        ),
+        "prior.profile_question_suppression.v1": _patch(
+            ("runtime_adaptation.profile_question_suppression_enabled", True)
+        ),
+        "prior.profile_union_feature.v1": _patch(
+            ("runtime_adaptation.union_profile_feature_enabled", True)
         ),
         "ranking.fixed_lexical": _patch(
             ("union_ranker.backend", "deterministic"),
@@ -425,6 +472,7 @@ class AdaptiveTechniqueRegistry:
             "query_prf_minimum_support",
             "query_prf_max_terms",
             "query_prf_max_added_ratio",
+            "dense_mmr_relevance_weight",
         }
         if "prior.quality" in selected:
             names.update(("quality_prior_weight", "quality_rerank_k"))
@@ -449,6 +497,8 @@ class AdaptiveTechniqueRegistry:
                     "query_prf_max_added_ratio",
                 )
             )
+        if "retrieval.dense_embedding_mmr.v1" in selected:
+            names.add("dense_mmr_relevance_weight")
         return frozenset(names)
 
 

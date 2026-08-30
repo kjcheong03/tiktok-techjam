@@ -1,0 +1,6 @@
+{
+  "asset_id": "smollm2_360m_instruct",
+  "destination": "artifacts/cache/models/smollm2-360m-instruct",
+  "model_name": "HuggingFaceTB/SmolLM2-360M-Instruct",
+  "revision": "a10cc1512eabd3dde888204e902eca88bddb4951"
+}
