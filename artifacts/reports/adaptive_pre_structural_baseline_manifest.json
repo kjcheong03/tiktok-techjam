@@ -1,0 +1,24 @@
+{
+  "branch": "feat/adaptive-hybrid-1a-3b",
+  "commit": "11a34121c88e545b15ad64febcd5dd31b1f22528",
+  "completed_f0_evaluations": 93,
+  "best_raw_f0_score": 0.837735,
+  "campaign_running_at_freeze": false,
+  "files": {
+    "artifacts/logs/adaptive_hybrid_campaign_pre_structural_f0.log": "13a774eb6ec79864904e294475c7df6fc0fa0e15c08ffef1e11bf70d97312226",
+    "artifacts/models/adaptive_browsing_gbdt_2200_v1.fit_receipt.json": "9b5225c0eba8a2ae5bb12128b3bf82ff42994f83da64a45b79e4cf1f033eee3c",
+    "artifacts/models/adaptive_browsing_gbdt_2200_v1.json": "e02be2acc2eb3df4428d83b35d236e41383cb188b726769e3a017642246fa38d",
+    "artifacts/models/adaptive_union_gbdt_2200_v1.fit_receipt.json": "45f4eb002cc6363cd180f0c75475cdf493bf59aa4a0b4caa4927d4f8ab66e086",
+    "artifacts/models/adaptive_union_gbdt_2200_v1.json": "c9da955f32c82d7de9c25fff3b4df1438497dc5e8c31d8d2acad76e3f3fa9cb8",
+    "artifacts/reports/adaptive_hybrid_campaign_plan_2200.json": "448bd7cd98cec1ca7837bb56a434968b9a9e59c3acd29bd229a6f324b28ecdaa",
+    "artifacts/reports/adaptive_hybrid_training_2200_v1.json": "c8e924d1b27ea4df6b4a2fc6d14499dc93a1a21f04a1c8c7424c7cbb5c0c3f9c",
+    "configs/adaptive_hybrid_1a_3b_2200_v1.json": "dccf395b2fba552e7d413d612c518a677b9490851ed2606da77ce1eaf7121bca"
+  },
+  "focused_baseline_tests": {
+    "passed": 39,
+    "status": "passed"
+  },
+  "sealed_sources": [
+    "F3/private evaluation data"
+  ]
+}

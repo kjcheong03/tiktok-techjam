@@ -13,9 +13,13 @@ class AdaptiveHybridTrial(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
     buying_min_specific_constraints: int = Field(default=1, ge=1, le=4)
     router_abstain_confidence: float = Field(default=0.6, ge=0.5, le=0.9)
+    router_specificity_threshold: float = Field(default=1.0, ge=0.0, le=4.0)
     buying_retrieval_k: int = Field(default=200, ge=50, le=500)
     dense_retrieval_per_view: int = Field(default=400, ge=100, le=800)
     dense_output_k: int = Field(default=200, ge=50, le=400)
+    dense_mmr_relevance_weight: float = Field(default=0.85, ge=0.5, le=1.0)
+    overload_dense_retrieval_per_view: int = Field(default=80, ge=5, le=400)
+    overload_dense_output_k: int = Field(default=80, ge=5, le=400)
     category_k: int = Field(default=120, ge=20, le=300)
     merged_k: int = Field(default=320, ge=100, le=600)
     buying_vector_support_k: int = Field(default=40, ge=5, le=100)
@@ -24,10 +28,12 @@ class AdaptiveHybridTrial(BaseModel):
     browsing_vector_share: float = Field(default=0.8, ge=0.5, le=0.95)
     merger_rrf_constant: int = Field(default=60, ge=1, le=200)
     union_rerank_k: int = Field(default=320, ge=10, le=1000)
+    buying_residual_weight: float = Field(default=0.25, ge=0.0, le=0.49)
     semantic_weight: float = Field(default=0.5, gt=0.0, le=0.75)
     semantic_rerank_k: int = Field(default=10, ge=5, le=50)
     semantic_fallback_weight: float = Field(default=0.5, gt=0.0, le=0.75)
     overload_min_candidates: int = Field(default=180, ge=50, le=400)
+    preview_min_candidates: int = Field(default=30, ge=2, le=200)
     question_value_margin: float = Field(default=0.0, ge=0.0, le=0.25)
     broad_discovery_turns: int = Field(default=2, ge=0, le=4)
     profile_weight: float = Field(default=0.02, gt=0.0, le=0.25)
@@ -51,9 +57,17 @@ class AdaptiveHybridTrial(BaseModel):
                 config.router.buying_min_specific_constraints
             ),
             router_abstain_confidence=config.router.abstain_confidence,
+            router_specificity_threshold=(
+                config.router.buying_specificity_threshold
+            ),
             buying_retrieval_k=config.buying.retrieval_k,
             dense_retrieval_per_view=config.browsing.retrieval_per_view,
             dense_output_k=config.browsing.output_k,
+            dense_mmr_relevance_weight=config.browsing.mmr_relevance_weight,
+            overload_dense_retrieval_per_view=(
+                config.browsing.overload_retrieval_per_view
+            ),
+            overload_dense_output_k=config.browsing.overload_output_k,
             category_k=config.merger.category_k,
             merged_k=config.merger.merged_k,
             buying_vector_support_k=config.merger.buying_vector_support_k,
@@ -62,10 +76,12 @@ class AdaptiveHybridTrial(BaseModel):
             browsing_vector_share=config.merger.browsing_vector_weight,
             merger_rrf_constant=config.merger.rrf_constant,
             union_rerank_k=config.union_ranker.rerank_k,
+            buying_residual_weight=config.union_ranker.buying_residual_weight,
             semantic_weight=config.semantic_ranker.weight,
             semantic_rerank_k=config.semantic_ranker.rerank_k,
             semantic_fallback_weight=config.semantic_ranker.fallback_weight,
             overload_min_candidates=config.guidance.overload_min_candidates,
+            preview_min_candidates=config.guidance.preview_min_candidates,
             question_value_margin=config.guidance.question_value_margin,
             broad_discovery_turns=config.guidance.broad_discovery_turns,
             profile_weight=config.runtime_adaptation.profile_weight,
@@ -118,7 +134,10 @@ class AdaptiveArchitectureAudit:
         )
         if actual != cls.REQUIRED_COMPONENTS:
             raise ValueError("adaptive trial changed the required 1A-3B topology")
-        if config.semantic_ranker.backend != "qwen_causal_relevance":
+        if config.semantic_ranker.backend not in {
+            "qwen_causal_relevance",
+            "local_causal_relevance",
+        }:
             raise ValueError("submission trial requires a literal local LLM")
         if not config.semantic_ranker.activate_for_browsing:
             raise ValueError("adaptive trial disabled the semantic LLM capability")
@@ -193,6 +212,9 @@ class AdaptiveHybridBinding:
                     trial.buying_min_specific_constraints
                 ),
                 "abstain_confidence": trial.router_abstain_confidence,
+                "buying_specificity_threshold": (
+                    trial.router_specificity_threshold
+                ),
             }
         )
         buying = baseline.buying.model_copy(
@@ -202,6 +224,14 @@ class AdaptiveHybridBinding:
             update={
                 "retrieval_per_view": trial.dense_retrieval_per_view,
                 "output_k": trial.dense_output_k,
+                "mmr_relevance_weight": trial.dense_mmr_relevance_weight,
+                "overload_retrieval_per_view": min(
+                    trial.overload_dense_retrieval_per_view,
+                    trial.dense_retrieval_per_view,
+                ),
+                "overload_output_k": min(
+                    trial.overload_dense_output_k, trial.dense_output_k
+                ),
             }
         )
         buying_support_share = (1.0 - trial.buying_keyword_share) / 2.0
@@ -222,7 +252,10 @@ class AdaptiveHybridBinding:
             }
         )
         union_ranker = baseline.union_ranker.model_copy(
-            update={"rerank_k": trial.union_rerank_k}
+            update={
+                "rerank_k": trial.union_rerank_k,
+                "buying_residual_weight": trial.buying_residual_weight,
+            }
         )
         semantic = baseline.semantic_ranker.model_copy(
             update={
@@ -234,6 +267,7 @@ class AdaptiveHybridBinding:
         guidance = baseline.guidance.model_copy(
             update={
                 "overload_min_candidates": trial.overload_min_candidates,
+                "preview_min_candidates": trial.preview_min_candidates,
                 "question_value_margin": trial.question_value_margin,
                 "broad_discovery_turns": trial.broad_discovery_turns,
             }

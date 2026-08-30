@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import time
+from collections import defaultdict
 from pathlib import Path
 from typing import Any, cast
 
@@ -42,6 +44,39 @@ def _candidate_payload(candidate: CandidateSpec) -> dict[str, object]:
     return candidate.model_dump(mode="json")
 
 
+def _sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for block in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(block)
+    return digest.hexdigest()
+
+
+def _fit_verified(config, candidate: CandidateSpec, registry) -> bool:  # type: ignore[no-untyped-def]
+    required = [
+        item
+        for item in candidate.techniques
+        if registry.bindings[item].fit_required
+    ]
+    if not required:
+        return True
+    model_value = config.union_ranker.model_path
+    expected_hash = config.union_ranker.model_sha256
+    if not model_value or not expected_hash:
+        return False
+    model_path = ROOT / model_value
+    receipt_path = model_path.with_name(f"{model_path.stem}.fit_receipt.json")
+    if not model_path.is_file() or not receipt_path.is_file():
+        return False
+    receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+    return (
+        _sha256(model_path) == expected_hash
+        and receipt.get("model_sha256") == expected_hash
+        and bool(receipt.get("selected_by_oof"))
+        and not bool(receipt.get("holdout_accessed"))
+    )
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description=(
@@ -77,6 +112,11 @@ def main() -> None:
     )
     parser.add_argument(
         "--output", default="artifacts/reports/adaptive_hybrid_campaign.json"
+    )
+    parser.add_argument(
+        "--checkpoint",
+        default="artifacts/campaigns/adaptive_hybrid/checkpoint.json",
+        help="resumable per-evaluation checkpoint",
     )
     args = parser.parse_args()
     os.environ["HF_HUB_OFFLINE"] = "1"
@@ -131,6 +171,34 @@ def main() -> None:
         catalog_path = ROOT / "data/catalog.jsonl"
         identifiers, categories, products = catalog_index(catalog_path)
         evaluation_ordinal = 0
+        checkpoint_path = ROOT / args.checkpoint
+        checkpoint_signature = {
+            "config_sha256": baseline.canonical_hash(),
+            "datasets": list(dataset_paths),
+            "sample_count": len(samples),
+            "seed": args.seed,
+        }
+        checkpoint: dict[str, Any] = {
+            "schema_version": 1,
+            "signature": checkpoint_signature,
+            "evaluations": {},
+        }
+        if checkpoint_path.is_file():
+            loaded = json.loads(checkpoint_path.read_text(encoding="utf-8"))
+            if loaded.get("signature") != checkpoint_signature:
+                raise ValueError(
+                    "campaign checkpoint signature does not match this invocation"
+                )
+            checkpoint = loaded
+
+        def save_checkpoint() -> None:
+            checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
+            temporary = checkpoint_path.with_suffix(".tmp.json")
+            temporary.write_text(
+                json.dumps(checkpoint, indent=2, sort_keys=True) + "\n",
+                encoding="utf-8",
+            )
+            os.replace(temporary, checkpoint_path)
 
         def evaluator(
             config,
@@ -139,6 +207,38 @@ def main() -> None:
         ) -> AdaptiveEvaluation:
             nonlocal evaluation_ordinal
             evaluation_ordinal += 1
+            checkpoint_key = f"{fidelity}:{candidate.candidate_id}"
+            cached = checkpoint["evaluations"].get(checkpoint_key)
+            if cached is not None:
+                print(
+                    json.dumps(
+                        {
+                            "event": "evaluation_resumed",
+                            "ordinal": evaluation_ordinal,
+                            "candidate_id": candidate.candidate_id,
+                            "fidelity": fidelity,
+                            "score": cached["score"],
+                        },
+                        sort_keys=True,
+                    ),
+                    flush=True,
+                )
+                return AdaptiveEvaluation(
+                    candidate_id=candidate.candidate_id,
+                    fidelity=cast(Any, fidelity),
+                    score=float(cached["score"]),
+                    session_rewards=tuple(float(item) for item in cached["session_rewards"]),
+                    behavior_novelty=float(cached.get("behavior_novelty", 0.0)),
+                    latency_p95_ms=float(cached.get("latency_p95_ms", 0.0)),
+                    fit_verified=bool(cached.get("fit_verified", False)),
+                    gate_metrics=tuple(
+                        (str(name), float(value))
+                        for name, value in cached.get("gate_metrics", [])
+                    ),
+                    constraint_violations=int(
+                        cached.get("constraint_violations", 0)
+                    ),
+                )
             fractions = {"f0": 0.2, "f1": 0.5, "f2": 1.0}
             count = max(1, round(len(samples) * fractions[fidelity]))
             print(
@@ -165,6 +265,23 @@ def main() -> None:
             )
             elapsed_ms = (time.perf_counter() - started) * 1000.0
             sessions = result["sessions"]
+            selected_samples = samples[:count]
+            grouped_rewards: dict[str, list[float]] = defaultdict(list)
+            for sample, session in zip(selected_samples, sessions, strict=True):
+                reward = _session_reward(session)
+                sample_id = str(sample["sample_id"])
+                grouped_rewards[
+                    f"scenario:{sample['scenario_type']}"
+                ].append(reward)
+                grouped_rewards[f"source:{corpus.origins[sample_id]}"].append(reward)
+            gate_metrics = tuple(
+                (name, sum(values) / len(values))
+                for name, values in sorted(grouped_rewards.items())
+                if values
+            )
+            constraint_violations = sum(
+                trace.output_constraint_violations for trace in agent.traces
+            )
             evaluation = AdaptiveEvaluation(
                 candidate_id=candidate.candidate_id,
                 fidelity=cast(Any, fidelity),
@@ -172,8 +289,23 @@ def main() -> None:
                 session_rewards=tuple(_session_reward(item) for item in sessions),
                 behavior_novelty=0.0,
                 latency_p95_ms=elapsed_ms / count,
-                fit_verified=False,
+                fit_verified=_fit_verified(config, candidate, registry),
+                gate_metrics=gate_metrics,
+                constraint_violations=constraint_violations,
             )
+            checkpoint["evaluations"][checkpoint_key] = {
+                "candidate": _candidate_payload(candidate),
+                "score": evaluation.score,
+                "session_rewards": list(evaluation.session_rewards),
+                "behavior_novelty": evaluation.behavior_novelty,
+                "latency_p95_ms": evaluation.latency_p95_ms,
+                "fit_verified": evaluation.fit_verified,
+                "gate_metrics": list(evaluation.gate_metrics),
+                "constraint_violations": evaluation.constraint_violations,
+                "sample_count": count,
+                "completed_at_unix": time.time(),
+            }
+            save_checkpoint()
             print(
                 json.dumps(
                     {
@@ -227,6 +359,7 @@ def main() -> None:
                         "decision": item.decision,
                         "fit_required": item.fit_required,
                         "fit_verified": item.evaluation.fit_verified,
+                        "gate_failures": item.gate_failures,
                         "mean_paired_delta": sum(item.paired_deltas)
                         / len(item.paired_deltas),
                         "latency_p95_ms": item.evaluation.latency_p95_ms,

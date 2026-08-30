@@ -1,0 +1,297 @@
+{
+  "browsing": {
+    "eligible_ranking_sample_count": 48,
+    "folds": [
+      {
+        "best_iteration": 4,
+        "candidate": {
+          "groups": 12,
+          "hit_rate_at_10": 0.5833333333333334,
+          "mrr": 0.46806294601045034
+        },
+        "control": {
+          "groups": 12,
+          "hit_rate_at_10": 0.3333333333333333,
+          "mrr": 0.054789692793293036
+        },
+        "outer_fold": 0,
+        "selection_sample_count": 40,
+        "selection_sample_ids_sha256": "ed87c380eb848354a512ee1142004270f76d00549c7259b4a768e3274ab5169d",
+        "training_sample_count": 120,
+        "training_sample_ids_sha256": "a81eed9af0905ce032cb353d83e46f1ceceaa56e6d914fb7a1bf69305be83b96",
+        "validation_sample_count": 40,
+        "validation_sample_ids_sha256": "2225fc36f4dd2481f96dbd4ef0ba57803f4c6f8c12c6f6a82ca7302c7c5076b5"
+      },
+      {
+        "best_iteration": 2,
+        "candidate": {
+          "groups": 12,
+          "hit_rate_at_10": 0.9166666666666666,
+          "mrr": 0.5498920913394597
+        },
+        "control": {
+          "groups": 12,
+          "hit_rate_at_10": 0.16666666666666666,
+          "mrr": 0.09602570277122707
+        },
+        "outer_fold": 1,
+        "selection_sample_count": 40,
+        "selection_sample_ids_sha256": "eecfee59b55d5dd753ceb672d87c176dbfc267467eff039d9709b602ee0b1ecc",
+        "training_sample_count": 120,
+        "training_sample_ids_sha256": "112703edadfa8c39f0c3c10af15d6211cafd5284026242e859d78edfa3fa2a57",
+        "validation_sample_count": 40,
+        "validation_sample_ids_sha256": "ed87c380eb848354a512ee1142004270f76d00549c7259b4a768e3274ab5169d"
+      },
+      {
+        "best_iteration": 8,
+        "candidate": {
+          "groups": 11,
+          "hit_rate_at_10": 0.8181818181818182,
+          "mrr": 0.5092516069788797
+        },
+        "control": {
+          "groups": 11,
+          "hit_rate_at_10": 0.18181818181818182,
+          "mrr": 0.03737291073501511
+        },
+        "outer_fold": 2,
+        "selection_sample_count": 40,
+        "selection_sample_ids_sha256": "3f6a0ef2ecfca9bc303bedf0ceabb66587dfb978a1b4e09bed8aea0406d2b2ba",
+        "training_sample_count": 120,
+        "training_sample_ids_sha256": "7fd872b19c15f7338b37d6546349fb49366a02a462a74341977cb47fc99074f5",
+        "validation_sample_count": 40,
+        "validation_sample_ids_sha256": "eecfee59b55d5dd753ceb672d87c176dbfc267467eff039d9709b602ee0b1ecc"
+      },
+      {
+        "best_iteration": 9,
+        "candidate": {
+          "groups": 10,
+          "hit_rate_at_10": 1.0,
+          "mrr": 0.3492857142857143
+        },
+        "control": {
+          "groups": 10,
+          "hit_rate_at_10": 0.1,
+          "mrr": 0.03771075874608483
+        },
+        "outer_fold": 3,
+        "selection_sample_count": 40,
+        "selection_sample_ids_sha256": "27dd0c441ed6a2a7b80b47dc28781285067adbd382c4674acc15aaa4e846b4cc",
+        "training_sample_count": 120,
+        "training_sample_ids_sha256": "cc1bc2a655fb5a4f8288ea73ecb419bff61f63980984ffd6a305e4e8e8da0f56",
+        "validation_sample_count": 40,
+        "validation_sample_ids_sha256": "3f6a0ef2ecfca9bc303bedf0ceabb66587dfb978a1b4e09bed8aea0406d2b2ba"
+      },
+      {
+        "best_iteration": 3,
+        "candidate": {
+          "groups": 8,
+          "hit_rate_at_10": 0.75,
+          "mrr": 0.42410714285714285
+        },
+        "control": {
+          "groups": 8,
+          "hit_rate_at_10": 0.125,
+          "mrr": 0.0436577334577749
+        },
+        "outer_fold": 4,
+        "selection_sample_count": 40,
+        "selection_sample_ids_sha256": "2225fc36f4dd2481f96dbd4ef0ba57803f4c6f8c12c6f6a82ca7302c7c5076b5",
+        "training_sample_count": 120,
+        "training_sample_ids_sha256": "23dea7e9f372fa301f1348df48e87ef5cc2243b53a929019db7b299afa181f1a",
+        "validation_sample_count": 40,
+        "validation_sample_ids_sha256": "27dd0c441ed6a2a7b80b47dc28781285067adbd382c4674acc15aaa4e846b4cc"
+      }
+    ],
+    "oof_candidate": {
+      "groups": 53,
+      "hit_rate_at_10": 0.8113207547169812,
+      "mrr": 0.4660932530317148
+    },
+    "oof_control": {
+      "groups": 53,
+      "hit_rate_at_10": 0.18867924528301888,
+      "mrr": 0.05560860792419726
+    },
+    "oof_delta": {
+      "hit_rate_at_10": 0.6226415094339623,
+      "mrr": 0.41048464510751753
+    },
+    "replayed_corpus_sample_count": 200,
+    "selected_for_output_config": true,
+    "selected_rounds": [
+      4,
+      2,
+      8,
+      9,
+      3
+    ]
+  },
+  "browsing_model": "artifacts/models/adaptive_browsing_structural_smoke.json",
+  "browsing_model_sha256": "723a3dff6dbbaa4b01fb69e80f825529df137e60dffc15e0d96e6ec959b5c72a",
+  "collection": {
+    "browsing_pools": 101,
+    "buying_pools": 1899,
+    "candidate_pools": 2000,
+    "candidate_rows": 503301,
+    "ordinary_merged_pools": 1900,
+    "overload_target_pools": 53,
+    "overload_turns": 100,
+    "pools_with_target": 1812,
+    "ranking_groups": 1812,
+    "sessions": 200,
+    "sessions_with_groups": 197,
+    "trajectory_turns": 2000
+  },
+  "dataset_sources": [
+    {
+      "path": "data/public_set.jsonl",
+      "sample_count": 200,
+      "sha256": "857259f7a438e6188ac63e18995b6ff4489bfcfc4a716a798b9a2aa0ee8f7579"
+    }
+  ],
+  "elapsed_seconds": 191.11631895898608,
+  "experiment_id": "adaptive_structural_smoke",
+  "fold_count": 5,
+  "holdout_accessed": false,
+  "independent_template_consumed_for_training": true,
+  "output_config": "configs/adaptive_hybrid_structural_smoke.json",
+  "output_config_sha256": "1a1f58bb757e5b774e9321990af34a94acfdc8a51d302ce1df53d2b086c5d879",
+  "profile_awareness": {
+    "conflict_safe_runtime_profile_stage_preserved": true,
+    "direct_profile_features_in_gbdt": false,
+    "runtime_profile_context_replayed": true
+  },
+  "sample_count": 200,
+  "schema_version": 1,
+  "union": {
+    "eligible_ranking_sample_count": 197,
+    "folds": [
+      {
+        "best_iteration": 10,
+        "candidate": {
+          "groups": 362,
+          "hit_rate_at_10": 0.8867403314917127,
+          "mrr": 0.7454470599294594
+        },
+        "control": {
+          "groups": 362,
+          "hit_rate_at_10": 0.850828729281768,
+          "mrr": 0.6593125970179913
+        },
+        "outer_fold": 0,
+        "selection_sample_count": 40,
+        "selection_sample_ids_sha256": "ed87c380eb848354a512ee1142004270f76d00549c7259b4a768e3274ab5169d",
+        "training_sample_count": 120,
+        "training_sample_ids_sha256": "a81eed9af0905ce032cb353d83e46f1ceceaa56e6d914fb7a1bf69305be83b96",
+        "validation_sample_count": 40,
+        "validation_sample_ids_sha256": "2225fc36f4dd2481f96dbd4ef0ba57803f4c6f8c12c6f6a82ca7302c7c5076b5"
+      },
+      {
+        "best_iteration": 8,
+        "candidate": {
+          "groups": 321,
+          "hit_rate_at_10": 0.9470404984423676,
+          "mrr": 0.724641101631093
+        },
+        "control": {
+          "groups": 321,
+          "hit_rate_at_10": 0.8598130841121495,
+          "mrr": 0.6053172546341166
+        },
+        "outer_fold": 1,
+        "selection_sample_count": 40,
+        "selection_sample_ids_sha256": "eecfee59b55d5dd753ceb672d87c176dbfc267467eff039d9709b602ee0b1ecc",
+        "training_sample_count": 120,
+        "training_sample_ids_sha256": "112703edadfa8c39f0c3c10af15d6211cafd5284026242e859d78edfa3fa2a57",
+        "validation_sample_count": 40,
+        "validation_sample_ids_sha256": "ed87c380eb848354a512ee1142004270f76d00549c7259b4a768e3274ab5169d"
+      },
+      {
+        "best_iteration": 10,
+        "candidate": {
+          "groups": 358,
+          "hit_rate_at_10": 0.88268156424581,
+          "mrr": 0.7364971730727408
+        },
+        "control": {
+          "groups": 358,
+          "hit_rate_at_10": 0.8854748603351955,
+          "mrr": 0.62925371056121
+        },
+        "outer_fold": 2,
+        "selection_sample_count": 40,
+        "selection_sample_ids_sha256": "3f6a0ef2ecfca9bc303bedf0ceabb66587dfb978a1b4e09bed8aea0406d2b2ba",
+        "training_sample_count": 120,
+        "training_sample_ids_sha256": "7fd872b19c15f7338b37d6546349fb49366a02a462a74341977cb47fc99074f5",
+        "validation_sample_count": 40,
+        "validation_sample_ids_sha256": "eecfee59b55d5dd753ceb672d87c176dbfc267467eff039d9709b602ee0b1ecc"
+      },
+      {
+        "best_iteration": 10,
+        "candidate": {
+          "groups": 370,
+          "hit_rate_at_10": 0.8756756756756757,
+          "mrr": 0.7831115234114798
+        },
+        "control": {
+          "groups": 370,
+          "hit_rate_at_10": 0.8,
+          "mrr": 0.6211364900909679
+        },
+        "outer_fold": 3,
+        "selection_sample_count": 40,
+        "selection_sample_ids_sha256": "27dd0c441ed6a2a7b80b47dc28781285067adbd382c4674acc15aaa4e846b4cc",
+        "training_sample_count": 120,
+        "training_sample_ids_sha256": "cc1bc2a655fb5a4f8288ea73ecb419bff61f63980984ffd6a305e4e8e8da0f56",
+        "validation_sample_count": 40,
+        "validation_sample_ids_sha256": "3f6a0ef2ecfca9bc303bedf0ceabb66587dfb978a1b4e09bed8aea0406d2b2ba"
+      },
+      {
+        "best_iteration": 10,
+        "candidate": {
+          "groups": 348,
+          "hit_rate_at_10": 0.853448275862069,
+          "mrr": 0.6477821002723679
+        },
+        "control": {
+          "groups": 348,
+          "hit_rate_at_10": 0.8132183908045977,
+          "mrr": 0.5022803946629119
+        },
+        "outer_fold": 4,
+        "selection_sample_count": 40,
+        "selection_sample_ids_sha256": "2225fc36f4dd2481f96dbd4ef0ba57803f4c6f8c12c6f6a82ca7302c7c5076b5",
+        "training_sample_count": 120,
+        "training_sample_ids_sha256": "23dea7e9f372fa301f1348df48e87ef5cc2243b53a929019db7b299afa181f1a",
+        "validation_sample_count": 40,
+        "validation_sample_ids_sha256": "27dd0c441ed6a2a7b80b47dc28781285067adbd382c4674acc15aaa4e846b4cc"
+      }
+    ],
+    "oof_candidate": {
+      "groups": 1759,
+      "hit_rate_at_10": 0.8880045480386584,
+      "mrr": 0.7284292506168947
+    },
+    "oof_control": {
+      "groups": 1759,
+      "hit_rate_at_10": 0.8413871517907903,
+      "mrr": 0.6042438350854628
+    },
+    "oof_delta": {
+      "hit_rate_at_10": 0.04661739624786809,
+      "mrr": 0.12418541553143192
+    },
+    "replayed_corpus_sample_count": 200,
+    "selected_for_output_config": true,
+    "selected_rounds": [
+      10,
+      8,
+      10,
+      10,
+      10
+    ]
+  },
+  "union_model": "artifacts/models/adaptive_union_structural_smoke.json",
+  "union_model_sha256": "ef6d3306516b366302ea91ba0d5e215c0c013112a3985c5ec5a789185c9e1083"
+}

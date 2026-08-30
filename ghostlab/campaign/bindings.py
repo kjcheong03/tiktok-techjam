@@ -683,6 +683,19 @@ def default_binding_registry() -> TechniqueBindingRegistry:
         "query.query2doc_local.v1": "optional local generation model was not admitted",
         "routing.calibrated_observable.v1": "no fold-fitted router asset is present",
         "guard.component_fallback.v1": "requires an unavailable calibrated router asset",
+        "routing.dual_track_observable.v1": "implemented only by the fixed adaptive runtime",
+        "retrieval.category_independent.v1": "implemented only by the fixed adaptive runtime",
+        "fusion.multi_route_union.v1": "implemented only by the fixed adaptive runtime",
+        "ranking.source_aware_union.v1": "implemented only by the fixed adaptive runtime",
+        "ranking.local_llm_semantic.v1": "implemented only by the fixed adaptive runtime",
+        "guidance.pre_dense_overload.v1": "implemented only by the fixed adaptive runtime",
+        "adaptation.profile_update.v1": "implemented only by the fixed adaptive runtime",
+        "orchestration.atomic_commit.v1": "implemented only by the fixed adaptive runtime",
+        "retrieval.dense_view_balanced.v1": "implemented only by the fixed adaptive runtime",
+        "retrieval.dense_embedding_mmr.v1": "implemented only by the fixed adaptive runtime",
+        "prior.profile_query_view.v1": "implemented only by the fixed adaptive runtime",
+        "prior.profile_question_suppression.v1": "implemented only by the fixed adaptive runtime",
+        "prior.profile_union_feature.v1": "implemented only by the fixed adaptive runtime",
     }
     bindings.extend(
         _classified(technique_id, "unavailable", reason)

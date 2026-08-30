@@ -537,6 +537,140 @@
       "config_binding": "optimizer=bohb",
       "mechanism_tags": ["multi_fidelity", "conditional_weight_tuning"],
       "retest_triggers": ["search_space_changed"]
+    },
+    {
+      "id": "routing.dual_track_observable.v1",
+      "family": "routing",
+      "wave": 3,
+      "availability": "evaluated",
+      "source": "ghostlab/runtime/adaptive_components.py",
+      "config_binding": "router=buying_browsing_observable",
+      "mechanism_tags": ["buying", "browsing", "observable_only"],
+      "retest_triggers": ["state_contract_changed", "router_features_changed"]
+    },
+    {
+      "id": "retrieval.category_independent.v1",
+      "family": "retrieval",
+      "wave": 3,
+      "availability": "evaluated",
+      "source": "ghostlab/retrieval/category.py",
+      "config_binding": "category_candidates=independent",
+      "mechanism_tags": ["category_retrieval", "candidate_rescue"],
+      "retest_triggers": ["catalog_changed", "merge_changed"]
+    },
+    {
+      "id": "fusion.multi_route_union.v1",
+      "family": "fusion",
+      "wave": 3,
+      "availability": "evaluated",
+      "source": "ghostlab/retrieval/multi_route.py",
+      "config_binding": "merge=keyword_category_vector",
+      "mechanism_tags": ["source_provenance", "three_route_union"],
+      "retest_triggers": ["retriever_changed", "ranker_changed"]
+    },
+    {
+      "id": "ranking.source_aware_union.v1",
+      "family": "ranking",
+      "wave": 3,
+      "availability": "available",
+      "source": "ghostlab/retrieval/union_features.py",
+      "config_binding": "union_features=source_aware",
+      "fit_required": true,
+      "mechanism_tags": ["gbdt", "source_evidence", "missingness"],
+      "retest_triggers": ["candidate_pool_changed", "feature_schema_changed"]
+    },
+    {
+      "id": "ranking.local_llm_semantic.v1",
+      "family": "ranking",
+      "wave": 3,
+      "availability": "evaluated",
+      "source": "ghostlab/runtime/adaptive_components.py",
+      "config_binding": "semantic_ranker=bounded_local_llm",
+      "mechanism_tags": ["causal_llm", "semantic_ranking", "bounded_membership"],
+      "retest_triggers": ["model_changed", "prompt_changed", "candidate_pool_changed"]
+    },
+    {
+      "id": "guidance.pre_dense_overload.v1",
+      "family": "question",
+      "wave": 3,
+      "availability": "evaluated",
+      "source": "ghostlab/runtime/adaptive_components.py",
+      "config_binding": "overload=pre_dense_preview",
+      "mechanism_tags": ["retrieval_cutoff", "proactive_guidance"],
+      "retest_triggers": ["retrieval_budget_changed", "router_changed"]
+    },
+    {
+      "id": "adaptation.profile_update.v1",
+      "family": "prior",
+      "wave": 3,
+      "availability": "evaluated",
+      "source": "ghostlab/runtime/adaptive_components.py",
+      "config_binding": "profile_update=conflict_safe",
+      "mechanism_tags": ["profile_update", "confidence", "provenance"],
+      "retest_triggers": ["state_changed", "profile_contract_changed"]
+    },
+    {
+      "id": "orchestration.atomic_commit.v1",
+      "family": "guard",
+      "wave": 3,
+      "availability": "evaluated",
+      "source": "ghostlab/runtime/adaptive_hybrid.py",
+      "config_binding": "commit=selected_action_only",
+      "mechanism_tags": ["atomic_commit", "response_validation"],
+      "retest_triggers": ["response_contract_changed", "state_changed"]
+    },
+    {
+      "id": "retrieval.dense_view_balanced.v1",
+      "family": "retrieval",
+      "wave": 3,
+      "availability": "available",
+      "source": "ghostlab/retrieval/dense_diversity.py",
+      "config_binding": "browsing.selection=view_balanced",
+      "exclusive_group": "adaptive_dense_selector",
+      "mechanism_tags": ["dense_retrieval", "view_balance"],
+      "retest_triggers": ["query_views_changed", "catalog_changed"]
+    },
+    {
+      "id": "retrieval.dense_embedding_mmr.v1",
+      "family": "retrieval",
+      "wave": 3,
+      "availability": "available",
+      "source": "ghostlab/retrieval/dense_diversity.py",
+      "config_binding": "browsing.selection=embedding_mmr",
+      "exclusive_group": "adaptive_dense_selector",
+      "mechanism_tags": ["dense_retrieval", "embedding_mmr", "diversity"],
+      "retest_triggers": ["encoder_changed", "query_views_changed"]
+    },
+    {
+      "id": "prior.profile_query_view.v1",
+      "family": "prior",
+      "wave": 3,
+      "availability": "available",
+      "source": "ghostlab/runtime/adaptive_components.py",
+      "config_binding": "browsing.profile_query_view_enabled=true",
+      "mechanism_tags": ["profile", "dense_query_view", "ambiguous_browsing"],
+      "retest_triggers": ["profile_contract_changed", "dense_retrieval_changed"]
+    },
+    {
+      "id": "prior.profile_question_suppression.v1",
+      "family": "prior",
+      "wave": 3,
+      "availability": "available",
+      "source": "ghostlab/runtime/adaptive_components.py",
+      "config_binding": "runtime_adaptation.profile_question_suppression_enabled=true",
+      "mechanism_tags": ["profile", "question_value", "conflict_safe"],
+      "retest_triggers": ["question_policy_changed", "profile_contract_changed"]
+    },
+    {
+      "id": "prior.profile_union_feature.v1",
+      "family": "prior",
+      "wave": 3,
+      "availability": "available",
+      "source": "ghostlab/retrieval/union_features.py",
+      "config_binding": "runtime_adaptation.union_profile_feature_enabled=true",
+      "fit_required": true,
+      "mechanism_tags": ["profile", "gbdt_feature", "bounded_prior"],
+      "retest_triggers": ["ranker_refit", "profile_contract_changed"]
     }
   ]
 }

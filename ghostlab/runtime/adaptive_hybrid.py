@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import re
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 from threading import Lock
 from typing import Any
@@ -19,7 +19,7 @@ from ghostlab.retrieval.multi_route import (
 from ghostlab.retrieval.profile import ProfilePriorReranker
 from ghostlab.retrieval.pseudo_relevance import CatalogPseudoRelevanceFeedback
 from ghostlab.retrieval.quality import CatalogQualityReranker
-from ghostlab.retrieval.sparse import SparseIndex
+from ghostlab.retrieval.sparse import SparseIndex, query_terms
 from ghostlab.runtime.adaptive_components import (
     BoundedLocalLLMSemanticRanker,
     ConflictSafeContextAdapter,
@@ -29,6 +29,7 @@ from ghostlab.runtime.adaptive_components import (
     OverGeneralityGuidance,
     ProfileContext,
     ProfileUpdate,
+    RetrievalPreviewDecision,
     RouteDecision,
     SemanticActivationPolicy,
     SemanticRankingResult,
@@ -43,7 +44,7 @@ from ghostlab.state.baseline_v2 import (
     StructuredConstraint,
     normalize_value,
 )
-from ghostlab.state.v2_view import V2SessionController, V2StateView
+from ghostlab.state.v2_view import AdaptiveTurnContext, V2SessionController, V2StateView
 
 
 @dataclass(frozen=True)
@@ -66,12 +67,21 @@ class AdaptiveTurnTrace:
     route_confidence: float
     route_reason: str
     overloaded: bool
+    preview_reason: str
+    preview_candidate_count: int
+    preview_score_flatness: float
+    dense_requested_per_view: int
+    dense_output_k: int
+    dense_selection: str
+    constraint_counts: dict[str, int]
+    output_constraint_violations: int
     contribution_counts: dict[str, int]
     query_views: tuple[str, ...]
     union_candidate_count: int
     semantic_backend: str
     semantic_activation_reason: str
     semantic_changed: bool
+    semantic_elapsed_ms: float
     profile_active: bool
     profile_reason: str
     profile_update_values: tuple[str, ...]
@@ -95,6 +105,10 @@ class AdaptiveCandidateSnapshot:
     candidates: tuple[str, ...]
     overloaded: bool
     evidence: tuple[CandidateEvidence, ...] = ()
+    confirmed_match_count: dict[str, int] = field(default_factory=dict)
+    unknown_constraint_count: dict[str, int] = field(default_factory=dict)
+    soft_preference_count: dict[str, int] = field(default_factory=dict)
+    profile_terms: frozenset[str] = frozenset()
 
 
 @dataclass
@@ -227,6 +241,18 @@ class AdaptiveHybridAgent:
             preferred_categories=categories,
         )
 
+    def _dense_candidates(
+        self, context: AdaptiveTurnContext, *, overloaded: bool
+    ) -> Any:
+        """Call the budget-aware dense interface with legacy test-double support."""
+
+        try:
+            return self.dense.search(context, overloaded=overloaded)
+        except TypeError as error:
+            if "overloaded" not in str(error):
+                raise
+            return self.dense.search(context)
+
     def _merge(
         self,
         decision: RouteDecision,
@@ -302,6 +328,7 @@ class AdaptiveHybridAgent:
         category_hits: tuple[CategoryHit, ...],
         positive_constraints: dict[str, list[str]],
         negative_constraints: dict[str, list[str]],
+        context: AdaptiveTurnContext | None = None,
     ) -> list[str]:
         try:
             pool = merge_candidate_routes(
@@ -319,6 +346,7 @@ class AdaptiveHybridAgent:
                 pool,
                 positive_constraints=positive_constraints,
                 negative_constraints=negative_constraints,
+                context=context,
             )
         except Exception:  # noqa: BLE001 - component boundary must fail closed
             return self.union_ranker.filter.apply_strict(
@@ -331,6 +359,50 @@ class AdaptiveHybridAgent:
         """Return the conflict-safe, caller-persistable 3A update for a session."""
 
         return self._session(session_id).profile_update
+
+    def _turn_context(
+        self,
+        session: _AdaptiveSession,
+        *,
+        query: str,
+        message: str,
+        turn: int,
+    ) -> AdaptiveTurnContext:
+        raw_tags = session.state.user_profile.get("preference_tags")
+        tags = raw_tags if isinstance(raw_tags, (list, tuple, set)) else ()
+        raw_preferences = session.state.user_profile.get("preferences")
+        preferences = raw_preferences if isinstance(raw_preferences, dict) else {}
+        supplied_terms = frozenset(
+            query_terms(
+                " ".join(
+                    [
+                        *(str(item) for item in tags),
+                        *(str(item) for item in preferences.values()),
+                    ]
+                ),
+                40,
+            )
+        )
+        overlay = session.profile_update
+        return session.controller.snapshot(
+            query_text=query,
+            turn=turn,
+            current_message=message,
+            supplied_profile_terms=supplied_terms,
+            profile_overlay_values=(overlay.values if overlay is not None else ()),
+            profile_overlay_attributes=(
+                frozenset(
+                    [
+                        *(overlay.attributes if overlay is not None else ()),
+                        *(str(item) for item in preferences),
+                    ]
+                )
+            ),
+            profile_overlay_confidence=(
+                overlay.confidence if overlay is not None else 0.0
+            ),
+            profile_overlay_epoch=(overlay.intent_epoch if overlay is not None else None),
+        )
 
     @staticmethod
     def _question_message(question: AskAttribute | None) -> str:
@@ -455,10 +527,12 @@ class AdaptiveHybridAgent:
             state = session.state
             self._observe_state(state, user_message, turn)
             query = state.build_coverage_adaptive_query() or user_message
-            view = session.controller.snapshot(query_text=query, turn=turn)
+            view = self._turn_context(
+                session, query=query, message=user_message, turn=turn
+            )
             try:
                 profile_context: ProfileContext = self.context_adapter.distil(
-                    state, session.profile_update
+                    view
                 )
             except Exception as error:  # noqa: BLE001 - context must fail closed
                 profile_context = ProfileContext(
@@ -495,13 +569,13 @@ class AdaptiveHybridAgent:
                 fallback_reason = fallback_reason or f"sparse:{type(error).__name__}"
             if self.query_expander is not None and fallback_reason is None:
                 try:
-                    preview = self.guidance.decide(
-                        state,
+                    prf_preview = self.guidance.preview(
+                        view,
                         keyword_ids,
-                        turn=turn,
-                        message=user_message,
+                        keyword_scores_raw,
+                        (),
                     )
-                    if preview.overloaded:
+                    if prf_preview.overloaded:
                         reason_codes.append(
                             "optional:query.catalog_prf.v1:overload_skip"
                         )
@@ -512,9 +586,7 @@ class AdaptiveHybridAgent:
                         )
                         if expansion.expanded_query != query:
                             query = expansion.expanded_query
-                            view = session.controller.snapshot(
-                                query_text=query, turn=turn
-                            )
+                            view = replace(view, query_text=query)
                             keyword_ids, keyword_scores_raw = (
                                 self._precision_candidates(query)
                             )
@@ -538,23 +610,53 @@ class AdaptiveHybridAgent:
                 category_hits = ()
                 fallback_reason = f"category:{type(error).__name__}"
 
+            try:
+                preview = self.guidance.preview(
+                    view,
+                    keyword_ids,
+                    keyword_scores_raw,
+                    tuple(item.parent_asin for item in category_hits),
+                )
+            except Exception as error:  # noqa: BLE001 - precision fallback
+                preview = RetrievalPreviewDecision(
+                    overloaded=False,
+                    reason=f"preview_failure:{type(error).__name__}",
+                    candidate_count=0,
+                    specific_constraint_count=0,
+                    score_flatness=0.0,
+                )
+                fallback_reason = fallback_reason or f"preview:{type(error).__name__}"
+
             vector_ids: list[str] = []
             vector_scores: dict[str, float] = {}
+            dense_requested_per_view = 0
+            dense_output_k = 0
+            dense_selection = self.config.browsing.selection
             if route.route == "browsing" and fallback_reason is None:
                 try:
-                    dense = self.dense.search(view)
+                    dense = self._dense_candidates(
+                        view, overloaded=preview.overloaded
+                    )
                     vector_ids = list(dense.identifiers)
                     vector_scores = dict(dense.relevance_scores)
                     query_views = dense.query_views
+                    dense_requested_per_view = dense.requested_per_view
+                    dense_output_k = dense.output_k
+                    dense_selection = dense.selection
                 except Exception as error:  # noqa: BLE001 - required safe fallback
                     fallback_reason = f"dense:{type(error).__name__}"
 
             if route.route == "buying" and fallback_reason is None:
                 try:
-                    dense = self.dense.search(view)
+                    dense = self._dense_candidates(
+                        view, overloaded=preview.overloaded
+                    )
                     vector_ids = list(dense.identifiers)
                     vector_scores = dict(dense.relevance_scores)
                     query_views = dense.query_views
+                    dense_requested_per_view = dense.requested_per_view
+                    dense_output_k = dense.output_k
+                    dense_selection = dense.selection
                 except Exception as error:  # noqa: BLE001 - precision fallback
                     fallback_reason = f"dense_support:{type(error).__name__}"
 
@@ -571,10 +673,16 @@ class AdaptiveHybridAgent:
             )
             try:
                 guidance = self.guidance.decide(
-                    state,
+                    view,
                     guidance_candidates or keyword_ids,
                     turn=turn,
                     message=user_message,
+                    overloaded=preview.overloaded,
+                    profile_known_attributes=(
+                        view.profile_overlay_attributes
+                        if self.config.runtime_adaptation.profile_question_suppression_enabled
+                        else frozenset()
+                    ),
                 )
             except Exception as error:  # noqa: BLE001 - precision fallback
                 guidance = GuidanceDecision(
@@ -587,9 +695,15 @@ class AdaptiveHybridAgent:
                     f"guidance:{type(error).__name__}"
                 )
 
+            constraint_counts = {
+                "confirmed_matches": 0,
+                "confirmed_violations": 0,
+                "unknown_metadata": 0,
+                "soft_preferences": 0,
+            }
             if fallback_reason is not None:
                 ranking = self._safe_precision_ranking(
-                    query, keyword_ids, category_hits, positive, negative
+                    query, keyword_ids, category_hits, positive, negative, view
                 )
                 reason_codes.extend(("fallback:complete_precision", fallback_reason))
             elif guidance.overloaded:
@@ -602,6 +716,11 @@ class AdaptiveHybridAgent:
                         vector_ids=vector_ids,
                         vector_scores=vector_scores,
                     )
+                    authority = self.union_ranker.filter.enforce(
+                        pool.identifiers, view
+                    )
+                    constraint_counts = authority.counts()
+                    pool = pool.retain(authority.ranking)
                     contribution_counts = pool.contribution_counts()
                     union_count = len(pool.candidates)
                     candidate_snapshot = AdaptiveCandidateSnapshot(
@@ -612,12 +731,23 @@ class AdaptiveHybridAgent:
                         candidates=tuple(pool.identifiers),
                         overloaded=True,
                         evidence=pool.candidates,
+                        confirmed_match_count=authority.confirmed_match_count,
+                        unknown_constraint_count=authority.unknown_count,
+                        soft_preference_count=authority.soft_preference_count,
+                        profile_terms=profile_context.terms,
                     )
                     ranking = self.union_ranker.rank(
                         query,
                         pool,
                         positive_constraints=positive,
                         negative_constraints=negative,
+                        context=view,
+                        authority=authority,
+                        profile_terms=(
+                            profile_context.terms
+                            if self.config.runtime_adaptation.union_profile_feature_enabled
+                            else frozenset()
+                        ),
                     )
                     ranking, optional_reasons = self._apply_optional_rankers(
                         ranking, view
@@ -644,7 +774,7 @@ class AdaptiveHybridAgent:
                 except Exception as error:  # noqa: BLE001 - required fallback
                     fallback_reason = f"adaptive:{type(error).__name__}"
                     ranking = self._safe_precision_ranking(
-                        query, keyword_ids, category_hits, positive, negative
+                        query, keyword_ids, category_hits, positive, negative, view
                     )
                     reason_codes.extend(
                         ("fallback:complete_precision", fallback_reason)
@@ -659,6 +789,11 @@ class AdaptiveHybridAgent:
                         vector_ids=vector_ids,
                         vector_scores=vector_scores,
                     )
+                    authority = self.union_ranker.filter.enforce(
+                        pool.identifiers, view
+                    )
+                    constraint_counts = authority.counts()
+                    pool = pool.retain(authority.ranking)
                     contribution_counts = pool.contribution_counts()
                     union_count = len(pool.candidates)
                     candidate_snapshot = AdaptiveCandidateSnapshot(
@@ -669,12 +804,23 @@ class AdaptiveHybridAgent:
                         candidates=tuple(pool.identifiers),
                         overloaded=False,
                         evidence=pool.candidates,
+                        confirmed_match_count=authority.confirmed_match_count,
+                        unknown_constraint_count=authority.unknown_count,
+                        soft_preference_count=authority.soft_preference_count,
+                        profile_terms=profile_context.terms,
                     )
                     ranking = self.union_ranker.rank(
                         query,
                         pool,
                         positive_constraints=positive,
                         negative_constraints=negative,
+                        context=view,
+                        authority=authority,
+                        profile_terms=(
+                            profile_context.terms
+                            if self.config.runtime_adaptation.union_profile_feature_enabled
+                            else frozenset()
+                        ),
                     )
                     ranking, optional_reasons = self._apply_optional_rankers(
                         ranking, view
@@ -699,7 +845,7 @@ class AdaptiveHybridAgent:
                 except Exception as error:  # noqa: BLE001 - required safe fallback
                     fallback_reason = f"adaptive:{type(error).__name__}"
                     ranking = self._safe_precision_ranking(
-                        query, keyword_ids, category_hits, positive, negative
+                        query, keyword_ids, category_hits, positive, negative, view
                     )
                     reason_codes.extend(
                         ("fallback:complete_precision", fallback_reason)
@@ -712,8 +858,12 @@ class AdaptiveHybridAgent:
                 profile_context,
                 self.config.runtime_adaptation,
             )
-            unfiltered = list(ranking)
-            ranking = session.controller.filter_ranking(unfiltered)
+            final_authority = self.union_ranker.filter.enforce(list(ranking), view)
+            ranking = session.controller.filter_ranking(list(final_authority.ranking))
+            reason_codes.append(
+                "constraints:route_independent:"
+                f"removed_{final_authority.violation_count}"
+            )
             response = normalize_response(
                 {
                     "message": self._question_message(guidance.ask_attribute),
@@ -724,6 +874,17 @@ class AdaptiveHybridAgent:
                 self.catalog_ids,
                 top_k,
             )
+            validated_ids = tuple(
+                str(item["parent_asin"]) for item in response["recommendations"]
+            )
+            output_authority = self.union_ranker.filter.enforce(
+                list(validated_ids), view
+            )
+            output_constraint_violations = len(validated_ids) - len(
+                output_authority.ranking
+            )
+            if output_constraint_violations:
+                raise ValueError("validated response contains a confirmed violation")
             identifiers = self._commit(
                 session,
                 response,
@@ -748,12 +909,21 @@ class AdaptiveHybridAgent:
                     route_confidence=route.confidence,
                     route_reason=route.reason,
                     overloaded=guidance.overloaded,
+                    preview_reason=preview.reason,
+                    preview_candidate_count=preview.candidate_count,
+                    preview_score_flatness=preview.score_flatness,
+                    dense_requested_per_view=dense_requested_per_view,
+                    dense_output_k=dense_output_k,
+                    dense_selection=dense_selection,
+                    constraint_counts=constraint_counts,
+                    output_constraint_violations=output_constraint_violations,
                     contribution_counts=contribution_counts,
                     query_views=query_views,
                     union_candidate_count=union_count,
                     semantic_backend=semantic.backend,
                     semantic_activation_reason=semantic.activation_reason,
                     semantic_changed=semantic.changed,
+                    semantic_elapsed_ms=semantic.elapsed_ms,
                     profile_active=profile_context.active,
                     profile_reason=profile_context.reason,
                     profile_update_values=profile_update.values,

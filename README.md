@@ -21,7 +21,7 @@ same required capability, and add compatible optional techniques.
 - Default competition-facing runtime: frozen guarded champion
 - Adaptive candidate: architecture-complete but not automatically activated
 - Protected F3/private holdout: not accessed
-- Latest regression result: 421 passed, 1 skipped; Ruff and focused mypy checks clean
+- Latest regression result: 431 passed, 1 skipped; Ruff and focused mypy checks clean
 
 The guarded champion remains the comparison control because the current adaptive
 candidate trails it on public MRR. A GhostLab result never changes the active agent
@@ -138,15 +138,18 @@ as the required LLM.
 ## GhostLab integration
 
 GhostLab remains the research and optimization engine, but it cannot delete required
-architecture. The current technique catalog contains 75 records:
+architecture. The current technique catalog contains 88 records. In the adaptive
+registry, 19 compulsory capabilities define the fixed workflow and 17 optional
+techniques are eligible to race or combine. The remaining records are retained as
+controls, research procedures, or explicitly unavailable historical bindings.
 
 | Classification | Count | Meaning |
 |---|---:|---|
-| Compulsory | 11 | Always represented in the fixed workflow |
-| Promotable | 12 | Runnable alternative/addition that may race and combine |
+| Compulsory | 19 | Always represented in the fixed workflow |
+| Promotable | 17 | Runnable alternative/addition that may race and combine |
 | Control-only | 25 | Diagnostic evidence; cannot replace a required capability |
 | Research-only | 16 | Search, evaluation and evidence procedures |
-| Unavailable | 11 | Preserved with blocking reason and retest trigger |
+| Unavailable | 11 | Preserved with a blocker and retest trigger |
 
 The engine:
 
@@ -162,6 +165,41 @@ There is no six-technique champion limit. The current catalog produces 62 valid 
 control/single/pair candidates; higher-order search is globally capped at 500 candidates.
 Fit-required historical rankers may be evaluated, but remain promotion-ineligible until
 refitted against the new candidate pools with verified disjoint-fold receipts.
+
+### Runnable and research technique inventory
+
+The inventory below is exhaustive for techniques with an operational default binding.
+Unavailable records remain in the machine-readable catalog with their blockers, but are
+deliberately omitted here so this section cannot imply that they are runnable.
+
+Anchor/control techniques: `guard.override_fallback`, `query.expansion_guard.v1`,
+`ranking.constraint_gbdt`, `ranking.deep_dense_gbdt`, `ranking.mmr_early.v1`,
+`ranking.neural_gbdt`, `ranking.pairwise_linear`, `routing.decision_list`,
+`routing.joint_route.v1`, `routing.observable_stump`, `routing.route_table`,
+`state.attribute_ontology.v1`.
+
+Composable techniques: `filter.structured`, `fusion.rank_stack.v1`, `fusion.rrf`,
+`fusion.sparse_first_union`, `fusion.weighted`, `policy.joint_observable.v1`,
+`prior.profile`, `prior.quality`, `query.catalog_prf.v1`,
+`query.coverage_adaptive_v2`, `query.structured`,
+`question.adaptive_heuristic`, `question.candidate_eig.v1`, `question.fixed`,
+`question.learned_linear`, `question.other_always`, `ranking.cross_encoder`,
+`ranking.facet_diversity.v1`, `ranking.fixed_lexical`,
+`ranking.fold_ensemble.v1`, `ranking.metadata_gbdt`,
+`ranking.reward_lambdamart.v1`, `ranking.top10_residual_reranker.v2`,
+`ranking.turn_aware_lambdamart.v1`,
+`recommendation.correction_scoped_history`, `retrieval.e5`, `retrieval.minilm`,
+`retrieval.sparse`, `state.baseline_v2`, `state.catalog_normalizer.v1`,
+`state.compressed`, `state.confidence_gated_constraints.v1`, `state.current`,
+`state.multi`, `state.raw_history`, `termination.reward_aware.v1`.
+
+Research and optimizer techniques: `evaluation.grouped_splits`,
+`evaluation.paired_statistics`, `evidence.decision_store`,
+`research.counterfactual`, `research.counterfactual_expert.v2`,
+`research.leakage_firewall`, `research.replay`, `search.bohb.v1`,
+`search.crossover`, `search.evidence_allocator`, `search.expert_iteration.v1`,
+`search.family_ucb`, `search.hyperband.v1`, `search.multifidelity_racing`,
+`search.random_grid_beam`, `search.typed_patches`.
 
 The older flat unified/autonomous campaign remains in the repository as a control and
 historical research system. It does not define this branch's submission architecture.
@@ -183,6 +221,8 @@ published SHA-256 value. Fetch the pinned optional assets:
 uv run python -m scripts.fetch_optional_assets e5
 uv run python -m scripts.fetch_optional_assets cross_encoder
 uv run python -m scripts.fetch_optional_assets qwen_ranker
+uv run python -m scripts.fetch_optional_assets smollm2_ranker
+uv run python -m scripts.fetch_optional_assets qwen3_ranker
 ```
 
 Runtime loading is forced offline after assets are present.
@@ -200,7 +240,7 @@ uv run pytest -q
 Run focused architecture and behavior checks:
 
 ```bash
-PYTHONPATH=. .venv/bin/python scripts/validate_cross_category_browsing.py
+PYTHONPATH=. .venv/bin/python scripts/validate_adaptive_diversity.py
 PYTHONPATH=. .venv/bin/python scripts/validate_adaptive_hybrid.py
 ```
 
@@ -209,8 +249,9 @@ Evaluate the adaptive runtime on the 200 public sessions:
 ```bash
 HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 \
   PYTHONPATH=. .venv/bin/python scripts/run_adaptive_hybrid.py \
-  --config configs/adaptive_hybrid_1a_3b_v1.json \
-  --output artifacts/reports/adaptive_hybrid_public.json
+  --config configs/adaptive_hybrid_structural_smoke.json \
+  --max-samples 20 \
+  --output artifacts/reports/adaptive_hybrid_structural_e2e_smoke.json
 ```
 
 The protected F3/private data must never be used for routing, ranking, HPO, selection or
@@ -275,21 +316,36 @@ tail -f artifacts/logs/adaptive_hybrid_training_2200.log
 The first detailed line appears only after candidate-pool collection. A typical Apple
 Silicon run is expected to take roughly 40–90 minutes and several GB of memory.
 
+The repository currently contains the successful 200-session structural smoke fit, not
+the completed 2,200-session structural fit. The full run is intentionally deferred; do
+not treat the future `structural_v2` paths below as existing selected assets until the
+trainer finishes and their receipts validate.
+
 Training emits:
 
 ```text
-configs/adaptive_hybrid_1a_3b_2200_v1.json
+configs/adaptive_hybrid_1a_3b_2200_structural_v2.json
 configs/splits/adaptive_2200_nested_v1.json
-artifacts/models/adaptive_union_gbdt_2200_v1.json
-artifacts/models/adaptive_union_gbdt_2200_v1.fit_receipt.json
-artifacts/models/adaptive_browsing_gbdt_2200_v1.json
-artifacts/models/adaptive_browsing_gbdt_2200_v1.fit_receipt.json
-artifacts/reports/adaptive_hybrid_training_2200_v1.json
+artifacts/models/adaptive_union_gbdt_2200_structural_v2.json
+artifacts/models/adaptive_union_gbdt_2200_structural_v2.fit_receipt.json
+artifacts/models/adaptive_browsing_gbdt_2200_structural_v2.json
+artifacts/models/adaptive_browsing_gbdt_2200_structural_v2.fit_receipt.json
+artifacts/reports/adaptive_hybrid_training_2200_structural_v2.json
 ```
 
 Each model is bound into the output configuration only if it passes out-of-fold Hit@10
 non-regression and strict MRR improvement. Both models are still fitted and reported so
 rejected evidence is retained.
+
+After the structural fit succeeds, tune Qwen depth and compare the bounded model family:
+
+```bash
+PYTHONPATH=. .venv/bin/python scripts/compare_local_llm_rankers.py
+```
+
+This evaluates Qwen at Top 10/20/30, then compares SmolLM2 and Qwen3 only at the winning
+depth. It emits a report and a separate hash-bound `structural_v2_selected` configuration;
+it does not overwrite the trained base config.
 
 ## Run the architecture-safe GhostLab campaign
 
@@ -300,7 +356,7 @@ Architecture-only plan:
 
 ```bash
 PYTHONPATH=. .venv/bin/python scripts/run_adaptive_hybrid_campaign.py \
-  --config configs/adaptive_hybrid_1a_3b_2200_v1.json \
+  --config configs/adaptive_hybrid_1a_3b_2200_structural_v2.json \
   --plan-only \
   --output artifacts/reports/adaptive_hybrid_campaign_plan_2200.json
 ```
@@ -312,7 +368,7 @@ mkdir -p artifacts/logs
 
 nohup caffeinate -dimsu env PYTHONPATH=. .venv/bin/python \
   scripts/run_adaptive_hybrid_campaign.py \
-  --config configs/adaptive_hybrid_1a_3b_2200_v1.json \
+  --config configs/adaptive_hybrid_1a_3b_2200_structural_v2.json \
   --dataset data/public_set.jsonl \
   --dataset data/synthetic_1000_public_like.jsonl \
   --dataset data/independent_template_1000.jsonl \
@@ -353,11 +409,10 @@ This uses the entire corpus for final selection without spending full-data evalu
 every weak F0 candidate. Increasing early percentages reduces variance but does not
 remove synthetic-data bias.
 
-### Current racing limitation
+### Racing non-regression gates
 
-The runner constructs balanced source/scenario prefixes, but its promotion statistic is
-currently the combined paired session reward. Before treating a long campaign as final
-selection evidence, add or independently apply source/scenario non-regression gates:
+The runner constructs balanced source/scenario prefixes and applies grouped promotion
+gates in addition to the combined paired session reward:
 
 - official-public performance must not materially regress;
 - Buying, Browsing and Intent Override must not materially regress;
@@ -378,8 +433,9 @@ The runtime is profile-aware in two ways:
 
 Profile influence activates only when the request remains ambiguous and explicit intent
 is insufficient. Explicit exclusions suppress conflicting profile terms, and current
-session intent always overrides profile history. The GBDTs do not use profile fields as
-direct learned features; profile influence is a separate conflict-safe ranking stage.
+session intent always overrides profile history. The source-aware GBDT schema includes a
+bounded profile-match feature, but activation remains separately gated and tunable; the
+conflict-safe runtime stage is authoritative.
 
 ## Selected public evidence
 
@@ -436,7 +492,9 @@ actually sent to the user.
 
 | Path | Purpose |
 |---|---|
-| `configs/adaptive_hybrid_1a_3b_v1.json` | Current hash-bound adaptive config |
+| `configs/adaptive_hybrid_1a_3b_v1.json` | Implemented architecture baseline |
+| `configs/adaptive_hybrid_structural_smoke.json` | Validation-only 200-session fitted smoke config |
+| `configs/adaptive_hybrid_1a_3b_2200_structural_v2.json` | Deferred trainer output (created only after a full fit) |
 | `configs/techniques/catalog_v2.json` | Complete technique inventory |
 | `ghostlab/runtime/adaptive_hybrid.py` | Fixed 1A–3B coordinator |
 | `ghostlab/runtime/adaptive_config.py` | Typed required configuration contract |

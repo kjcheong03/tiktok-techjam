@@ -12,12 +12,14 @@ from numpy.typing import NDArray
 
 from ghostlab.research.firewall import runtime_profile
 from ghostlab.research.replay import ReplayEnvironment
+from ghostlab.retrieval.filters import ConstraintAuthorityResult
 from ghostlab.retrieval.gbdt import (
-    METADATA_FEATURES,
     GBDTFeatureStore,
     LambdaMARTModel,
     fit_lambdamart,
 )
+from ghostlab.retrieval.multi_route import MergedCandidatePool
+from ghostlab.retrieval.union_features import UNION_FEATURES, UnionFeatureStore
 from ghostlab.runtime.adaptive_components import SemanticRankingResult
 from ghostlab.runtime.adaptive_config import (
     AdaptiveHybridConfig,
@@ -30,6 +32,8 @@ from ghostlab.runtime.adaptive_hybrid import AdaptiveHybridAgent
 @dataclass(frozen=True)
 class AdaptiveRankingGroup:
     sample_id: str
+    source: str
+    scenario_type: str
     turn: int
     route: str
     overloaded: bool
@@ -86,6 +90,7 @@ def collection_config(
 def collect_adaptive_ranking_groups(
     *,
     samples: Mapping[str, dict],
+    origins: Mapping[str, str] | None = None,
     categories: dict[str, list[str]],
     products: dict[str, dict],
     catalog_path: str | Path,
@@ -97,13 +102,12 @@ def collect_adaptive_ranking_groups(
     """Replay exact runtime pools without exposing labels to the runtime agent."""
     agent = AdaptiveHybridAgent(
         catalog_path,
-        collection_config(
-            config, disable_browsing_safe=disable_browsing_safe
-        ),
+        collection_config(config, disable_browsing_safe=disable_browsing_safe),
         project_root=project_root,
         semantic_ranker=IdentitySemanticRanker(),  # type: ignore[arg-type]
     )
     groups: dict[str, list[AdaptiveRankingGroup]] = defaultdict(list)
+    union_features = UnionFeatureStore(features)
     turns = candidate_pools = ordinary_pools = target_pools = rows = 0
     buying_pools = browsing_pools = overload_turns = 0
     for sample_id in sorted(samples):
@@ -137,16 +141,30 @@ def collect_adaptive_ranking_groups(
                     groups[sample_id].append(
                         AdaptiveRankingGroup(
                             sample_id=sample_id,
+                            source=(origins or {}).get(sample_id, "unspecified"),
+                            scenario_type=str(sample.get("scenario_type") or "unknown"),
                             turn=snapshot.turn,
                             route=snapshot.route,
                             overloaded=snapshot.overloaded,
                             query=snapshot.query,
                             candidates=snapshot.candidates,
                             labels=labels,
-                            matrix=features.matrix(
+                            matrix=union_features.matrix(
                                 snapshot.query,
-                                snapshot.candidates,
-                                METADATA_FEATURES,
+                                MergedCandidatePool(
+                                    route=snapshot.route,  # type: ignore[arg-type]
+                                    candidates=snapshot.evidence,
+                                ),
+                                UNION_FEATURES,
+                                authority=ConstraintAuthorityResult(
+                                    ranking=snapshot.candidates,
+                                    decisions=(),
+                                    confirmed_match_count=snapshot.confirmed_match_count,
+                                    unknown_count=snapshot.unknown_constraint_count,
+                                    soft_preference_count=snapshot.soft_preference_count,
+                                    violation_count=0,
+                                ),
+                                profile_terms=snapshot.profile_terms,
                             ),
                         )
                     )
@@ -160,6 +178,13 @@ def collect_adaptive_ranking_groups(
             )
             if next_observation is not None:
                 observation = next_observation
+        if len(groups) % 100 == 0 and sample_id in groups:
+            print(
+                "adaptive collection progress: "
+                f"sessions_with_groups={len(groups)} "
+                f"candidate_pools={candidate_pools} rows={rows}",
+                flush=True,
+            )
     return dict(groups), {
         "sessions": len(samples),
         "trajectory_turns": turns,
@@ -210,6 +235,8 @@ def evaluate_group_ordering(
     *,
     route: str | None = None,
     overloaded: bool | None = None,
+    source: str | None = None,
+    scenario_type: str | None = None,
 ) -> dict[str, float | int]:
     reciprocal: list[float] = []
     hits = 0
@@ -219,6 +246,10 @@ def evaluate_group_ordering(
             if route is not None and group.route != route:
                 continue
             if overloaded is not None and group.overloaded is not overloaded:
+                continue
+            if source is not None and group.source != source:
+                continue
+            if scenario_type is not None and group.scenario_type != scenario_type:
                 continue
             if model is None:
                 order = np.arange(len(group.candidates))
@@ -252,8 +283,8 @@ def train_adaptive_union_model(
 ) -> LambdaMARTModel:
     return fit_lambdamart(
         *ranking_dataset(groups, training_ids, overloaded=False),
-        candidate_id="adaptive_union_gbdt_v1",
-        feature_names=METADATA_FEATURES,
+        candidate_id="adaptive_union_source_aware_v2",
+        feature_names=UNION_FEATURES,
         max_depth=3,
         num_leaves=7,
         learning_rate=0.03,

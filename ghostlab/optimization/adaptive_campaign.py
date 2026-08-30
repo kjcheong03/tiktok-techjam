@@ -38,6 +38,8 @@ class AdaptiveEvaluation:
     behavior_novelty: float = 0.0
     latency_p95_ms: float = 0.0
     fit_verified: bool = False
+    gate_metrics: tuple[tuple[str, float], ...] = ()
+    constraint_violations: int = 0
 
     def __post_init__(self) -> None:
         if not self.session_rewards:
@@ -53,6 +55,7 @@ class AdaptiveRaceRecord:
     paired_deltas: tuple[float, ...]
     decision: Decision
     fit_required: tuple[str, ...]
+    gate_failures: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -88,6 +91,9 @@ def _adaptive_search_space() -> ConditionalSearchSpace:
             name="router_abstain_confidence", kind="float", low=0.5, high=0.9
         ),
         ConditionalParameter(
+            name="router_specificity_threshold", kind="float", low=0.0, high=4.0
+        ),
+        ConditionalParameter(
             name="buying_retrieval_k",
             kind="categorical",
             choices=(50, 100, 200, 300, 500),
@@ -99,6 +105,16 @@ def _adaptive_search_space() -> ConditionalSearchSpace:
         ),
         ConditionalParameter(
             name="dense_output_k", kind="categorical", choices=(50, 100, 200, 300, 400)
+        ),
+        ConditionalParameter(
+            name="overload_dense_retrieval_per_view",
+            kind="categorical",
+            choices=(20, 40, 80, 120, 200),
+        ),
+        ConditionalParameter(
+            name="overload_dense_output_k",
+            kind="categorical",
+            choices=(20, 40, 80, 120, 200),
         ),
         ConditionalParameter(
             name="category_k", kind="categorical", choices=(20, 60, 120, 200, 300)
@@ -121,6 +137,9 @@ def _adaptive_search_space() -> ConditionalSearchSpace:
         ConditionalParameter(
             name="union_rerank_k", kind="categorical", choices=(50, 100, 200, 320, 500)
         ),
+        ConditionalParameter(
+            name="buying_residual_weight", kind="float", low=0.0, high=0.49
+        ),
         ConditionalParameter(name="semantic_weight", kind="float", low=0.05, high=0.75),
         ConditionalParameter(
             name="semantic_rerank_k", kind="categorical", choices=(5, 10, 20, 30, 50)
@@ -130,6 +149,9 @@ def _adaptive_search_space() -> ConditionalSearchSpace:
         ),
         ConditionalParameter(
             name="overload_min_candidates", kind="int", low=50, high=400
+        ),
+        ConditionalParameter(
+            name="preview_min_candidates", kind="int", low=10, high=200
         ),
         ConditionalParameter(
             name="question_value_margin", kind="float", low=0.0, high=0.25
@@ -143,6 +165,13 @@ def _adaptive_search_space() -> ConditionalSearchSpace:
         ),
     )
     optional: tuple[ConditionalParameter, ...] = (
+        ConditionalParameter(
+            name="dense_mmr_relevance_weight",
+            kind="float",
+            low=0.5,
+            high=1.0,
+            requires_all=("retrieval.dense_embedding_mmr.v1",),
+        ),
         ConditionalParameter(
             name="merger_rrf_constant",
             kind="int",
@@ -579,6 +608,7 @@ class AdaptiveGhostLabEngine:
                 paired_deltas=tuple(0.0 for _ in control_pair[1].session_rewards),
                 decision="HOLD_MORE_DATA",
                 fit_required=(),
+                gate_failures=(),
             )
         control_rewards = matched_control.evaluation.session_rewards
         records: list[AdaptiveRaceRecord] = []
@@ -601,6 +631,20 @@ class AdaptiveGhostLabEngine:
                     seed=self.seed,
                 )
             )
+            gate_failures: list[str] = []
+            if evaluation.constraint_violations:
+                gate_failures.append(
+                    f"constraint_violations:{evaluation.constraint_violations}"
+                )
+            control_metrics = dict(matched_control.evaluation.gate_metrics)
+            for name, value in evaluation.gate_metrics:
+                if name in control_metrics and value < control_metrics[name] - 0.02:
+                    gate_failures.append(
+                        f"non_regression:{name}:{value:.6f}<"
+                        f"{control_metrics[name]:.6f}-0.02"
+                    )
+            if candidate.generation != "control" and gate_failures:
+                decision = "REJECT"
             fit_required = tuple(
                 technique_id
                 for technique_id in candidate.techniques
@@ -613,6 +657,7 @@ class AdaptiveGhostLabEngine:
                     deltas,
                     decision,
                     fit_required,
+                    tuple(gate_failures),
                 )
             )
         return tuple(records)

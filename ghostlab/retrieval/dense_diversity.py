@@ -28,6 +28,44 @@ def max_relevance_select(
     )[:output_k]
 
 
+def view_balanced_select(
+    view_rankings: Mapping[str, Sequence[str]],
+    relevance_scores: Mapping[str, float],
+    *,
+    output_k: int,
+) -> list[str]:
+    """Round-robin query views while retaining deterministic relevance tie breaks."""
+
+    if output_k < 0:
+        raise ValueError("output_k must be non-negative")
+    ordered_views = list(view_rankings)
+    positions = {name: 0 for name in ordered_views}
+    selected: list[str] = []
+    seen: set[str] = set()
+    while len(selected) < output_k:
+        progressed = False
+        for name in ordered_views:
+            ranking = view_rankings[name]
+            while positions[name] < len(ranking) and ranking[positions[name]] in seen:
+                positions[name] += 1
+            if positions[name] >= len(ranking):
+                continue
+            identifier = ranking[positions[name]]
+            positions[name] += 1
+            if identifier not in relevance_scores:
+                raise ValueError(f"missing relevance score for {identifier}")
+            if not np.isfinite(float(relevance_scores[identifier])):
+                raise ValueError("relevance scores must be finite")
+            selected.append(identifier)
+            seen.add(identifier)
+            progressed = True
+            if len(selected) >= output_k:
+                break
+        if not progressed:
+            break
+    return selected
+
+
 def embedding_mmr_select(
     candidate_ids: Sequence[str],
     relevance_scores: Sequence[float] | Mapping[str, float],
@@ -102,4 +140,8 @@ def embedding_mmr_select(
     return [unique_ids[index] for index in selected]
 
 
-__all__ = ["embedding_mmr_select", "max_relevance_select"]
+__all__ = [
+    "embedding_mmr_select",
+    "max_relevance_select",
+    "view_balanced_select",
+]

@@ -46,6 +46,15 @@ class V2StateView:
     no_preference_attributes: frozenset[str]
     turn: int
 
+    def active_values(self) -> tuple[ConstraintView, ...]:
+        """Compatibility projection used by immutable question policies."""
+
+        return self.active_constraints
+
+    @property
+    def last_asked_attribute(self) -> str | None:
+        return self.asked_attributes[-1] if self.asked_attributes else None
+
     def positive_constraints(self) -> dict[str, list[str]]:
         return self.constraints_by_polarity("include")
 
@@ -61,6 +70,19 @@ class V2StateView:
         return result
 
 
+@dataclass(frozen=True)
+class AdaptiveTurnContext(V2StateView):
+    """Complete immutable input shared by every proposal stage in one turn."""
+
+    session_id: str = ""
+    current_message: str = ""
+    supplied_profile_terms: frozenset[str] = frozenset()
+    profile_overlay_values: tuple[str, ...] = ()
+    profile_overlay_attributes: frozenset[str] = frozenset()
+    profile_overlay_confidence: float = 0.0
+    profile_overlay_epoch: int | None = None
+
+
 @dataclass
 class V2SessionController:
     """Own the V2 state snapshot and correction-scoped recommendation history."""
@@ -74,11 +96,22 @@ class V2SessionController:
             self._shown_ids.clear()
             self._history_epoch = self.state.intent_epoch
 
-    def snapshot(self, *, query_text: str, turn: int) -> V2StateView:
+    def snapshot(
+        self,
+        *,
+        query_text: str,
+        turn: int,
+        current_message: str = "",
+        supplied_profile_terms: frozenset[str] = frozenset(),
+        profile_overlay_values: tuple[str, ...] = (),
+        profile_overlay_attributes: frozenset[str] = frozenset(),
+        profile_overlay_confidence: float = 0.0,
+        profile_overlay_epoch: int | None = None,
+    ) -> AdaptiveTurnContext:
         if turn < 0:
             raise ValueError("turn must be non-negative")
         self._sync_epoch()
-        return V2StateView(
+        return AdaptiveTurnContext(
             query_text=query_text,
             active_constraints=tuple(
                 ConstraintView.from_constraint(item)
@@ -89,6 +122,13 @@ class V2SessionController:
             asked_attributes=tuple(self.state.asked_attributes),
             no_preference_attributes=frozenset(self.state.no_preference_attributes),
             turn=turn,
+            session_id=self.state.session_id,
+            current_message=current_message,
+            supplied_profile_terms=supplied_profile_terms,
+            profile_overlay_values=profile_overlay_values,
+            profile_overlay_attributes=profile_overlay_attributes,
+            profile_overlay_confidence=profile_overlay_confidence,
+            profile_overlay_epoch=profile_overlay_epoch,
         )
 
     def filter_ranking(self, ranking: list[str]) -> list[str]:
@@ -102,4 +142,9 @@ class V2SessionController:
         self._shown_ids.update(identifiers)
 
 
-__all__ = ["ConstraintView", "V2SessionController", "V2StateView"]
+__all__ = [
+    "AdaptiveTurnContext",
+    "ConstraintView",
+    "V2SessionController",
+    "V2StateView",
+]

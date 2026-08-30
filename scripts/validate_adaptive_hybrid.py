@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import argparse
 import json
 import os
 import resource
@@ -15,13 +16,10 @@ from ghostlab.runtime.adaptive_factory import (
 from ghostlab.training.adaptive_hybrid import sha256_file
 
 ROOT = Path(__file__).resolve().parents[1]
-CONFIG_PATH = ROOT / "configs/adaptive_hybrid_1a_3b_v1.json"
-ADAPTIVE_REPORT = ROOT / "artifacts/reports/adaptive_hybrid_qwen_selective_v3.json"
 CHAMPION_REPORT = ROOT / "artifacts/reports/adaptive_hybrid_champion_control.json"
-STATE_REPORT = ROOT / "artifacts/reports/adaptive_hybrid_state_v2_precision_control.json"
-TRAINING_REPORT = ROOT / "artifacts/reports/adaptive_union_gbdt_v1.json"
-CROSS_CATEGORY_REPORT = ROOT / "artifacts/reports/cross_category_browsing_v1.json"
-OUTPUT_PATH = ROOT / "artifacts/reports/adaptive_hybrid_validation_v2.json"
+STATE_REPORT = (
+    ROOT / "artifacts/reports/adaptive_hybrid_state_v2_precision_control.json"
+)
 
 
 def _load(path: Path) -> dict:
@@ -36,30 +34,55 @@ def _peak_mb() -> float:
 def _projection(agent: object, index: int) -> dict:
     trace = agent.traces[index]  # type: ignore[attr-defined]
     return {
-        key: value
-        for key, value in trace.__dict__.items()
-        if key not in {"session_id"}
+        key: value for key, value in trace.__dict__.items() if key not in {"session_id"}
     }
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="Validate the complete adaptive 1A-3B runtime end to end"
+    )
+    parser.add_argument(
+        "--config", default="configs/adaptive_hybrid_1a_3b_2200_structural_v2.json"
+    )
+    parser.add_argument(
+        "--adaptive-report",
+        default="artifacts/reports/adaptive_hybrid_structural_v2_public.json",
+    )
+    parser.add_argument(
+        "--training-report",
+        default="artifacts/reports/adaptive_hybrid_training_2200_structural_v2.json",
+    )
+    parser.add_argument(
+        "--diversity-report",
+        default="artifacts/reports/adaptive_dense_diversity_v2.json",
+    )
+    parser.add_argument(
+        "--output",
+        default="artifacts/reports/adaptive_hybrid_structural_v2_validation.json",
+    )
+    args = parser.parse_args()
+    config_path = ROOT / args.config
+    adaptive_report_path = ROOT / args.adaptive_report
+    training_report_path = ROOT / args.training_report
+    diversity_report_path = ROOT / args.diversity_report
+    output_path = ROOT / args.output
     os.environ["HF_HUB_OFFLINE"] = "1"
     os.environ["TRANSFORMERS_OFFLINE"] = "1"
-    config = load_adaptive_hybrid_config(CONFIG_PATH)
+    config = load_adaptive_hybrid_config(config_path)
     assert config.union_ranker.model_path is not None
     assert config.union_ranker.model_sha256 is not None
     model_path = ROOT / config.union_ranker.model_path
     model_hash_ok = sha256_file(model_path) == config.union_ranker.model_sha256
-    receipt = _load(
-        ROOT / "artifacts/models/adaptive_union_gbdt_v1.fit_receipt.json"
-    )
+    receipt_path = model_path.with_name(f"{model_path.stem}.fit_receipt.json")
+    receipt = _load(receipt_path)
     receipt_ok = (
         receipt["model_sha256"] == config.union_ranker.model_sha256
         and receipt["holdout_accessed"] is False
     )
     started = time.perf_counter()
     agent = build_adaptive_hybrid_agent(
-        ROOT / "data/catalog.jsonl", config_path=CONFIG_PATH, project_root=ROOT
+        ROOT / "data/catalog.jsonl", config_path=config_path, project_root=ROOT
     )
     cold_seconds = time.perf_counter() - started
     profile = {"preference_tags": ["comfort", "durability"]}
@@ -79,7 +102,10 @@ def main() -> None:
     agent.reset("browse", {"preference_tags": ["comfort", "style"]})
     started = time.perf_counter()
     browsing_response = agent.respond(
-        "browse", "I'm looking for summer wedding clothing, but I'm still exploring.", 1, 10
+        "browse",
+        "I'm looking for summer wedding clothing, but I'm still exploring.",
+        1,
+        10,
     )
     latencies.append((time.perf_counter() - started) * 1000.0)
     browsing_trace = agent.traces[-1]
@@ -115,18 +141,16 @@ def main() -> None:
     response_contract = all(
         isinstance(response["message"], str)
         and len(response["recommendations"]) <= 10
-        and len(
-            {item["parent_asin"] for item in response["recommendations"]}
-        )
+        and len({item["parent_asin"] for item in response["recommendations"]})
         == len(response["recommendations"])
         for response in all_responses
     )
 
-    adaptive = _load(ADAPTIVE_REPORT)
+    adaptive = _load(adaptive_report_path)
     champion = _load(CHAMPION_REPORT)
     state = _load(STATE_REPORT)["metrics"]
-    training = _load(TRAINING_REPORT)
-    cross_category = _load(CROSS_CATEGORY_REPORT)
+    training = _load(training_report_path)
+    diversity = _load(diversity_report_path)
     conflict_profile_update = agent.profile_update("conflict")
     metrics = {
         "adaptive": {
@@ -162,18 +186,15 @@ def main() -> None:
         - champion["recommended_technical_score"]
     )
     metrics["adaptive_vs_state_v2_score_delta"] = (
-        adaptive["recommended_technical_score"]
-        - state["recommended_technical_score"]
+        adaptive["recommended_technical_score"] - state["recommended_technical_score"]
     )
 
     checks = {
         "config_schema_valid": True,
         "union_model_hash_valid": model_hash_ok,
         "union_fit_receipt_valid": receipt_ok,
-        "union_model_oof_selected": training["selected_for_adaptive_config"],
-        "final_report_config_matches": adaptive["adaptive_runtime"][
-            "config_sha256"
-        ]
+        "union_model_oof_selected": training["union"]["selected_for_output_config"],
+        "final_report_config_matches": adaptive["adaptive_runtime"]["config_sha256"]
         == config.canonical_hash(),
         "offline_environment_forced": True,
         "deterministic_response": deterministic,
@@ -188,19 +209,21 @@ def main() -> None:
             for source in ("keyword", "category", "vector")
         ),
         "overload_browsing_llm_exercised": (
-            browsing_trace.semantic_backend == "qwen_causal_relevance"
+            browsing_trace.semantic_backend == config.semantic_ranker.model_id
         ),
         "literal_llm_ranker_exercised": (
-            browsing_trace.semantic_backend == "qwen_causal_relevance"
+            browsing_trace.semantic_backend == config.semantic_ranker.model_id
         ),
         "literal_llm_changed_order": browsing_trace.semantic_changed,
         "three_source_buying_merge_exercised": all(
             agent.traces[-6].contribution_counts[source] > 0
             for source in ("keyword", "category", "vector")
         ),
-        "cross_category_browsing_validated": cross_category[
-            "all_scenarios_passed"
-        ],
+        "dense_diversity_measured_on_all_public_browsing": (
+            diversity["browsing_sessions"] == 80
+            and set(diversity["summary"])
+            == {"multiview_max_relevance", "view_balanced", "embedding_mmr"}
+        ),
         "profile_conflict_suppressed": (
             not conflict_trace.profile_active
             and conflict_trace.profile_reason == "explicit_conflict"
@@ -216,12 +239,12 @@ def main() -> None:
             "semantic_activation_count"
         ]
         > 0,
-        "selective_llm_has_skips": adaptive["adaptive_runtime"][
-            "semantic_skip_count"
-        ]
+        "selective_llm_has_skips": adaptive["adaptive_runtime"]["semantic_skip_count"]
         > 0,
         "factory_config_parity": agent.config_sha256 == config.canonical_hash(),
-        "starter_activation_untouched": not (ROOT / "configs/active_candidate.json").exists(),
+        "starter_activation_untouched": not (
+            ROOT / "configs/active_candidate.json"
+        ).exists(),
         "f3_accessed": False,
     }
     output = {
@@ -235,7 +258,7 @@ def main() -> None:
         "runtime": {
             "cold_initialization_seconds": cold_seconds,
             "turn_latency_ms": latencies,
-            "first_semantic_turn_ms": latencies[0],
+            "first_browsing_semantic_turn_ms": latencies[2],
             "warm_turn_p95_ms": max(latencies[1:]),
             "warm_mean_turn_ms": statistics.fmean(latencies[1:]),
             "peak_process_memory_mb": _peak_mb(),
@@ -248,8 +271,8 @@ def main() -> None:
             else "development_validated"
         ),
     }
-    OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
-    OUTPUT_PATH.write_text(
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(
         json.dumps(output, indent=2, sort_keys=True) + "\n", encoding="utf-8"
     )
     print(json.dumps(output, indent=2, sort_keys=True))

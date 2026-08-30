@@ -13,14 +13,19 @@ from starter.agent import Agent
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Evaluate the complete adaptive hybrid")
+    parser = argparse.ArgumentParser(
+        description="Evaluate the complete adaptive hybrid"
+    )
     parser.add_argument("--catalog", default="data/catalog.jsonl")
     parser.add_argument("--dataset", default="data/public_set.jsonl")
-    parser.add_argument(
-        "--config", default="configs/adaptive_hybrid_1a_3b_v1.json"
-    )
+    parser.add_argument("--config", default="configs/adaptive_hybrid_1a_3b_v1.json")
     parser.add_argument(
         "--output", default="artifacts/reports/adaptive_hybrid_1a_3b_v1.json"
+    )
+    parser.add_argument(
+        "--max-samples",
+        type=int,
+        help="optional deterministic prefix for bounded smoke validation",
     )
     parser.add_argument("--semantic-weight", type=float)
     parser.add_argument("--semantic-rerank-k", type=int)
@@ -28,6 +33,8 @@ def main() -> None:
     parser.add_argument("--profile-weight", type=float)
     parser.add_argument("--browsing-safe-weight", type=float)
     args = parser.parse_args()
+    if args.max_samples is not None and args.max_samples <= 0:
+        raise ValueError("max-samples must be positive")
     root = Path(__file__).resolve().parents[1]
     catalog = root / args.catalog
     config = load_adaptive_hybrid_config(root / args.config)
@@ -71,10 +78,10 @@ def main() -> None:
     config = AdaptiveHybridConfig.model_validate(config.model_dump())
     agent = AdaptiveHybridAgent(catalog, config, project_root=root)
     samples = load_jsonl(root / args.dataset)
+    if args.max_samples is not None:
+        samples = samples[: args.max_samples]
     identifiers, categories, products = catalog_index(catalog)
-    result = evaluate(
-        cast(Agent, agent), samples, identifiers, categories, products
-    )
+    result = evaluate(cast(Agent, agent), samples, identifiers, categories, products)
     result["adaptive_runtime"] = {
         "config_sha256": agent.config_sha256,
         "trace_count": len(agent.traces),
