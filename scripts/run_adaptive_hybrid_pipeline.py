@@ -22,6 +22,7 @@ STAGE_ORDER = (
     "validate",
     "campaign",
     "package",
+    "finalists",
     "compare",
 )
 
@@ -34,10 +35,17 @@ class StageSpec:
 
     @property
     def signature(self) -> str:
-        payload = json.dumps(
-            {"command": self.command, "outputs": self.outputs},
-            sort_keys=True,
-        ).encode()
+        signature_payload: dict[str, object] = {
+            "command": self.command,
+            "outputs": self.outputs,
+        }
+        if len(self.command) > 1:
+            script = ROOT / self.command[1]
+            if script.is_file() and script.suffix == ".py":
+                signature_payload["script_sha256"] = hashlib.sha256(
+                    script.read_bytes()
+                ).hexdigest()
+        payload = json.dumps(signature_payload, sort_keys=True).encode()
         return hashlib.sha256(payload).hexdigest()
 
 
@@ -236,6 +244,14 @@ def stage_specs(args: argparse.Namespace) -> tuple[StageSpec, ...]:
                 "artifacts/reports/adaptive_hybrid_top3.json",
             ),
             ("artifacts/reports/adaptive_hybrid_top3.json",),
+        ),
+        StageSpec(
+            "finalists",
+            (
+                python,
+                "scripts/evaluate_adaptive_development_finalists.py",
+            ),
+            ("artifacts/reports/adaptive_finalist_development_evaluations.json",),
         ),
         StageSpec(
             "compare",

@@ -3,20 +3,18 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
-from typing import cast
 
 from evaluator.local_evaluator import (
     catalog_index,
-    evaluate,
     load_jsonl,
     metric_summary,
 )
+from ghostlab.research.replay import evaluate_shared
 from ghostlab.runtime.adaptive_config import AdaptiveHybridConfig
 from ghostlab.runtime.adaptive_factory import load_adaptive_hybrid_config
 from ghostlab.runtime.adaptive_hybrid import AdaptiveHybridAgent
 from ghostlab.training.adaptive_datasets import load_adaptive_training_corpus
 from ghostlab.training.adaptive_lineage import load_lineage_manifest, subset_corpus
-from starter.agent import Agent
 
 
 def main() -> None:
@@ -106,8 +104,14 @@ def main() -> None:
         origins = {str(item["sample_id"]): dataset_paths[0] for item in samples}
     if args.max_samples is not None:
         samples = samples[: args.max_samples]
-    identifiers, categories, products = catalog_index(catalog)
-    result = evaluate(cast(Agent, agent), samples, identifiers, categories, products)
+    _, categories, products = catalog_index(catalog)
+    result = evaluate_shared(
+        agent,
+        samples,
+        categories,
+        products,
+        catalog_path=catalog,
+    )
     session_order = list(dict.fromkeys(trace.session_id for trace in agent.traces))
     if len(session_order) != len(samples):
         raise RuntimeError("runtime trace/session alignment failed")

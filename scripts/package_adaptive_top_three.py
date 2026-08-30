@@ -85,7 +85,14 @@ def package_top_three(
         digest = _file_sha256(config_path)
         evaluation_command = (
             "PYTHONPATH=. .venv/bin/python scripts/run_adaptive_hybrid.py "
-            f"--config {relative_config} --output {candidate_report}"
+            f"--config {relative_config} "
+            "--dataset data/public_set.jsonl "
+            "--dataset data/synthetic_1000_public_like.jsonl "
+            "--dataset data/independent_template_1000.jsonl "
+            "--lineage-manifest "
+            "data/splits/adaptive_hybrid_lineage_75_25_v1.json "
+            "--partition development "
+            f"--output {candidate_report}"
         )
         validation_command = (
             "PYTHONPATH=. .venv/bin/python scripts/validate_adaptive_hybrid.py "
@@ -183,7 +190,11 @@ def package_top_three(
         ),
         "promotion_process": [
             "Choose and freeze exactly one eligible finalist using development evidence only.",
-            "Evaluate only the frozen finalist and the frozen control once on the 550-session holdout.",
+            (
+                "Evaluate frozen A/B references plus only the frozen finalist and "
+                "frozen control once on the 550-session holdout; promotion remains "
+                "C versus D only."
+            ),
             "Require the predeclared holdout gates and artifact hashes to pass.",
             "Run activation with that holdout report; activation is never automatic.",
             "Run verify_active and the full test-suite command.",

@@ -1,8 +1,13 @@
 from __future__ import annotations
 
 import copy
+import hashlib
+import json
+import random
+import sys
 from collections import defaultdict
 from dataclasses import dataclass
+from pathlib import Path
 
 from evaluator.local_evaluator import (
     MAX_TURNS,
@@ -16,6 +21,65 @@ from evaluator.local_evaluator import (
 )
 from ghostlab.competition.contract import AgentProtocol
 from ghostlab.research.firewall import runtime_profile
+
+SHARED_EVALUATION_HARNESS = "ghostlab.research.replay.evaluate_shared.v1"
+DEFAULT_EVALUATION_SEED = 2026
+
+
+def _sha256_file(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def seed_loaded_backends(seed: int) -> None:
+    """Reset RNGs without importing heavyweight optional model libraries."""
+
+    random.seed(seed)
+    numpy = sys.modules.get("numpy")
+    if numpy is not None:
+        numpy.random.seed(seed)
+    torch = sys.modules.get("torch")
+    if torch is not None:
+        torch.manual_seed(seed)
+        if torch.cuda.is_available():
+            torch.cuda.manual_seed_all(seed)
+
+
+def shared_evaluation_contract(
+    samples: list[dict], catalog_path: str | Path, *, seed: int
+) -> dict[str, object]:
+    """Return the auditable contract shared by every comparable system."""
+
+    catalog = Path(catalog_path)
+    official_evaluator = (
+        Path(__file__).resolve().parents[2] / "evaluator" / "local_evaluator.py"
+    )
+    sample_ids = [str(sample["sample_id"]) for sample in samples]
+    contract = {
+        "harness_id": SHARED_EVALUATION_HARNESS,
+        "harness_sha256": _sha256_file(Path(__file__)),
+        "published_evaluator_sha256": _sha256_file(official_evaluator),
+        "ordered_session_ids_sha256": hashlib.sha256(
+            "\n".join(sample_ids).encode("utf-8")
+        ).hexdigest(),
+        "catalog_sha256": _sha256_file(catalog),
+        "sample_count": len(sample_ids),
+        "evaluation_seed": seed,
+        "max_turns": MAX_TURNS,
+        "top_k": TOP_K,
+        "profile_contract": "sanitized user_profile supplied to reset",
+        "response_contract": (
+            "exceptions and invalid responses become empty responses; catalog IDs "
+            "are validated, deduplicated and capped at Top K"
+        ),
+        "timeout_policy": (
+            "no evaluator wall-clock cutoff; component timeouts are frozen in each "
+            "hash-bound system configuration and latency is reported separately"
+        ),
+    }
+    contract["contract_sha256"] = hashlib.sha256(
+        json.dumps(contract, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
+    return contract
 
 
 @dataclass(frozen=True)
@@ -208,6 +272,25 @@ def evaluate_replay(
         },
         "sessions": sessions,
     }
+
+
+def evaluate_shared(
+    agent: AgentProtocol,
+    samples: list[dict],
+    categories: dict[str, list[str]],
+    products: dict[str, dict],
+    *,
+    catalog_path: str | Path,
+    seed: int = DEFAULT_EVALUATION_SEED,
+) -> dict:
+    """Run one agent through the canonical, deterministic research harness."""
+
+    seed_loaded_backends(seed)
+    result = evaluate_replay(agent, samples, categories, products)
+    result["evaluation_contract"] = shared_evaluation_contract(
+        samples, catalog_path, seed=seed
+    )
+    return result
 
 
 def session_reward(session: dict) -> float:

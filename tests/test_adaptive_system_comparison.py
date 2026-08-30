@@ -16,6 +16,10 @@ def _report(score: float, rank: int) -> dict:
         for index in range(1650)
     ]
     return {
+        "evaluation_contract": {
+            "harness_id": "shared-v1",
+            "contract_sha256": "same-contract",
+        },
         "metrics": {
             "hit_rate_at_10": 1.0,
             "mrr": 1.0 / rank,
@@ -32,6 +36,8 @@ def test_comparison_keeps_baselines_out_of_champion_selection() -> None:
             {
                 "rank": 1,
                 "candidate_id": "challenger-test",
+                "config_path": "configs/finalist.json",
+                "config_sha256": "config-hash",
                 "promotion_eligible": True,
                 "techniques": ["state.baseline_v2"],
                 "metrics": {
@@ -44,8 +50,25 @@ def test_comparison_keeps_baselines_out_of_champion_selection() -> None:
             }
         ]
     }
+    report_a = _report(0.6, 3)
+    report_b = _report(0.7, 2)
+    report_c = _report(0.8, 1)
+    finalist_evaluations = {
+        "evaluations": [
+            {
+                "candidate_id": "challenger-test",
+                "config_path": "configs/finalist.json",
+                "config_sha256": "config-hash",
+                "report": _report(0.85, 1),
+            }
+        ]
+    }
     report = build_comparison(
-        _report(0.6, 3), _report(0.7, 2), _report(0.8, 1), top_three
+        report_a,
+        report_b,
+        report_c,
+        top_three,
+        finalist_evaluations,
     )
 
     assert report["sample_count"] == 1650
@@ -59,4 +82,6 @@ def test_comparison_keeps_baselines_out_of_champion_selection() -> None:
         True,
     ]
     assert report["systems"][3]["system_id"] == "D1_challenger-test"
+    assert report["systems"][3]["sessions"]
+    assert report["systems"][3]["ghostlab_selection_metrics"]["score"] == 0.9
     assert report["ghostlab_status"] == "top_three_available"

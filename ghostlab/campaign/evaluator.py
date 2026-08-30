@@ -18,7 +18,7 @@ from ghostlab.campaign.models import (
     JobOutcome,
 )
 from ghostlab.competition.contract import AgentProtocol
-from ghostlab.research.replay import evaluate_replay, session_reward
+from ghostlab.research.replay import evaluate_shared, session_reward
 from ghostlab.training.protocol import FitReceipt
 
 CandidateBuilder = Callable[[CandidateSpec], AgentProtocol]
@@ -204,11 +204,13 @@ class OfflineCampaignEvaluator:
         else:
             agent, receipts = self.fitted_builder(candidate, job, sample_ids)
         timed = _TimedAgent(agent)
-        result = evaluate_replay(
+        result = evaluate_shared(
             timed,
             [self.samples[sample_id] for sample_id in sample_ids],
             self.categories,
             self.products,
+            catalog_path=self.catalog_path,
+            seed=job.seed,
         )
         elapsed = time.perf_counter() - started
         rewards = tuple(session_reward(item) for item in result["sessions"])

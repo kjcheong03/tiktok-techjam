@@ -5,6 +5,7 @@ import json
 from datetime import datetime, timezone
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from typing import Any
 from urllib.parse import quote, urlparse
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -32,6 +33,11 @@ def count_visualizable_runs(payload: object) -> int:
         return 1
     if not isinstance(payload, dict):
         return 0
+    systems = payload.get("systems")
+    if isinstance(systems, list):
+        count = sum(_has_metrics(system) for system in systems)
+        if count:
+            return count
     records = payload.get("records")
     if isinstance(records, list):
         count = sum(_has_metrics(record) for record in records)
@@ -60,6 +66,12 @@ def discover_reports() -> list[dict[str, object]]:
             continue
         relative = path.relative_to(PROJECT_ROOT)
         stat = path.stat()
+        systems = payload.get("systems") if isinstance(payload, dict) else None
+        fair_comparison = (
+            isinstance(systems, list)
+            and isinstance(payload.get("comparison_semantics"), dict)
+            and payload["comparison_semantics"].get("same_ground") is True
+        )
         reports.append(
             {
                 "label": path.stem.replace("_", " ").title(),
@@ -70,20 +82,38 @@ def discover_reports() -> list[dict[str, object]]:
                 "modified_at": datetime.fromtimestamp(
                     stat.st_mtime, tz=timezone.utc
                 ).isoformat(),
-                "featured": relative.as_posix()
-                in {
-                    "artifacts/reports/unified_champion_verification_v1.json",
-                    "artifacts/reports/adaptive_hybrid_qwen_selective_v3.json",
-                },
+                "kind": "fair_system_comparison" if fair_comparison else "generic",
+                "partition": (
+                    payload.get("evaluation_partition")
+                    if isinstance(payload, dict)
+                    else None
+                ),
+                "sample_count": (
+                    payload.get("sample_count") if isinstance(payload, dict) else None
+                ),
+                "featured": False,
             }
         )
-    return sorted(reports, key=lambda item: (not bool(item["featured"]), str(item["label"])))
+    priorities = (
+        "artifacts/reports/adaptive_final_holdout.json",
+        "artifacts/reports/adaptive_system_comparison_1650.json",
+        "artifacts/reports/unified_champion_verification_v1.json",
+        "artifacts/reports/adaptive_hybrid_qwen_selective_v3.json",
+    )
+    for preferred in priorities:
+        match = next((item for item in reports if item["path"] == preferred), None)
+        if match is not None:
+            match["featured"] = True
+            break
+    return sorted(
+        reports, key=lambda item: (not bool(item["featured"]), str(item["label"]))
+    )
 
 
 class DashboardHandler(SimpleHTTPRequestHandler):
     server_version = "GhostLabDashboard/1.0"
 
-    def __init__(self, *args: object, **kwargs: object) -> None:
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, directory=str(PROJECT_ROOT), **kwargs)
 
     def _send_json(self, payload: object, status: int = 200) -> None:
@@ -117,7 +147,9 @@ class DashboardHandler(SimpleHTTPRequestHandler):
             request_path.startswith("/artifacts/") or request_path == "/results.json"
         ) and request_path.endswith(".json")
         if not (allowed_dashboard or allowed_report):
-            self.send_error(404, "Only dashboard assets and result JSON files are served")
+            self.send_error(
+                404, "Only dashboard assets and result JSON files are served"
+            )
             return
         super().do_GET()
 

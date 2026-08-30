@@ -34,15 +34,24 @@ class ReportDiscoveryTests(unittest.TestCase):
         }
         self.assertEqual(count_visualizable_runs(payload), 2)
 
+    def test_counts_fair_system_comparison(self) -> None:
+        payload = {
+            "comparison_semantics": {"same_ground": True},
+            "systems": [
+                {"system_id": "A", "metrics": {"mrr": 0.3}},
+                {"system_id": "B", "metrics": {"hit_rate_at_10": 0.9}},
+                {"system_id": "metadata-only"},
+            ],
+        }
+        self.assertEqual(count_visualizable_runs(payload), 2)
+
     def test_ignores_non_metric_json(self) -> None:
         self.assertEqual(count_visualizable_runs({"status": "ok", "records": []}), 0)
 
     def test_discovers_repository_reports(self) -> None:
         reports = discover_reports()
         paths = {str(report["path"]) for report in reports}
-        self.assertIn(
-            "artifacts/reports/unified_champion_verification_v1.json", paths
-        )
+        self.assertIn("artifacts/reports/unified_champion_verification_v1.json", paths)
         self.assertTrue(all(int(report["run_count"]) > 0 for report in reports))
 
 

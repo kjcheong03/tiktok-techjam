@@ -14,7 +14,8 @@ from ghostlab.optimization.racing import lineage_cluster_means
 from ghostlab.runtime.adaptive_factory import load_adaptive_hybrid_config
 from ghostlab.runtime.selected import sha256_file
 from ghostlab.training.adaptive_datasets import load_adaptive_training_corpus
-from ghostlab.training.adaptive_lineage import load_lineage_manifest
+from ghostlab.training.adaptive_lineage import load_lineage_manifest, subset_corpus
+from scripts.evaluate_adaptive_reference_baselines import evaluate_reference_systems
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_DATASETS = (
@@ -286,15 +287,199 @@ def compare_reports(
     return rows
 
 
+def _summary_metrics(report: dict[str, Any]) -> dict[str, float]:
+    source = report.get("metrics", report)
+    return {
+        key: float(source[key])
+        for key in (
+            "hit_rate_at_10",
+            "mrr",
+            "mttc",
+            "recommended_technical_score",
+        )
+    }
+
+
+def _system_entry(
+    *,
+    system_id: str,
+    role: str,
+    champion_eligible: bool,
+    report: dict[str, Any],
+    report_path: str,
+    config_path: str | None = None,
+    config_sha256: str | None = None,
+    note: str | None = None,
+) -> dict[str, Any]:
+    metric_source = report.get("metrics", report)
+    entry: dict[str, Any] = {
+        "system_id": system_id,
+        "role": role,
+        "champion_eligible": champion_eligible,
+        "metrics": _summary_metrics(report),
+        "scenario_metrics": metric_source.get("scenario_metrics", {}),
+        "source_metrics": report.get("source_metrics", {}),
+        "sessions": report.get("sessions", []),
+        "report_path": report_path,
+    }
+    if config_path is not None:
+        entry["config_path"] = config_path
+    if config_sha256 is not None:
+        entry["config_sha256"] = config_sha256
+    if note is not None:
+        entry["note"] = note
+    return entry
+
+
+def build_fair_holdout_report(
+    *,
+    frozen: dict[str, Any],
+    reference_a: dict[str, Any],
+    reference_b: dict[str, Any],
+    control: dict[str, Any],
+    challenger: dict[str, Any],
+    reference_a_path: str,
+    reference_b_path: str,
+    control_path: str,
+    challenger_path: str,
+    control_config: str,
+    control_config_sha256: str,
+    challenger_config_canonical_sha256: str,
+    gate_results: list[dict[str, Any]],
+    paired: dict[str, float | int],
+    pairwise: dict[str, dict[str, float | int]],
+    receipt_path: str,
+) -> dict[str, Any]:
+    contracts = [
+        report.get("evaluation_contract")
+        for report in (reference_a, reference_b, control, challenger)
+    ]
+    if not all(isinstance(contract, dict) for contract in contracts):
+        raise ValueError("A/B/C/D reports must include the shared evaluation contract")
+    if any(contract != contracts[0] for contract in contracts[1:]):
+        raise ValueError("A/B/C/D reports do not use an identical evaluation contract")
+    ordered_ids = [
+        [str(row["sample_id"]) for row in report.get("sessions", [])]
+        for report in (reference_a, reference_b, control, challenger)
+    ]
+    if len(ordered_ids[0]) != 550 or any(
+        identifiers != ordered_ids[0] for identifiers in ordered_ids[1:]
+    ):
+        raise ValueError(
+            "A/B/C/D holdout reports must contain the same 550 ordered session IDs"
+        )
+    passed = all(bool(item["passed"]) for item in gate_results)
+    systems = [
+        _system_entry(
+            system_id="A_official_stateless_bm25",
+            role="reference_baseline",
+            champion_eligible=False,
+            report=reference_a,
+            report_path=reference_a_path,
+            note="Frozen organizer reference; excluded from champion selection.",
+        ),
+        _system_entry(
+            system_id="B_state_baseline_v2_tagged_best",
+            role="reference_baseline",
+            champion_eligible=False,
+            report=reference_b,
+            report_path=reference_b_path,
+            note=(
+                "Frozen exact-parity State V2 reference. fixed_other is "
+                "simulator-sensitive and excluded from champion selection."
+            ),
+        ),
+        _system_entry(
+            system_id="C_fixed_adaptive_architecture",
+            role="promotion_control",
+            champion_eligible=True,
+            report=control,
+            report_path=control_path,
+            config_path=control_config,
+            config_sha256=control_config_sha256,
+        ),
+        _system_entry(
+            system_id=f"D_{frozen['candidate_id']}",
+            role="promotion_challenger",
+            champion_eligible=True,
+            report=challenger,
+            report_path=challenger_path,
+            config_path=str(frozen["config_path"]),
+            config_sha256=challenger_config_canonical_sha256,
+        ),
+    ]
+    return {
+        "schema_version": 2,
+        "evaluation_scope": "single_use_untouched_holdout",
+        "evaluation_partition": "holdout",
+        "holdout_accessed": True,
+        "holdout_sample_count": 550,
+        "sample_count": 550,
+        "evaluation_contract": contracts[0],
+        "system_count": 4,
+        "reference_count": 2,
+        "challenger_count": 1,
+        "control_count": 1,
+        "frozen_candidate_id": frozen["candidate_id"],
+        "comparison_semantics": {
+            "same_ground": True,
+            "same_ordered_session_ids": True,
+            "same_catalog": True,
+            "same_evaluator_contract": True,
+            "reference_only_systems": [
+                "A_official_stateless_bm25",
+                "B_state_baseline_v2_tagged_best",
+            ],
+            "champion_selection_scope": "C versus D only",
+            "no_post_holdout_tuning": True,
+        },
+        "systems": systems,
+        "pairwise_lineage_cluster_statistics": pairwise,
+        "promotion_comparison": {
+            "control_system_id": "C_fixed_adaptive_architecture",
+            "challenger_system_id": f"D_{frozen['candidate_id']}",
+            "gates": gate_results,
+            "paired_lineage_cluster_statistics": paired,
+        },
+        "all_gates_passed": passed,
+        "decision": "PROMOTE" if passed else "RETAIN_CONTROL",
+        # Compatibility fields retained for the explicit activation command.
+        "challenger": {
+            "config_path": frozen["config_path"],
+            "config_sha256": challenger_config_canonical_sha256,
+            "config_file_sha256": frozen["config_sha256"],
+            "report_path": challenger_path,
+            "metrics": _summary_metrics(challenger),
+        },
+        "control": {
+            "config_path": control_config,
+            "config_sha256": control_config_sha256,
+            "report_path": control_path,
+            "metrics": _summary_metrics(control),
+        },
+        "gates": gate_results,
+        "paired_lineage_cluster_statistics": paired,
+        "receipt": receipt_path,
+    }
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Evaluate one frozen challenger and one control once on holdout"
+        description=(
+            "Evaluate frozen A/B references plus one frozen C control and one frozen "
+            "D challenger once on holdout; promotion remains C-versus-D only"
+        )
     )
     parser.add_argument(
         "--proposal-report", default="artifacts/reports/adaptive_hybrid_top3.json"
     )
     parser.add_argument(
-        "--control-config", default="configs/adaptive_hybrid_1a_3b_v1.json"
+        "--control-config",
+        default="configs/adaptive_hybrid_1a_3b_1650_final_v1_selected.json",
+    )
+    parser.add_argument(
+        "--state-reference-config",
+        default="configs/suites/state_baseline_v2_other.json",
     )
     parser.add_argument("--dataset", action="append", dest="datasets")
     parser.add_argument(
@@ -341,11 +526,18 @@ def main() -> None:
         manifest.holdout_ids,
     )
     receipt = {
-        "schema_version": 1,
+        "schema_version": 2,
         "status": "started",
         "frozen_candidate_id": frozen["candidate_id"],
-        "challenger_config_sha256": frozen["config_sha256"],
+        "challenger_config_file_sha256": frozen["config_sha256"],
+        "challenger_config_canonical_sha256": load_adaptive_hybrid_config(
+            challenger_path
+        ).canonical_hash(),
         "control_config_sha256": sha256_file(ROOT / args.control_config),
+        "reference_a_implementation_sha256": sha256_file(
+            ROOT / "baseline/official_reference.py"
+        ),
+        "reference_b_config_sha256": sha256_file(ROOT / args.state_reference_config),
         "lineage_manifest_sha256": sha256_file(manifest_path),
         "gates_sha256": sha256_file(gates_path),
         "holdout_ids_sha256": hashlib.sha256(
@@ -356,8 +548,25 @@ def main() -> None:
     }
     _write_json(receipt_path, receipt)
     run_dir = output_path.parent / "adaptive_final_holdout_runs"
+    reference_a_output = run_dir / "reference_a.json"
+    reference_b_output = run_dir / "reference_b.json"
     control_output = run_dir / "control.json"
     challenger_output = run_dir / "challenger.json"
+    holdout_corpus = subset_corpus(corpus, manifest, "holdout")
+    holdout_samples = [
+        holdout_corpus.samples[sample_id]
+        for sample_id in sorted(holdout_corpus.samples)
+    ]
+    reference_a, reference_b = evaluate_reference_systems(
+        samples=holdout_samples,
+        origins=holdout_corpus.origins,
+        catalog_path=ROOT / "data/catalog.jsonl",
+        state_config_path=ROOT / args.state_reference_config,
+        partition="holdout",
+        holdout_accessed=True,
+    )
+    _write_json(reference_a_output, reference_a)
+    _write_json(reference_b_output, reference_b)
     _run_evaluation(
         args.control_config,
         str(control_output.relative_to(ROOT)),
@@ -378,49 +587,36 @@ def main() -> None:
         for sample_id in manifest.holdout_ids
     }
     paired = paired_cluster_statistics(challenger, control, holdout_group_by_sample)
-    gate_results = compare_reports(challenger, control, gates, paired)
-    passed = all(bool(item["passed"]) for item in gate_results)
-    report = {
-        "schema_version": 1,
-        "evaluation_scope": "single_use_untouched_holdout",
-        "frozen_candidate_id": frozen["candidate_id"],
-        "challenger_count": 1,
-        "control_count": 1,
-        "holdout_sample_count": 550,
-        "all_gates_passed": passed,
-        "decision": "PROMOTE" if passed else "RETAIN_CONTROL",
-        "challenger": {
-            "config_path": frozen["config_path"],
-            "config_sha256": frozen["config_sha256"],
-            "report_path": str(challenger_output.relative_to(ROOT)),
-            "metrics": {
-                key: challenger[key]
-                for key in (
-                    "hit_rate_at_10",
-                    "mrr",
-                    "mttc",
-                    "recommended_technical_score",
-                )
-            },
-        },
-        "control": {
-            "config_path": args.control_config,
-            "config_sha256": receipt["control_config_sha256"],
-            "report_path": str(control_output.relative_to(ROOT)),
-            "metrics": {
-                key: control[key]
-                for key in (
-                    "hit_rate_at_10",
-                    "mrr",
-                    "mttc",
-                    "recommended_technical_score",
-                )
-            },
-        },
-        "gates": gate_results,
-        "paired_lineage_cluster_statistics": paired,
-        "receipt": str(receipt_path.relative_to(ROOT)),
+    pairwise = {
+        "B_minus_A": paired_cluster_statistics(
+            reference_b, reference_a, holdout_group_by_sample
+        ),
+        "C_minus_B": paired_cluster_statistics(
+            control, reference_b, holdout_group_by_sample
+        ),
+        "D_minus_C": paired,
     }
+    gate_results = compare_reports(challenger, control, gates, paired)
+    report = build_fair_holdout_report(
+        frozen=frozen,
+        reference_a=reference_a,
+        reference_b=reference_b,
+        control=control,
+        challenger=challenger,
+        reference_a_path=str(reference_a_output.relative_to(ROOT)),
+        reference_b_path=str(reference_b_output.relative_to(ROOT)),
+        control_path=str(control_output.relative_to(ROOT)),
+        challenger_path=str(challenger_output.relative_to(ROOT)),
+        control_config=args.control_config,
+        control_config_sha256=str(receipt["control_config_sha256"]),
+        challenger_config_canonical_sha256=str(
+            receipt["challenger_config_canonical_sha256"]
+        ),
+        gate_results=gate_results,
+        paired=paired,
+        pairwise=pairwise,
+        receipt_path=str(receipt_path.relative_to(ROOT)),
+    )
     _write_json(output_path, report)
     _write_json(
         receipt_path, {**receipt, "status": "complete", "decision": report["decision"]}

@@ -46,7 +46,8 @@ The following decisions are fixed before implementation or final training:
    and challenger generation.
 5. GhostLab may rank and report a development Top 3, but it must freeze exactly one
    proposed challenger before the 550-session holdout is opened.
-6. Evaluate only the frozen challenger and frozen control on the holdout, once.
+6. Evaluate frozen A/B reference arms and exactly the frozen C control and D challenger
+   on the holdout, once. A/B are explanatory only; only C versus D affects promotion.
 7. If the challenger fails any predeclared promotion gate, retain the control. Do
    not evaluate the second- or third-ranked development challenger on the same
    holdout.
@@ -55,7 +56,9 @@ The following decisions are fixed before implementation or final training:
 
 Evaluating three challengers and selecting the best on the 550 would make the 550 a
 final selection set. The freeze-one procedure preserves it as an untouched local
-holdout for one predeclared challenger-versus-control test.
+holdout for one predeclared challenger-versus-control test. Frozen A/B reference arms
+may be measured in the same one-time event because they are never selectable and cannot
+alter the C-versus-D decision.
 
 ## Fixed 1A-3B architecture boundary
 
@@ -579,7 +582,14 @@ All development reporting uses four explicitly different roles:
 A, B and C must be evaluated on identical ordered development sample IDs. The final
 development comparison includes A, B, C and the available D1-D3 finalists, but A and B
 cannot be promoted because they do not implement the complete compulsory workflow.
-Champion selection and the one-time holdout comparison are restricted to C versus D.
+Champion selection is restricted to C versus D. The one-time holdout report contains
+A/B/C/D for a same-ground comparison, but A and B remain reference-only.
+
+Every comparable A/B/C/D run uses one shared research evaluator entrypoint. Its report
+contract hashes the ordered session IDs, catalog, shared harness, published evaluator,
+seed and fixed turn/Top-K limits, and records the common profile, exception and response
+normalization behavior. The published evaluator remains unchanged and is protected by
+behavioral parity tests. Missing or unequal contracts invalidate the comparison.
 
 The reproducible outputs are:
 
@@ -614,6 +624,12 @@ The proposal report must explicitly state that ranks two and three are not eligi
 holdout evaluation in the same experiment. If the proposed challenger fails holdout,
 the outcome is “retain control,” not “try the next challenger.”
 
+After packaging, D1-D3 are re-evaluated on the same ordered full-development sessions,
+catalog, seed and shared evaluator contract as A/B/C. These matched runs power the
+dashboard challenger dropdown and like-for-like development table. Original GhostLab
+fold/racing metrics remain separate selection evidence; matched re-evaluation cannot
+change which single D was already frozen for holdout.
+
 Proposed path:
 
 `artifacts/reports/adaptive_hybrid_frozen_proposal_v1.json`
@@ -625,6 +641,8 @@ The holdout runner is a separate command and process. It consumes only:
 - the frozen proposal report;
 - the hash-bound proposed challenger;
 - the frozen matched control;
+- the frozen official stateless BM25 reference definition;
+- the frozen tagged-best State Baseline V2 reference definition;
 - the split manifest's holdout partition; and
 - a predeclared promotion-gate configuration.
 
@@ -639,7 +657,9 @@ It refuses to run when:
 
 ### Required reports
 
-Report challenger, control and paired deltas for:
+Report all four frozen systems on identical ordered sessions, with A/B marked
+reference-only and C/D marked control/challenger. Report per-system metrics and paired
+B-minus-A, C-minus-B and D-minus-C deltas for:
 
 1. official public 50;
 2. public-like synthetic 250;
@@ -793,14 +813,16 @@ Gate:
 
 Implementation:
 
-- evaluate the frozen control and challenger on identical 550 sessions;
+- evaluate frozen A/B references and the frozen C/D control/challenger pair on identical
+  ordered 550 sessions, one catalog and one evaluator contract;
 - generate per-source, route, combined and macro evidence;
-- apply immutable promotion gates; and
+- apply immutable promotion gates only to C versus D; and
 - write a one-time access receipt.
 
 Gate:
 
-- exactly two configs were evaluated;
+- exactly four frozen systems were evaluated, containing two ineligible references and
+  exactly one promotion-eligible control/challenger pair;
 - exactly 50/250/250 sessions were consumed;
 - paired uncertainty uses the verified holdout lineage clusters;
 - no training or tuning occurred;
@@ -845,7 +867,7 @@ Gate:
 | Cluster-aware statistics | Racing and holdout intervals resample whole lineage groups rather than individual related sessions |
 | Like-for-like | Identical session IDs/configuration for every delta |
 | Freeze-one | Only one challenger hash allowed into holdout |
-| Holdout one-time | Control + one challenger, immutable gates and receipt |
+| Holdout one-time | Frozen A/B references + one C/D control/challenger pair, immutable C-versus-D gates and receipt |
 | Artifact integrity | Clean-checkout hash and offline runtime parity |
 
 ## Required artifacts
@@ -906,7 +928,8 @@ This plan is complete only when:
    outer/inner partitions;
 5. the normal architecture and genuine overload exception are behaviorally proven;
 6. one challenger is frozen using development evidence and cluster-aware statistics;
-7. the holdout evaluates only that challenger and the control once;
+7. the holdout evaluates frozen A/B references and only that C/D challenger/control
+   pair once, with promotion based solely on C versus D;
 8. the predeclared gates produce an auditable promote-or-retain result;
 9. any promoted champion passes the complete suite and clean offline reproduction;
 10. F3 remains sealed; and

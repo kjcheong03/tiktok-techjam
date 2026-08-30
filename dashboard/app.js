@@ -2,8 +2,11 @@
 
 const COLORS = ["#39f0cf", "#ff4f8b", "#9f7aea", "#f5bd5b", "#5da8ff", "#ff8c5a", "#7bdd65", "#d786ff"];
 const SCORE_KEYS = ["recommended_technical_score", "hit_rate_at_10", "mrr", "mttc", "efficiency"];
+const SYSTEM_DISPLAY_NAMES = {
+  B_state_baseline_v2_tagged_best: "B · Dynamic Conversation State",
+};
 
-const state = { reports: [], runs: [], activeId: null };
+const state = { reports: [], runs: [], activeId: null, comparisonMeta: null, selectedChallengerId: null };
 const $ = (selector) => document.querySelector(selector);
 const elements = {
   status: $("#server-status"), reportSelect: $("#report-select"), reportHint: $("#report-hint"),
@@ -14,6 +17,10 @@ const elements = {
   distributionLabel: $("#distribution-label"), sessionSearch: $("#session-search"), scenarioFilter: $("#scenario-filter"),
   outcomeFilter: $("#outcome-filter"), sessionTable: $("#session-table"), sessionCount: $("#session-count"),
   noSessions: $("#no-sessions"), dropOverlay: $("#drop-overlay"), toast: $("#toast"),
+  comparisonContract: $("#comparison-contract"), comparisonContractTitle: $("#comparison-contract-title"),
+  comparisonContractCopy: $("#comparison-contract-copy"), comparisonContractBadges: $("#comparison-contract-badges"),
+  promotionDecision: $("#promotion-decision"),
+  challengerPicker: $("#challenger-picker"), challengerSelect: $("#challenger-select"),
 };
 
 function isNumber(value) { return typeof value === "number" && Number.isFinite(value); }
@@ -39,26 +46,60 @@ function normalizeScenario(raw = {}) {
   return metrics;
 }
 
-function normalizeRun(value, fallbackName, source, suffix = "run") {
+function normalizeRun(value, fallbackName, source, suffix = "run", context = {}) {
   const metricSource = value.metrics && typeof value.metrics === "object" ? value.metrics : value;
   const metrics = normalizeScenario(metricSource);
   const sessions = Array.isArray(value.sessions) ? value.sessions : Array.isArray(metricSource.sessions) ? metricSource.sessions : [];
   const scenarioSource = metricSource.scenario_metrics || value.scenario_metrics || {};
   const scenarios = Object.fromEntries(Object.entries(scenarioSource).map(([name, data]) => [name, normalizeScenario(data)]));
-  const configuredName = value.experiment_id || value.name || value.candidate_id || value.config?.experiment_id;
-  const name = configuredName || fallbackName;
-  const sampleCount = value.sample_count ?? metricSource.sample_count ?? sessions.length ?? null;
+  const configuredName = value.system_id || value.experiment_id || value.name || value.candidate_id || value.config?.experiment_id;
+  const name = SYSTEM_DISPLAY_NAMES[value.system_id] || configuredName || fallbackName;
+  const sampleCount = value.sample_count ?? metricSource.sample_count ?? context.sampleCount ?? sessions.length ?? null;
   return {
     id: `${source}::${suffix}`,
     name: String(name).replaceAll("_", " "), source, metrics, scenarios, sessions,
     sampleCount: isNumber(sampleCount) ? sampleCount : null,
+    systemId: value.system_id || null,
+    role: value.role || "unclassified",
+    championEligible: value.champion_eligible === true,
+    partition: value.partition || context.partition || null,
+    holdoutAccessed: value.holdout_accessed ?? context.holdoutAccessed ?? null,
+    note: value.note || null,
     color: COLORS[0],
   };
 }
 
-function extractRuns(payload, fallbackName, source) {
-  if (hasMetrics(payload)) return [normalizeRun(payload, fallbackName, source)];
-  if (!payload || typeof payload !== "object" || Array.isArray(payload)) return [];
+function extractReport(payload, fallbackName, source) {
+  if (!payload || typeof payload !== "object" || Array.isArray(payload)) return { runs: [], meta: null };
+  if (Array.isArray(payload.systems)) {
+    const semantics = payload.comparison_semantics || {};
+    const context = {
+      partition: payload.evaluation_partition || (String(payload.evaluation_scope || "").includes("holdout") ? "holdout" : null),
+      sampleCount: payload.sample_count ?? payload.holdout_sample_count ?? null,
+      holdoutAccessed: payload.holdout_accessed ?? String(payload.evaluation_scope || "").includes("holdout"),
+    };
+    const runs = payload.systems.filter(hasMetrics).map((system, index) => normalizeRun(
+      system, system.system_id || `${fallbackName} · system ${index + 1}`, source,
+      `system-${system.system_id || index}`, context,
+    ));
+    return {
+      runs,
+      meta: {
+        fair: semantics.same_ground === true,
+        partition: context.partition,
+        sampleCount: context.sampleCount,
+        holdoutAccessed: context.holdoutAccessed,
+        championScope: semantics.champion_selection_scope || "C versus D only",
+        sameEvaluator: semantics.same_evaluator_contract === true,
+        sameOrderedIds: semantics.same_ordered_session_ids === true,
+        decision: payload.decision || null,
+        gatesPassed: payload.all_gates_passed ?? null,
+        source,
+        challengerIds: runs.filter((run) => run.role.includes("challenger")).map((run) => run.id),
+      },
+    };
+  }
+  if (hasMetrics(payload)) return { runs: [normalizeRun(payload, fallbackName, source)], meta: null };
   if (Array.isArray(payload.records)) {
     const runs = payload.records.filter(hasMetrics).map((record, index) => normalizeRun(
       record,
@@ -66,13 +107,25 @@ function extractRuns(payload, fallbackName, source) {
       source,
       `record-${record.ordinal ?? index}`,
     ));
-    if (runs.length) return runs;
+    if (runs.length) return { runs, meta: null };
   }
-  return Object.entries(payload).filter(([, value]) => hasMetrics(value)).map(([key, value]) =>
-    normalizeRun(value, key, source, `key-${key}`));
+  return {
+    runs: Object.entries(payload).filter(([, value]) => hasMetrics(value)).map(([key, value]) =>
+      normalizeRun(value, key, source, `key-${key}`)),
+    meta: null,
+  };
 }
 
-function addRuns(runs) {
+function addRuns(runs, meta = null) {
+  if (meta) {
+    state.runs = [];
+    state.activeId = null;
+    state.comparisonMeta = meta;
+    state.selectedChallengerId = meta.challengerIds?.[0] || null;
+  } else if (state.comparisonMeta) {
+    state.comparisonMeta = null;
+    state.selectedChallengerId = null;
+  }
   let added = 0;
   for (const run of runs) {
     if (state.runs.some((existing) => existing.id === run.id)) continue;
@@ -90,9 +143,9 @@ async function loadReport(report, quiet = false) {
     const response = await fetch(report.url, { cache: "no-store" });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const payload = await response.json();
-    const runs = extractRuns(payload, report.label, report.path);
-    if (!runs.length) throw new Error("No evaluation metrics were found");
-    const added = addRuns(runs);
+    const extracted = extractReport(payload, report.label, report.path);
+    if (!extracted.runs.length) throw new Error("No evaluation metrics were found");
+    const added = addRuns(extracted.runs, extracted.meta);
     if (!quiet) showToast(added ? `Loaded ${added} run${added === 1 ? "" : "s"}` : "Those runs are already loaded");
   } catch (error) {
     showToast(`Could not load report: ${error.message}`);
@@ -127,9 +180,9 @@ async function importFiles(files) {
   for (const file of files) {
     try {
       const payload = JSON.parse(await file.text());
-      const runs = extractRuns(payload, file.name.replace(/\.json$/i, ""), file.name);
-      if (!runs.length) throw new Error("no recognized evaluation metrics");
-      total += addRuns(runs);
+      const extracted = extractReport(payload, file.name.replace(/\.json$/i, ""), file.name);
+      if (!extracted.runs.length) throw new Error("no recognized evaluation metrics");
+      total += addRuns(extracted.runs, extracted.meta);
     } catch (error) {
       showToast(`${file.name}: ${error.message}`);
     }
@@ -137,7 +190,17 @@ async function importFiles(files) {
   if (total) showToast(`Imported ${total} run${total === 1 ? "" : "s"}`);
 }
 
-function activeRun() { return state.runs.find((run) => run.id === state.activeId) || state.runs[0]; }
+function isChallenger(run) { return run.role.includes("challenger"); }
+function displayedRuns() {
+  if (!state.comparisonMeta) return state.runs;
+  const pinned = state.runs.filter((run) => !isChallenger(run));
+  const selected = state.runs.find((run) => run.id === state.selectedChallengerId);
+  return selected ? [...pinned, selected] : pinned;
+}
+function activeRun() {
+  const visible = displayedRuns();
+  return visible.find((run) => run.id === state.activeId) || visible[0];
+}
 function percent(value) { return isNumber(value) ? `${(value * 100).toFixed(1)}%` : "—"; }
 function decimal(value, digits = 3) { return isNumber(value) ? value.toFixed(digits) : "—"; }
 function metricDisplay(key, value) {
@@ -147,12 +210,53 @@ function metricDisplay(key, value) {
 }
 
 function renderTabs() {
-  elements.runCount.textContent = `${state.runs.length} run${state.runs.length === 1 ? "" : "s"}`;
-  elements.runTabs.innerHTML = state.runs.map((run) => `
+  const visible = displayedRuns();
+  const challengerCount = state.runs.filter(isChallenger).length;
+  elements.runCount.textContent = state.comparisonMeta && challengerCount > 1
+    ? `${visible.length} displayed · ${challengerCount} challengers available`
+    : `${visible.length} run${visible.length === 1 ? "" : "s"}`;
+  elements.runTabs.innerHTML = visible.map((run) => `
     <div class="run-tab ${run.id === state.activeId ? "active" : ""}" style="--run-color:${run.color}" data-run-id="${escapeHtml(run.id)}" role="button" tabindex="0">
       <i class="run-dot"></i><span class="tab-name" title="${escapeHtml(run.name)}">${escapeHtml(run.name)}</span>
-      <button class="remove-run" data-remove-id="${escapeHtml(run.id)}" aria-label="Remove ${escapeHtml(run.name)}">×</button>
+      ${state.comparisonMeta ? "" : `<button class="remove-run" data-remove-id="${escapeHtml(run.id)}" aria-label="Remove ${escapeHtml(run.name)}">×</button>`}
     </div>`).join("");
+}
+
+function renderChallengerPicker() {
+  const challengers = state.runs.filter(isChallenger);
+  elements.challengerPicker.hidden = !state.comparisonMeta || challengers.length === 0;
+  if (elements.challengerPicker.hidden) return;
+  if (!challengers.some((run) => run.id === state.selectedChallengerId)) {
+    state.selectedChallengerId = challengers[0].id;
+  }
+  elements.challengerSelect.innerHTML = challengers.map((run) =>
+    `<option value="${escapeHtml(run.id)}" ${run.id === state.selectedChallengerId ? "selected" : ""}>${escapeHtml(run.name)}</option>`).join("");
+  elements.challengerSelect.disabled = challengers.length === 1;
+  elements.challengerPicker.querySelector("span").textContent = challengers.length === 1
+    ? "Frozen challenger"
+    : "Displayed challenger";
+}
+
+function renderComparisonContract() {
+  const meta = state.comparisonMeta;
+  elements.comparisonContract.hidden = !meta;
+  if (!meta) return;
+  const partition = String(meta.partition || "unknown").replaceAll("_", " ");
+  elements.comparisonContractTitle.textContent = meta.fair ? "Fair A/B/C/D comparison" : "Comparison report";
+  elements.comparisonContractCopy.textContent = meta.fair
+    ? `All systems were evaluated on the same ${meta.sampleCount ?? "—"} ordered ${partition} sessions. A and B are references; only ${meta.championScope} determines promotion.`
+    : "This report does not assert that every run used the same evaluation ground.";
+  const badges = [
+    `${partition} partition`, `${meta.sampleCount ?? "—"} shared sessions`,
+    meta.sameOrderedIds ? "same ordered IDs" : "ID parity unknown",
+    meta.sameEvaluator ? "same evaluator" : "evaluator parity unknown",
+    meta.holdoutAccessed ? "holdout accessed once" : "holdout sealed",
+  ];
+  elements.comparisonContractBadges.innerHTML = badges.map((badge, index) =>
+    `<span class="contract-badge ${index >= 2 && meta.fair ? "safe" : ""}">${escapeHtml(badge)}</span>`).join("");
+  const decision = meta.decision || "Development comparison only";
+  elements.promotionDecision.textContent = meta.decision ? `Promotion decision: ${decision.replaceAll("_", " ")}` : decision;
+  elements.promotionDecision.className = `promotion-decision ${decision === "PROMOTE" ? "promote" : decision === "RETAIN_CONTROL" ? "retain" : ""}`;
 }
 
 function renderMetrics(run) {
@@ -172,13 +276,19 @@ function renderMetrics(run) {
 }
 
 function renderComparison() {
-  const sorted = [...state.runs].sort((a, b) => (b.metrics.recommended_technical_score ?? -1) - (a.metrics.recommended_technical_score ?? -1));
+  const visible = displayedRuns();
+  const sorted = state.comparisonMeta ? visible : [...visible].sort((a, b) => (b.metrics.recommended_technical_score ?? -1) - (a.metrics.recommended_technical_score ?? -1));
   const maxScore = Math.max(.001, ...sorted.map((run) => run.metrics.recommended_technical_score || 0));
   elements.comparison.innerHTML = sorted.map((run) => {
     const score = run.metrics.recommended_technical_score;
     const width = isNumber(score) ? Math.max(1, (score / maxScore) * 100) : 0;
+    const roleClass = run.role.includes("reference") || run.role.includes("baseline") ? "reference" : run.role.includes("control") ? "control" : "challenger";
+    const roleSuffix = run.championEligible ? "eligible" : "reference";
+    const roleBadge = state.comparisonMeta
+      ? `<span class="role-badge ${roleClass}">${escapeHtml(run.role.replaceAll("_", " "))} · ${roleSuffix}</span>`
+      : "";
     return `<div class="comparison-row comparison-grid" style="--run-color:${run.color}">
-      <div class="comparison-name"><i></i><button data-select-id="${escapeHtml(run.id)}" title="Select ${escapeHtml(run.name)}">${escapeHtml(run.name)}</button></div>
+      <div class="comparison-name"><i></i><div class="comparison-identity"><button data-select-id="${escapeHtml(run.id)}" title="Select ${escapeHtml(run.name)}">${escapeHtml(run.name)}</button>${roleBadge}</div></div>
       <div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:${width}%"></div></div><strong class="bar-number">${decimal(score)}</strong></div>
       <span class="comparison-stat">${percent(run.metrics.hit_rate_at_10)}</span>
       <span class="comparison-stat">${decimal(run.metrics.mrr)}</span>
@@ -249,13 +359,17 @@ function renderSessions(run, resetFilter = false) {
 
 function render() {
   renderTabs();
+  renderChallengerPicker();
+  renderComparisonContract();
   const run = activeRun();
   const hasRuns = Boolean(run);
   elements.empty.hidden = hasRuns;
   elements.content.hidden = !hasRuns;
   if (!run) return;
   elements.selectedName.textContent = run.name;
-  elements.selectedSource.textContent = run.source;
+  elements.selectedSource.textContent = state.comparisonMeta
+    ? `${run.role.replaceAll("_", " ")} · ${run.source}`
+    : run.source;
   renderMetrics(run);
   renderComparison();
   renderScenarios(run);
@@ -277,6 +391,12 @@ function removeRun(id) {
   if (state.activeId === id) state.activeId = state.runs[0]?.id || null;
   render();
 }
+
+elements.challengerSelect.addEventListener("change", () => {
+  state.selectedChallengerId = elements.challengerSelect.value;
+  state.activeId = state.selectedChallengerId;
+  render();
+});
 
 elements.loadReport.addEventListener("click", () => {
   const report = state.reports[Number(elements.reportSelect.value)];

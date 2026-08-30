@@ -53,6 +53,16 @@
         <div class="run-tabs" id="run-tabs"></div>
       </section>
 
+      <section id="comparison-contract" class="comparison-contract" hidden>
+        <div>
+          <p class="eyebrow">Shared evaluation ground</p>
+          <h2 id="comparison-contract-title">Fair system comparison</h2>
+          <p id="comparison-contract-copy"></p>
+        </div>
+        <div class="contract-badges" id="comparison-contract-badges"></div>
+        <div class="promotion-decision" id="promotion-decision"></div>
+      </section>
+
       <div id="empty-state" class="empty-state">
         <div class="empty-graphic" aria-hidden="true">
           <span></span><span></span><span></span><span></span>
@@ -78,9 +88,15 @@
           <div class="section-heading">
             <div>
               <p class="eyebrow">Leaderboard</p>
-              <h2>Run comparison</h2>
+              <h2>System comparison</h2>
             </div>
-            <span class="muted">Higher is better, except MTTC</span>
+            <div class="leaderboard-controls">
+              <label id="challenger-picker" class="challenger-picker" for="challenger-select" hidden>
+                <span>Displayed challenger</span>
+                <select id="challenger-select" class="small-select" aria-label="Choose GhostLab challenger"></select>
+              </label>
+              <span class="muted">Higher is better, except MTTC</span>
+            </div>
           </div>
           <div class="comparison-head comparison-grid" aria-hidden="true">
             <span>Run</span><span>Technical score</span><span>Hit@10</span><span>MRR</span><span>MTTC</span>

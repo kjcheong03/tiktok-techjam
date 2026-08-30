@@ -32,6 +32,7 @@ def test_adaptive_pipeline_plan_has_ordered_dependency_stages() -> None:
         "validate",
         "campaign",
         "package",
+        "finalists",
         "compare",
     ]
     assert all(stage["status"] in {"run", "skip_complete"} for stage in stages)
