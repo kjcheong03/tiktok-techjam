@@ -6,10 +6,10 @@ The fixed Track 4 architecture and its GhostLab integration are implemented and 
 implementation-level validation. The architecture cannot be removed or reordered by a
 challenger; GhostLab can tune required implementations and race compatible additions.
 
-The full 2,200-session fit, bounded LLM family comparison, and large GhostLab campaign
-are deliberately deferred. They are optimization/model-selection work, not missing
-runtime implementation. The previous active candidate and guarded champion were not
-modified, and F3 was not accessed.
+The final 1,650-development fit, bounded LLM family comparison, and large GhostLab
+campaign are deliberately deferred. They are optimization/model-selection work, not
+missing runtime implementation. The 550-session lineage-safe holdout remains untouched,
+the previous active candidate was not modified, and F3 was not accessed.
 
 ## Problem-statement coverage
 
@@ -30,16 +30,17 @@ Ask-only deferral is not the default architecture.
 
 | Gap | Resolution | Validation evidence |
 |---|---|---|
-| Observable router was too narrow | Added hard/soft confidence proxies, exclusions, correction epoch and query specificity without labels or evaluator data | Unit and interaction tests cover Buying, Browsing, correction and low-confidence precision abstention |
-| Constraints could lose authority on Browsing | Added route-independent confirmed-match/confirmed-violation/unknown/soft decisions before and after ranking | Adversarial tests prove confirmed budget/exclusion violations cannot reach output; unknown metadata remains eligible |
+| Observable router was too narrow | Separated current-query evidence from discounted historical state; added category-only, attribute-coverage, bounded query-length, provenance, exclusion and correction evidence without labels or evaluator data | Counterfactual tests hold accumulated state constant while current query specificity changes Buying/Browsing; standard route and abstention tests remain active |
+| Constraints could lose authority on Browsing | Added route-independent confirmed-match/confirmed-violation/unknown/soft decisions before and after ranking; complete literal tokens or approved semantic equivalents are required | Adversarial tests cover shared-token false positives, incomplete approved-equivalent matches, exclusions, budget violations and missing metadata |
 | Diverse dense was only multi-view max relevance | Added max-relevance, view-balanced and embedding-MMR selectors with per-view evidence and pinned E5 product embeddings | Full 80-session public Browsing diagnostic reports recall, category coverage and pairwise similarity |
-| Overload cutoff occurred after full dense work | Added cheap keyword/category preview and overload-specific reduced E5 budgets while preserving union and LLM activation decisions | Trace tests verify reduced requested depth and continued downstream execution |
+| Overload cutoff occurred after full dense work | Added cheap keyword/category preview, overload-specific reduced E5 budgets and a bounded safe merge/ranker branch that skips normal union, optional full rerankers and local-LLM execution | Behavior-level trace tests verify reduced depth, safe-branch execution and prohibited-stage non-execution |
 | GBDT could not learn source importance | Added normalized BM25/category/dense ranks and scores, missingness, source membership/count, reciprocal rank, agreement, constraint and profile features | Matrix parity/missingness tests and real structural smoke fit pass |
 | Buying precision could be overturned | Added sparse-dominant residual mode with bounded learned influence and route-independent authority | Adversarial learned-ranker test cannot overturn the protected sparse head or hard constraints |
 | Turn context was only partly immutable | Router, retrieval, guidance, ranking, clarification and profile adaptation consume one frozen per-turn context | Frozen-dataclass and atomic commit tests pass |
 | Profile adaptation was too weak/decorative | Added optional profile query view, union feature and question suppression plus explicit update attributes | Conflict, query-view, feature and question tests pass; explicit current intent remains dominant |
 | LLM configuration lacked a controlled family study | Added pinned SmolLM2 and Qwen3 assets, generic local-causal backend, Qwen depth study and same-pipeline comparison script | Qwen, SmolLM2 and Qwen3 all load offline and return finite relevance scores; full comparison is deferred |
 | GhostLab could reject required architecture | Added compulsory/adaptive classifications, preflight architecture audit, fit receipts, resumable checkpoints and source/scenario/constraint gates | Plan contains all 19 compulsory capabilities in every one of 28 initial candidates |
+| Final comparison could drift after development | Finalist validation uses the shared 1,650-session evaluator; packaging freezes D, control C, A/B definitions, gates and lineage hashes before holdout | Tests reject changed control paths/hashes and mismatched evaluation contracts/session order before any holdout receipt is written |
 
 ## Diverse-dense result
 
@@ -69,8 +70,8 @@ candidate rows. Nested out-of-fold results were:
 | Source-aware union GBDT | 0.888005 | 0.728429 |
 | Delta | +0.046617 | +0.124185 |
 
-This is strong evidence that the structural feature change is useful. It is not the
-final 2,200-session selection result.
+This is strong historical smoke evidence that the structural feature change is useful.
+It is not the final 1,650-development selection result.
 
 ## End-to-end structural smoke
 
@@ -114,7 +115,7 @@ deferred optimization. No partial campaign is presented as a completed result.
 
 ## Code-quality validation
 
-- Full regression suite: 433 passed, 1 skipped.
+- Full regression suite: 457 passed, 1 skipped.
 - Repository-wide Ruff: clean.
 - Focused mypy over the changed trainer, LLM comparison and validator: clean.
 - `git diff --check`: clean.
@@ -123,14 +124,17 @@ deferred optimization. No partial campaign is presented as a completed result.
 
 ## Deliberately deferred work
 
-1. Complete the 2,200-session five-fold structural fit. The stopped attempt completed
-   all 22,000 turn replays and built 5,553,869 candidate rows, then was interrupted before
-   fitting. No incomplete model is bound or claimed.
+1. Complete the 1,650-development five-fold structural fit using lineage-preserving
+   outer and inner folds. Historical 2,200-session artifacts are not eligible because
+   they consumed what is now the untouched holdout. No incomplete model is bound or
+   claimed.
 2. Run the bounded local-LLM comparison after the fitted candidate pools are frozen:
    Qwen Top 10/20/30, then SmolLM2 and Qwen3 at the winning depth.
 3. Use the emitted selected LLM config for a full public run and validation.
 4. Run the resumable F0/F1/F2 GhostLab campaign with grouped source/scenario gates.
-5. Review the final champion manually; do not auto-write the active-candidate pointer.
+5. Package up to three development finalists, freeze exactly one D plus control C and
+   every holdout dependency, then run the 550-session holdout once.
+6. Review the final champion manually; do not auto-write the active-candidate pointer.
 
 ## Reproduction sequence
 

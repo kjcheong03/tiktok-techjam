@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import tempfile
 from pathlib import Path
@@ -74,6 +75,18 @@ def test_packages_three_ranked_challengers_without_activation() -> None:
         assert report["selection_evidence"]["untouched_holdout_exists"] is True
         assert report["frozen_proposal"]["candidate_id"] == "challenger-test-1"
         assert report["frozen_proposal"]["holdout_accessed"] is False
+        frozen = report["frozen_proposal"]
+        control = ROOT / frozen["control_config_path"]
+        assert frozen["control_config_file_sha256"] == hashlib.sha256(
+            control.read_bytes()
+        ).hexdigest()
+        assert frozen["control_config_canonical_sha256"]
+        assert frozen["reference_a_implementation_sha256"]
+        assert frozen["reference_b_config_sha256"]
+        assert frozen["gates_sha256"]
+        validation = report["finalists"][0]["commands"]["validate"]
+        assert "adaptive_hybrid_training_1650_final_v1.json" in validation
+        assert "training_2200" not in validation
         assert all(item["promotion_eligible"] for item in report["finalists"])
         assert all(
             (ROOT / item["config_path"]).is_file() for item in report["finalists"]

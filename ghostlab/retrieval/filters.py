@@ -77,19 +77,27 @@ def _tokens(value: object) -> frozenset[str]:
     return frozenset(re.findall(r"[a-z0-9]+", str(value).casefold()))
 
 
-def _semantic_overlap(wanted: frozenset[str], known: frozenset[str]) -> bool:
-    if wanted & known:
-        return True
+def _canonical_semantic_tokens(tokens: frozenset[str]) -> frozenset[str]:
+    normalized = set(tokens)
     for concept, variants in SEMANTIC_EQUIVALENTS.items():
-        concept_requested = concept in wanted or any(
-            variant <= wanted for variant in variants
-        )
-        concept_known = concept in known or any(
-            variant <= known for variant in variants
-        )
-        if concept_requested and concept_known:
-            return True
-    return False
+        matched = next((variant for variant in variants if variant <= normalized), None)
+        if concept in normalized:
+            matched = frozenset({concept})
+        if matched is None:
+            continue
+        normalized.difference_update(matched)
+        normalized.add(concept)
+    return frozenset(normalized)
+
+
+def _semantic_overlap(wanted: frozenset[str], known: frozenset[str]) -> bool:
+    # A match requires every requested semantic token. Treating any shared token as
+    # a match makes open-world constraints unsafe (for example, "water resistant"
+    # incorrectly matching "water bottle"). Approved variants are canonicalized,
+    # so GORE-TEX can satisfy waterproof without ignoring additional requirements.
+    canonical_wanted = _canonical_semantic_tokens(wanted)
+    canonical_known = _canonical_semantic_tokens(known)
+    return bool(canonical_wanted) and canonical_wanted <= canonical_known
 
 
 class CoverageAwareFilter:
@@ -189,9 +197,9 @@ class CoverageAwareFilter:
             return decision(
                 "CONFIRMED_VIOLATION" if violates else "CONFIRMED_MATCH",
                 (
-                    "approved_equivalent_or_literal_exclusion"
+                    "complete_literal_or_approved_equivalent_exclusion"
                     if violates
-                    else "approved_equivalent_or_literal_match"
+                    else "complete_literal_or_approved_equivalent_match"
                 ),
             )
         if constraint.attribute in {"feature", "use_case", "other"}:

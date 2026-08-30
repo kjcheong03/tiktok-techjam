@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import math
+import re
 import time
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
@@ -71,42 +72,107 @@ class DualTrackRouter:
     def __init__(self, config: DualTrackRouterConfig) -> None:
         self.config = config
 
-    def decide(self, view: V2StateView, current_message: str) -> RouteDecision:
-        lowered = current_message.casefold()
-        marker = next(
-            (item for item in self.config.browsing_markers if item in lowered), None
-        )
+    def _constraint_specificity(
+        self, constraints: Sequence[ConstraintView]
+    ) -> tuple[float, int, int, int, int]:
         positive = [
             item
-            for item in view.active_constraints
+            for item in constraints
             if item.attribute != "category" and item.polarity == "include"
         ]
-        exclusions = sum(item.polarity == "exclude" for item in view.active_constraints)
+        exclusions = sum(item.polarity == "exclude" for item in constraints)
         hard = sum(
             item.strength == "hard" or item.attribute == "budget" for item in positive
         )
         explicit = sum(
             item.provenance in {"explicit", "simulator_answer"} for item in positive
         )
-        specificity = (
+        score = (
             len(positive)
             + self.config.exclusion_specificity_weight * exclusions
             + self.config.hard_specificity_weight * hard
             + self.config.explicit_specificity_weight * explicit
         )
-        browsing_evidence = self.config.browsing_marker_weight if marker else 0.0
+        return score, len(positive), exclusions, hard, explicit
+
+    def decide(self, view: V2StateView, current_message: str) -> RouteDecision:
+        lowered = current_message.casefold()
+        query_tokens = re.findall(r"[a-z0-9]+", lowered)
+        query_token_set = frozenset(query_tokens)
+        marker = next(
+            (item for item in self.config.browsing_markers if item in lowered), None
+        )
+
+        def mentioned_now(item: ConstraintView) -> bool:
+            if item.source_turn == view.turn:
+                return True
+            return any(
+                (value_tokens := frozenset(re.findall(r"[a-z0-9]+", value)))
+                and value_tokens <= query_token_set
+                for value in item.values
+            )
+
+        current_constraints = tuple(
+            item for item in view.active_constraints if mentioned_now(item)
+        )
+        historical_constraints = tuple(
+            item for item in view.active_constraints if not mentioned_now(item)
+        )
+        current_score, current_positive, current_exclusions, _, _ = (
+            self._constraint_specificity(current_constraints)
+        )
+        historical_score, historical_positive, historical_exclusions, _, _ = (
+            self._constraint_specificity(historical_constraints)
+        )
+        current_attributes = {
+            item.attribute
+            for item in current_constraints
+            if item.attribute != "category" and item.polarity == "include"
+        }
+        query_length_evidence = 0.0
+        if current_positive or current_exclusions:
+            query_length_evidence = self.config.current_query_length_weight * min(
+                len(query_tokens) / self.config.current_query_length_cap,
+                1.0,
+            )
+        specificity = (
+            current_score
+            + self.config.historical_specificity_weight * historical_score
+            + self.config.current_attribute_coverage_weight * len(current_attributes)
+            + query_length_evidence
+        )
+        current_has_category = any(
+            item.attribute == "category" and item.polarity == "include"
+            for item in current_constraints
+        )
+        category_only = (
+            current_has_category and current_positive == 0 and current_exclusions == 0
+        )
+        browsing_evidence = (
+            (self.config.browsing_marker_weight if marker else 0.0)
+            + (
+                self.config.category_only_browsing_weight
+                if category_only
+                else 0.0
+            )
+        )
+        evidence = (
+            f"current={current_score:.2f}:history={historical_score:.2f}:"
+            f"attrs={len(current_attributes)}:tokens={len(query_tokens)}:"
+            f"category_only={str(category_only).lower()}"
+        )
         threshold = max(
             float(self.config.buying_min_specific_constraints),
             self.config.buying_specificity_threshold,
         )
-        if marker is not None and browsing_evidence >= specificity:
+        if browsing_evidence > 0.0 and browsing_evidence >= specificity:
             confidence = min(0.95, 0.6 + 0.1 * (browsing_evidence - specificity + 1.0))
             return RouteDecision(
                 "browsing",
                 confidence,
                 (
                     f"observable_evidence:browsing={browsing_evidence:.2f}:"
-                    f"buying={specificity:.2f}:marker={marker}"
+                    f"buying={specificity:.2f}:marker={marker}:{evidence}"
                 ),
             )
         if specificity >= threshold:
@@ -121,17 +187,24 @@ class DualTrackRouter:
                 confidence,
                 (
                     f"observable_evidence:buying={specificity:.2f}:"
-                    f"browsing={browsing_evidence:.2f}"
+                    f"browsing={browsing_evidence:.2f}:{evidence}"
                 ),
             )
-        if not positive and exclusions == 0:
-            return RouteDecision("browsing", 0.75, "open_ended_category_request")
+        if (
+            current_positive + historical_positive == 0
+            and current_exclusions + historical_exclusions == 0
+        ):
+            return RouteDecision(
+                "browsing", 0.75, f"open_ended_category_request:{evidence}"
+            )
         confidence = min(0.8, 0.5 + 0.1 * specificity)
         if confidence < self.config.abstain_confidence:
             return RouteDecision(
                 "buying", 1.0 - confidence, "low_confidence_precision_abstention", True
             )
-        return RouteDecision("buying", confidence, "specificity_threshold")
+        return RouteDecision(
+            "buying", confidence, f"specificity_threshold:{evidence}"
+        )
 
 
 @dataclass(frozen=True)

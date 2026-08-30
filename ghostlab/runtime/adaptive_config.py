@@ -35,6 +35,11 @@ class DualTrackRouterConfig(_RequiredConfig):
     hard_specificity_weight: float = Field(default=0.25, ge=0.0, le=1.0)
     explicit_specificity_weight: float = Field(default=0.1, ge=0.0, le=1.0)
     browsing_marker_weight: float = Field(default=2.5, ge=0.0, le=8.0)
+    historical_specificity_weight: float = Field(default=0.5, ge=0.0, le=1.0)
+    current_attribute_coverage_weight: float = Field(default=0.25, ge=0.0, le=1.0)
+    current_query_length_weight: float = Field(default=0.1, ge=0.0, le=0.5)
+    current_query_length_cap: int = Field(default=12, ge=1, le=50)
+    category_only_browsing_weight: float = Field(default=0.75, ge=0.0, le=4.0)
 
 
 class PrecisionTrackConfig(_RequiredConfig):

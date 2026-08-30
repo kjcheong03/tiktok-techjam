@@ -24,7 +24,7 @@ from ghostlab.runtime.adaptive_config import (
 )
 from ghostlab.runtime.adaptive_hybrid import AdaptiveHybridAgent
 from ghostlab.state.baseline_v2 import StateBaselineV2, StructuredConstraint
-from ghostlab.state.v2_view import V2SessionController
+from ghostlab.state.v2_view import ConstraintView, V2SessionController, V2StateView
 
 
 def _catalog(path: Path, count: int = 24) -> list[str]:
@@ -149,6 +149,52 @@ def test_router_reaches_both_tracks_from_observable_state() -> None:
     state.observe("A key requirement is: black.", 2)
     view = V2SessionController(state).snapshot(query_text="black shoes", turn=2)
     assert router.decide(view, state.messages[-1]).route == "buying"
+
+
+def test_router_uses_current_query_specificity_not_only_accumulated_state() -> None:
+    router = DualTrackRouter(AdaptiveHybridConfig().router)
+    accumulated = (
+        ConstraintView(
+            attribute="category",
+            values=("running shoes",),
+            relation="any",
+            polarity="include",
+            strength="unspecified",
+            operator="none",
+            source_turn=1,
+            provenance="explicit",
+        ),
+        ConstraintView(
+            attribute="color",
+            values=("black",),
+            relation="any",
+            polarity="include",
+            strength="hard",
+            operator="none",
+            source_turn=1,
+            provenance="explicit",
+        ),
+    )
+    view = V2StateView(
+        query_text="running shoes black",
+        active_constraints=accumulated,
+        intent_epoch=0,
+        shown_ids=frozenset(),
+        asked_attributes=(),
+        no_preference_attributes=frozenset(),
+        turn=2,
+    )
+
+    broad = router.decide(view, "Show me more running shoes")
+    focused = router.decide(view, "Show me black running shoes")
+
+    assert broad.route == "browsing"
+    assert "category_only=true" in broad.reason
+    assert focused.route == "buying"
+    assert "current=" in focused.reason
+    assert "history=" in focused.reason
+    assert "attrs=1" in focused.reason
+    assert "tokens=5" in focused.reason
 
 
 def test_category_route_independently_adds_candidates(tmp_path: Path) -> None:

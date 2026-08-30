@@ -190,6 +190,128 @@ def test_open_world_feature_equivalence_and_absence_never_create_false_violation
     assert statuses == {"GORE": "CONFIRMED_MATCH", "PLAIN": "UNKNOWN_METADATA"}
 
 
+def test_open_world_constraint_requires_complete_literal_not_one_shared_word(
+    tmp_path: Path,
+) -> None:
+    catalog = tmp_path / "catalog.jsonl"
+    rows = [
+        {
+            "parent_asin": "BOTTLE",
+            "title": "Reusable water bottle",
+            "categories": ["Drinkware"],
+            "features": ["BPA-free bottle"],
+            "details": {},
+            "description": "Carries water on a hike",
+            "price": 20,
+        },
+        {
+            "parent_asin": "JACKET",
+            "title": "Water resistant trail jacket",
+            "categories": ["Jackets"],
+            "features": ["Water resistant shell"],
+            "details": {},
+            "description": "Light rain protection",
+            "price": 90,
+        },
+    ]
+    catalog.write_text(
+        "".join(json.dumps(row) + "\n" for row in rows), encoding="utf-8"
+    )
+    context = _context(
+        (
+            StructuredConstraint(
+                attribute="feature",
+                values=["water resistant"],
+                strength="hard",
+                source_turn=1,
+            ),
+        )
+    )
+
+    result = CoverageAwareFilter(catalog).enforce(["BOTTLE", "JACKET"], context)
+
+    statuses = {item.parent_asin: item.status for item in result.decisions}
+    assert statuses == {
+        "BOTTLE": "UNKNOWN_METADATA",
+        "JACKET": "CONFIRMED_MATCH",
+    }
+    assert result.ranking == ("JACKET", "BOTTLE")
+
+
+def test_open_world_exclusion_does_not_remove_shared_word_false_positive(
+    tmp_path: Path,
+) -> None:
+    catalog = tmp_path / "catalog.jsonl"
+    catalog.write_text(
+        json.dumps(
+            {
+                "parent_asin": "BOTTLE",
+                "title": "Reusable water bottle",
+                "categories": ["Drinkware"],
+                "features": [],
+                "details": {},
+                "description": "Carries water",
+                "price": 20,
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    context = _context(
+        (
+            StructuredConstraint(
+                attribute="feature",
+                values=["water resistant"],
+                polarity="exclude",
+                strength="hard",
+                source_turn=1,
+            ),
+        )
+    )
+
+    result = CoverageAwareFilter(catalog).enforce(["BOTTLE"], context)
+
+    assert result.ranking == ("BOTTLE",)
+    assert result.violation_count == 0
+    assert result.decisions[0].status == "UNKNOWN_METADATA"
+
+
+def test_approved_equivalence_does_not_ignore_additional_requested_tokens(
+    tmp_path: Path,
+) -> None:
+    catalog = tmp_path / "catalog.jsonl"
+    catalog.write_text(
+        json.dumps(
+            {
+                "parent_asin": "GORE",
+                "title": "Black trail shell",
+                "categories": ["Jackets"],
+                "features": ["GORE-TEX membrane"],
+                "details": {},
+                "description": "Outdoor layer",
+                "price": 90,
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    context = _context(
+        (
+            StructuredConstraint(
+                attribute="feature",
+                values=["waterproof red"],
+                strength="hard",
+                source_turn=1,
+            ),
+        )
+    )
+
+    result = CoverageAwareFilter(catalog).enforce(["GORE"], context)
+
+    assert result.ranking == ("GORE",)
+    assert result.decisions[0].status == "UNKNOWN_METADATA"
+
+
 class _BudgetDense:
     def __init__(self, identifiers: list[str]) -> None:
         self.identifiers = identifiers

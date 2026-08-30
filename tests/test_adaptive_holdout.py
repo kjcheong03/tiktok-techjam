@@ -1,11 +1,18 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
+from ghostlab.runtime.adaptive_factory import load_adaptive_hybrid_config
+from ghostlab.runtime.selected import sha256_file
 from scripts.evaluate_adaptive_holdout import (
     build_fair_holdout_report,
     compare_reports,
+    verify_frozen_holdout_inputs,
 )
+
+ROOT = Path(__file__).resolve().parents[1]
 
 
 def _report(*, score: float, buying: float, violations: int = 0) -> dict:
@@ -49,6 +56,55 @@ def _gates() -> dict:
         "require_zero_confirmed_target_removals": True,
         "require_zero_overload_trace_violations": True,
     }
+
+
+def _frozen_dependencies() -> dict[str, str]:
+    control = ROOT / "configs/adaptive_hybrid_1a_3b_v1.json"
+    reference_a = ROOT / "baseline/official_reference.py"
+    reference_b = ROOT / "configs/suites/state_baseline_v2_other.json"
+    gates = ROOT / "configs/evaluation/adaptive_holdout_gates_v1.json"
+    return {
+        "control_config_path": control.relative_to(ROOT).as_posix(),
+        "control_config_file_sha256": sha256_file(control),
+        "control_config_canonical_sha256": load_adaptive_hybrid_config(
+            control
+        ).canonical_hash(),
+        "reference_a_implementation_path": reference_a.relative_to(ROOT).as_posix(),
+        "reference_a_implementation_sha256": sha256_file(reference_a),
+        "reference_b_config_path": reference_b.relative_to(ROOT).as_posix(),
+        "reference_b_config_sha256": sha256_file(reference_b),
+        "gates_path": gates.relative_to(ROOT).as_posix(),
+        "gates_sha256": sha256_file(gates),
+    }
+
+
+def test_holdout_dependencies_are_frozen_before_access() -> None:
+    frozen = _frozen_dependencies()
+    verified = verify_frozen_holdout_inputs(
+        frozen,
+        control_config_path=ROOT / frozen["control_config_path"],
+        reference_a_path=ROOT / frozen["reference_a_implementation_path"],
+        reference_b_path=ROOT / frozen["reference_b_config_path"],
+        gates_path=ROOT / frozen["gates_path"],
+    )
+    assert verified["control_config_file_sha256"] == frozen[
+        "control_config_file_sha256"
+    ]
+    assert verified["control_config_canonical_sha256"] == frozen[
+        "control_config_canonical_sha256"
+    ]
+
+
+def test_holdout_rejects_control_not_frozen_by_development() -> None:
+    frozen = _frozen_dependencies()
+    with pytest.raises(ValueError, match="control_config_path"):
+        verify_frozen_holdout_inputs(
+            frozen,
+            control_config_path=ROOT / "configs/adaptive_hybrid_structural_smoke.json",
+            reference_a_path=ROOT / frozen["reference_a_implementation_path"],
+            reference_b_path=ROOT / frozen["reference_b_config_path"],
+            gates_path=ROOT / frozen["gates_path"],
+        )
 
 
 def test_holdout_gates_accept_like_for_like_improvement() -> None:

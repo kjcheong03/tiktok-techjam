@@ -126,10 +126,10 @@ six-technique ceiling on the eventual champion.
 
 | Area | Current assessment | Required disposition before final training |
 |---|---|---|
-| Overload cutoff | Critical: reduced dense depth exists, but merge, union ranking and Qwen still execute | Replace with a real bounded safe branch and behavior-level trace assertions |
-| Free-form constraint authority | Critical: missing metadata is preserved, but literal non-overlap can still become a false contradiction | Use conservative closed/open-world semantics and treat uncertain evidence as unknown |
-| Router contract | Important: hard/exclusion/correction evidence is partial and browsing markers currently have early precedence | Implement and document one deterministic observable scoring contract; keep retrieval statistics in guidance |
-| Architecture validator | Critical: current checks can treat an overload label as success while confirming prohibited stages ran | Validate executed stages, budgets and membership, not labels alone |
+| Overload cutoff | Implemented: the bounded safe branch skips normal union, optional full rerankers and Qwen | Retain behavior-level trace assertions and retrain only the normal development ranker |
+| Free-form constraint authority | Implemented: complete literal semantic tokens or approved equivalences are required; uncertain open-world evidence remains unknown | Retain adversarial shared-token, incomplete-equivalence, missing-metadata and contradiction tests |
+| Router contract | Implemented: current-query evidence is separated from discounted history and exposes category-only, coverage, query-length, provenance, exclusion and correction signals | Tune bounded weights on development; keep retrieval statistics in guidance |
+| Architecture validator | Implemented: cutoff validation checks executed stages, budgets and membership rather than labels alone | Keep prohibited-stage assertions in focused and end-to-end tests |
 | Immutable turn context | Mostly implemented | Verify every proposal stage consumes the same snapshot and mutable state changes only at observe/commit boundaries |
 | Source-aware union | Implemented in structural-v2 code but not yet established in the final fitted artifact | Retrain on development only and hash/verify the exact feature schema at runtime |
 | Buying preservation | Not sufficiently gated | Add route-specific matched-control Hit@10/MRR gates and bounded residual influence |
@@ -140,6 +140,12 @@ six-technique ceiling on the eventual champion.
 | Route/source promotion gates | Current campaign stores aggregate rewards and partial source/scenario gates | Report Hit@10, MRR, MTTC, fallback, violations and latency by protected slice |
 | Like-for-like evidence | Some historical reports compare different scopes | Require identical IDs, config and simulator conditions for every reported delta |
 | Final artifacts | Hash and activation mechanisms exist; clean-checkout parity is incomplete | Bind dataset, split, schema, model, config, report and trace hashes and reproduce offline |
+
+The development packager now freezes the selected D file hash, control C file and
+canonical hashes, A/B reference hashes, promotion-gate hash and lineage-manifest hash
+before holdout access. The holdout runner verifies all of them before creating its access
+receipt. The generated finalist validator references the current 1,650-development
+training report rather than an obsolete 2,200-session artifact.
 
 ## Explicit coverage of the supplied review
 

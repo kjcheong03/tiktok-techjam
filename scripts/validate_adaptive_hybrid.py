@@ -43,15 +43,16 @@ def main() -> None:
         description="Validate the complete adaptive 1A-3B runtime end to end"
     )
     parser.add_argument(
-        "--config", default="configs/adaptive_hybrid_1a_3b_2200_structural_v2.json"
+        "--config",
+        default="configs/adaptive_hybrid_1a_3b_1650_final_v1_selected.json",
     )
     parser.add_argument(
         "--adaptive-report",
-        default="artifacts/reports/adaptive_hybrid_structural_v2_public.json",
+        default="artifacts/reports/adaptive_hybrid_development_1650.json",
     )
     parser.add_argument(
         "--training-report",
-        default="artifacts/reports/adaptive_hybrid_training_2200_structural_v2.json",
+        default="artifacts/reports/adaptive_hybrid_training_1650_final_v1.json",
     )
     parser.add_argument(
         "--diversity-report",

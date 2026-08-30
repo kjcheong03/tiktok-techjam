@@ -18,15 +18,16 @@ The governing rule remains:
 
 The implementation will proceed phase by phase. Each phase must pass its declared
 validation gate before the next phase starts. Candidate-pool changes are completed
-before retraining so the 2,200-session corpus is replayed and fitted only once for
-the final structural revision.
+before retraining so only the 1,650-session development partition is replayed and
+fitted for the final structural revision. The 550-session holdout remains untouched.
 
 ## Current baseline and preservation boundary
 
 The current branch is `feat/adaptive-hybrid-1a-3b` in the
 `techjam-adaptive-optimizer` worktree.
 
-The following evidence is preserved as the pre-structural-change baseline:
+The following historical evidence is preserved as the pre-structural-change baseline;
+it is not the final training protocol:
 
 - the 2,200-session source/scenario-stratified split;
 - the fitted union and overloaded-Browsing GBDTs and fit receipts;
@@ -41,9 +42,10 @@ The stopped campaign's best raw F0 score was `0.837735`. It is useful baseline
 evidence only. It cannot be treated as a final winner after candidate generation,
 constraint authority or union features change.
 
-The existing guarded champion remains the frozen comparison control and complete
-precision fallback. No implementation phase may overwrite its assets or activate a
-new candidate automatically.
+The newly fitted fixed adaptive architecture is comparison control C and the complete
+precision path remains the runtime fallback. Historical guarded champions are reference
+evidence only. No implementation phase may overwrite assets or activate a candidate
+automatically.
 
 ## Fixed architecture invariants
 
@@ -73,20 +75,20 @@ The following are never valid GhostLab optimizations:
 - accessing F3/private evaluation data; or
 - writing an active-candidate pointer from a research campaign.
 
-## Consolidated gap assessment
+## Consolidated implementation assessment
 
-| Area | Classification | Confirmed current state | Resolution in this plan |
+| Area | Current status | Implemented disposition | Remaining evidence work |
 |---|---|---|---|
-| Constraint authority across routes | Critical compulsory behavior gap | Strict filtering applies only to Buying and covers only a bounded attribute set | Add route-independent constraint authority and a final output invariant |
-| Observable 1A router | Partial optimization gap | Uses browsing markers and positive-constraint count | Add richer observable specificity/confidence signals without coupling authority to route |
-| Diverse dense Browsing | Partial capability and validation gap | Multi-view E5 exists; selection is maximum relevance | Race maximum relevance, view-balanced and embedding-MMR selectors with real diversity metrics |
-| Proactive preview cutoff | Compulsory behavior gap | Full E5 runs before the required overload decision | Add a cheap pre-E5 preview and a genuinely reduced overload retrieval path |
-| Union-aware ranking | Material implementation gap | Source evidence is preserved by merge but discarded before GBDT features | Add source-, route- and constraint-aware union features and retrain |
-| Semantic LLM ranking | Current configuration/optimization gap | Qwen reranks Browsing Top 10; Buying is skipped | Tune Qwen after structural fixes, then compare a bounded local-LLM shortlist |
-| Buying precision preservation | Material implementation/evidence gap | Buying is keyword-primary but a mixed-pool GBDT can replace precision order | Add a precision-dominant Buying ranker or bounded residual and route-specific gates |
-| Shared immutable context | Low-severity contract gap | Some stages use `V2StateView`; guidance/profile read mutable State V2 | Introduce one frozen per-turn context for all proposal stages |
-| Runtime adaptation | Requirement present; optional coverage gap | Conflict-safe final profile reranking and profile updates exist | Race ambiguity-only profile query and question signals as optional additions |
-| Diversity acceptance validation | Validation gap, not another architecture row | Query-view existence and three handcrafted family checks are treated too strongly | Measure concentration, coverage, redundancy and recall on held-out folds/templates |
+| Constraint authority across routes | Implemented; retraining required | Route-independent authority requires complete literal evidence or approved semantic equivalents; open-world uncertainty remains eligible | Retain adversarial shared-token, equivalence, missing-metadata and final-output tests |
+| Observable 1A router | Implemented; tunable | Separates current-query evidence from discounted historical state and records category-only, attribute-coverage, query-length, provenance, exclusion and correction evidence | Tune bounded weights without coupling authority to route |
+| Diverse dense Browsing | Implemented; selector remains adaptive | Max relevance, view-balanced and embedding-MMR selectors share one E5 pool and expose coverage/redundancy metrics | Retain max relevance by default until development evidence justifies another selector |
+| Proactive preview cutoff | Implemented | Cheap preview selects reduced dense budgets and a bounded safe merge/ranker branch; normal union and local LLM are skipped on cutoff turns | Preserve behavior-level trace assertions |
+| Union-aware ranking | Implemented; final artifact pending | Source-, route-, profile- and constraint-aware features feed the union ranker | Refit and select on the 1,650 development sessions only |
+| Semantic LLM ranking | Current configuration/optimization gap | Literal local-LLM slot, bounded depths/weights and same-pipeline family comparison exist | Run the bounded development-only comparison after the union ranker is frozen |
+| Buying precision preservation | Implemented; final gate pending | Sparse-dominant residual mode and route-independent authority bound learned influence | Enforce matched Buying Hit@10/MRR gates during development and holdout |
+| Shared immutable context | Implemented | Router, retrieval, guidance, ranking, clarification and profile adaptation consume one frozen per-turn context | Retain atomic-commit and frozen-context tests |
+| Runtime adaptation | Implemented; optional influence tunable | Conflict-safe profile update is compulsory; profile query, union and question signals remain gated additions | Race ambiguity-only influence on development |
+| Diversity acceptance validation | Implemented; generalization unresolved | Validator measures recall, category/view coverage, concentration and redundancy rather than query-view existence | Repeat on lineage-safe development folds and untouched templates |
 
 Limited cross-category candidate reach has been demonstrated in three handcrafted
 scenarios. This does not establish general cross-category relevance quality or
@@ -266,7 +268,8 @@ only if observable counterfactual evidence justifies it.
 ### Implementation
 
 1. Record the current commit, branch and dirty-worktree inventory.
-2. Hash the 2,200 configuration, split, models, receipts and reports.
+2. Hash the historical 2,200 configuration, split, models, receipts and reports as
+   non-final baseline evidence.
 3. Preserve the stopped F0 log and generate a small machine-readable summary.
 4. Confirm no campaign or training process is running.
 5. Run the existing focused architecture tests before editing runtime code.
@@ -274,7 +277,8 @@ only if observable counterfactual evidence justifies it.
 ### Validation gate
 
 - All baseline assets parse and match their recorded hashes.
-- The 2,200 fit receipts remain available.
+- Historical 2,200 fit receipts remain available but are ineligible for final
+  selection because the current protocol reserves 550 sessions for holdout.
 - The partial F0 log contains 93 completed evaluations and the preserved best raw
   score.
 - Existing user changes and unrelated artifacts remain untouched.
@@ -354,7 +358,8 @@ order.
 - overloaded requests consume the reduced dense budget;
 - non-overloaded requests consume the normal budget;
 - the cutoff occurs before full E5 expansion;
-- overload still reaches merge, ranker, semantic decision and question action; and
+- overload reaches only the bounded safe merge/ranker and question action; normal
+  union ranking, optional full rerankers and local-LLM execution remain skipped; and
 - preview failure returns a normalized precision response.
 
 ### Phase gate
@@ -500,20 +505,23 @@ No model is fitted in this phase. The phase first freezes:
 - Plan-only GhostLab output includes every new compulsory/optional technique.
 - Campaign checkpoints can resume without reevaluating completed candidates.
 
-No 2,200-session fitting begins until this gate passes.
+No final 1,650-development fitting begins until this gate passes.
 
 ## Phase 7 - One retraining boundary on the final structural pools
 
 ### Data use
 
-The training corpus remains:
+The three source files contain 2,200 sessions, partitioned by complete lineage groups:
 
-| Source | Samples | Status after fitting |
-|---|---:|---|
-| Official public development | 200 | Development/model-selection data |
-| Public-like synthetic | 1,000 | Synthetic development data |
-| Independent-template synthetic | 1,000 | Consumed training data; no longer independent validation |
-| **Total** | **2,200** | **Grouped source/scenario-stratified fitting corpus** |
+| Source | Development fitting/selection | Untouched holdout | Total |
+|---|---:|---:|---:|
+| Official public | 150 | 50 | 200 |
+| Public-like synthetic | 750 | 250 | 1,000 |
+| Independent-template synthetic | 750 | 250 | 1,000 |
+| **Total** | **1,650** | **550** | **2,200** |
+
+Only the 1,650 development sessions enter fitting, HPO, racing or finalist selection.
+The 550 holdout is opened once after a single D and control C are hash-frozen.
 
 Complete sessions and target IDs stay inside one outer fold. The target is used
 only as an offline label after candidate generation. Runtime collection receives
@@ -666,7 +674,8 @@ The implementation is complete only when:
 - profile updates remain conflict-safe and explicit-intent dominant;
 - all outputs satisfy the official API contract;
 - the complete selected configuration has reproducible hashes and receipts;
-- the guarded champion remains recoverable; and
+- historical comparison artifacts remain recoverable and control C is frozen before
+  holdout; and
 - activation is a separate reviewed action.
 
 ## Validation command families
@@ -747,11 +756,12 @@ Conditions 1 and 2 are already satisfied. Phase 0 will machine-record condition 
 ## Implementation status
 
 Phases 0-6 are implemented. Phase 7 was validated with a successful 200-session
-structural smoke fit, then the full 2,200-session attempt was stopped at the user's
-request after candidate collection and before model fitting. Phases 8-9 have complete
-code paths, pinned assets, tests and plan validation; their expensive model-selection
-and campaign executions are deliberately deferred until after the user starts the final
-training run.
+structural smoke fit. A historical 2,200-session attempt was stopped and is not a final
+artifact. The current protocol fits and selects only on 1,650 lineage-safe development
+sessions, freezes one challenger plus the C control and all holdout dependencies, then
+permits a single 550-session holdout evaluation. Phases 8-9 have complete code paths,
+pinned assets, tests and plan validation; their expensive model-selection and campaign
+executions are deliberately deferred until after the user starts the final training run.
 
 Current evidence and exact deferred commands are recorded in
 `docs/adaptive_hybrid_1a_3b_implementation_report.md`. A deferred experiment is not an

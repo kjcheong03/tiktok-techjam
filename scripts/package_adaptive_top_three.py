@@ -12,6 +12,10 @@ from ghostlab.optimization.adaptive_techniques import AdaptiveTechniqueRegistry
 from ghostlab.runtime.adaptive_factory import load_adaptive_hybrid_config
 
 ROOT = Path(__file__).resolve().parents[1]
+TRAINING_REPORT = "artifacts/reports/adaptive_hybrid_training_1650_final_v1.json"
+REFERENCE_A_IMPLEMENTATION = ROOT / "baseline/official_reference.py"
+REFERENCE_B_CONFIG = ROOT / "configs/suites/state_baseline_v2_other.json"
+HOLDOUT_GATES = ROOT / "configs/evaluation/adaptive_holdout_gates_v1.json"
 
 
 def _file_sha256(path: Path) -> str:
@@ -97,8 +101,7 @@ def package_top_three(
         validation_command = (
             "PYTHONPATH=. .venv/bin/python scripts/validate_adaptive_hybrid.py "
             f"--config {relative_config} --adaptive-report {candidate_report} "
-            "--training-report artifacts/reports/"
-            "adaptive_hybrid_training_2200_structural_v2.json "
+            f"--training-report {TRAINING_REPORT} "
             f"--output {validation_report}"
         )
         activation_command = (
@@ -149,8 +152,23 @@ def package_top_three(
         if lineage_manifest_path is not None and lineage_manifest_path.is_file()
         else None
     )
+    frozen_dependencies = {
+        "control_config_path": base_config_path.relative_to(ROOT).as_posix(),
+        "control_config_file_sha256": _file_sha256(base_config_path),
+        "control_config_canonical_sha256": baseline.canonical_hash(),
+        "reference_a_implementation_path": REFERENCE_A_IMPLEMENTATION.relative_to(
+            ROOT
+        ).as_posix(),
+        "reference_a_implementation_sha256": _file_sha256(
+            REFERENCE_A_IMPLEMENTATION
+        ),
+        "reference_b_config_path": REFERENCE_B_CONFIG.relative_to(ROOT).as_posix(),
+        "reference_b_config_sha256": _file_sha256(REFERENCE_B_CONFIG),
+        "gates_path": HOLDOUT_GATES.relative_to(ROOT).as_posix(),
+        "gates_sha256": _file_sha256(HOLDOUT_GATES),
+    }
     report: dict[str, Any] = {
-        "schema_version": 1,
+        "schema_version": 2,
         "architecture": baseline.architecture,
         "campaign_report": campaign_report_path.relative_to(ROOT).as_posix(),
         "requested_challenger_count": 3,
@@ -184,6 +202,7 @@ def package_top_three(
                 "config_sha256": recommended["config_sha256"],
                 "lineage_manifest_sha256": manifest_hash,
                 "holdout_accessed": False,
+                **frozen_dependencies,
             }
             if recommended is not None
             else None

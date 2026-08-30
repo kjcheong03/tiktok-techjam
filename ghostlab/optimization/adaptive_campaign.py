@@ -102,6 +102,27 @@ def _adaptive_search_space() -> ConditionalSearchSpace:
             name="router_specificity_threshold", kind="float", low=0.0, high=4.0
         ),
         ConditionalParameter(
+            name="router_history_specificity_weight",
+            kind="float",
+            low=0.0,
+            high=1.0,
+        ),
+        ConditionalParameter(
+            name="router_current_attribute_weight",
+            kind="float",
+            low=0.0,
+            high=1.0,
+        ),
+        ConditionalParameter(
+            name="router_query_length_weight", kind="float", low=0.0, high=0.5
+        ),
+        ConditionalParameter(
+            name="router_category_only_browsing_weight",
+            kind="float",
+            low=0.0,
+            high=4.0,
+        ),
+        ConditionalParameter(
             name="buying_retrieval_k",
             kind="categorical",
             choices=(50, 100, 200, 300, 500),

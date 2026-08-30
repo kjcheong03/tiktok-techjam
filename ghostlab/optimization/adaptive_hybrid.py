@@ -14,6 +14,12 @@ class AdaptiveHybridTrial(BaseModel):
     buying_min_specific_constraints: int = Field(default=1, ge=1, le=4)
     router_abstain_confidence: float = Field(default=0.6, ge=0.5, le=0.9)
     router_specificity_threshold: float = Field(default=1.0, ge=0.0, le=4.0)
+    router_history_specificity_weight: float = Field(default=0.5, ge=0.0, le=1.0)
+    router_current_attribute_weight: float = Field(default=0.25, ge=0.0, le=1.0)
+    router_query_length_weight: float = Field(default=0.1, ge=0.0, le=0.5)
+    router_category_only_browsing_weight: float = Field(
+        default=0.75, ge=0.0, le=4.0
+    )
     buying_retrieval_k: int = Field(default=200, ge=50, le=500)
     dense_retrieval_per_view: int = Field(default=400, ge=100, le=800)
     dense_output_k: int = Field(default=200, ge=50, le=400)
@@ -59,6 +65,16 @@ class AdaptiveHybridTrial(BaseModel):
             router_abstain_confidence=config.router.abstain_confidence,
             router_specificity_threshold=(
                 config.router.buying_specificity_threshold
+            ),
+            router_history_specificity_weight=(
+                config.router.historical_specificity_weight
+            ),
+            router_current_attribute_weight=(
+                config.router.current_attribute_coverage_weight
+            ),
+            router_query_length_weight=config.router.current_query_length_weight,
+            router_category_only_browsing_weight=(
+                config.router.category_only_browsing_weight
             ),
             buying_retrieval_k=config.buying.retrieval_k,
             dense_retrieval_per_view=config.browsing.retrieval_per_view,
@@ -214,6 +230,16 @@ class AdaptiveHybridBinding:
                 "abstain_confidence": trial.router_abstain_confidence,
                 "buying_specificity_threshold": (
                     trial.router_specificity_threshold
+                ),
+                "historical_specificity_weight": (
+                    trial.router_history_specificity_weight
+                ),
+                "current_attribute_coverage_weight": (
+                    trial.router_current_attribute_weight
+                ),
+                "current_query_length_weight": trial.router_query_length_weight,
+                "category_only_browsing_weight": (
+                    trial.router_category_only_browsing_weight
                 ),
             }
         )

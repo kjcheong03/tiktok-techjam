@@ -72,8 +72,10 @@ evaluation. Category retrieval is an internal part of the 1B merge, not a separa
 top-level architectural branch. The labels use the written problem statement:
 3A is Runtime Adaptation and 3B is Adaptive Orchestration.
 
-The guarded champion remains the frozen control and complete precision fallback.
-It is not, by itself, the required adaptive architecture.
+The newly fitted fixed Adaptive Hybrid architecture is promotion control C. The
+complete deterministic Buying path is the runtime fallback. Historical guarded
+champion results remain reference evidence; they are not the required architecture or
+the current promotion control.
 
 ## Architecture enforcement
 
@@ -143,44 +145,37 @@ part of implementation validation because it begins the model-selection campaign
 Fit-required challengers remain promotion-ineligible until their fold-safe fitting
 receipts are supplied.
 
-### 2,200-sample fitting and campaign run
+### Lineage-safe 1,650-development fitting and campaign run
 
-`scripts/train_adaptive_hybrid.py` loads the official 200, public-like synthetic
-1,000 and independent-template 1,000 datasets by default. It rejects duplicate
-sample IDs or targets, constructs five deterministic source/scenario-stratified
-outer folds, performs nested out-of-fold selection for the union and overloaded-
-Browsing GBDTs, refits both assets on all 2,200 allowed examples, and emits fit
-receipts plus a hash-bound candidate configuration. The independent-template set
-is explicitly recorded as consumed for training and must no longer be described
-as independent validation after this command.
+The three source files still contain 2,200 sessions, but the immutable lineage
+manifest assigns complete cross-source families to either 1,650 development sessions
+or the untouched 550-session holdout. Development outer and inner folds also preserve
+whole lineage groups. No holdout ID may enter fitting, HPO, racing or finalist
+selection.
 
-```bash
-caffeinate -dimsu env PYTHONPATH=. .venv/bin/python \
-  scripts/train_adaptive_hybrid.py
-```
-
-The resulting candidate configuration is
-`configs/adaptive_hybrid_1a_3b_2200_v1.json`. GhostLab can then race all
-architecture-valid additions and combinations on balanced progressive prefixes
-of the same three datasets:
+Use the checkpointed wrapper for the normal sequence:
 
 ```bash
-caffeinate -dimsu env PYTHONPATH=. .venv/bin/python \
-  scripts/run_adaptive_hybrid_campaign.py \
-  --config configs/adaptive_hybrid_1a_3b_2200_v1.json \
-  --dataset data/public_set.jsonl \
-  --dataset data/synthetic_1000_public_like.jsonl \
-  --dataset data/independent_template_1000.jsonl \
-  --output artifacts/reports/adaptive_hybrid_campaign_2200.json
+PYTHONPATH=. .venv/bin/python scripts/run_adaptive_hybrid_pipeline.py --show-plan
+PYTHONPATH=. .venv/bin/python scripts/run_adaptive_hybrid_pipeline.py
 ```
 
-With 2,200 inputs, the default F0/F1/F2 prefixes contain 440, 1,100 and
-2,200 sessions. F0 begins with 62 valid control/single/pair structures and may
-expand through eight higher-order rounds up to the global 500-candidate cap.
-At most 24 structures reach F1; two conditional HPO trials are added for each
-non-control F1 survivor; at most six structures reach F2. Learned optional
-techniques remain promotion-gated unless their own fold-safe fit evidence is
-available; the newly fitted union/Browsing assets form the hash-bound incumbent.
+The fit stage emits the hash-bound development control:
+
+```text
+configs/adaptive_hybrid_1a_3b_1650_final_v1.json
+artifacts/models/adaptive_union_gbdt_1650_final_v1.json
+artifacts/models/adaptive_union_gbdt_1650_final_v1.fit_receipt.json
+artifacts/reports/adaptive_hybrid_training_1650_final_v1.json
+```
+
+After bounded LLM selection, GhostLab races architecture-valid additions and
+combinations only on development. The F0/F1/F2 populations use 20%, 50% and 100% of
+development—330, 825 and 1,650 sessions before any explicit resource cap. Up to three
+finalists are re-evaluated on the identical ordered development ground. Exactly one D
+challenger is then frozen together with control C, A/B reference definitions, promotion
+gates and the lineage manifest. Only that frozen C/D pair is eligible for the one-time
+550-session holdout comparison; A/B remain explanatory references.
 
 ## Static workflow contract
 
@@ -307,7 +302,7 @@ turn. It may not use the official scenario label.
 
 - State V2 observable state and views;
 - validated field-weighted sparse retrieval;
-- the strongest accepted State V2 precision proposal or guarded champion path; and
+- the complete deterministic State V2 Buying precision path; and
 - existing leakage-safe routing infrastructure.
 
 ### What GhostLab may optimize
@@ -774,8 +769,10 @@ inactive, always falls back or never changes observable behaviour.
 
 ### Level 6 - Grouped end-to-end evaluation
 
-Compare the frozen guarded champion, strongest State V2 precision control and full
-Adaptive Hybrid agent on identical grouped public sessions.
+Compare A stateless BM25, B tagged-best Dynamic Conversation State, C fixed Adaptive
+Hybrid and each development finalist D on identical ordered development sessions under
+the shared evaluator contract. Only C and a single development-selected D participate
+in promotion.
 
 Report:
 
@@ -815,7 +812,8 @@ contract.
 - Verify the research-built and factory-built agents produce identical responses.
 - Package all required local assets and verify their hashes.
 - Verify `starter.Agent` parity with the frozen adaptive agent before activation.
-- Keep the guarded champion available as the complete precision fallback.
+- Verify the complete deterministic Buying path remains available as the runtime
+  precision fallback.
 - Update `SUBMISSION_MANIFEST.json` only after the selected runtime is frozen.
 - Do not create or change `configs/active_candidate.json` until a reviewed human
   activation decision.
@@ -862,11 +860,15 @@ external-service work.
 
 ### 4. Establish the compliant end-to-end baseline
 
-Use only grouped public development sessions. Compare:
+Use only lineage-safe development sessions. Compare:
 
-1. frozen guarded champion;
-2. strongest State V2 precision control; and
-3. complete Adaptive Hybrid 1A-3B agent.
+1. A: official stateless BM25 reference;
+2. B: tagged-best Dynamic Conversation State reference;
+3. C: complete fixed Adaptive Hybrid 1A-3B control; and
+4. D1-D3: development-selected GhostLab finalists.
+
+A/B are explanatory. Choose and freeze exactly one D from development evidence; only
+the frozen C/D pair is eligible for the one-time holdout promotion decision.
 
 Report HitRate@10, MRR, MTTC, Efficiency and TechnicalScore, plus direct 1A-3B
 behaviour: route counts, candidate-route contribution, local-LLM ordering changes,

@@ -41,6 +41,47 @@ def _load(path: Path) -> dict[str, Any]:
     return payload
 
 
+def verify_frozen_holdout_inputs(
+    frozen: dict[str, Any],
+    *,
+    control_config_path: Path,
+    reference_a_path: Path,
+    reference_b_path: Path,
+    gates_path: Path,
+) -> dict[str, str]:
+    """Verify every comparison dependency before the holdout is opened."""
+
+    dependencies = (
+        (
+            "control_config_path",
+            "control_config_file_sha256",
+            control_config_path,
+        ),
+        (
+            "reference_a_implementation_path",
+            "reference_a_implementation_sha256",
+            reference_a_path,
+        ),
+        ("reference_b_config_path", "reference_b_config_sha256", reference_b_path),
+        ("gates_path", "gates_sha256", gates_path),
+    )
+    verified: dict[str, str] = {}
+    for path_key, hash_key, actual_path in dependencies:
+        relative = actual_path.relative_to(ROOT).as_posix()
+        if frozen.get(path_key) != relative:
+            raise ValueError(f"frozen {path_key} does not match the requested input")
+        actual_hash = sha256_file(actual_path)
+        if frozen.get(hash_key) != actual_hash:
+            raise ValueError(f"frozen {hash_key} changed before holdout")
+        verified[hash_key] = actual_hash
+
+    canonical = load_adaptive_hybrid_config(control_config_path).canonical_hash()
+    if frozen.get("control_config_canonical_sha256") != canonical:
+        raise ValueError("frozen control canonical config hash changed before holdout")
+    verified["control_config_canonical_sha256"] = canonical
+    return verified
+
+
 def _run_evaluation(
     config: str, output: str, datasets: tuple[str, ...], manifest: str
 ) -> None:
@@ -514,6 +555,13 @@ def main() -> None:
         raise ValueError("frozen challenger config hash changed")
     if frozen.get("lineage_manifest_sha256") != sha256_file(manifest_path):
         raise ValueError("frozen proposal and holdout manifest do not match")
+    frozen_dependencies = verify_frozen_holdout_inputs(
+        frozen,
+        control_config_path=ROOT / args.control_config,
+        reference_a_path=ROOT / "baseline/official_reference.py",
+        reference_b_path=ROOT / args.state_reference_config,
+        gates_path=gates_path,
+    )
     datasets = tuple(args.datasets or DEFAULT_DATASETS)
     corpus = load_adaptive_training_corpus(ROOT, datasets)
     manifest = load_lineage_manifest(manifest_path, corpus)
@@ -533,13 +581,20 @@ def main() -> None:
         "challenger_config_canonical_sha256": load_adaptive_hybrid_config(
             challenger_path
         ).canonical_hash(),
-        "control_config_sha256": sha256_file(ROOT / args.control_config),
-        "reference_a_implementation_sha256": sha256_file(
-            ROOT / "baseline/official_reference.py"
-        ),
-        "reference_b_config_sha256": sha256_file(ROOT / args.state_reference_config),
+        "control_config_sha256": frozen_dependencies[
+            "control_config_file_sha256"
+        ],
+        "control_config_canonical_sha256": frozen_dependencies[
+            "control_config_canonical_sha256"
+        ],
+        "reference_a_implementation_sha256": frozen_dependencies[
+            "reference_a_implementation_sha256"
+        ],
+        "reference_b_config_sha256": frozen_dependencies[
+            "reference_b_config_sha256"
+        ],
         "lineage_manifest_sha256": sha256_file(manifest_path),
-        "gates_sha256": sha256_file(gates_path),
+        "gates_sha256": frozen_dependencies["gates_sha256"],
         "holdout_ids_sha256": hashlib.sha256(
             "\n".join(sorted(manifest.holdout_ids)).encode()
         ).hexdigest(),
