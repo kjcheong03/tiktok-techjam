@@ -563,6 +563,33 @@ independent units is prohibited for promotion evidence.
 Fit receipts and campaign checkpoints must store the manifest hash and partition.
 They must reject old 2,200-session checkpoints and any mixed-partition resume.
 
+## Development comparison hierarchy
+
+All development reporting uses four explicitly different roles:
+
+1. **A — official stateless BM25:** organizer reference and explanatory baseline;
+2. **B — tagged-best State Baseline V2:** native exact-parity reproduction of
+   `coverage_adaptive_state_with_history + fixed_other`, retained as an explanatory,
+   simulator-sensitive baseline;
+3. **C — fixed adaptive architecture:** the complete compulsory 1A-3B workflow after
+   its core development-only fit and before GhostLab search; and
+4. **D — GhostLab challengers:** optional techniques, combinations and tuned values
+   materialized on top of C without changing the compulsory workflow.
+
+A, B and C must be evaluated on identical ordered development sample IDs. The final
+development comparison includes A, B, C and the available D1-D3 finalists, but A and B
+cannot be promoted because they do not implement the complete compulsory workflow.
+Champion selection and the one-time holdout comparison are restricted to C versus D.
+
+The reproducible outputs are:
+
+- `artifacts/reports/adaptive_baseline_a_development_1650.json`;
+- `artifacts/reports/adaptive_baseline_b_development_1650.json`;
+- `artifacts/reports/adaptive_hybrid_development_1650.json` for C;
+- `artifacts/reports/adaptive_hybrid_top3.json` for D1-D3; and
+- `artifacts/reports/adaptive_system_comparison_1650.json` plus `.md` for the unified
+  human-readable table.
+
 ## Development-only GhostLab and freeze-one proposal
 
 GhostLab uses all 1,650 development sessions through its normal progressive fidelity

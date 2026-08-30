@@ -28,9 +28,11 @@ def test_adaptive_pipeline_plan_has_ordered_dependency_stages() -> None:
         "diversity",
         "llm",
         "evaluate",
+        "baselines",
         "validate",
         "campaign",
         "package",
+        "compare",
     ]
     assert all(stage["status"] in {"run", "skip_complete"} for stage in stages)
     assert all(stage["command"] and stage["outputs"] for stage in stages)
@@ -57,5 +59,6 @@ def test_adaptive_pipeline_can_stop_before_campaign() -> None:
         "diversity",
         "llm",
         "evaluate",
+        "baselines",
         "validate",
     ]

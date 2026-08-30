@@ -18,9 +18,11 @@ STAGE_ORDER = (
     "diversity",
     "llm",
     "evaluate",
+    "baselines",
     "validate",
     "campaign",
     "package",
+    "compare",
 )
 
 
@@ -48,7 +50,7 @@ def build_parser() -> argparse.ArgumentParser:
         )
     )
     parser.add_argument("--from-stage", choices=STAGE_ORDER, default="split")
-    parser.add_argument("--through-stage", choices=STAGE_ORDER, default="package")
+    parser.add_argument("--through-stage", choices=STAGE_ORDER, default="compare")
     parser.add_argument(
         "--force-stage",
         action="append",
@@ -197,6 +199,14 @@ def stage_specs(args: argparse.Namespace) -> tuple[StageSpec, ...]:
             (public_report,),
         ),
         StageSpec(
+            "baselines",
+            (python, "scripts/evaluate_adaptive_reference_baselines.py"),
+            (
+                "artifacts/reports/adaptive_baseline_a_development_1650.json",
+                "artifacts/reports/adaptive_baseline_b_development_1650.json",
+            ),
+        ),
+        StageSpec(
             "validate",
             (
                 python,
@@ -226,6 +236,14 @@ def stage_specs(args: argparse.Namespace) -> tuple[StageSpec, ...]:
                 "artifacts/reports/adaptive_hybrid_top3.json",
             ),
             ("artifacts/reports/adaptive_hybrid_top3.json",),
+        ),
+        StageSpec(
+            "compare",
+            (python, "scripts/build_adaptive_system_comparison.py"),
+            (
+                "artifacts/reports/adaptive_system_comparison_1650.json",
+                "artifacts/reports/adaptive_system_comparison_1650.md",
+            ),
         ),
     )
 

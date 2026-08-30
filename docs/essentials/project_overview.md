@@ -342,6 +342,13 @@ paired delta, latency, gates, materialized config hashes, and exact commands to 
 validate, and manually activate each eligible finalist. The pipeline never activates a
 champion automatically.
 
+The final `compare` stage writes
+`artifacts/reports/adaptive_system_comparison_1650.json` and the matching Markdown
+table. It shows A (official stateless BM25), B (the tagged-best State Baseline V2 native
+reproduction), C (the fixed adaptive architecture), and the available D1-D3 GhostLab
+finalists on the same 1,650 development sessions. A and B are explanatory baselines;
+only C and D participate in champion selection.
+
 Top-3 numbers are development selection evidence. Only the single frozen proposal and
 the frozen control may be evaluated once on the 550-session holdout. The holdout result
 must never be fed back into GhostLab to select another challenger.
@@ -594,6 +601,8 @@ actually sent to the user.
 | `ghostlab/training/adaptive_datasets.py` | Multi-source loading and balanced folds |
 | `ghostlab/training/adaptive_lineage.py` | Cross-source lineage reconstruction and group-safe partitions |
 | `scripts/run_adaptive_hybrid_pipeline.py` | One-command checkpointed fit/selection/validation/campaign wrapper |
+| `scripts/evaluate_adaptive_reference_baselines.py` | Like-for-like development evaluation of A and B |
+| `scripts/build_adaptive_system_comparison.py` | Unified A/B/C and optional D1-D3 report |
 | `scripts/train_adaptive_hybrid.py` | Development-only source-aware union ranker trainer |
 | `scripts/run_adaptive_hybrid_campaign.py` | Architecture-safe GhostLab runner |
 | `scripts/evaluate_adaptive_holdout.py` | Guarded one-time challenger/control holdout comparison |
