@@ -213,6 +213,19 @@ HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 \
   --output artifacts/reports/adaptive_hybrid_public.json
 ```
 
+### Results dashboard
+
+Visualize and compare existing or newly generated evaluation reports with the local
+dependency-free dashboard:
+
+```bash
+uv run python dashboard/server.py
+```
+
+Open <http://127.0.0.1:8787/dashboard/>. The dashboard discovers compatible reports in
+`artifacts/reports/` automatically and also accepts JSON files by import or drag-and-drop.
+See `dashboard/README.md` for supported report shapes and port configuration.
+
 The protected F3/private data must never be used for routing, ranking, HPO, selection or
 debugging.
 
