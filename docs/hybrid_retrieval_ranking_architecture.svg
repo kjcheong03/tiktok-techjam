@@ -1,0 +1,208 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1000" viewBox="0 0 1800 1000" role="img" aria-labelledby="title desc">
+  <title id="title">Adaptive Hybrid retrieval and ranking architecture</title>
+  <desc id="desc">Detailed runtime diagram. Conversation state and the current query determine a Buying or Browsing route. Field-weighted BM25, category retrieval, and multi-view E5 search run as bounded parallel channels. Their candidates are deduplicated while source ranks and scores are preserved. Route-specific fusion changes weights and support depths, a Buying-only constraint guard filters precise requests, and a GBDT reranks the union. Eligible Browsing turns use bounded local Qwen semantic scoring; Buying and precision-abstention turns skip it. MiniLM handles Qwen failure or timeout. Every route ends at a filtered, deduplicated, identifier-validated Top-K.</desc>
+
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#07111f"/>
+      <stop offset="1" stop-color="#12233d"/>
+    </linearGradient>
+    <linearGradient id="runtimePanel" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#211d48"/>
+      <stop offset="1" stop-color="#151a38"/>
+    </linearGradient>
+    <linearGradient id="bluePanel" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#102d47"/>
+      <stop offset="1" stop-color="#102238"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="155%">
+      <feDropShadow dx="0" dy="5" stdDeviation="7" flood-color="#020617" flood-opacity="0.42"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 Z" fill="#9fb3ca"/>
+    </marker>
+    <marker id="arrowBlue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 Z" fill="#55b7ff"/>
+    </marker>
+    <marker id="arrowViolet" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 Z" fill="#a78bfa"/>
+    </marker>
+    <marker id="arrowTeal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 Z" fill="#45d6c0"/>
+    </marker>
+    <marker id="arrowAmber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 Z" fill="#e1aa3e"/>
+    </marker>
+    <style>
+      .title { font: 700 40px Inter, ui-sans-serif, system-ui, sans-serif; fill: #f8fafc; letter-spacing: -0.6px; }
+      .subtitle { font: 400 18px Inter, ui-sans-serif, system-ui, sans-serif; fill: #adbed1; }
+      .section { font: 700 20px Inter, ui-sans-serif, system-ui, sans-serif; fill: #f8fafc; }
+      .node-title { font: 700 16px Inter, ui-sans-serif, system-ui, sans-serif; fill: #f8fafc; }
+      .small { font: 500 13px Inter, ui-sans-serif, system-ui, sans-serif; fill: #9fb3ca; }
+      .pill { font: 700 12px Inter, ui-sans-serif, system-ui, sans-serif; letter-spacing: 0.75px; }
+      .edge-label { font: 700 12px Inter, ui-sans-serif, system-ui, sans-serif; fill: #d8e4f0; paint-order: stroke; stroke: #1a1b3d; stroke-width: 7px; stroke-linejoin: round; }
+      .edge-label-blue { font: 700 12px Inter, ui-sans-serif, system-ui, sans-serif; fill: #8bd3ff; paint-order: stroke; stroke: #1a1b3d; stroke-width: 7px; stroke-linejoin: round; }
+      .edge-label-violet { font: 700 12px Inter, ui-sans-serif, system-ui, sans-serif; fill: #c4b5fd; paint-order: stroke; stroke: #1a1b3d; stroke-width: 7px; stroke-linejoin: round; }
+      .edge-label-teal { font: 700 12px Inter, ui-sans-serif, system-ui, sans-serif; fill: #79ead9; paint-order: stroke; stroke: #1a1b3d; stroke-width: 7px; stroke-linejoin: round; }
+      .edge-label-amber { font: 700 12px Inter, ui-sans-serif, system-ui, sans-serif; fill: #f1c66d; paint-order: stroke; stroke: #1a1b3d; stroke-width: 7px; stroke-linejoin: round; }
+      .node { fill: #17263a; stroke: #415871; stroke-width: 1.5; }
+      .node-violet { fill: #2a2353; stroke: #8268dc; stroke-width: 1.6; }
+      .node-blue { fill: #123651; stroke: #419ee0; stroke-width: 1.6; }
+      .node-teal { fill: #103a3b; stroke: #31bbaa; stroke-width: 1.6; }
+      .node-amber { fill: #3a2a17; stroke: #d7a13a; stroke-width: 1.6; }
+      .flow { fill: none; stroke: #9fb3ca; stroke-width: 2; marker-end: url(#arrow); }
+      .flow-blue { fill: none; stroke: #55b7ff; stroke-width: 2.2; marker-end: url(#arrowBlue); }
+      .flow-violet { fill: none; stroke: #a78bfa; stroke-width: 2.2; marker-end: url(#arrowViolet); }
+      .flow-teal { fill: none; stroke: #45d6c0; stroke-width: 2.2; marker-end: url(#arrowTeal); }
+      .control { fill: none; stroke: #a78bfa; stroke-width: 1.8; stroke-dasharray: 7 7; marker-end: url(#arrowViolet); }
+      .fallback { fill: none; stroke: #e1aa3e; stroke-width: 1.8; stroke-dasharray: 7 7; marker-end: url(#arrowAmber); }
+      .divider { stroke: #725dcc; stroke-width: 1.2; stroke-dasharray: 5 8; opacity: 0.42; }
+    </style>
+  </defs>
+
+  <rect width="1800" height="1000" fill="url(#background)"/>
+  <circle cx="1685" cy="50" r="260" fill="#4f46e5" opacity="0.07"/>
+  <circle cx="70" cy="985" r="255" fill="#14b8a6" opacity="0.055"/>
+
+  <text x="60" y="58" class="title">Adaptive Hybrid — retrieval and ranking detail</text>
+  <text x="60" y="92" class="subtitle">Run three bounded retrieval channels, preserve their evidence, fuse by route, rerank, selectively apply semantic scoring, and validate the Top-K.</text>
+  <rect x="1425" y="40" width="315" height="40" rx="20" fill="#352b65" stroke="#8d76e8"/>
+  <text x="1472" y="65" class="pill" fill="#ddd6fe">FROZEN RUNTIME COMPONENTS</text>
+
+  <rect x="45" y="125" width="1710" height="810" rx="26" fill="url(#runtimePanel)" stroke="#725dcc" stroke-width="1.7"/>
+  <line x1="420" y1="150" x2="420" y2="905" class="divider"/>
+  <line x1="840" y1="150" x2="840" y2="905" class="divider"/>
+  <line x1="1205" y1="150" x2="1205" y2="905" class="divider"/>
+
+  <!-- 1. Turn interpretation and routing -->
+  <text x="75" y="172" class="section">1. Interpret the turn</text>
+  <g filter="url(#shadow)">
+    <rect x="75" y="215" width="300" height="90" rx="16" class="node"/>
+    <text x="225" y="250" text-anchor="middle" class="node-title">Conversation state + query</text>
+    <text x="225" y="276" text-anchor="middle" class="small">Current message · constraints · profile context</text>
+  </g>
+  <g filter="url(#shadow)">
+    <path d="M225 340 L370 430 L225 520 L80 430 Z" fill="#2d2856" stroke="#977df0" stroke-width="1.7"/>
+    <text x="225" y="405" text-anchor="middle" class="node-title">Choose the retrieval</text>
+    <text x="225" y="428" text-anchor="middle" class="node-title">route</text>
+    <text x="225" y="456" text-anchor="middle" class="small">Buying · Browsing</text>
+    <text x="225" y="476" text-anchor="middle" class="small">or precision abstention</text>
+  </g>
+  <path d="M225 305 V340" class="flow-violet"/>
+  <text x="245" y="329" class="edge-label-violet">distils intent</text>
+
+  <!-- 2. Parallel retrieval -->
+  <text x="465" y="172" class="section">2. Retrieve in parallel</text>
+  <rect x="440" y="190" width="380" height="420" rx="22" fill="url(#bluePanel)" stroke="#3d8fc9" stroke-width="1.4"/>
+  <g filter="url(#shadow)">
+    <rect x="470" y="215" width="320" height="90" rx="15" class="node-blue"/>
+    <text x="630" y="250" text-anchor="middle" class="node-title">Exact field search · BM25</text>
+    <text x="630" y="276" text-anchor="middle" class="small">Matches literal terms, brands + attributes</text>
+  </g>
+  <g filter="url(#shadow)">
+    <rect x="470" y="345" width="320" height="90" rx="15" class="node-blue"/>
+    <text x="630" y="380" text-anchor="middle" class="node-title">Independent category search</text>
+    <text x="630" y="406" text-anchor="middle" class="small">Adds products beyond keyword overlap</text>
+  </g>
+  <g filter="url(#shadow)">
+    <rect x="470" y="475" width="320" height="90" rx="15" class="node-blue"/>
+    <text x="630" y="510" text-anchor="middle" class="node-title">Multi-view semantic search · E5</text>
+    <text x="630" y="536" text-anchor="middle" class="small">Embeds structured, raw + preference views</text>
+  </g>
+  <path d="M318 372 H410 V260 H470" class="flow-blue"/>
+  <path d="M370 430 H430 V390 H470" class="flow-blue"/>
+  <path d="M318 488 H410 V520 H470" class="flow-blue"/>
+  <text x="416" y="248" text-anchor="middle" class="edge-label-blue">finds exact</text>
+  <text x="421" y="418" text-anchor="middle" class="edge-label-blue">adds category</text>
+  <text x="415" y="510" text-anchor="middle" class="edge-label-blue">finds semantic</text>
+
+  <!-- 3. Evidence preservation and fusion -->
+  <text x="875" y="172" class="section">3. Preserve + fuse evidence</text>
+  <g filter="url(#shadow)">
+    <rect x="875" y="215" width="290" height="190" rx="16" class="node-violet"/>
+    <text x="1020" y="249" text-anchor="middle" class="node-title">Evidence-preserving</text>
+    <text x="1020" y="272" text-anchor="middle" class="node-title">candidate union</text>
+    <text x="1020" y="304" text-anchor="middle" class="small">Deduplicates products while retaining:</text>
+    <text x="1020" y="329" text-anchor="middle" class="small">source membership · per-route ranks</text>
+    <text x="1020" y="354" text-anchor="middle" class="small">keyword · category · vector scores</text>
+    <text x="1020" y="379" text-anchor="middle" class="small">stable candidate identity</text>
+  </g>
+  <path d="M790 260 H875" class="flow-violet"/>
+  <path d="M790 390 H830 V310 H875" class="flow-violet"/>
+  <path d="M790 520 H830 V360 H875" class="flow-violet"/>
+
+  <g filter="url(#shadow)">
+    <rect x="875" y="465" width="290" height="125" rx="16" class="node-violet"/>
+    <text x="1020" y="497" text-anchor="middle" class="node-title">Apply route-specific fusion</text>
+    <text x="1020" y="524" text-anchor="middle" class="small">Buying favors exact evidence</text>
+    <text x="1020" y="547" text-anchor="middle" class="small">Browsing favors semantic evidence</text>
+    <text x="1020" y="570" text-anchor="middle" class="small">Weighted · RRF · sparse-first union</text>
+  </g>
+  <path d="M1020 405 V465" class="flow-violet"/>
+  <text x="1040" y="439" class="edge-label-violet">combines</text>
+  <path d="M225 520 V655 H1020 V590" class="control"/>
+  <text x="660" y="648" text-anchor="middle" class="edge-label-violet">route decision selects weights + support depths</text>
+
+  <!-- 4. Ranking, semantic gate and validation -->
+  <text x="1245" y="172" class="section">4. Rank + validate</text>
+  <g filter="url(#shadow)">
+    <rect x="1245" y="215" width="450" height="95" rx="16" class="node-amber"/>
+    <text x="1470" y="250" text-anchor="middle" class="node-title">Buying constraint guard</text>
+    <text x="1470" y="277" text-anchor="middle" class="small">Strictly filters Buying results · Browsing passes through</text>
+  </g>
+  <path d="M1165 527 H1200 V262 H1245" class="flow-violet"/>
+  <text x="1221" y="326" class="edge-label-amber">filters Buying only</text>
+
+  <g filter="url(#shadow)">
+    <rect x="1245" y="355" width="450" height="95" rx="16" class="node-violet"/>
+    <text x="1470" y="390" text-anchor="middle" class="node-title">GBDT union reranking</text>
+    <text x="1470" y="417" text-anchor="middle" class="small">Reorders the bounded pool using merged retrieval + catalog features</text>
+  </g>
+  <path d="M1470 310 V355" class="flow-violet"/>
+  <text x="1490" y="339" class="edge-label-violet">passes safe pool</text>
+
+  <g filter="url(#shadow)">
+    <path d="M1470 490 L1695 570 L1470 650 L1245 570 Z" fill="#2d2856" stroke="#977df0" stroke-width="1.7"/>
+    <text x="1470" y="548" text-anchor="middle" class="node-title">Eligible Browsing</text>
+    <text x="1470" y="571" text-anchor="middle" class="node-title">semantic stage?</text>
+    <text x="1470" y="598" text-anchor="middle" class="small">Skip for Buying or precision abstention</text>
+  </g>
+  <path d="M1470 450 V490" class="flow-violet"/>
+  <text x="1490" y="478" class="edge-label-violet">evaluates need</text>
+
+  <g filter="url(#shadow)">
+    <rect x="1245" y="700" width="280" height="90" rx="15" class="node-violet"/>
+    <text x="1385" y="735" text-anchor="middle" class="node-title">Bounded local Qwen scoring</text>
+    <text x="1385" y="761" text-anchor="middle" class="small">Scores only the candidate head</text>
+  </g>
+  <path d="M1470 650 V675 H1385 V700" class="flow-violet"/>
+  <text x="1404" y="672" class="edge-label-violet">yes · score semantically</text>
+
+  <g filter="url(#shadow)">
+    <rect x="1545" y="700" width="150" height="90" rx="15" class="node"/>
+    <text x="1620" y="735" text-anchor="middle" class="node-title">Keep GBDT</text>
+    <text x="1620" y="758" text-anchor="middle" class="node-title">ordering</text>
+  </g>
+  <path d="M1590 613 V675 H1620 V700" class="flow"/>
+  <text x="1610" y="670" class="edge-label">no · skip</text>
+
+  <g filter="url(#shadow)">
+    <rect x="1245" y="825" width="280" height="75" rx="15" class="node-amber"/>
+    <text x="1385" y="855" text-anchor="middle" class="node-title">MiniLM semantic fallback</text>
+    <text x="1385" y="879" text-anchor="middle" class="small">Runs if Qwen fails or times out</text>
+  </g>
+  <path d="M1385 790 V825" class="fallback"/>
+  <text x="1405" y="813" class="edge-label-amber">failure or timeout</text>
+
+  <g filter="url(#shadow)">
+    <rect x="1545" y="825" width="150" height="75" rx="15" class="node-teal"/>
+    <text x="1620" y="855" text-anchor="middle" class="node-title">Validated Top-K</text>
+    <text x="1620" y="879" text-anchor="middle" class="small">Filter + verify IDs</text>
+  </g>
+  <path d="M1525 745 H1535 V862 H1545" class="flow-teal"/>
+  <path d="M1620 790 V825" class="flow-teal"/>
+  <path d="M1525 862 H1545" class="flow-teal"/>
+
+  <text x="60" y="975" class="small">All depths, weights, thresholds and model hashes are fixed by the reviewed runtime configuration.</text>
+  <text x="1285" y="975" class="small">Solid = data flow · dashed violet = route control · dashed amber = fallback</text>
+</svg>

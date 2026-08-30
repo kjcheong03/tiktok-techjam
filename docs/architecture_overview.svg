@@ -1,0 +1,217 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="900" viewBox="0 0 1800 900" role="img" aria-labelledby="title desc">
+  <title id="title">Adaptive Hybrid 1A–3B turn-execution architecture</title>
+  <desc id="desc">Adaptive Hybrid execution graph. A user turn enters the standard agent interface, which invokes the adaptive workflow coordinator. The coordinator loads conversation state, resolves context conflicts, chooses a buying or browsing route, finds exact, category, and semantic matches, combines and reranks them, asks for clarification when useful, validates the final product selection, returns a normalized response, and saves state for the next turn. Component faults use the precision fallback path.</desc>
+
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#07111f"/>
+      <stop offset="1" stop-color="#12233d"/>
+    </linearGradient>
+    <linearGradient id="runtimePanel" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#211d48"/>
+      <stop offset="1" stop-color="#151a38"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="155%">
+      <feDropShadow dx="0" dy="5" stdDeviation="7" flood-color="#020617" flood-opacity="0.42"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 Z" fill="#9fb3ca"/>
+    </marker>
+    <marker id="arrowViolet" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 Z" fill="#a78bfa"/>
+    </marker>
+    <marker id="arrowBlue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 Z" fill="#55b7ff"/>
+    </marker>
+    <marker id="arrowTeal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 Z" fill="#45d6c0"/>
+    </marker>
+    <marker id="arrowAmber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 Z" fill="#e1aa3e"/>
+    </marker>
+    <style>
+      .title { font: 700 40px Inter, ui-sans-serif, system-ui, sans-serif; fill: #f8fafc; letter-spacing: -0.6px; }
+      .subtitle { font: 400 18px Inter, ui-sans-serif, system-ui, sans-serif; fill: #adbed1; }
+      .section { font: 700 22px Inter, ui-sans-serif, system-ui, sans-serif; fill: #f8fafc; }
+      .node-title { font: 700 16px Inter, ui-sans-serif, system-ui, sans-serif; fill: #f8fafc; }
+      .small { font: 500 13px Inter, ui-sans-serif, system-ui, sans-serif; fill: #9fb3ca; }
+      .pill { font: 700 12px Inter, ui-sans-serif, system-ui, sans-serif; letter-spacing: 0.75px; }
+      .edge-label { font: 700 12px Inter, ui-sans-serif, system-ui, sans-serif; fill: #d8e4f0; paint-order: stroke; stroke: #1a1b3d; stroke-width: 7px; stroke-linejoin: round; }
+      .edge-label-top { font: 700 12px Inter, ui-sans-serif, system-ui, sans-serif; fill: #d8e4f0; paint-order: stroke; stroke: #0b1728; stroke-width: 7px; stroke-linejoin: round; }
+      .edge-label-blue { font: 700 12px Inter, ui-sans-serif, system-ui, sans-serif; fill: #8bd3ff; paint-order: stroke; stroke: #1a1b3d; stroke-width: 7px; stroke-linejoin: round; }
+      .edge-label-amber { font: 700 12px Inter, ui-sans-serif, system-ui, sans-serif; fill: #f1c66d; paint-order: stroke; stroke: #1a1b3d; stroke-width: 7px; stroke-linejoin: round; }
+      .edge-label-teal { font: 700 12px Inter, ui-sans-serif, system-ui, sans-serif; fill: #79ead9; paint-order: stroke; stroke: #1a1b3d; stroke-width: 7px; stroke-linejoin: round; }
+      .node { fill: #17263a; stroke: #415871; stroke-width: 1.5; }
+      .node-violet { fill: #2a2353; stroke: #8268dc; stroke-width: 1.6; }
+      .node-blue { fill: #123651; stroke: #419ee0; stroke-width: 1.6; }
+      .node-teal { fill: #103a3b; stroke: #31bbaa; stroke-width: 1.6; }
+      .node-amber { fill: #3a2a17; stroke: #d7a13a; stroke-width: 1.6; }
+      .node-red { fill: #3a1e2a; stroke: #d7658a; stroke-width: 1.6; }
+      .flow { fill: none; stroke: #9fb3ca; stroke-width: 2; marker-end: url(#arrow); }
+      .flow-violet { fill: none; stroke: #a78bfa; stroke-width: 2.2; marker-end: url(#arrowViolet); }
+      .flow-blue { fill: none; stroke: #55b7ff; stroke-width: 2.2; marker-end: url(#arrowBlue); }
+      .flow-teal { fill: none; stroke: #45d6c0; stroke-width: 2.2; marker-end: url(#arrowTeal); }
+      .flow-amber { fill: none; stroke: #e1aa3e; stroke-width: 2; marker-end: url(#arrowAmber); }
+      .flow-dashed { fill: none; stroke: #9fb3ca; stroke-width: 1.8; stroke-dasharray: 7 7; marker-end: url(#arrow); }
+      .control-dashed { fill: none; stroke: #a78bfa; stroke-width: 1.8; stroke-dasharray: 7 7; marker-end: url(#arrowViolet); }
+    </style>
+  </defs>
+
+  <rect width="1800" height="900" fill="url(#background)"/>
+  <circle cx="1680" cy="55" r="255" fill="#4f46e5" opacity="0.07"/>
+  <circle cx="75" cy="880" r="250" fill="#14b8a6" opacity="0.055"/>
+
+  <text x="60" y="58" class="title">Adaptive Hybrid 1A–3B — turn-execution architecture</text>
+  <text x="60" y="92" class="subtitle">Each turn loads context, chooses a route, retrieves and reranks products, decides whether to ask, then commits one valid response.</text>
+  <rect x="1470" y="40" width="270" height="40" rx="20" fill="#352b65" stroke="#8d76e8"/>
+  <text x="1514" y="65" class="pill" fill="#ddd6fe">ADAPTIVE HYBRID ACTIVE</text>
+
+  <!-- Entrypoint -->
+  <g filter="url(#shadow)">
+    <rect x="60" y="130" width="320" height="75" rx="16" class="node"/>
+    <text x="220" y="163" text-anchor="middle" class="node-title">User turn + saved profile</text>
+    <text x="220" y="186" text-anchor="middle" class="small">Supplies session details + requested Top-K</text>
+  </g>
+  <g filter="url(#shadow)">
+    <rect x="455" y="130" width="300" height="75" rx="16" class="node-violet"/>
+    <text x="605" y="163" text-anchor="middle" class="node-title">Standard agent interface</text>
+    <text x="605" y="186" text-anchor="middle" class="small">Receives reset() + respond()</text>
+  </g>
+  <g filter="url(#shadow)">
+    <rect x="830" y="130" width="360" height="75" rx="16" class="node-violet"/>
+    <text x="1010" y="163" text-anchor="middle" class="node-title">Adaptive workflow coordinator</text>
+    <text x="1010" y="186" text-anchor="middle" class="small">Runs stages 1A–3B in a fixed order</text>
+  </g>
+  <g filter="url(#shadow)">
+    <rect x="1420" y="130" width="320" height="75" rx="16" class="node-teal"/>
+    <text x="1580" y="163" text-anchor="middle" class="node-title">Validated agent response</text>
+    <text x="1580" y="186" text-anchor="middle" class="small">Returns message · products · question</text>
+  </g>
+  <path d="M380 167 H455" class="flow"/>
+  <path d="M755 167 H830" class="flow-violet"/>
+  <text x="418" y="155" text-anchor="middle" class="edge-label-top">enters</text>
+  <text x="792" y="155" text-anchor="middle" class="edge-label-top">invokes</text>
+
+  <!-- Adaptive Hybrid runtime -->
+  <rect x="45" y="245" width="1710" height="590" rx="25" fill="url(#runtimePanel)" stroke="#725dcc" stroke-width="1.7"/>
+  <text x="75" y="287" class="section">Adaptive Hybrid inference pipeline</text>
+  <rect x="1490" y="265" width="220" height="29" rx="14" fill="#392f70" stroke="#9279ed"/>
+  <text x="1527" y="285" class="pill" fill="#ddd6fe">FIXED STAGE ORDER</text>
+
+  <!-- State and adaptation -->
+  <g filter="url(#shadow)">
+    <rect x="75" y="335" width="230" height="85" rx="16" class="node-violet"/>
+    <text x="190" y="371" text-anchor="middle" class="node-title">2A · Conversation state</text>
+    <text x="190" y="396" text-anchor="middle" class="small">Tracks facts + preferences over time</text>
+  </g>
+  <g filter="url(#shadow)">
+    <rect x="75" y="455" width="230" height="85" rx="16" class="node-violet"/>
+    <text x="190" y="491" text-anchor="middle" class="node-title">3A · Conflict-safe context</text>
+    <text x="190" y="516" text-anchor="middle" class="small">Resolves conflicts + overrides</text>
+  </g>
+
+  <!-- Router -->
+  <g filter="url(#shadow)">
+    <path d="M455 340 L545 415 L455 490 L365 415 Z" fill="#2d2856" stroke="#977df0" stroke-width="1.7"/>
+    <text x="455" y="400" text-anchor="middle" class="node-title">1A · Buying / Browsing</text>
+    <text x="455" y="422" text-anchor="middle" class="node-title">route decision</text>
+    <text x="455" y="444" text-anchor="middle" class="small">Chooses or abstains</text>
+  </g>
+  <path d="M305 377 H335 V415 H365" class="flow-violet"/>
+  <path d="M305 497 H335 V440 H383" class="control-dashed"/>
+  <text x="335" y="367" text-anchor="middle" class="edge-label">informs</text>
+  <text x="340" y="507" text-anchor="middle" class="edge-label">adapts</text>
+
+  <!-- Retrieval sources -->
+  <g filter="url(#shadow)">
+    <rect x="600" y="315" width="235" height="75" rx="15" class="node-blue"/>
+    <text x="717" y="347" text-anchor="middle" class="node-title">Exact keyword matches</text>
+    <text x="717" y="371" text-anchor="middle" class="small">Found with field-weighted BM25</text>
+  </g>
+  <g filter="url(#shadow)">
+    <rect x="600" y="410" width="235" height="75" rx="15" class="node-blue"/>
+    <text x="717" y="442" text-anchor="middle" class="node-title">Relevant category matches</text>
+    <text x="717" y="466" text-anchor="middle" class="small">Added through category search</text>
+  </g>
+  <g filter="url(#shadow)">
+    <rect x="600" y="505" width="235" height="75" rx="15" class="node-blue"/>
+    <text x="717" y="537" text-anchor="middle" class="node-title">Diverse semantic matches</text>
+    <text x="717" y="561" text-anchor="middle" class="small">Found with multi-view E5 search</text>
+  </g>
+  <path d="M512 367 H600" class="flow-blue"/>
+  <path d="M545 415 H575 V447 H600" class="flow-blue"/>
+  <path d="M512 463 H550 V542 H600" class="flow-blue"/>
+  <text x="556" y="356" text-anchor="middle" class="edge-label-blue">retrieves</text>
+  <text x="567" y="435" text-anchor="middle" class="edge-label-blue">adds</text>
+  <text x="552" y="527" text-anchor="middle" class="edge-label-blue">explores</text>
+
+  <!-- Merge and ranking -->
+  <g filter="url(#shadow)">
+    <rect x="900" y="385" width="235" height="100" rx="16" class="node-violet"/>
+    <text x="1017" y="426" text-anchor="middle" class="node-title">1B · Combined candidate pool</text>
+    <text x="1017" y="451" text-anchor="middle" class="small">Unifies candidates from every route</text>
+  </g>
+  <path d="M835 352 H865 V410 H900" class="flow-violet"/>
+  <path d="M835 447 H900" class="flow-violet"/>
+  <path d="M835 542 H865 V460 H900" class="flow-violet"/>
+
+  <g filter="url(#shadow)">
+    <rect x="1200" y="325" width="235" height="85" rx="16" class="node-violet"/>
+    <text x="1317" y="361" text-anchor="middle" class="node-title">Learned reranking</text>
+    <text x="1317" y="386" text-anchor="middle" class="small">Uses GBDT to reorder the pool</text>
+  </g>
+  <g filter="url(#shadow)">
+    <rect x="1490" y="325" width="225" height="85" rx="16" class="node-violet"/>
+    <text x="1602" y="351" text-anchor="middle" class="node-title">Semantically refined</text>
+    <text x="1602" y="373" text-anchor="middle" class="node-title">Browsing results</text>
+    <text x="1602" y="396" text-anchor="middle" class="small">Uses local Qwen only when eligible</text>
+  </g>
+  <path d="M1135 425 H1165 V367 H1200" class="flow-violet"/>
+  <path d="M1435 367 H1490" class="flow-violet"/>
+  <text x="1167" y="414" text-anchor="middle" class="edge-label">feeds</text>
+  <text x="1462" y="314" text-anchor="middle" class="edge-label">optionally refines</text>
+
+  <!-- Guidance and response assembly -->
+  <g filter="url(#shadow)">
+    <rect x="900" y="565" width="235" height="90" rx="16" class="node-amber"/>
+    <text x="1017" y="592" text-anchor="middle" class="node-title">2B · Clarification</text>
+    <text x="1017" y="614" text-anchor="middle" class="node-title">decision</text>
+    <text x="1017" y="638" text-anchor="middle" class="small">Asks when the pool is too broad</text>
+  </g>
+  <g filter="url(#shadow)">
+    <rect x="1200" y="525" width="235" height="90" rx="16" class="node-violet"/>
+    <text x="1317" y="550" text-anchor="middle" class="node-title">Final product</text>
+    <text x="1317" y="572" text-anchor="middle" class="node-title">selection</text>
+    <text x="1317" y="598" text-anchor="middle" class="small">Filters · deduplicates · validates</text>
+  </g>
+  <g filter="url(#shadow)">
+    <rect x="1490" y="525" width="225" height="90" rx="16" class="node-teal"/>
+    <text x="1602" y="562" text-anchor="middle" class="node-title">3B · Final response</text>
+    <text x="1602" y="587" text-anchor="middle" class="small">Normalizes output + saves state</text>
+  </g>
+  <path d="M1017 485 V565" class="flow-amber"/>
+  <path d="M1602 410 V475 H1317 V525" class="flow-violet"/>
+  <path d="M1135 610 H1165 V590 H1200" class="flow-amber"/>
+  <path d="M1435 570 H1490" class="flow-teal"/>
+  <text x="1035" y="529" class="edge-label-amber">checks breadth</text>
+  <text x="1460" y="464" text-anchor="middle" class="edge-label">supplies ranked candidates</text>
+  <text x="1167" y="629" text-anchor="middle" class="edge-label-amber">adds a question</text>
+  <text x="1462" y="558" text-anchor="middle" class="edge-label-teal">validates</text>
+
+  <!-- Coordinator entry and response -->
+  <path d="M1010 205 V225 H190 V335" class="flow-violet"/>
+  <path d="M1602 525 C1665 460 1680 270 1580 205" class="flow-teal"/>
+  <text x="600" y="230" text-anchor="middle" class="edge-label-top">starts by loading state</text>
+  <text x="1677" y="305" text-anchor="middle" class="edge-label-teal">returns</text>
+
+  <!-- Fallback and next-turn loop -->
+  <rect x="365" y="700" width="1070" height="60" rx="16" class="node-red"/>
+  <text x="900" y="737" text-anchor="middle" class="node-title">If any stage fails, use the precision fallback → normalize the response → save state atomically</text>
+  <path d="M1317 410 V680 H900 V700" class="flow-dashed"/>
+  <path d="M1435 730 H1460 V615 H1602" class="flow-dashed"/>
+  <path d="M1602 615 V800 H190 V540" class="control-dashed"/>
+  <text x="900" y="820" text-anchor="middle" class="small">Commits state so the next turn can load the updated history and adapt again</text>
+
+  <text x="60" y="875" class="small">Turn-local inference only · mutable session state · immutable model weights and configuration.</text>
+  <text x="1455" y="875" class="small">Solid = live flow · dashed = control flow</text>
+</svg>
