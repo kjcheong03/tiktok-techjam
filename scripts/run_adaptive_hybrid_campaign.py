@@ -17,6 +17,7 @@ from ghostlab.optimization.adaptive_campaign import (
     AdaptiveGhostLabEngine,
 )
 from ghostlab.optimization.adaptive_techniques import AdaptiveTechniqueRegistry
+from ghostlab.optimization.adaptive_warm_start import load_adaptive_warm_start
 from ghostlab.runtime.adaptive_factory import load_adaptive_hybrid_config
 from ghostlab.runtime.adaptive_hybrid import AdaptiveHybridAgent
 from ghostlab.training.adaptive_datasets import (
@@ -170,6 +171,13 @@ def main() -> None:
     parser.add_argument("--f1-candidates", type=int, default=24)
     parser.add_argument("--f2-candidates", type=int, default=6)
     parser.add_argument("--hpo-trials-per-structure", type=int, default=2)
+    parser.add_argument(
+        "--warm-start",
+        help=(
+            "optional architecture-safe translated warm-start specification; "
+            "the historical runtime is never executed directly"
+        ),
+    )
     parser.add_argument("--seed", type=int, default=20260826)
     parser.add_argument(
         "--plan-only",
@@ -192,9 +200,19 @@ def main() -> None:
     baseline = load_adaptive_hybrid_config(ROOT / args.config)
     catalog = load_catalog(ROOT / args.technique_catalog)
     registry = AdaptiveTechniqueRegistry.from_catalog(catalog, project_root=ROOT)
+    warm_start_spec = None
+    warm_start_candidate = None
+    if args.warm_start:
+        warm_start_spec, warm_start_candidate = load_adaptive_warm_start(
+            args.warm_start,
+            project_root=ROOT,
+            baseline=baseline,
+            registry=registry,
+        )
     engine = AdaptiveGhostLabEngine(
         baseline=baseline,
         registry=registry,
+        warm_start=warm_start_candidate,
         candidate_limit=args.candidate_limit,
         beam_width=args.beam_width,
         max_extra_techniques=args.max_extra_techniques,
@@ -235,6 +253,17 @@ def main() -> None:
                 "f1_survivor_depth": 20,
                 "depth_30_or_50_tested": False,
             },
+            "warm_start": (
+                None
+                if warm_start_spec is None
+                else {
+                    "specification": args.warm_start,
+                    "warm_start_id": warm_start_spec.warm_start_id,
+                    "source_candidate_id": warm_start_spec.source_candidate_id,
+                    "candidate": _candidate_payload(warm_start_candidate),
+                    "historical_runtime_executed": False,
+                }
+            ),
         }
     else:
         dataset_paths = tuple(
@@ -308,6 +337,10 @@ def main() -> None:
             evaluation_ordinal += 1
             checkpoint_key = f"{fidelity}:{candidate.candidate_id}"
             cached = checkpoint["evaluations"].get(checkpoint_key)
+            if cached is not None and cached.get("candidate") != _candidate_payload(
+                candidate
+            ):
+                cached = None
             if cached is not None:
                 print(
                     json.dumps(
@@ -519,6 +552,23 @@ def main() -> None:
                 "depth_30_or_50_tested": False,
                 "model_family_search_reopened": False,
             },
+            "warm_start": (
+                None
+                if warm_start_spec is None
+                else {
+                    "specification": args.warm_start,
+                    "warm_start_id": warm_start_spec.warm_start_id,
+                    "source_candidate_id": warm_start_spec.source_candidate_id,
+                    "candidate": _candidate_payload(warm_start_candidate),
+                    "inherited_mechanisms": list(
+                        warm_start_spec.inherited_mechanisms
+                    ),
+                    "excluded_source_techniques": dict(
+                        warm_start_spec.excluded_source_techniques
+                    ),
+                    "historical_runtime_executed": False,
+                }
+            ),
             "stage_counts": {
                 fidelity: len(records) for fidelity, records in result.stages.items()
             },

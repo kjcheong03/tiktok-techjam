@@ -12,6 +12,24 @@ from pathlib import Path
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
+CAMPAIGN_SEARCH_PROFILES = {
+    "exhaustive": {
+        "candidate_limit": 500,
+        "beam_width": 24,
+        "higher_order_rounds": 8,
+        "f1_candidates": 24,
+        "f2_candidates": 6,
+        "hpo_trials": 2,
+    },
+    "focused_warm_start": {
+        "candidate_limit": 36,
+        "beam_width": 8,
+        "higher_order_rounds": 1,
+        "f1_candidates": 6,
+        "f2_candidates": 5,
+        "hpo_trials": 1,
+    },
+}
 STAGE_ORDER = (
     "split",
     "fit",
@@ -76,12 +94,18 @@ def build_parser() -> argparse.ArgumentParser:
         default="artifacts/campaigns/adaptive_hybrid_pipeline/checkpoint.json",
     )
     parser.add_argument("--log-dir", default="artifacts/logs/adaptive_hybrid_pipeline")
-    parser.add_argument("--campaign-candidate-limit", type=int, default=500)
-    parser.add_argument("--campaign-beam-width", type=int, default=24)
-    parser.add_argument("--campaign-higher-order-rounds", type=int, default=8)
-    parser.add_argument("--campaign-f1-candidates", type=int, default=24)
-    parser.add_argument("--campaign-f2-candidates", type=int, default=6)
-    parser.add_argument("--campaign-hpo-trials", type=int, default=2)
+    parser.add_argument(
+        "--campaign-search-profile",
+        choices=tuple(CAMPAIGN_SEARCH_PROFILES),
+        default="exhaustive",
+    )
+    parser.add_argument("--campaign-warm-start")
+    parser.add_argument("--campaign-candidate-limit", type=int)
+    parser.add_argument("--campaign-beam-width", type=int)
+    parser.add_argument("--campaign-higher-order-rounds", type=int)
+    parser.add_argument("--campaign-f1-candidates", type=int)
+    parser.add_argument("--campaign-f2-candidates", type=int)
+    parser.add_argument("--campaign-hpo-trials", type=int)
     parser.add_argument(
         "--campaign-max-samples",
         type=int,
@@ -93,19 +117,39 @@ def build_parser() -> argparse.ArgumentParser:
 def _validate_args(args: argparse.Namespace) -> None:
     if STAGE_ORDER.index(args.from_stage) > STAGE_ORDER.index(args.through_stage):
         raise ValueError("from-stage must not come after through-stage")
+    budget = _campaign_budget(args)
     positive = {
-        "campaign-candidate-limit": args.campaign_candidate_limit,
-        "campaign-beam-width": args.campaign_beam_width,
-        "campaign-f1-candidates": args.campaign_f1_candidates,
-        "campaign-f2-candidates": args.campaign_f2_candidates,
+        "campaign-candidate-limit": budget["candidate_limit"],
+        "campaign-beam-width": budget["beam_width"],
+        "campaign-f1-candidates": budget["f1_candidates"],
+        "campaign-f2-candidates": budget["f2_candidates"],
     }
     for name, value in positive.items():
         if value <= 0:
             raise ValueError(f"{name} must be positive")
-    if args.campaign_higher_order_rounds < 0 or args.campaign_hpo_trials < 0:
+    if budget["higher_order_rounds"] < 0 or budget["hpo_trials"] < 0:
         raise ValueError("campaign round and HPO counts cannot be negative")
     if args.campaign_max_samples is not None and args.campaign_max_samples <= 0:
         raise ValueError("campaign-max-samples must be positive")
+    if (
+        args.campaign_search_profile == "focused_warm_start"
+        and not args.campaign_warm_start
+    ):
+        raise ValueError("focused_warm_start requires --campaign-warm-start")
+
+
+def _campaign_budget(args: argparse.Namespace) -> dict[str, int]:
+    profile = dict(CAMPAIGN_SEARCH_PROFILES[args.campaign_search_profile])
+    overrides = {
+        "candidate_limit": args.campaign_candidate_limit,
+        "beam_width": args.campaign_beam_width,
+        "higher_order_rounds": args.campaign_higher_order_rounds,
+        "f1_candidates": args.campaign_f1_candidates,
+        "f2_candidates": args.campaign_f2_candidates,
+        "hpo_trials": args.campaign_hpo_trials,
+    }
+    profile.update({key: value for key, value in overrides.items() if value is not None})
+    return profile
 
 
 def stage_specs(args: argparse.Namespace) -> tuple[StageSpec, ...]:
@@ -117,6 +161,7 @@ def stage_specs(args: argparse.Namespace) -> tuple[StageSpec, ...]:
     )
     campaign_report = "artifacts/reports/adaptive_hybrid_campaign_1650.json"
     campaign_checkpoint = "artifacts/campaigns/adaptive_hybrid_1650_v1/checkpoint.json"
+    budget = _campaign_budget(args)
     campaign_command = [
         python,
         "scripts/run_adaptive_hybrid_campaign.py",
@@ -129,22 +174,24 @@ def stage_specs(args: argparse.Namespace) -> tuple[StageSpec, ...]:
         "--dataset",
         "data/independent_template_1000.jsonl",
         "--candidate-limit",
-        str(args.campaign_candidate_limit),
+        str(budget["candidate_limit"]),
         "--beam-width",
-        str(args.campaign_beam_width),
+        str(budget["beam_width"]),
         "--higher-order-rounds",
-        str(args.campaign_higher_order_rounds),
+        str(budget["higher_order_rounds"]),
         "--f1-candidates",
-        str(args.campaign_f1_candidates),
+        str(budget["f1_candidates"]),
         "--f2-candidates",
-        str(args.campaign_f2_candidates),
+        str(budget["f2_candidates"]),
         "--hpo-trials-per-structure",
-        str(args.campaign_hpo_trials),
+        str(budget["hpo_trials"]),
         "--checkpoint",
         campaign_checkpoint,
         "--output",
         campaign_report,
     ]
+    if args.campaign_warm_start:
+        campaign_command.extend(("--warm-start", args.campaign_warm_start))
     if args.campaign_max_samples is not None:
         campaign_command.extend(("--max-samples", str(args.campaign_max_samples)))
     return (

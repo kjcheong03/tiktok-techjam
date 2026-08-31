@@ -308,6 +308,7 @@ class AdaptiveGhostLabEngine:
         *,
         baseline: AdaptiveHybridConfig,
         registry: AdaptiveTechniqueRegistry,
+        warm_start: CandidateSpec | None = None,
         candidate_limit: int = 500,
         beam_width: int = 24,
         exploration_fraction: float = 0.2,
@@ -331,6 +332,7 @@ class AdaptiveGhostLabEngine:
             raise ValueError("max_extra_techniques must be positive or None")
         self.baseline = baseline
         self.registry = registry
+        self.warm_start = warm_start
         self.candidate_limit = candidate_limit
         self.seed = seed
         self.search_space = _adaptive_search_space()
@@ -349,6 +351,17 @@ class AdaptiveGhostLabEngine:
             complexity=0,
             generation="control",
         )
+        if self.warm_start is not None:
+            if self.warm_start.baseline_id != baseline.policy_id:
+                raise ValueError("warm-start baseline ID does not match the control")
+            if not self.warm_start.candidate_id.startswith("warm-start-"):
+                raise ValueError("warm-start candidate ID must use the warm-start prefix")
+            self.registry.validate_candidate(self.warm_start)
+            materialized = self.registry.materialize(
+                self.baseline, self.warm_start
+            )
+            if materialized.architecture != self.baseline.architecture:
+                raise ValueError("warm start changed the fixed architecture")
 
     def initial_plan(self) -> InteractionSearchPlan:
         inventory = self.registry.inventory()
@@ -385,8 +398,26 @@ class AdaptiveGhostLabEngine:
             self.semantic_candidate(weight=weight, depth=SEMANTIC_F0_DEPTH, suffix="f0")
             for weight in SEMANTIC_WEIGHT_GRID[1:]
         )
+        candidates = [*accepted]
+        if self.warm_start is not None:
+            warm_config_hash = self.materialize(self.warm_start).canonical_hash()
+            equivalent_index = next(
+                (
+                    index
+                    for index, item in enumerate(candidates)
+                    if self.materialize(item).canonical_hash() == warm_config_hash
+                ),
+                None,
+            )
+            if equivalent_index is None:
+                candidates.append(self.warm_start)
+            else:
+                # Preserve the historical provenance and early evaluation order while
+                # avoiding payment for an identical ordinary standalone candidate.
+                candidates[equivalent_index] = self.warm_start
+        candidates.extend(semantic_calibration)
         return InteractionSearchPlan(
-            candidates=(*tuple(accepted), *semantic_calibration),
+            candidates=tuple(candidates),
             skipped=tuple(skipped),
             cap_exhausted=plan.cap_exhausted,
         )
@@ -851,7 +882,11 @@ class AdaptiveGhostLabEngine:
         ordered = tuple(
             sorted(
                 candidates,
-                key=lambda item: (item.generation != "control", item.candidate_id),
+                key=lambda item: (
+                    item.generation != "control",
+                    not item.candidate_id.startswith("warm-start-"),
+                    item.candidate_id,
+                ),
             )
         )
         if not ordered:

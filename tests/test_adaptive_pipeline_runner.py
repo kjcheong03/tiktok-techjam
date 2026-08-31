@@ -63,3 +63,58 @@ def test_adaptive_pipeline_can_stop_before_campaign() -> None:
         "baselines",
         "validate",
     ]
+
+
+def test_focused_warm_start_profile_builds_bounded_campaign() -> None:
+    warm_start = (
+        "configs/warm_starts/adaptive_d4e040a07e6d_to_1a_3b_v1.json"
+    )
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "scripts/run_adaptive_hybrid_pipeline.py",
+            "--from-stage",
+            "campaign",
+            "--through-stage",
+            "campaign",
+            "--campaign-search-profile",
+            "focused_warm_start",
+            "--campaign-warm-start",
+            warm_start,
+            "--show-plan",
+        ],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    command = json.loads(completed.stdout)["stages"][0]["command"]
+
+    def value(flag: str) -> str:
+        return command[command.index(flag) + 1]
+
+    assert value("--candidate-limit") == "36"
+    assert value("--beam-width") == "8"
+    assert value("--higher-order-rounds") == "1"
+    assert value("--f1-candidates") == "6"
+    assert value("--f2-candidates") == "5"
+    assert value("--hpo-trials-per-structure") == "1"
+    assert value("--warm-start") == warm_start
+
+
+def test_focused_profile_requires_explicit_warm_start() -> None:
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "scripts/run_adaptive_hybrid_pipeline.py",
+            "--campaign-search-profile",
+            "focused_warm_start",
+            "--show-plan",
+        ],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert completed.returncode != 0
+    assert "requires --campaign-warm-start" in completed.stderr
