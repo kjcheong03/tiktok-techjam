@@ -208,6 +208,7 @@ def trial_ledger_evidence(
 def _development_fold_groups(
     corpus: AdaptiveTrainingCorpus,
     manifest: AdaptiveLineageManifest,
+    scenario_type: str = "browsing",
 ) -> tuple[tuple[tuple[str, ...], ...], ...]:
     groups = {
         str(item["group_id"]): tuple(str(value) for value in item["member_ids"])
@@ -221,13 +222,15 @@ def _development_fold_groups(
                 sample_id
                 for sample_id in groups[group_id]
                 if sample_id in corpus.samples
-                and corpus.samples[sample_id].get("scenario_type") == "browsing"
+                and corpus.samples[sample_id].get("scenario_type") == scenario_type
             )
             if sample_ids:
                 eligible.append(sample_ids)
         folds.append(tuple(eligible))
     if not folds or any(not fold for fold in folds):
-        raise ValueError("every development outer fold must contain Browsing lineage")
+        raise ValueError(
+            f"every development outer fold must contain {scenario_type} lineage"
+        )
     return tuple(folds)
 
 
@@ -235,12 +238,14 @@ def lineage_safe_sample_ids(
     corpus: AdaptiveTrainingCorpus,
     manifest: AdaptiveLineageManifest,
     max_samples: int,
+    *,
+    scenario_type: str = "browsing",
 ) -> tuple[tuple[str, ...], ...]:
-    """Select complete Browsing lineage groups, balanced across outer folds."""
+    """Select complete scenario lineage groups, balanced across outer folds."""
 
     if max_samples <= 0:
         raise ValueError("max_samples must be positive")
-    fold_groups = _development_fold_groups(corpus, manifest)
+    fold_groups = _development_fold_groups(corpus, manifest, scenario_type)
     selected: list[list[str]] = [[] for _ in fold_groups]
     offsets = [0 for _ in fold_groups]
     total = 0
@@ -284,7 +289,7 @@ def _candidate_pool_evidence(agent: AdaptiveHybridAgent) -> tuple[str, int]:
     traces = {
         (item.session_id, item.turn): item
         for item in agent.traces
-        if item.semantic_executed
+        if item.semantic_decision_reached and not item.overloaded
     }
     first_eligible_by_session: dict[str, AdaptiveCandidateSnapshot] = {}
     for item in agent.candidate_snapshots:
@@ -316,10 +321,13 @@ def _semantic_rescue_metrics(
         trace = traces.get((snapshot.session_id, snapshot.turn))
         sample_id = sample_id_by_runtime_session.get(snapshot.session_id)
         sample = samples.get(sample_id) if sample_id is not None else None
-        if trace is None or sample is None or not trace.semantic_executed:
+        if trace is None or sample is None:
             continue
         target = str(sample.get("ground_truth", {}).get("parent_asin", ""))
         if not target:
+            continue
+        confirmed_target_removals += target in snapshot.authority_removed_ids
+        if not trace.semantic_executed:
             continue
         evaluated += 1
         pre_semantic = snapshot.pre_semantic_candidates or snapshot.candidates
@@ -332,7 +340,6 @@ def _semantic_rescue_metrics(
         demoted += bool(
             before is not None and before <= 10 and (after is None or after > 10)
         )
-        confirmed_target_removals += target in snapshot.authority_removed_ids
     return {
         "semantic_target_turns": evaluated,
         "target_rescued_into_top10": rescued,
@@ -381,6 +388,16 @@ def _worker_trial(spec: dict[str, Any]) -> dict[str, Any]:
     identifiers, categories, products = catalog_index(catalog_path)
     started = time.perf_counter()
     agent = AdaptiveHybridAgent(catalog_path, config, project_root=ROOT)
+    activation_mode = spec.get("activation_mode")
+    if activation_mode is not None:
+        from scripts.run_semantic_activation_study import StudyActivationPolicy
+
+        agent.semantic_activation = StudyActivationPolicy(  # type: ignore[assignment]
+            str(activation_mode),
+            agent.semantic_activation,
+            maximum_margin=float(spec.get("maximum_margin", 0.02)),
+            minimum_entropy=float(spec.get("minimum_entropy", 0.85)),
+        )
     result = evaluate(cast(Agent, agent), samples, identifiers, categories, products)
     elapsed = time.perf_counter() - started
     semantic_traces = [item for item in agent.traces if item.semantic_executed]
@@ -427,6 +444,9 @@ def _worker_trial(spec: dict[str, Any]) -> dict[str, Any]:
         "tree_sha256": model_hash,
         "depth": int(spec["depth"]),
         "weight": float(spec["weight"]),
+        "activation_mode": str(activation_mode or "configured"),
+        "maximum_margin": float(spec.get("maximum_margin", 0.02)),
+        "minimum_entropy": float(spec.get("minimum_entropy", 0.85)),
         "sessions": len(samples),
         "ordered_session_ids_sha256": _canonical_sha256(ordered_ids),
         "fold_metrics": fold_metrics,
@@ -439,6 +459,35 @@ def _worker_trial(spec: dict[str, Any]) -> dict[str, Any]:
         ),
         **rescue,
         "semantic_activations": len(semantic_traces),
+        "semantic_skips": len(agent.traces) - len(semantic_traces),
+        "semantic_candidate_margin_mean": (
+            sum(
+                item.semantic_candidate_margin
+                for item in agent.traces
+                if item.semantic_candidate_margin is not None
+            )
+            / max(
+                1,
+                sum(
+                    item.semantic_candidate_margin is not None
+                    for item in agent.traces
+                ),
+            )
+        ),
+        "semantic_candidate_entropy_mean": (
+            sum(
+                item.semantic_candidate_entropy
+                for item in agent.traces
+                if item.semantic_candidate_entropy is not None
+            )
+            / max(
+                1,
+                sum(
+                    item.semantic_candidate_entropy is not None
+                    for item in agent.traces
+                ),
+            )
+        ),
         "primary_activations": primary,
         "fallback_activations": fallback,
         "fallback_rate": fallback / max(1, len(semantic_traces)),

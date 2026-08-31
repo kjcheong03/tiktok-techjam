@@ -9,6 +9,7 @@ from typing import Any
 
 from baseline.state import classify_constraint
 from ghostlab.competition.contract import AskAttribute
+from ghostlab.policy.signals import RetrievalSignals, retrieval_signals
 from ghostlab.retrieval.category import CategoryCandidateIndex, CategoryHit
 from ghostlab.retrieval.diversify import DiversificationContext, FacetMMRDiversifier
 from ghostlab.retrieval.multi_route import (
@@ -102,6 +103,8 @@ class AdaptiveTurnTrace:
     semantic_changed: bool
     semantic_elapsed_ms: float
     semantic_failure_reason: str | None
+    semantic_candidate_margin: float | None
+    semantic_candidate_entropy: float | None
     profile_active: bool
     profile_reason: str
     profile_update_values: tuple[str, ...]
@@ -459,17 +462,22 @@ class AdaptiveHybridAgent:
         view: V2StateView,
         *,
         overloaded: bool,
+        pool: MergedCandidatePool | None = None,
     ) -> SemanticRankingResult:
-        activation = self.semantic_activation.decide(route, view, overloaded=overloaded)
+        signals = self._semantic_candidate_signals(ranking, pool)
+        activation = self.semantic_activation.decide(
+            route,
+            view,
+            overloaded=overloaded,
+            signals=signals,
+        )
         if activation.active:
             ranked = self.semantic.rank(query, ranking)
-            return SemanticRankingResult(
-                ranking=ranked.ranking,
-                changed=ranked.changed,
-                elapsed_ms=ranked.elapsed_ms,
-                backend=ranked.backend,
+            return replace(
+                ranked,
                 activation_reason=activation.reason,
-                failure_reason=ranked.failure_reason,
+                candidate_margin=(signals.top1_margin if signals else None),
+                candidate_entropy=(signals.normalized_entropy if signals else None),
             )
         return SemanticRankingResult(
             ranking=tuple(ranking),
@@ -477,6 +485,48 @@ class AdaptiveHybridAgent:
             elapsed_ms=0.0,
             backend=f"skipped:{activation.reason}",
             activation_reason=activation.reason,
+            candidate_margin=(signals.top1_margin if signals else None),
+            candidate_entropy=(signals.normalized_entropy if signals else None),
+        )
+
+    def _semantic_candidate_signals(
+        self,
+        ranking: list[str],
+        pool: MergedCandidatePool | None,
+    ) -> RetrievalSignals | None:
+        """Expose label-free merge ambiguity at the semantic decision point."""
+
+        if pool is None:
+            return None
+        by_id = {item.parent_asin: item for item in pool.candidates}
+        head = [
+            by_id[identifier]
+            for identifier in ranking[: self.config.semantic_ranker.rerank_k]
+            if identifier in by_id
+        ]
+        if not head:
+            return None
+        scores = sorted(
+            (float(item.aggregate_score) for item in head), reverse=True
+        )
+        sparse_ids = [
+            item.parent_asin
+            for item in sorted(
+                (item for item in pool.candidates if item.keyword_rank is not None),
+                key=lambda item: (item.keyword_rank or 0, item.parent_asin),
+            )
+        ]
+        dense_ids = [
+            item.parent_asin
+            for item in sorted(
+                (item for item in pool.candidates if item.vector_rank is not None),
+                key=lambda item: (item.vector_rank or 0, item.parent_asin),
+            )
+        ]
+        return retrieval_signals(
+            scores,
+            sparse_ids=sparse_ids,
+            dense_ids=dense_ids,
         )
 
     @staticmethod
@@ -894,7 +944,12 @@ class AdaptiveHybridAgent:
                         pre_semantic_candidates=tuple(ranking),
                     )
                     semantic = self._semantic_rank(
-                        query, ranking, route, view, overloaded=False
+                        query,
+                        ranking,
+                        route,
+                        view,
+                        overloaded=False,
+                        pool=pool,
                     )
                     candidate_snapshot = replace(
                         candidate_snapshot,
@@ -1000,6 +1055,8 @@ class AdaptiveHybridAgent:
                     semantic_changed=semantic.changed,
                     semantic_elapsed_ms=semantic.elapsed_ms,
                     semantic_failure_reason=semantic.failure_reason,
+                    semantic_candidate_margin=semantic.candidate_margin,
+                    semantic_candidate_entropy=semantic.candidate_entropy,
                     profile_active=profile_context.active,
                     profile_reason=profile_context.reason,
                     profile_update_values=profile_update.values,

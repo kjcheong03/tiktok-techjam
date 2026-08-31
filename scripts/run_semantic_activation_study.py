@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import cast
 
 from evaluator.local_evaluator import catalog_index, evaluate, load_jsonl
+from ghostlab.policy.signals import RetrievalSignals
 from ghostlab.runtime.adaptive_components import (
     RouteDecision,
     SemanticActivationDecision,
@@ -24,6 +25,9 @@ MODES = (
     "always",
     "browsing_all",
     "browsing_refined",
+    "browsing_ambiguous",
+    "buying_all",
+    "buying_semantic_constraints",
     "semantic_constraints",
     "selective",
 )
@@ -32,11 +36,20 @@ MODES = (
 class StudyActivationPolicy:
     """Research-only gates; only `selective` is submission-eligible."""
 
-    def __init__(self, mode: str, selected: SemanticActivationPolicy) -> None:
+    def __init__(
+        self,
+        mode: str,
+        selected: SemanticActivationPolicy,
+        *,
+        maximum_margin: float = 0.02,
+        minimum_entropy: float = 0.85,
+    ) -> None:
         if mode not in MODES:
             raise ValueError(f"unknown semantic activation mode: {mode}")
         self.mode = mode
         self.selected = selected
+        self.maximum_margin = maximum_margin
+        self.minimum_entropy = minimum_entropy
 
     def decide(
         self,
@@ -44,9 +57,15 @@ class StudyActivationPolicy:
         view: V2StateView,
         *,
         overloaded: bool,
+        signals: RetrievalSignals | None = None,
     ) -> SemanticActivationDecision:
         if self.mode == "selective":
-            return self.selected.decide(route, view, overloaded=overloaded)
+            return self.selected.decide(
+                route,
+                view,
+                overloaded=overloaded,
+                signals=signals,
+            )
         if self.mode == "never":
             return SemanticActivationDecision(False, "research_never")
         if self.mode == "always":
@@ -55,6 +74,45 @@ class StudyActivationPolicy:
             return SemanticActivationDecision(
                 route.route == "browsing",
                 "research_browsing" if route.route == "browsing" else "research_buying",
+            )
+        if self.mode == "browsing_ambiguous":
+            active = (
+                route.route == "browsing"
+                and not overloaded
+                and signals is not None
+                and signals.top1_margin is not None
+                and signals.normalized_entropy is not None
+                and signals.top1_margin <= self.maximum_margin
+                and signals.normalized_entropy >= self.minimum_entropy
+            )
+            return SemanticActivationDecision(
+                active,
+                "research_ambiguous_browsing"
+                if active
+                else "research_confident_or_unavailable_browsing",
+            )
+        if self.mode == "buying_all":
+            active = route.route == "buying" and not overloaded
+            return SemanticActivationDecision(
+                active,
+                "research_bounded_buying" if active else "research_not_buying",
+            )
+        if self.mode == "buying_semantic_constraints":
+            semantic_attributes = {"occasion", "use_case", "style", "feature", "other"}
+            active = (
+                route.route == "buying"
+                and not overloaded
+                and any(
+                    constraint.polarity == "include"
+                    and constraint.attribute in semantic_attributes
+                    for constraint in view.active_constraints
+                )
+            )
+            return SemanticActivationDecision(
+                active,
+                "research_semantic_buying"
+                if active
+                else "research_exact_or_not_buying",
             )
         if self.mode == "semantic_constraints":
             if overloaded:
@@ -88,6 +146,8 @@ def main() -> None:
     parser.add_argument("--dataset", default="data/public_set.jsonl")
     parser.add_argument("--max-samples", type=int)
     parser.add_argument("--output", required=True)
+    parser.add_argument("--maximum-margin", type=float, default=0.02)
+    parser.add_argument("--minimum-entropy", type=float, default=0.85)
     args = parser.parse_args()
     os.environ["HF_HUB_OFFLINE"] = "1"
     os.environ["TRANSFORMERS_OFFLINE"] = "1"
@@ -103,7 +163,10 @@ def main() -> None:
     identifiers, categories, products = catalog_index(catalog_path)
     agent = AdaptiveHybridAgent(catalog_path, config, project_root=ROOT)
     agent.semantic_activation = StudyActivationPolicy(  # type: ignore[assignment]
-        args.mode, agent.semantic_activation
+        args.mode,
+        agent.semantic_activation,
+        maximum_margin=args.maximum_margin,
+        minimum_entropy=args.minimum_entropy,
     )
     result = evaluate(
         cast(Agent, agent), samples, identifiers, categories, products

@@ -202,6 +202,20 @@ def test_development_sample_selection_preserves_lineage_folds() -> None:
             group = manifest.group_by_sample[sample_id]
             assert owners.setdefault(group, fold_index) == fold_index
 
+    buying_folds = lineage_safe_sample_ids(
+        development,
+        manifest,
+        60,
+        scenario_type="buying",
+    )
+    assert len(buying_folds) == 5
+    assert all(buying_folds)
+    assert all(
+        development.samples[sample_id]["scenario_type"] == "buying"
+        for fold in buying_folds
+        for sample_id in fold
+    )
+
 
 def test_candidate_pool_pairing_ignores_random_runtime_session_ids() -> None:
     from ghostlab.runtime.adaptive_hybrid import AdaptiveCandidateSnapshot
@@ -224,7 +238,13 @@ def test_candidate_pool_pairing_ignores_random_runtime_session_ids() -> None:
             type(
                 "TraceEvidence",
                 (),
-                {"session_id": session_id, "turn": 2, "semantic_executed": True},
+                {
+                    "session_id": session_id,
+                    "turn": 2,
+                    "semantic_decision_reached": True,
+                    "semantic_executed": True,
+                    "overloaded": False,
+                },
             )()
         ]
         return agent
@@ -277,3 +297,44 @@ def test_semantic_rescue_uses_runtime_to_dataset_session_mapping() -> None:
     assert result["semantic_target_turns"] == 1
     assert result["target_rescued_into_top10"] == 1
     assert result["target_demoted_from_top10"] == 0
+
+
+def test_constraint_removal_audit_does_not_depend_on_semantic_activation() -> None:
+    from ghostlab.runtime.adaptive_hybrid import AdaptiveCandidateSnapshot
+    from scripts.compare_local_llm_rankers import _semantic_rescue_metrics
+
+    agent = type("AgentEvidence", (), {})()
+    agent.candidate_snapshots = [
+        AdaptiveCandidateSnapshot(
+            session_id="runtime-random",
+            turn=1,
+            query="waterproof bag",
+            route="buying",
+            candidates=("OTHER",),
+            overloaded=False,
+            pre_authority_candidates=("TARGET", "OTHER"),
+            authority_removed_ids=("TARGET",),
+            pre_semantic_candidates=("OTHER",),
+            post_semantic_candidates=("OTHER",),
+        )
+    ]
+    agent.traces = [
+        type(
+            "TraceEvidence",
+            (),
+            {
+                "session_id": "runtime-random",
+                "turn": 1,
+                "semantic_executed": False,
+            },
+        )()
+    ]
+
+    result = _semantic_rescue_metrics(
+        agent,
+        {"dataset-id": {"ground_truth": {"parent_asin": "TARGET"}}},
+        {"runtime-random": "dataset-id"},
+    )
+
+    assert result["confirmed_target_removal_count"] == 1
+    assert result["semantic_target_turns"] == 0

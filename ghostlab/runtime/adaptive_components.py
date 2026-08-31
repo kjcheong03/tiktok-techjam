@@ -19,6 +19,7 @@ from ghostlab.policy.candidate_statistics import (
     CandidateStatistics,
 )
 from ghostlab.policy.eig_questions import CandidateEIGPolicy
+from ghostlab.policy.signals import RetrievalSignals
 from ghostlab.retrieval.cross_encoder import (
     CrossEncoderReranker,
     blend_ranking,
@@ -663,6 +664,8 @@ class SemanticRankingResult:
     backend: str
     activation_reason: str = "semantic_ranking_required"
     failure_reason: str | None = None
+    candidate_margin: float | None = None
+    candidate_entropy: float | None = None
 
 
 @dataclass(frozen=True)
@@ -683,7 +686,9 @@ class SemanticActivationPolicy:
         view: V2StateView,
         *,
         overloaded: bool,
+        signals: RetrievalSignals | None = None,
     ) -> SemanticActivationDecision:
+        del signals
         if route.abstained_to_precision:
             return SemanticActivationDecision(False, "precision_abstention")
         if route.route == "browsing":
