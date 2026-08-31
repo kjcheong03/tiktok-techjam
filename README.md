@@ -453,7 +453,7 @@ Open <http://127.0.0.1:8787/dashboard/>.
 |---|---|
 | Chloe Chua | Baseline implementation, runtime architecture planning, project documentation, and testing |
 | Cheong Kang Jie | GhostLab optimization engine, adaptive runtime integration, training/evaluation pipeline, champion selection, and reproducibility packaging |
-| Chew En Wei | Training-dataset generation, architecture planning, and contribution summary |
+| Chew En Wei | Training-dataset generation and architecture diagram design |
 | Lucas Sam | Results dashboard and frontend visualization |
 
 ### Important references
