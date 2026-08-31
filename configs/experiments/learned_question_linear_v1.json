@@ -1,0 +1,37 @@
+{
+  "experiment_id": "learned_question_linear_v1",
+  "parent_commit": "189f0c6",
+  "family": "question",
+  "hypothesis": "A response-conditioned linear action-value policy with an absorbing stop action improves OOF technical score over the champion fixed sequence without material scenario regressions.",
+  "primary_metric": "recommended_technical_score",
+  "secondary_metrics": [
+    "hit_rate_at_10",
+    "mrr",
+    "mttc"
+  ],
+  "candidate_limit": 1,
+  "wall_clock_limit_seconds": 7200,
+  "seeds": [
+    20260826
+  ],
+  "split": "nested_v1",
+  "holdout_accessed": false,
+  "continuation_policy": {
+    "question_action": "Take the counterfactual action once, then resume ghostlab_champion_linear_v1 at the next absolute turn.",
+    "stop_action": "Absorbing: ask_attribute remains null on every later turn.",
+    "attribution": "First-action counterfactual labels are reported separately from complete learned-policy OOF evaluation."
+  },
+  "model": {
+    "class": "per-action ridge linear regression",
+    "l2": 1.0,
+    "hyperparameter_search": false,
+    "runtime_inputs": "observable_question_features_v1"
+  },
+  "required_controls": [
+    "ghostlab_champion_linear_v1",
+    "heuristic_adaptive_v1",
+    "fixed_no_other_v1",
+    "absorbing_stop_v1"
+  ],
+  "promotion_rule": "Promote only for positive paired OOF technical-score gain with a 95% bootstrap interval excluding zero, no material unexplained scenario regression greater than 0.02, deterministic legal behavior, and passing latency/packaging gates. Otherwise park standalone or retain only as an interaction reserve with a named dependency."
+}

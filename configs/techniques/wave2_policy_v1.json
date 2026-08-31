@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "wave": 2,
+  "default_enabled": false,
+  "techniques": [
+    {"id": "state.attribute_ontology.v1", "family": "state", "source": "ghostlab/state/catalog_ontology.py", "binding": "normalizer=catalog_v1", "status": "available_unvalidated", "fit_required": true},
+    {"id": "state.catalog_normalizer.v1", "family": "state", "source": "ghostlab/state/normalization.py", "binding": "normalizer=catalog_v1", "status": "available_unvalidated", "fit_required": true},
+    {"id": "state.confidence_gated_constraints.v1", "family": "state", "source": "ghostlab/state/normalization.py", "binding": "catalog_normalizer.confidence_threshold", "status": "available_unvalidated", "fit_required": false},
+    {"id": "question.candidate_eig.v1", "family": "question", "source": "ghostlab/policy/eig_questions.py", "binding": "question_variant=candidate_eig", "status": "interaction_reserve", "fit_required": false},
+    {"id": "question.reward_voi.v1", "family": "question", "source": "ghostlab/research/eig_counterfactual.py", "binding": "question_variant=reward_voi", "status": "available_unvalidated", "fit_required": true},
+    {"id": "termination.reward_aware.v1", "family": "question", "source": "ghostlab/policy/eig_questions.py", "binding": "question_value_margin", "status": "available_unvalidated", "fit_required": false},
+    {"id": "policy.joint_observable.v1", "family": "policy", "source": "ghostlab/policy/joint_policy.py", "binding": "question_variant=joint_observable", "status": "available_unvalidated", "fit_required": false},
+    {"id": "routing.joint_route.v1", "family": "routing", "source": "ghostlab/policy/joint_actions.py", "binding": "joint_policy", "status": "available_unvalidated", "fit_required": true},
+    {"id": "research.counterfactual_expert.v2", "family": "research", "source": "ghostlab/research/counterfactual_expert.py", "binding": "research_only", "status": "available_unvalidated", "fit_required": true},
+    {"id": "policy.distilled_expert.v1", "family": "policy", "source": "ghostlab/policy/distilled_expert.py", "binding": "question_variant=distilled_joint", "status": "available_unvalidated", "fit_required": true},
+    {"id": "search.expert_iteration.v1", "family": "optimization", "source": "ghostlab/research/counterfactual_expert.py", "binding": "maximum_expert_iterations", "status": "available_unvalidated", "fit_required": true},
+    {"id": "routing.calibrated_observable.v1", "family": "routing", "source": "ghostlab/policy/calibrated_router.py", "binding": "routing_variant=calibrated", "status": "available_unvalidated", "fit_required": true},
+    {"id": "guard.component_fallback.v1", "family": "guard", "source": "ghostlab/runtime/component_fallback.py", "binding": "component_fallback", "status": "available_unvalidated", "fit_required": false}
+  ]
+}

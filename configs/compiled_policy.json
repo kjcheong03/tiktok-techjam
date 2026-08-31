@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "policy_id": "ghostlab_guarded_constraint_gbdt_v1",
+  "techniques": {
+    "retrieval_route": "keyword",
+    "state_mode": "raw_history",
+    "question_policy": "sequence",
+    "question_order": [
+      "other",
+      "other",
+      "use_case",
+      "other",
+      "size",
+      "other",
+      "other",
+      "size"
+    ],
+    "retrieval_k": 200,
+    "sparse_field_weights": [2.0, 8.0, 4.0, 2.5, 1.5, 1.0],
+    "negative_evidence": true,
+    "provenance": true,
+    "override_invalidation": true,
+    "quality_prior_weight": 0.2,
+    "reranker": "guarded_constraint_gbdt",
+    "rerank_k": 50,
+    "base_model_asset": {
+      "path": "artifacts/models/gbdt_reranker_v2_round56.json",
+      "sha256": "10782d08ce20f8c9a60d3e2482ff577c887a35cc74e456c69c781409eb4df4d6"
+    },
+    "constraint_model_asset": {
+      "path": "artifacts/models/gbdt_constraint_interaction_v2.json",
+      "sha256": "2a3dc13284bb5ca53b9b795c9ec69ac921883be55efe6a239072302c4d4f6e6b"
+    }
+  },
+  "fallback_policy_id": "keyword_current_turn",
+  "trace_enabled": false
+}

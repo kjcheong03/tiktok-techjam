@@ -1,0 +1,672 @@
+{
+  "adaptive_sample_ids": [
+    "public_0001",
+    "public_0002",
+    "public_0004",
+    "public_0005",
+    "public_0006",
+    "public_0007",
+    "public_0008",
+    "public_0011",
+    "public_0012",
+    "public_0013",
+    "public_0015",
+    "public_0016",
+    "public_0017",
+    "public_0018",
+    "public_0019",
+    "public_0020",
+    "public_0024",
+    "public_0025",
+    "public_0027",
+    "public_0028",
+    "public_0029",
+    "public_0030",
+    "public_0032",
+    "public_0033",
+    "public_0035",
+    "public_0036",
+    "public_0038",
+    "public_0041",
+    "public_0042",
+    "public_0043",
+    "public_0044",
+    "public_0045",
+    "public_0046",
+    "public_0047",
+    "public_0048",
+    "public_0052",
+    "public_0053",
+    "public_0054",
+    "public_0055",
+    "public_0056",
+    "public_0057",
+    "public_0059",
+    "public_0060",
+    "public_0062",
+    "public_0063",
+    "public_0064",
+    "public_0065",
+    "public_0066",
+    "public_0068",
+    "public_0070",
+    "public_0073",
+    "public_0074",
+    "public_0075",
+    "public_0077",
+    "public_0078",
+    "public_0079",
+    "public_0080",
+    "public_0082",
+    "public_0083",
+    "public_0085",
+    "public_0086",
+    "public_0087",
+    "public_0088",
+    "public_0089",
+    "public_0090",
+    "public_0092",
+    "public_0093",
+    "public_0094",
+    "public_0095",
+    "public_0096",
+    "public_0097",
+    "public_0098",
+    "public_0099",
+    "public_0102",
+    "public_0103",
+    "public_0104",
+    "public_0105",
+    "public_0106",
+    "public_0107",
+    "public_0108",
+    "public_0111",
+    "public_0112",
+    "public_0113",
+    "public_0114",
+    "public_0115",
+    "public_0116",
+    "public_0117",
+    "public_0118",
+    "public_0120",
+    "public_0121",
+    "public_0125",
+    "public_0126",
+    "public_0127",
+    "public_0129",
+    "public_0131",
+    "public_0132",
+    "public_0134",
+    "public_0135",
+    "public_0136",
+    "public_0137",
+    "public_0139",
+    "public_0140",
+    "public_0141",
+    "public_0142",
+    "public_0143",
+    "public_0144",
+    "public_0145",
+    "public_0146",
+    "public_0148",
+    "public_0149",
+    "public_0150",
+    "public_0151",
+    "public_0152",
+    "public_0154",
+    "public_0155",
+    "public_0157",
+    "public_0158",
+    "public_0159",
+    "public_0162",
+    "public_0163",
+    "public_0164",
+    "public_0166",
+    "public_0167",
+    "public_0173",
+    "public_0174",
+    "public_0175",
+    "public_0176",
+    "public_0177",
+    "public_0178",
+    "public_0179",
+    "public_0180",
+    "public_0181",
+    "public_0182",
+    "public_0183",
+    "public_0184",
+    "public_0185",
+    "public_0186",
+    "public_0187",
+    "public_0188",
+    "public_0189",
+    "public_0191",
+    "public_0192",
+    "public_0193",
+    "public_0194",
+    "public_0195",
+    "public_0196",
+    "public_0197",
+    "public_0198",
+    "public_0199",
+    "public_0200"
+  ],
+  "dataset_sha256": "857259f7a438e6188ac63e18995b6ff4489bfcfc4a716a798b9a2aa0ee8f7579",
+  "name": "nested_v1",
+  "outer_folds": [
+    [
+      "public_0001",
+      "public_0011",
+      "public_0027",
+      "public_0032",
+      "public_0035",
+      "public_0042",
+      "public_0046",
+      "public_0048",
+      "public_0052",
+      "public_0066",
+      "public_0075",
+      "public_0085",
+      "public_0086",
+      "public_0092",
+      "public_0116",
+      "public_0134",
+      "public_0139",
+      "public_0142",
+      "public_0144",
+      "public_0145",
+      "public_0146",
+      "public_0157",
+      "public_0162",
+      "public_0163",
+      "public_0175",
+      "public_0176",
+      "public_0177",
+      "public_0179",
+      "public_0191",
+      "public_0192",
+      "public_0200"
+    ],
+    [
+      "public_0005",
+      "public_0007",
+      "public_0013",
+      "public_0017",
+      "public_0024",
+      "public_0025",
+      "public_0029",
+      "public_0044",
+      "public_0045",
+      "public_0057",
+      "public_0074",
+      "public_0077",
+      "public_0080",
+      "public_0087",
+      "public_0096",
+      "public_0099",
+      "public_0104",
+      "public_0111",
+      "public_0113",
+      "public_0115",
+      "public_0125",
+      "public_0132",
+      "public_0136",
+      "public_0143",
+      "public_0158",
+      "public_0173",
+      "public_0178",
+      "public_0180",
+      "public_0185",
+      "public_0195",
+      "public_0197"
+    ],
+    [
+      "public_0002",
+      "public_0006",
+      "public_0008",
+      "public_0016",
+      "public_0018",
+      "public_0020",
+      "public_0036",
+      "public_0047",
+      "public_0056",
+      "public_0059",
+      "public_0064",
+      "public_0068",
+      "public_0073",
+      "public_0082",
+      "public_0088",
+      "public_0095",
+      "public_0103",
+      "public_0105",
+      "public_0108",
+      "public_0118",
+      "public_0121",
+      "public_0129",
+      "public_0131",
+      "public_0135",
+      "public_0140",
+      "public_0164",
+      "public_0181",
+      "public_0187",
+      "public_0188",
+      "public_0194"
+    ],
+    [
+      "public_0012",
+      "public_0019",
+      "public_0028",
+      "public_0038",
+      "public_0062",
+      "public_0063",
+      "public_0065",
+      "public_0070",
+      "public_0078",
+      "public_0079",
+      "public_0083",
+      "public_0090",
+      "public_0097",
+      "public_0098",
+      "public_0112",
+      "public_0114",
+      "public_0117",
+      "public_0120",
+      "public_0137",
+      "public_0148",
+      "public_0151",
+      "public_0152",
+      "public_0154",
+      "public_0159",
+      "public_0166",
+      "public_0182",
+      "public_0186",
+      "public_0189",
+      "public_0196"
+    ],
+    [
+      "public_0004",
+      "public_0015",
+      "public_0030",
+      "public_0033",
+      "public_0041",
+      "public_0043",
+      "public_0053",
+      "public_0054",
+      "public_0055",
+      "public_0060",
+      "public_0089",
+      "public_0093",
+      "public_0094",
+      "public_0102",
+      "public_0106",
+      "public_0107",
+      "public_0126",
+      "public_0127",
+      "public_0141",
+      "public_0149",
+      "public_0150",
+      "public_0155",
+      "public_0167",
+      "public_0174",
+      "public_0183",
+      "public_0184",
+      "public_0193",
+      "public_0198",
+      "public_0199"
+    ]
+  ],
+  "profile_fingerprint_groups": {
+    "04c03e85e14309f1a9f99881e57a36f9445d4ccb3167d1bdc34dd716c78d0437": [
+      "public_0093"
+    ],
+    "05704c1753ea63a46e8c46002505096f48f1776d4a51777d134bced1876912aa": [
+      "public_0117"
+    ],
+    "0612127db908728fbaf976648e932bcca19d3cc8500bc8b897ab7a2ea85c5d37": [
+      "public_0060"
+    ],
+    "06333d860b37bc09e3d4945a0573dae4607ece9e6064205a127647d6eda14020": [
+      "public_0015",
+      "public_0090"
+    ],
+    "06541cd2523ebf140e1c8c4e5a43900cc359b51c1b250a5deb45844641b58c92": [
+      "public_0007",
+      "public_0011",
+      "public_0020",
+      "public_0028",
+      "public_0036",
+      "public_0053",
+      "public_0077",
+      "public_0082",
+      "public_0113",
+      "public_0121",
+      "public_0125",
+      "public_0126",
+      "public_0141",
+      "public_0162",
+      "public_0188",
+      "public_0193",
+      "public_0197",
+      "public_0199"
+    ],
+    "07e57840b58f39b6a731056425adce5577063282a9136c1cb879c7bb582b7613": [
+      "public_0127"
+    ],
+    "0ab41b6cb05462057fa2b94d4a026420e3fd375353da02258219fca8367d3261": [
+      "public_0027"
+    ],
+    "112eab627d7d3c41542b06c14eb2a91b860fd1802f057d66db3c367449461842": [
+      "public_0198"
+    ],
+    "1ba306c9ad6710bd5216dcbc92daea448b104c19ee7d7793217f4cfedec7ad9f": [
+      "public_0012",
+      "public_0129"
+    ],
+    "1c40d0bc6b39a8487ad848822417e52fd974af97b0ecee6069b739edb6c07d1d": [
+      "public_0019",
+      "public_0054"
+    ],
+    "1c69144313077f809258c7659f51e320525f8dbb332b8512726629ca7cff2666": [
+      "public_0116"
+    ],
+    "2100ea9b53614a9baaf5ebc06690f7452ddbfeed52ca4c940374880d6d5e9c4b": [
+      "public_0070"
+    ],
+    "246319fc7a2e6a6f3ec97379a142ee8c28f823e54efa48d8d808de400c7969c2": [
+      "public_0005",
+      "public_0167"
+    ],
+    "246888ac5497d50a052d5a880d31609df86e0d4253d7e63f5ad97daebbcf5a45": [
+      "public_0146"
+    ],
+    "2adadd5454a88d59b00fdbc7474f156c8f9573f268f6babd4c0c1e1757cb8826": [
+      "public_0107"
+    ],
+    "2e3d0a512bb014f9e8102a03ec85c9afd1e9162703f1826ce9fcc2eccaabcd55": [
+      "public_0018",
+      "public_0183"
+    ],
+    "2e500d32b46c4238a3aa519e387eebb42f49de70334a6dd3ce2db541faf521f6": [
+      "public_0164"
+    ],
+    "341cd17c7f1449d67b574d728720c2d90f7ad43591869f693450bf51c95df966": [
+      "public_0157"
+    ],
+    "344f8fd1f3d92b8a49335fd107900debef76e27d5cf0e539b4e79eda864256cc": [
+      "public_0044"
+    ],
+    "38286e07a9f727355c68fe1bda26a35263ccfc1b794e875ffad4846a2504d47d": [
+      "public_0078",
+      "public_0106"
+    ],
+    "386c08905b445fb117cf1f0cd01e7038e9a354b0f9089b3bcd6f85a8ef47f653": [
+      "public_0099"
+    ],
+    "3d6f6483fec31821948d273a2b7f03903973f84c178498dffc7cebc23e291ca6": [
+      "public_0029"
+    ],
+    "3f71ce01a955eb02706d5049a4e9e51a5a08394c8eb5c51f80333c32c78b1d0b": [
+      "public_0111"
+    ],
+    "435124314c5837ef7aebf4a27f36ee83cf63a05bc36cbdb3e1481988f7bc2fcf": [
+      "public_0048",
+      "public_0173"
+    ],
+    "435c1711dd7cd837b8f5bc43db604b35f594451407cd664cb68dccfcae5f7b2a": [
+      "public_0030",
+      "public_0092",
+      "public_0159",
+      "public_0200"
+    ],
+    "439ff7d956917b0f86b5f41150a67612a3580e12485830fc3e18cb0abbb639f7": [
+      "public_0052",
+      "public_0136"
+    ],
+    "43c45f2e0c29c54befadecf96823bd1656c1d9d4568d19f9cf90bada3600c4da": [
+      "public_0038",
+      "public_0043"
+    ],
+    "43cbcb2e3cf989db9bf193784c3d698b584e3be5c7488cfba0c31020809d8e80": [
+      "public_0002"
+    ],
+    "46ee272b2e3b15cb3aff7cd5f221a14f43e39391882e2e7a1b69441f2082a57f": [
+      "public_0008",
+      "public_0055"
+    ],
+    "47545240d04eac7e77908c28659dcf55fd49f67ba14de0c804505ffb58264a1b": [
+      "public_0001"
+    ],
+    "47f0bea9e3ac663b10a0957d9223d7a2f964a8228d8ab72df76da191980470b6": [
+      "public_0181"
+    ],
+    "496a9ce6acebc2f74069132fd358c80fdac45dc3c965670dff45d4321b44888b": [
+      "public_0180"
+    ],
+    "4a70dead4b98f95f26b56c0ce53ebf36ab3835e8055fc43b50fa9168f9917ee9": [
+      "public_0097"
+    ],
+    "4b6aba88472542d6b87d0d83ed343647a3eab23949c35c7e9ac6a96d631ad4e8": [
+      "public_0041",
+      "public_0068",
+      "public_0073",
+      "public_0184"
+    ],
+    "4c7d92551bf92b526231788a8c70e136a18b11b3d76ee52e6ba1efab16549120": [
+      "public_0143"
+    ],
+    "503d045d7d9f548f3039571bc732f51d1f6380ec324047e1447a929ea53e9a0c": [
+      "public_0104"
+    ],
+    "51730c7486d984dc6676675d33e12e547d4e2be0bc6d448b88bad32d1b3865fd": [
+      "public_0191"
+    ],
+    "52362f407c017a23db7458fe2ceacae97b924e805ed671f58f3a0ecc96886d3e": [
+      "public_0046"
+    ],
+    "53eb748cb0fadd2b1d65f1bd64d2afa7f4cdff25fc6416965b5d28daa38a6a8a": [
+      "public_0120"
+    ],
+    "596c31be6f612ac1b805dd044e6e1dddec93a6b48933e79dd9cdd32a0ce5919f": [
+      "public_0063"
+    ],
+    "5cc7c37418d709dc4a016b1144c69fe22bb8f0feabe46bf4433a795213a5b03a": [
+      "public_0178"
+    ],
+    "5fc537ae70510b26c24ec4515c7ebf278426b800da0feda901eb2d9ae2e647d1": [
+      "public_0185"
+    ],
+    "6026966a7f8d3ea6b59788854e0e5b252fc591f658fadf3f9aae8ed6b2c09cd3": [
+      "public_0134"
+    ],
+    "61266591f3e7e0ca3480ba4ab7798c9d805986ea9af019a8cc4d5db110469c9a": [
+      "public_0145"
+    ],
+    "63d1fc46a692e263836ebd36c50503c7f7b303d8aa02ca55314fe94b22b3d2ed": [
+      "public_0089"
+    ],
+    "66a57f441642e6c46d4f1c9a78a1014b515ff65522b2fbaa99368df62f5c833a": [
+      "public_0132"
+    ],
+    "6c02968fd30d2ca35ff1e6af484aeba72019e659371dd3fb2e6607c261ac66eb": [
+      "public_0096"
+    ],
+    "6fa16afaa3b013c8012254ab986a35629b36326fd65ca01182bfa81605fd1ce2": [
+      "public_0079"
+    ],
+    "73506c29061485a08e55eebd171fea3d0c95587d813e6a7507a7a872ac53d736": [
+      "public_0182"
+    ],
+    "775f2726767608013d1e89a83539e767a4decfe9e6106c135c8a6c92342880e7": [
+      "public_0114"
+    ],
+    "799e502d2ec15c43786dbca2e4b87286334cb48f48a9a8ec059149b5bad92855": [
+      "public_0112"
+    ],
+    "7de1a84142e93a55d84376c383eb6d060dadaf5689497ad31ef64b01f35568ae": [
+      "public_0062"
+    ],
+    "8c08ddf7cf5d492a657b4edfb6dae64c0d5d14b799fd76e9f5605b12fd2ada60": [
+      "public_0150",
+      "public_0195"
+    ],
+    "926bb952e9b9810ecb4648095551215eba59167149c82550805214df3847fb46": [
+      "public_0045"
+    ],
+    "976f4bcd87b15d0070c87fb193f3bf277f2da3460ff4f79f675445e3f6af192e": [
+      "public_0004"
+    ],
+    "9e6a9882529422d199f2f7ad335b16b38a46b0a1cb7950562c2836fa20864775": [
+      "public_0158"
+    ],
+    "9eb873ff10b579f99339116573cc17bba7dca7a803e6f3fb38fb460d8b39196d": [
+      "public_0142"
+    ],
+    "9ff59b5a842a938ed008ddbf102813f665a093adbbe84249a4990198cbc58538": [
+      "public_0137"
+    ],
+    "a1187d38e68b45649acaf0c0305cd95ce9ca268045a032230592ae4b0c8cb1e8": [
+      "public_0196"
+    ],
+    "a16ec23f4574be80fbc9da0935a2b0e18135b4a84a41f6d481feca6ebbb7f072": [
+      "public_0095",
+      "public_0194"
+    ],
+    "a237bcab4d99933c3ed6218b71f4962c87541a0f24ee23841b2dd6e99071422b": [
+      "public_0033"
+    ],
+    "a425b6251353e575f156383ab39d14651f345b484e5aca34601f6712d0a3ab6e": [
+      "public_0131",
+      "public_0187"
+    ],
+    "a8a05a0c7f7f9270e88a701adba24c170a7c2140016fc889bd51fb51dc340fdf": [
+      "public_0105"
+    ],
+    "ab5781ba579d4340519838d54d1f754ab5ed70f857e2b64d646697204fa10141": [
+      "public_0083"
+    ],
+    "af88b37d0040651634492f387ad7649e82bb2a067454778dd522fd7752d52016": [
+      "public_0042"
+    ],
+    "b009b68bf62f7bccdb05d43e8f2140f9b55c9d9cc48dc623f0615f6e1342dbad": [
+      "public_0047",
+      "public_0163"
+    ],
+    "b0459640bc28131460cd465e1cb7d465ace6991e7d99f6fbe5ba6f7f387b5376": [
+      "public_0057"
+    ],
+    "b6fc123c53f8be1fd29b8004cee0e8d4fcc61245067072fd9f7faa63d2947527": [
+      "public_0085",
+      "public_0174"
+    ],
+    "b75a6d552388e2daad1fe0f03d44f8cdc97895c6728ba8b6affe2ee8052df9d1": [
+      "public_0094",
+      "public_0148"
+    ],
+    "b922d0a27fe3a7578207b72f2def42c8c1425730640b89946f87933406611ca3": [
+      "public_0189"
+    ],
+    "babb8f2352d9e76b93afb6f47f88a024929e7c56b957e44a2c44351746dd2de6": [
+      "public_0013"
+    ],
+    "baf72809c01cee00d08b03b68d92987c0e80562da2c07c0beb14ac309b1127fe": [
+      "public_0059",
+      "public_0175",
+      "public_0176"
+    ],
+    "bba4a8089a35a760eabd548de87b1504dcf5d50dde9b090bb0a8903090e2ef10": [
+      "public_0155"
+    ],
+    "c0874331d64bf82ee04fcab5fa12514e8b270205bbdd117520c7321bfb1818d8": [
+      "public_0064"
+    ],
+    "c29432bad82088bab41a4feba389b3e291538d6da79614813e58c1f0662e3250": [
+      "public_0177"
+    ],
+    "c5188b1591089dbaf8c00d92afce521a6c7a31737d130c02085a86451e90d563": [
+      "public_0102"
+    ],
+    "c5ac1f9544cf82dde8d159d0cb5d80760429814ab56e63b7ffa474ded216cca9": [
+      "public_0075",
+      "public_0108",
+      "public_0186"
+    ],
+    "c5e2fe3c0059aefec2468a98c24dd3b009626abf35643f9d93b84872d60a7319": [
+      "public_0080"
+    ],
+    "c68e49e7aa7e3b453af40ca3f95557e7ea4534eedb53957cba572afd26d74a76": [
+      "public_0139"
+    ],
+    "c88b2d8d249f72fe54119881b7c19e09600aa024c970ddaa68e6a73e8f62d0d2": [
+      "public_0066"
+    ],
+    "c9fb90bfccebc29c3158e2884556c81fc1135c4788950f7b58887576e2f2872b": [
+      "public_0025"
+    ],
+    "d14554934e400ec776db24513f64372ede12dfdd43f5e3e677a64899ea9f40cf": [
+      "public_0149"
+    ],
+    "d1a394af3f9b5d0922dd5f18a62227eb75894c581a9676287bb5d2061d1bf846": [
+      "public_0006"
+    ],
+    "d1dfe94e864c71e42992e9ee19886adbf51412e4c0b08b3adeb368f5c2ba29b3": [
+      "public_0098"
+    ],
+    "d43e9fad03ffa4035acc97c77ca35fc576d187817d082940afb7bcfef91d660f": [
+      "public_0032"
+    ],
+    "d4679bd2bf6c0aded69f457bac5a4180ab5d41795b96b66420ed99cbbfbcc62d": [
+      "public_0065",
+      "public_0087"
+    ],
+    "d5a9865950037d2ef8ea675a51c1de9b7bb16c20efa85dd160cf4b2e997f3b7a": [
+      "public_0017",
+      "public_0135"
+    ],
+    "dc0b8c19a1f2ecea8fa1f972d67b8a690c7e96e404735c87834534ce9a689c32": [
+      "public_0179"
+    ],
+    "deb0e694c72eda51cd01609eb6d2323d9f2ff7fb4ca2ad71279f5eda48c85f0e": [
+      "public_0035"
+    ],
+    "e0bd38ff2d915f9ff4b23a5ccb72e5d1c2b3d08464f9b6cb99de7c83a08fee27": [
+      "public_0166",
+      "public_0192"
+    ],
+    "e10723307e62e5ec8b57ddfeedbe6c28fb6d2b08c9a8d31544dbaf380dbe1a04": [
+      "public_0144"
+    ],
+    "e244f5dd7839f879c9bdd0136705d540f8d06b220621fc9e0db368d7d97f18df": [
+      "public_0056"
+    ],
+    "e31dc892d9dc106583c5787e19eeaf5a115a2b1f466f90125709c9e8e5181622": [
+      "public_0103",
+      "public_0154"
+    ],
+    "edec0c43d7c7253e83916da7cc464c06b9d4fd03f50e0dfeec76f29bddb5170e": [
+      "public_0024"
+    ],
+    "eeb74f0a55394f761e4775d9afa541f951b026f77cb359dcbaec2466a46fd6ef": [
+      "public_0151"
+    ],
+    "ef332cddbae624537c549315a2c5107a9948c0535f251c2db01a8aa8a7fdcc8e": [
+      "public_0118"
+    ],
+    "f1c5db3e275a4d6775e571f02d6445c7b64020abfd8843b3c2ae22e2bec6b99b": [
+      "public_0140"
+    ],
+    "fa96049b4c3a48f9fbfeaa29a7f67eac6a4955b17636743210b6b96f30c3a841": [
+      "public_0074"
+    ],
+    "fc0259e58bd9292bfb47cd994274ba58ec8f7dcbfba925297eaceda063c3f6fe": [
+      "public_0016",
+      "public_0088",
+      "public_0115",
+      "public_0152"
+    ],
+    "fd5536c08d4f6bcbd8f9c545095b85e188be06773c139e03bc9d6dda8d340b7e": [
+      "public_0086"
+    ]
+  },
+  "schema_version": 1,
+  "seed": "ghostlab-public-v1"
+}

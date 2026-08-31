@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "default_state": "off",
+  "techniques": [
+    {
+      "id": "ranking.uniform_pairwise.v1",
+      "family": "ranking",
+      "extra": "gbdt",
+      "source": "ghostlab/retrieval/reward_lambdamart.py",
+      "status": "available_control",
+      "switch": {"reranker": "uniform_pairwise"}
+    },
+    {
+      "id": "ranking.pointwise_gbdt.v1",
+      "family": "ranking",
+      "extra": "gbdt",
+      "source": "ghostlab/retrieval/reward_lambdamart.py",
+      "status": "available_control",
+      "switch": {"reranker": "pointwise_gbdt"}
+    },
+    {
+      "id": "ranking.reward_lambdamart.v1",
+      "family": "ranking",
+      "extra": "gbdt",
+      "source": "ghostlab/retrieval/reward_lambdamart.py",
+      "status": "available",
+      "switch": {"reranker": "reward_lambdamart"}
+    },
+    {
+      "id": "ranking.turn_aware_lambdamart.v1",
+      "family": "ranking",
+      "extra": "gbdt",
+      "source": "ghostlab/retrieval/reward_lambdamart.py",
+      "status": "available",
+      "switch": {"reranker": "turn_aware_lambdamart"}
+    },
+    {
+      "id": "ranking.fold_ensemble.v1",
+      "family": "ranking",
+      "extra": "gbdt",
+      "source": "ghostlab/retrieval/ensemble.py",
+      "status": "available",
+      "switch": {"reranker": "rank_ensemble"}
+    },
+    {
+      "id": "fusion.rank_stack.v1",
+      "family": "fusion",
+      "extra": "gbdt",
+      "source": "ghostlab/retrieval/ensemble.py",
+      "status": "available",
+      "switch": {"reranker": "rank_ensemble", "ensemble_mode": "fold_local_stack"}
+    }
+  ],
+  "off_contract": "No source is imported and the selected Wave 1 reranker path is unchanged when these IDs are absent.",
+  "protected_holdout_access": "forbidden"
+}

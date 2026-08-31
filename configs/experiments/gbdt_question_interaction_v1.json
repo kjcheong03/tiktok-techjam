@@ -1,0 +1,87 @@
+{
+  "schema_version": 1,
+  "experiment_id": "gbdt_question_interaction_v1",
+  "parent_commit": "cbfd7d5dd595c5637608ba28f46f57777c7e153e",
+  "family": "question_x_gbdt_interaction",
+  "hypothesis": "The frozen counterfactual linear action-value question policy can improve the audited shallow-metadata GBDT continuation when fitted only on each outer-training complement.",
+  "primary_metric": "recommended_technical_score",
+  "secondary_metrics": [
+    "hit_rate_at_10",
+    "mrr",
+    "mttc"
+  ],
+  "candidate_limit": 1,
+  "wall_clock_limit_seconds": 10800,
+  "seed": 20260826,
+  "split": "nested_v1",
+  "holdout_accessed": false,
+  "manifest_created_before_evaluation": true,
+  "matched_control": {
+    "id": "shallow_metadata_depth3_fixed_sequence_oof",
+    "expected_metrics": {
+      "recommended_technical_score": 0.861417,
+      "hit_rate_at_10": 0.973333,
+      "mrr": 0.680278,
+      "mttc": 2.466667
+    },
+    "gbdt_configuration_source": "configs/experiments/gbdt_reranker_v1.json#shallow_metadata_depth3",
+    "outer_model_rule": "For each outer fold, select rounds on the next frozen fold inside the outer-training complement, then refit the same GBDT on the complete outer-training complement.",
+    "question_sequence": [
+      "other",
+      "other",
+      "use_case",
+      "other",
+      "size",
+      "other",
+      "other",
+      "size"
+    ]
+  },
+  "candidate": {
+    "id": "shallow_metadata_depth3_x_linear_action_value_v1",
+    "gbdt": "Exactly the matched fold-local shallow_metadata_depth3 model; no GBDT parameter or feature change.",
+    "question_model_class": "per-action ridge linear regression",
+    "question_feature_schema": "observable_question_features_v1",
+    "l2": 1.0,
+    "hyperparameter_search": false,
+    "action_space": "official legal remaining attributes, other, and absorbing stop",
+    "old_policy_weights_reused": false,
+    "training_rule": "For outer fold k, collect fixed-trajectory counterfactual outcomes and fit action values using only adaptive_sample_ids minus outer_folds[k], with the matched fold-k GBDT as the frozen continuation.",
+    "evaluation_rule": "Evaluate the fitted policy once on unseen outer_folds[k] with the same matched fold-k GBDT.",
+    "question_action_continuation": "Take the counterfactual action once, then resume the fixed absolute-turn question sequence on the next turn.",
+    "stop_continuation": "Absorbing: ask_attribute remains null on every later turn."
+  },
+  "diagnostics": [
+    "matched fixed-sequence GBDT control",
+    "same fold-local GBDT with no questions",
+    "paired session deltas",
+    "fold and scenario deltas",
+    "action and absorbing-stop distribution",
+    "illegal-action and response-failure counts",
+    "deterministic all-development refit replay",
+    "runtime and asset budgets"
+  ],
+  "promotion_gates": {
+    "minimum_score_delta": 0.005,
+    "minimum_nonnegative_outer_folds": 4,
+    "overall_hit_regression_allowed": false,
+    "minimum_scenario_score_delta": -0.005,
+    "maximum_failure_count": 0,
+    "determinism_required": true,
+    "control_reproduction_required": true,
+    "budgets": {
+      "cold_start_seconds_max": 30.0,
+      "warm_turn_p95_ms_max": 500.0,
+      "peak_process_memory_mb_max": 4096.0,
+      "model_asset_mb_max": 500.0,
+      "external_calls_per_turn_max": 0
+    }
+  },
+  "decision_rule": "Promote only if every declared gate passes. Otherwise park the interaction without altering the audited GBDT champion candidate.",
+  "outcome_blind_constraints": {
+    "no_candidate_additions_after_manifest": true,
+    "no_question_model_or_search_changes": true,
+    "no_global_parameter_selection": true,
+    "no_holdout_access": true
+  }
+}

@@ -1,0 +1,293 @@
+{
+  "phase": 3,
+  "route_complementarity": {
+    "dense_only_hits_at_200": 17,
+    "mean_top10_jaccard": 0.066247,
+    "sparse_only_hits_at_200": 34,
+    "union_recall_at_200": 0.846667
+  },
+  "routes": {
+    "balanced": {
+      "recall_at_100": 0.553333,
+      "recall_at_200": 0.72,
+      "recall_at_50": 0.386667,
+      "scenario_metrics": {
+        "boundary": {
+          "recall_at_100": 0.375,
+          "recall_at_200": 0.625,
+          "recall_at_50": 0.25
+        },
+        "browsing": {
+          "recall_at_100": 0.4,
+          "recall_at_200": 0.516667,
+          "recall_at_50": 0.233333
+        },
+        "buying": {
+          "recall_at_100": 0.633333,
+          "recall_at_200": 0.883333,
+          "recall_at_50": 0.466667
+        },
+        "intent_override": {
+          "recall_at_100": 0.818182,
+          "recall_at_200": 0.863636,
+          "recall_at_50": 0.636364
+        }
+      },
+      "warm_latency_ms_mean": 12.610723
+    },
+    "dense_minilm": {
+      "recall_at_100": 0.486667,
+      "recall_at_200": 0.62,
+      "recall_at_50": 0.32,
+      "scenario_metrics": {
+        "boundary": {
+          "recall_at_100": 0.25,
+          "recall_at_200": 0.25,
+          "recall_at_50": 0.25
+        },
+        "browsing": {
+          "recall_at_100": 0.5,
+          "recall_at_200": 0.633333,
+          "recall_at_50": 0.266667
+        },
+        "buying": {
+          "recall_at_100": 0.466667,
+          "recall_at_200": 0.6,
+          "recall_at_50": 0.35
+        },
+        "intent_override": {
+          "recall_at_100": 0.590909,
+          "recall_at_200": 0.772727,
+          "recall_at_50": 0.409091
+        }
+      },
+      "warm_latency_ms_mean": 0.0
+    },
+    "official": {
+      "recall_at_100": 0.54,
+      "recall_at_200": 0.733333,
+      "recall_at_50": 0.373333,
+      "scenario_metrics": {
+        "boundary": {
+          "recall_at_100": 0.375,
+          "recall_at_200": 0.625,
+          "recall_at_50": 0.25
+        },
+        "browsing": {
+          "recall_at_100": 0.4,
+          "recall_at_200": 0.566667,
+          "recall_at_50": 0.233333
+        },
+        "buying": {
+          "recall_at_100": 0.6,
+          "recall_at_200": 0.866667,
+          "recall_at_50": 0.433333
+        },
+        "intent_override": {
+          "recall_at_100": 0.818182,
+          "recall_at_200": 0.863636,
+          "recall_at_50": 0.636364
+        }
+      },
+      "warm_latency_ms_mean": 12.649295
+    },
+    "title_category_heavy": {
+      "recall_at_100": 0.546667,
+      "recall_at_200": 0.72,
+      "recall_at_50": 0.406667,
+      "scenario_metrics": {
+        "boundary": {
+          "recall_at_100": 0.375,
+          "recall_at_200": 0.625,
+          "recall_at_50": 0.25
+        },
+        "browsing": {
+          "recall_at_100": 0.416667,
+          "recall_at_200": 0.55,
+          "recall_at_50": 0.266667
+        },
+        "buying": {
+          "recall_at_100": 0.6,
+          "recall_at_200": 0.85,
+          "recall_at_50": 0.483333
+        },
+        "intent_override": {
+          "recall_at_100": 0.818182,
+          "recall_at_200": 0.863636,
+          "recall_at_50": 0.636364
+        }
+      },
+      "warm_latency_ms_mean": 12.608418
+    },
+    "without_categories": {
+      "recall_at_100": 0.386667,
+      "recall_at_200": 0.466667,
+      "recall_at_50": 0.26,
+      "scenario_metrics": {
+        "boundary": {
+          "recall_at_100": 0.125,
+          "recall_at_200": 0.375,
+          "recall_at_50": 0.125
+        },
+        "browsing": {
+          "recall_at_100": 0.333333,
+          "recall_at_200": 0.4,
+          "recall_at_50": 0.183333
+        },
+        "buying": {
+          "recall_at_100": 0.4,
+          "recall_at_200": 0.5,
+          "recall_at_50": 0.266667
+        },
+        "intent_override": {
+          "recall_at_100": 0.590909,
+          "recall_at_200": 0.590909,
+          "recall_at_50": 0.5
+        }
+      },
+      "warm_latency_ms_mean": 0.0
+    },
+    "without_description": {
+      "recall_at_100": 0.54,
+      "recall_at_200": 0.733333,
+      "recall_at_50": 0.38,
+      "scenario_metrics": {
+        "boundary": {
+          "recall_at_100": 0.375,
+          "recall_at_200": 0.625,
+          "recall_at_50": 0.25
+        },
+        "browsing": {
+          "recall_at_100": 0.4,
+          "recall_at_200": 0.566667,
+          "recall_at_50": 0.25
+        },
+        "buying": {
+          "recall_at_100": 0.6,
+          "recall_at_200": 0.866667,
+          "recall_at_50": 0.433333
+        },
+        "intent_override": {
+          "recall_at_100": 0.818182,
+          "recall_at_200": 0.863636,
+          "recall_at_50": 0.636364
+        }
+      },
+      "warm_latency_ms_mean": 0.0
+    },
+    "without_details": {
+      "recall_at_100": 0.526667,
+      "recall_at_200": 0.733333,
+      "recall_at_50": 0.38,
+      "scenario_metrics": {
+        "boundary": {
+          "recall_at_100": 0.375,
+          "recall_at_200": 0.625,
+          "recall_at_50": 0.25
+        },
+        "browsing": {
+          "recall_at_100": 0.383333,
+          "recall_at_200": 0.566667,
+          "recall_at_50": 0.233333
+        },
+        "buying": {
+          "recall_at_100": 0.583333,
+          "recall_at_200": 0.866667,
+          "recall_at_50": 0.45
+        },
+        "intent_override": {
+          "recall_at_100": 0.818182,
+          "recall_at_200": 0.863636,
+          "recall_at_50": 0.636364
+        }
+      },
+      "warm_latency_ms_mean": 0.0
+    },
+    "without_features": {
+      "recall_at_100": 0.406667,
+      "recall_at_200": 0.566667,
+      "recall_at_50": 0.286667,
+      "scenario_metrics": {
+        "boundary": {
+          "recall_at_100": 0.375,
+          "recall_at_200": 0.375,
+          "recall_at_50": 0.25
+        },
+        "browsing": {
+          "recall_at_100": 0.416667,
+          "recall_at_200": 0.55,
+          "recall_at_50": 0.25
+        },
+        "buying": {
+          "recall_at_100": 0.35,
+          "recall_at_200": 0.55,
+          "recall_at_50": 0.25
+        },
+        "intent_override": {
+          "recall_at_100": 0.545455,
+          "recall_at_200": 0.727273,
+          "recall_at_50": 0.5
+        }
+      },
+      "warm_latency_ms_mean": 0.0
+    },
+    "without_store": {
+      "recall_at_100": 0.54,
+      "recall_at_200": 0.733333,
+      "recall_at_50": 0.366667,
+      "scenario_metrics": {
+        "boundary": {
+          "recall_at_100": 0.375,
+          "recall_at_200": 0.625,
+          "recall_at_50": 0.25
+        },
+        "browsing": {
+          "recall_at_100": 0.4,
+          "recall_at_200": 0.566667,
+          "recall_at_50": 0.233333
+        },
+        "buying": {
+          "recall_at_100": 0.6,
+          "recall_at_200": 0.866667,
+          "recall_at_50": 0.416667
+        },
+        "intent_override": {
+          "recall_at_100": 0.818182,
+          "recall_at_200": 0.863636,
+          "recall_at_50": 0.636364
+        }
+      },
+      "warm_latency_ms_mean": 0.0
+    },
+    "without_title": {
+      "recall_at_100": 0.546667,
+      "recall_at_200": 0.726667,
+      "recall_at_50": 0.42,
+      "scenario_metrics": {
+        "boundary": {
+          "recall_at_100": 0.5,
+          "recall_at_200": 0.625,
+          "recall_at_50": 0.375
+        },
+        "browsing": {
+          "recall_at_100": 0.383333,
+          "recall_at_200": 0.566667,
+          "recall_at_50": 0.25
+        },
+        "buying": {
+          "recall_at_100": 0.616667,
+          "recall_at_200": 0.85,
+          "recall_at_50": 0.5
+        },
+        "intent_override": {
+          "recall_at_100": 0.818182,
+          "recall_at_200": 0.863636,
+          "recall_at_50": 0.681818
+        }
+      },
+      "warm_latency_ms_mean": 0.0
+    }
+  },
+  "sample_count": 150,
+  "split": "adaptive_v1"
+}

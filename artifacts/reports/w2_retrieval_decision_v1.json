@@ -1,0 +1,48 @@
+{
+  "candidates": {
+    "w2_facet_mmr_core_v1": {
+      "bootstrap_95_interval": [
+        0.0,
+        0.001333
+      ],
+      "losses": 0,
+      "mean_session_reward_delta": 0.0005,
+      "paired_randomization_pvalue": 0.50125,
+      "technical_score": 0.858054,
+      "technical_score_delta": 0.0005,
+      "ties": 148,
+      "wins": 2
+    },
+    "w2_prf_core_v1": {
+      "bootstrap_95_interval": [
+        -0.054494,
+        -0.000575
+      ],
+      "losses": 44,
+      "mean_session_reward_delta": -0.026635,
+      "paired_randomization_pvalue": 0.054695,
+      "technical_score": 0.830919,
+      "technical_score_delta": -0.026635,
+      "ties": 76,
+      "wins": 30
+    },
+    "w2_prf_facet_mmr_core_v1": {
+      "bootstrap_95_interval": [
+        -0.054494,
+        -0.000575
+      ],
+      "losses": 44,
+      "mean_session_reward_delta": -0.026635,
+      "paired_randomization_pvalue": 0.054695,
+      "technical_score": 0.830919,
+      "technical_score_delta": -0.026635,
+      "ties": 76,
+      "wins": 30
+    }
+  },
+  "control": "unified_keyword_research_v1",
+  "control_technical_score": 0.857554,
+  "evaluation_label": "F1 reused-development paired diagnostic; not OOF champion evidence",
+  "holdout_accessed": false,
+  "schema_version": 1
+}

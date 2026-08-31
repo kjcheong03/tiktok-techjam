@@ -1,0 +1,100 @@
+{
+  "schema_version": 2,
+  "campaign_id": "adaptive_autonomous_full_v1",
+  "catalog_path": "configs/techniques/catalog_v2.json",
+  "adaptive_split_path": "configs/splits/adaptive_v1.json",
+  "nested_split_path": "configs/splits/nested_v1.json",
+  "search_space_path": "configs/search/adaptive_parameter_space_v1.json",
+  "protected_holdout_access": "forbidden",
+  "search_outer_folds": [0, 2, 3],
+  "confirmation_outer_folds": [1, 4],
+  "baseline_presets": [
+    "configs/suites/champion_guarded.json",
+    "configs/suites/state_baseline_v2_ranked.json",
+    "configs/suites/unfitted_keyword_search.json"
+  ],
+  "baseline_techniques": [
+    "state.current",
+    "question.fixed",
+    "retrieval.sparse"
+  ],
+  "baseline_techniques_by_preset": {
+    "configs/suites/champion_guarded.json": [
+      "state.raw_history",
+      "retrieval.sparse",
+      "ranking.constraint_gbdt",
+      "prior.quality",
+      "guard.override_fallback"
+    ],
+    "configs/suites/state_baseline_v2_ranked.json": [
+      "state.baseline_v2",
+      "query.coverage_adaptive_v2",
+      "question.fixed",
+      "retrieval.sparse",
+      "recommendation.correction_scoped_history",
+      "ranking.metadata_gbdt",
+      "prior.quality"
+    ],
+    "configs/suites/unfitted_keyword_search.json": [
+      "state.current",
+      "question.fixed",
+      "retrieval.sparse"
+    ]
+  },
+  "baseline_search_modes": {
+    "configs/suites/champion_guarded.json": "control_only",
+    "configs/suites/state_baseline_v2_ranked.json": "composable",
+    "configs/suites/unfitted_keyword_search.json": "composable"
+  },
+  "technique_ids": [
+    "retrieval.sparse",
+    "retrieval.minilm",
+    "retrieval.e5",
+    "fusion.rrf",
+    "fusion.weighted",
+    "fusion.sparse_first_union",
+    "ranking.cross_encoder",
+    "prior.quality",
+    "state.current",
+    "state.raw_history",
+    "state.multi",
+    "state.compressed",
+    "state.baseline_v2",
+    "query.structured",
+    "query.coverage_adaptive_v2",
+    "question.fixed",
+    "question.other_always",
+    "question.adaptive_heuristic",
+    "question.learned_linear",
+    "ranking.fixed_lexical",
+    "ranking.metadata_gbdt",
+    "ranking.top10_residual_reranker.v2",
+    "filter.structured",
+    "recommendation.correction_scoped_history",
+    "prior.profile",
+    "state.catalog_normalizer.v1",
+    "state.confidence_gated_constraints.v1",
+    "question.candidate_eig.v1",
+    "termination.reward_aware.v1",
+    "policy.joint_observable.v1",
+    "ranking.reward_lambdamart.v1",
+    "ranking.turn_aware_lambdamart.v1",
+    "ranking.fold_ensemble.v1",
+    "fusion.rank_stack.v1",
+    "query.catalog_prf.v1",
+    "ranking.facet_diversity.v1"
+  ],
+  "max_order": 6,
+  "candidate_limit": 1200,
+  "fidelity_budgets": {"f0": 24, "f1": 75, "f2": 150},
+  "exploration_fraction": 0.3,
+  "seeds": [20260826, 20260827, 20260828, 20260829],
+  "max_wall_seconds": 129600,
+  "resources": {
+    "cpu_jobs": 4,
+    "gpu_jobs": 0,
+    "memory_gb": 16.0,
+    "heavy_model_jobs": 1
+  },
+  "promotion_rule": "proposal_only"
+}

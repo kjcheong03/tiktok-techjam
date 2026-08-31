@@ -1,0 +1,119 @@
+{
+  "schema_version": 1,
+  "unified_base": {
+    "branch": "ghostlab/integration",
+    "commit": "ec4906a45a63d0563818d4d7490d094b965be6f6"
+  },
+  "components": [
+    {
+      "id": "original_champion_and_core",
+      "origin": "ghostlab/implementation@189f0c6",
+      "source_paths": ["ghostlab/state/memory.py", "ghostlab/retrieval/sparse.py", "ghostlab/retrieval/learned.py", "ghostlab/optimization/search.py"],
+      "test_paths": ["tests/test_state_hardening.py", "tests/test_retrieval_contract.py"],
+      "retest_trigger": "Any baseline, state, retrieval, ranking, or search-space change."
+    },
+    {
+      "id": "query_construction",
+      "origin": "exp/query-construction@c2620aa",
+      "source_paths": ["ghostlab/state/query.py", "scripts/run_query_challenger.py"],
+      "test_paths": ["tests/test_query_construction.py"],
+      "manifest_paths": ["configs/experiments/challenger_query_v1.json"],
+      "report_paths": ["artifacts/reports/challenger_query_v1.json"],
+      "retest_trigger": "State parser, dense model, active-state semantics, or candidate ranker changes."
+    },
+    {
+      "id": "learned_questions",
+      "origin": "exp/learned-question-policy@cab92c0",
+      "source_paths": ["ghostlab/policy/learned_questions.py", "ghostlab/research/learned_questions.py", "scripts/run_learned_question_challenger.py"],
+      "test_paths": ["tests/test_learned_questions.py"],
+      "manifest_paths": ["configs/experiments/learned_question_linear_v1.json"],
+      "report_paths": ["artifacts/reports/learned_question_linear_v1.json"],
+      "runtime_assets": ["artifacts/experiments/learned_question_linear_v1/linear_action_value_model.json"],
+      "archived_raw_paths": ["artifacts/experiments/learned_question_linear_v1/counterfactual_labels.jsonl"],
+      "retest_trigger": "New observable uncertainty/action-value features, continuation policy, objective, or independent sessions."
+    },
+    {
+      "id": "dense_retrieval",
+      "origin": "exp/dense-retrieval@d8cf054",
+      "source_paths": ["ghostlab/retrieval/dense.py", "ghostlab/retrieval/query.py", "ghostlab/retrieval/fusion.py", "scripts/fetch_dense_assets.py", "scripts/run_dense_retrieval.py", "scripts/run_dense_query_e2e.py", "scripts/run_dense_query_interaction.py"],
+      "test_paths": ["tests/test_dense_retrieval.py", "tests/test_dense_query.py", "tests/test_dense_query_interaction.py"],
+      "manifest_paths": ["configs/assets/minilm_control.json", "configs/assets/e5_small_v2.json", "configs/experiments/dense_retrieval_v1.json", "configs/experiments/dense_query_e2e_v1.json", "configs/experiments/dense_query_interaction_v1.json"],
+      "report_paths": ["artifacts/reports/dense_retrieval_v1.json", "artifacts/reports/dense_query_e2e_v1.json", "artifacts/reports/dense_query_interaction_v1.json"],
+      "retest_trigger": "Dense model unique recall, parser, candidate depth, fusion, or ranker changes."
+    },
+    {
+      "id": "metadata_gbdt",
+      "origin": "exp/gbdt-reranker@cbfd7d5",
+      "source_paths": ["ghostlab/retrieval/gbdt.py", "ghostlab/evaluation/gbdt_audit.py", "scripts/run_gbdt_reranker.py"],
+      "test_paths": ["tests/test_gbdt_reranker.py", "tests/test_gbdt_deployment_audit.py"],
+      "runtime_assets": ["artifacts/models/gbdt_reranker_v2_round56.json"],
+      "report_paths": ["artifacts/reports/gbdt_reranker_v1.json", "artifacts/reports/gbdt_deployment_audit_v1.json"],
+      "retest_trigger": "Candidate features, depth, training data, retrieval head, or target objective changes."
+    },
+    {
+      "id": "cross_encoder",
+      "origin": "exp/cross-encoder@071eda9",
+      "source_paths": ["ghostlab/retrieval/cross_encoder.py", "scripts/run_cross_encoder_challenger.py"],
+      "test_paths": ["tests/test_cross_encoder.py", "tests/test_cross_encoder_report.py"],
+      "manifest_paths": ["configs/experiments/challenger_cross_encoder_v1.json", "configs/assets/cross_encoder_minilm.json"],
+      "report_paths": ["artifacts/reports/challenger_cross_encoder_v1.json"],
+      "retest_trigger": "Model, candidate head, hardware, latency budget, or independent training data changes."
+    },
+    {
+      "id": "constraint_gbdt_and_guard",
+      "origin": "exp/interaction-gbdt-constraints@93bf07b",
+      "source_paths": ["ghostlab/retrieval/constraint_gbdt.py", "ghostlab/runtime/guarded_gbdt.py", "scripts/run_gbdt_constraint_override_guard.py"],
+      "test_paths": ["tests/test_constraint_gbdt.py", "tests/test_gbdt_constraint_override_guard_report.py"],
+      "runtime_assets": ["artifacts/models/gbdt_constraint_interaction_v2.json"],
+      "report_paths": ["artifacts/reports/gbdt_constraint_interaction_v2.json", "artifacts/reports/gbdt_constraint_override_guard_v1.json"],
+      "retest_trigger": "Override examples, state invalidation, constraint features, or independent sessions increase."
+    },
+    {
+      "id": "deep_dense_gbdt",
+      "origin": "exp/interaction-gbdt-dense@b6500ff",
+      "source_paths": ["ghostlab/retrieval/gbdt_dense.py", "scripts/run_gbdt_dense_interaction.py"],
+      "test_paths": ["tests/test_gbdt_dense_interaction.py"],
+      "manifest_paths": ["configs/experiments/gbdt_dense_interaction_v1.json"],
+      "report_paths": ["artifacts/reports/gbdt_dense_interaction_v1.json"],
+      "retest_trigger": "Dense unique recall, candidate distribution, depth, or ranker features change."
+    },
+    {
+      "id": "learned_question_gbdt",
+      "origin": "exp/interaction-gbdt-question@6711182",
+      "source_paths": ["ghostlab/runtime/experimental_questions.py", "scripts/run_gbdt_question_interaction.py"],
+      "test_paths": ["tests/test_gbdt_question_interaction.py"],
+      "manifest_paths": ["configs/experiments/gbdt_question_interaction_v1.json"],
+      "report_paths": ["artifacts/reports/gbdt_question_interaction_v1.json"],
+      "runtime_assets": ["artifacts/experiments/gbdt_question_interaction_v1/linear_action_value_model.json"],
+      "archived_raw_paths": ["artifacts/experiments/gbdt_question_interaction_v1/counterfactual_labels.jsonl"],
+      "retest_trigger": "Question-value signals, ranker, state, continuation, or independent sessions change."
+    },
+    {
+      "id": "neural_gbdt",
+      "origin": "exp/interaction-neural-rank@e211434",
+      "source_paths": ["ghostlab/retrieval/neural_rank.py", "scripts/run_neural_rank_interaction.py", "scripts/measure_neural_rank_runtime.py"],
+      "test_paths": ["tests/test_neural_rank.py", "tests/test_neural_rank_report.py"],
+      "manifest_paths": ["configs/experiments/neural_rank_interaction_v1.json"],
+      "report_paths": ["artifacts/reports/neural_rank_interaction_v1.json"],
+      "retest_trigger": "Cross-encoder, hardware, candidate head, GBDT features, or latency budget changes."
+    },
+    {
+      "id": "compiled_guarded_runtime",
+      "origin": "exp/compile-guarded-gbdt@e6b3949",
+      "source_paths": ["ghostlab/runtime/agent.py", "ghostlab/runtime/guarded_gbdt.py", "scripts/validate_guarded_compiled.py"],
+      "test_paths": ["tests/test_guarded_compiled.py", "tests/test_submission_boundary.py"],
+      "manifest_paths": ["configs/techniques/guarded_constraint_gbdt_v1.json"],
+      "report_paths": ["artifacts/reports/guarded_compiled_parity_v1.json", "artifacts/reports/guarded_compiled_runtime_v1.json"],
+      "retest_trigger": "Any selected policy, runtime contract, packaging, or dependency changes."
+    },
+    {
+      "id": "unified_composer",
+      "origin": "ghostlab/unified-techniques",
+      "source_paths": ["ghostlab/research/technique_suite.py", "ghostlab/runtime/unified_experimental.py", "scripts/plan_unified_combinations.py", "scripts/run_unified_preset.py", "scripts/fetch_optional_assets.py"],
+      "test_paths": ["tests/test_technique_suite.py"],
+      "manifest_paths": ["configs/techniques/catalog_v1.json", "configs/search/unified_space_v1.json"],
+      "report_paths": ["artifacts/reports/unified_champion_verification_v1.json"],
+      "retest_trigger": "Every new technique or baseline change."
+    }
+  ]
+}

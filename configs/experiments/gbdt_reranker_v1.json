@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "experiment_id": "gbdt_reranker_v1",
+  "parent_commit": "189f0c6338e2d2ec1a795dce543e881ff2037f2a",
+  "parent_policy_id": "ghostlab_champion_linear_v1",
+  "family": "gbdt",
+  "hypothesis": "A shallow grouped LambdaMART reranker can improve the honest outer-fold technical score by learning stable interactions between retrieval rank, lexical field coverage, catalog quality, and explicit metadata missingness beyond the two-feature linear champion.",
+  "primary_metric": "recommended_technical_score",
+  "secondary_metrics": [
+    "hit_rate_at_10",
+    "mrr",
+    "mttc"
+  ],
+  "candidate_limit": 3,
+  "wall_clock_limit_seconds": 7200,
+  "seeds": [
+    20260826
+  ],
+  "split": "nested_v1",
+  "holdout_accessed": false,
+  "controls": [
+    "fixed_field_quality",
+    "two_feature_linear_champion",
+    "rank_only_lambdamart"
+  ],
+  "candidates": [
+    {
+      "candidate_id": "rank_only_depth1",
+      "feature_set": "rank_only",
+      "max_depth": 1,
+      "num_leaves": 2,
+      "learning_rate": 0.05,
+      "max_rounds": 120,
+      "early_stopping_rounds": 15
+    },
+    {
+      "candidate_id": "shallow_lexical_depth2",
+      "feature_set": "lexical",
+      "max_depth": 2,
+      "num_leaves": 4,
+      "learning_rate": 0.05,
+      "max_rounds": 120,
+      "early_stopping_rounds": 15
+    },
+    {
+      "candidate_id": "shallow_metadata_depth3",
+      "feature_set": "metadata",
+      "max_depth": 3,
+      "num_leaves": 7,
+      "learning_rate": 0.03,
+      "max_rounds": 160,
+      "early_stopping_rounds": 20
+    }
+  ],
+  "fixed_training_constraints": {
+    "objective": "grouped_pairwise_lambdarank",
+    "metric": "ndcg",
+    "eval_at": [
+      10
+    ],
+    "min_data_in_leaf": 40,
+    "min_impurity_decrease": 1e-7,
+    "feature_fraction": 1.0,
+    "bagging_fraction": 1.0,
+    "l1": 0.0,
+    "l2": 1.0,
+    "deterministic": true,
+    "num_threads": 1,
+    "rerank_k": 50,
+    "inner_validation": "next frozen outer fold among the outer-training side",
+    "refit": "refit on the complete outer-training side at the inner-selected round count"
+  },
+  "promotion_rule": "Reject any leakage, determinism, parity, packaging, or runtime failure. Otherwise promote only a shallow nonlinear candidate whose paired OOF technical-score delta versus the two-feature linear champion is positive, whose 95% paired bootstrap interval is not materially negative, whose Hit@10 does not regress, whose fold/scenario behavior has no unexplained material regression, and whose added runtime and asset cost remain within checkpoint budgets. Prefer the smallest candidate within 0.005 technical score of the best valid candidate; otherwise park standalone.",
+  "manifest_created_before_evaluation": true
+}

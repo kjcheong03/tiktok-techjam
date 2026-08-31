@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "experiment_id": "w2_diversification_v1",
+  "technique_ids": ["ranking.mmr_early.v1", "ranking.facet_diversity.v1"],
+  "availability": "available",
+  "split": "adaptive_v1",
+  "holdout_accessed": false,
+  "frozen_parameters": {
+    "relevance_weight": 0.85,
+    "rerank_k": 30,
+    "output_k": 10,
+    "max_turn": 2,
+    "max_active_constraints": 1,
+    "preserve_first": true
+  },
+  "primary_gate": "Top-10 facet coverage improves without buying/override target-rank regression",
+  "retest_triggers": ["candidate_pool_changed", "catalog_normalizer_available", "browsing_router_available"]
+}

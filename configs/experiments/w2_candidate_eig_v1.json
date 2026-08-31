@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "experiment_id": "w2_candidate_eig_v1",
+  "technique_ids": [
+    "question.candidate_eig.v1",
+    "question.reward_voi.v1",
+    "termination.reward_aware.v1"
+  ],
+  "default_enabled": false,
+  "question_variant": "candidate_eig",
+  "eig_candidate_k": 100,
+  "question_value_margin": 0.0,
+  "official_turn_cost": 0.02,
+  "information_reward_scale": 0.2,
+  "fit_scope": "outer_training_only",
+  "protected_f3_access": false,
+  "classification": "available_unvalidated"
+}

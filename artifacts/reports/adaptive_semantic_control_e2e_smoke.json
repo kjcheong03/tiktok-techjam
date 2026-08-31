@@ -1,0 +1,120 @@
+{
+  "sample_count": 2,
+  "hit_rate_at_10": 1.0,
+  "mrr": 0.583333,
+  "mttc": 2.5,
+  "efficiency": 0.85,
+  "recommended_technical_score": 0.845,
+  "reported_token_usage": {
+    "prompt_tokens": 0,
+    "completion_tokens": 0,
+    "total_tokens": 0
+  },
+  "scenario_metrics": {
+    "boundary": {
+      "sample_count": 2,
+      "hit_rate_at_10": 1.0,
+      "mrr": 0.583333,
+      "mttc": 2.5
+    }
+  },
+  "sessions": [
+    {
+      "sample_id": "independent_public_like_0001",
+      "scenario_type": "boundary",
+      "hit": true,
+      "first_hit_turn": 2,
+      "best_rank": 6,
+      "reciprocal_rank": 0.16666666666666666
+    },
+    {
+      "sample_id": "independent_public_like_0002",
+      "scenario_type": "boundary",
+      "hit": true,
+      "first_hit_turn": 3,
+      "best_rank": 1,
+      "reciprocal_rank": 1.0
+    }
+  ],
+  "evaluation_contract": {
+    "harness_id": "ghostlab.research.replay.evaluate_shared.v1",
+    "harness_sha256": "8492dc7fabb52e617ecc8c6880af231c2acdf2bc6943d03a558644b308f277ab",
+    "published_evaluator_sha256": "79a5ea06f9a1b8c5036f30efa85dc1f36b8f6b06eb8feb8f545dfa767bc45564",
+    "ordered_session_ids_sha256": "46d96dde96208ff17019400ee491e4c967c547dbe91f7d7237811a57e2e4e049",
+    "catalog_sha256": "da979b05a68af864cb0dcf9ee6a81c010c7e66a57978ad286c7a2e005fc69a67",
+    "sample_count": 2,
+    "evaluation_seed": 2026,
+    "max_turns": 10,
+    "top_k": 10,
+    "profile_contract": "sanitized user_profile supplied to reset",
+    "response_contract": "exceptions and invalid responses become empty responses; catalog IDs are validated, deduplicated and capped at Top K",
+    "timeout_policy": "no evaluator wall-clock cutoff; component timeouts are frozen in each hash-bound system configuration and latency is reported separately",
+    "contract_sha256": "11089caa7abcdcab44db798276b63b1676e9b21e8b19c75f80a555734ad459ed"
+  },
+  "evaluation_partition": "development",
+  "dataset_sources": [
+    "data/public_set.jsonl",
+    "data/synthetic_1000_public_like.jsonl",
+    "data/independent_template_1000.jsonl"
+  ],
+  "source_metrics": {
+    "data/independent_template_1000.jsonl": {
+      "sample_count": 2,
+      "hit_rate_at_10": 1.0,
+      "mrr": 0.583333,
+      "mttc": 2.5
+    }
+  },
+  "route_metrics": {
+    "browsing": {
+      "sample_count": 2,
+      "hit_rate_at_10": 1.0,
+      "mrr": 0.583333,
+      "mttc": 2.5
+    }
+  },
+  "target_survival_audit": {
+    "sample_count": 2,
+    "pre_authority_recall": 1.0,
+    "post_authority_recall": 1.0,
+    "confirmed_target_removal_count": 0,
+    "final_top10_recall": 1.0,
+    "rows": [
+      {
+        "sample_id": "independent_public_like_0001",
+        "source": "data/independent_template_1000.jsonl",
+        "scenario_type": "boundary",
+        "pre_authority_seen": true,
+        "post_authority_seen": true,
+        "removed_as_confirmed_contradiction": false,
+        "final_top10_seen": true
+      },
+      {
+        "sample_id": "independent_public_like_0002",
+        "source": "data/independent_template_1000.jsonl",
+        "scenario_type": "boundary",
+        "pre_authority_seen": true,
+        "post_authority_seen": true,
+        "removed_as_confirmed_contradiction": false,
+        "final_top10_seen": true
+      }
+    ]
+  },
+  "adaptive_runtime": {
+    "config_sha256": "444f1771d9c230373f2b35eda4da6ffa2fa843ff977fa522af2e66a3244397c3",
+    "trace_count": 5,
+    "route_counts": {
+      "buying": 0,
+      "browsing": 5
+    },
+    "overload_count": 4,
+    "fallback_count": 0,
+    "output_constraint_violation_count": 0,
+    "overload_cutoff_trace_violations": 0,
+    "semantic_activation_count": 1,
+    "semantic_skip_count": 4,
+    "semantic_change_count": 0,
+    "semantic_failure_counts": {},
+    "profile_activation_count": 5
+  }
+}

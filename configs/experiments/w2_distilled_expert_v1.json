@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "experiment_id": "w2_distilled_expert_v1",
+  "technique_ids": [
+    "research.counterfactual_expert.v2",
+    "policy.distilled_expert.v1",
+    "search.expert_iteration.v1"
+  ],
+  "default_enabled": false,
+  "question_variant": "distilled_joint",
+  "maximum_depth": 2,
+  "minimum_leaf_sessions": 10,
+  "maximum_expert_iterations": 3,
+  "fit_scope": "outer_training_only",
+  "protected_f3_access": false,
+  "classification": "available_unvalidated"
+}

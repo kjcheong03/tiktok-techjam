@@ -1,0 +1,63 @@
+{
+  "elapsed_seconds": 4.640596041979734,
+  "evaluation_label": "fixed all-adaptive-development mechanism comparison",
+  "experiment_id": "w2_candidate_eig_v1",
+  "protected_f3_access": false,
+  "results": {
+    "candidate_eig": {
+      "hit_rate_at_10": 0.8,
+      "mrr": 0.613889,
+      "mttc": 4.3,
+      "recommended_technical_score": 0.718167,
+      "scenario_metrics": {
+        "browsing": {
+          "hit_rate_at_10": 1.0,
+          "mrr": 0.628472,
+          "mttc": 2.75,
+          "sample_count": 8
+        },
+        "buying": {
+          "hit_rate_at_10": 0.666667,
+          "mrr": 0.583333,
+          "mttc": 5.111111,
+          "sample_count": 9
+        },
+        "intent_override": {
+          "hit_rate_at_10": 0.666667,
+          "mrr": 0.666667,
+          "mttc": 6.0,
+          "sample_count": 3
+        }
+      }
+    },
+    "matched_sequence_control": {
+      "hit_rate_at_10": 0.8,
+      "mrr": 0.613889,
+      "mttc": 4.3,
+      "recommended_technical_score": 0.718167,
+      "scenario_metrics": {
+        "browsing": {
+          "hit_rate_at_10": 0.875,
+          "mrr": 0.614583,
+          "mttc": 3.5,
+          "sample_count": 8
+        },
+        "buying": {
+          "hit_rate_at_10": 0.777778,
+          "mrr": 0.595679,
+          "mttc": 4.444444,
+          "sample_count": 9
+        },
+        "intent_override": {
+          "hit_rate_at_10": 0.666667,
+          "mrr": 0.666667,
+          "mttc": 6.0,
+          "sample_count": 3
+        }
+      }
+    }
+  },
+  "schema_version": 1,
+  "selection_evidence": false,
+  "session_count": 20
+}

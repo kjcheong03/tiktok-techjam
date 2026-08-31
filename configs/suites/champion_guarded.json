@@ -1,0 +1,6 @@
+{
+  "schema_version": 1,
+  "experiment_id": "unified_champion_guarded_v1",
+  "engine": "compiled",
+  "compiled_config_path": "configs/techniques/guarded_constraint_gbdt_v1.json"
+}

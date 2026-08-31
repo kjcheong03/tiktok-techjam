@@ -1,0 +1,343 @@
+{
+  "schema_version": 2,
+  "parameters": [
+    {
+      "name": "question_order_id",
+      "kind": "categorical",
+      "choices": [
+        "legacy_attribute",
+        "other_probe",
+        "need_first",
+        "size_first"
+      ],
+      "requires_all": [
+        "question.fixed"
+      ]
+    },
+    {
+      "name": "question_max_turn",
+      "kind": "int",
+      "low": 1,
+      "high": 10,
+      "requires_any": [
+        "question.fixed",
+        "question.other_always",
+        "question.adaptive_heuristic",
+        "question.learned_linear",
+        "question.candidate_eig.v1",
+        "question.reward_voi.v1"
+      ]
+    },
+    {
+      "name": "eig_candidate_k",
+      "kind": "int",
+      "low": 25,
+      "high": 300,
+      "scale": "log",
+      "requires_any": ["question.candidate_eig.v1", "question.reward_voi.v1"]
+    },
+    {
+      "name": "question_value_margin",
+      "kind": "float",
+      "low": 0.0001,
+      "high": 0.15,
+      "scale": "log",
+      "requires_any": ["question.candidate_eig.v1", "question.reward_voi.v1"]
+    },
+    {
+      "name": "retrieval_k",
+      "kind": "categorical",
+      "choices": [50, 100, 200, 300, 400],
+      "requires_any": [
+        "retrieval.sparse",
+        "retrieval.minilm",
+        "retrieval.e5",
+        "retrieval.splade_rescue.v1",
+        "retrieval.late_interaction_rescue.v1"
+      ]
+    },
+    {
+      "name": "sparse_title_weight",
+      "kind": "float",
+      "low": 0.25,
+      "high": 12.0,
+      "scale": "log",
+      "requires_all": [
+        "retrieval.sparse"
+      ]
+    },
+    {
+      "name": "sparse_categories_weight",
+      "kind": "float",
+      "low": 0.25,
+      "high": 12.0,
+      "scale": "log",
+      "requires_all": [
+        "retrieval.sparse"
+      ]
+    },
+    {
+      "name": "sparse_features_weight",
+      "kind": "float",
+      "low": 0.25,
+      "high": 12.0,
+      "scale": "log",
+      "requires_all": [
+        "retrieval.sparse"
+      ]
+    },
+    {
+      "name": "sparse_details_weight",
+      "kind": "float",
+      "low": 0.25,
+      "high": 12.0,
+      "scale": "log",
+      "requires_all": [
+        "retrieval.sparse"
+      ]
+    },
+    {
+      "name": "sparse_store_weight",
+      "kind": "float",
+      "low": 0.25,
+      "high": 12.0,
+      "scale": "log",
+      "requires_all": [
+        "retrieval.sparse"
+      ]
+    },
+    {
+      "name": "sparse_description_weight",
+      "kind": "float",
+      "low": 0.25,
+      "high": 12.0,
+      "scale": "log",
+      "requires_all": [
+        "retrieval.sparse"
+      ]
+    },
+    {
+      "name": "rrf_constant",
+      "kind": "int",
+      "low": 5,
+      "high": 120,
+      "scale": "log",
+      "requires_all": ["fusion.rrf"]
+    },
+    {
+      "name": "fusion_sparse_share",
+      "kind": "float",
+      "low": 0.05,
+      "high": 0.95,
+      "requires_all": ["fusion.weighted"]
+    },
+    {
+      "name": "dense_activation",
+      "kind": "categorical",
+      "choices": ["always", "uncertain"],
+      "requires_any": ["retrieval.minilm", "retrieval.e5"]
+    },
+    {
+      "name": "dense_activation_min_entropy",
+      "kind": "float",
+      "low": 0.25,
+      "high": 0.95,
+      "requires_any": ["retrieval.minilm", "retrieval.e5"]
+    },
+    {
+      "name": "expansion_feedback_k",
+      "kind": "int",
+      "low": 2,
+      "high": 20,
+      "requires_all": ["query.catalog_prf.v1"]
+    },
+    {
+      "name": "expansion_min_support",
+      "kind": "float",
+      "low": 0.15,
+      "high": 0.8,
+      "requires_all": ["query.catalog_prf.v1"]
+    },
+    {
+      "name": "expansion_max_terms",
+      "kind": "int",
+      "low": 1,
+      "high": 12,
+      "requires_all": ["query.catalog_prf.v1"]
+    },
+    {
+      "name": "expansion_max_added_ratio",
+      "kind": "float",
+      "low": 0.1,
+      "high": 1.0,
+      "requires_all": ["query.catalog_prf.v1"]
+    },
+    {
+      "name": "query_expansion_activation",
+      "kind": "categorical",
+      "choices": ["always", "uncertain"],
+      "requires_all": ["query.catalog_prf.v1"]
+    },
+    {
+      "name": "query_expansion_min_entropy",
+      "kind": "float",
+      "low": 0.25,
+      "high": 0.95,
+      "requires_all": ["query.catalog_prf.v1"]
+    },
+    {
+      "name": "profile_prior_weight",
+      "kind": "float",
+      "low": 0.01,
+      "high": 0.8,
+      "scale": "log",
+      "requires_all": ["prior.profile"]
+    },
+    {
+      "name": "profile_prior_max_turn",
+      "kind": "int",
+      "low": 1,
+      "high": 10,
+      "requires_all": ["prior.profile"]
+    },
+    {
+      "name": "quality_prior_weight",
+      "kind": "float",
+      "low": 0.01,
+      "high": 0.8,
+      "scale": "log",
+      "requires_all": ["prior.quality"]
+    },
+    {
+      "name": "rerank_k",
+      "kind": "categorical",
+      "choices": [20, 50, 100, 200, 300],
+      "requires_any": [
+        "ranking.metadata_gbdt",
+        "ranking.reward_lambdamart.v1",
+        "ranking.turn_aware_lambdamart.v1",
+        "ranking.fold_ensemble.v1"
+      ]
+    },
+    {
+      "name": "cross_encoder_weight",
+      "kind": "float",
+      "low": 0.02,
+      "high": 1.0,
+      "scale": "log",
+      "requires_all": ["ranking.cross_encoder"]
+    },
+    {
+      "name": "cross_encoder_rerank_k",
+      "kind": "categorical",
+      "choices": [10, 20, 40, 80],
+      "requires_all": ["ranking.cross_encoder"]
+    },
+    {
+      "name": "cross_encoder_activation",
+      "kind": "categorical",
+      "choices": ["always", "uncertain"],
+      "requires_all": ["ranking.cross_encoder"]
+    },
+    {
+      "name": "cross_encoder_min_entropy",
+      "kind": "float",
+      "low": 0.25,
+      "high": 0.95,
+      "requires_all": ["ranking.cross_encoder"]
+    },
+    {
+      "name": "cross_encoder_min_turn",
+      "kind": "int",
+      "low": 1,
+      "high": 8,
+      "requires_all": ["ranking.cross_encoder"]
+    },
+    {
+      "name": "residual_feature_set",
+      "kind": "categorical",
+      "choices": ["rank", "metadata", "full_context"],
+      "requires_all": ["ranking.top10_residual_reranker.v2"]
+    },
+    {
+      "name": "residual_model_variant",
+      "kind": "categorical",
+      "choices": [
+        "regularized_logistic",
+        "hist_gbdt_d2_lr005",
+        "hist_gbdt_d3_lr005",
+        "hist_gbdt_d3_lr01",
+        "ensemble_logistic_gbdt_d2_lr005",
+        "ensemble_logistic_gbdt_d3_lr005",
+        "ensemble_logistic_gbdt_d3_lr01"
+      ],
+      "requires_all": ["ranking.top10_residual_reranker.v2"]
+    },
+    {
+      "name": "residual_regularization",
+      "kind": "float",
+      "low": 0.05,
+      "high": 5.0,
+      "scale": "log",
+      "requires_all": ["ranking.top10_residual_reranker.v2"]
+    },
+    {
+      "name": "residual_rerank_depth",
+      "kind": "categorical",
+      "choices": [3, 5, 10],
+      "requires_all": ["ranking.top10_residual_reranker.v2"]
+    },
+    {
+      "name": "residual_model_weight",
+      "kind": "float",
+      "low": 0.5,
+      "high": 1.0,
+      "requires_all": ["ranking.top10_residual_reranker.v2"]
+    },
+    {
+      "name": "residual_minimum_expected_gain",
+      "kind": "categorical",
+      "choices": [0.0, 0.01, 0.025, 0.05],
+      "requires_all": ["ranking.top10_residual_reranker.v2"]
+    },
+    {
+      "name": "residual_minimum_probability_margin",
+      "kind": "categorical",
+      "choices": [0.0, 0.02, 0.05],
+      "requires_all": ["ranking.top10_residual_reranker.v2"]
+    },
+    {
+      "name": "residual_maximum_moved_ids",
+      "kind": "categorical",
+      "choices": [2, 4, 10],
+      "requires_all": ["ranking.top10_residual_reranker.v2"]
+    },
+    {
+      "name": "diversification_weight",
+      "kind": "float",
+      "low": 0.25,
+      "high": 1.0,
+      "requires_all": ["ranking.facet_diversity.v1"]
+    },
+    {
+      "name": "diversification_rerank_k",
+      "kind": "categorical",
+      "choices": [10, 20, 30, 50, 100],
+      "requires_all": ["ranking.facet_diversity.v1"]
+    },
+    {
+      "name": "diversification_max_turn",
+      "kind": "int",
+      "low": 1,
+      "high": 6,
+      "requires_all": ["ranking.facet_diversity.v1"]
+    },
+    {
+      "name": "diversification_max_constraints",
+      "kind": "int",
+      "low": 0,
+      "high": 4,
+      "requires_all": ["ranking.facet_diversity.v1"]
+    }
+  ]
+}

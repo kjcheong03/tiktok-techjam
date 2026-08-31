@@ -48,7 +48,9 @@ class StateTest(unittest.TestCase):
     def test_no_preference_prevents_repeated_question(self) -> None:
         state = SessionState("s", {})
         self.assertEqual(state.choose_question(), "material")
-        state.observe("I don't have a preference for material; please use your judgment.", 2)
+        state.observe(
+            "I don't have a preference for material; please use your judgment.", 2
+        )
         self.assertEqual(state.choose_question(), "color")
 
 
@@ -68,10 +70,14 @@ class RetrievalTest(unittest.TestCase):
             dense=FakeDenseRetriever(),  # type: ignore[arg-type]
         )
         agent.reset("session", {})
-        response = agent.respond("session", "I'm looking for shoes, but I'm still exploring.", 1, 10)
+        response = agent.respond(
+            "session", "I'm looking for shoes, but I'm still exploring.", 1, 10
+        )
         self.assertEqual(response["recommendations"][0]["parent_asin"], "B")
         self.assertIn(response["ask_attribute"], {"material", "color"})
-        self.assertEqual(response["usage"], {"prompt_tokens": 0, "completion_tokens": 0})
+        self.assertEqual(
+            response["usage"], {"prompt_tokens": 0, "completion_tokens": 0}
+        )
 
 
 if __name__ == "__main__":

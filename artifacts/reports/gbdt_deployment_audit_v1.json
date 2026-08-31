@@ -1,0 +1,316 @@
+{
+  "all_gates_passed": true,
+  "alternative_round_aggregations_evaluated": false,
+  "amendment_commit": "e001d872011e7104b7648d3c3db10d18dedc468a",
+  "amendment_path": "configs/experiments/gbdt_reranker_v1_amendment_1.json",
+  "amendment_sha256": "69512e2cf5225bc50be65b3d77c3e3b9685c63b3d02a440426349a6863676186",
+  "audit_id": "gbdt_deployment_audit_v1",
+  "collection": {
+    "candidate_rows": 65350,
+    "queries_with_target_in_top50": 1307,
+    "ranking_groups": 1307,
+    "samples_with_ranking_groups": 147,
+    "trajectory_queries": 1500
+  },
+  "decision": "INTEGRATION_READY",
+  "decision_rationale": "The immutable OOF family promotion remains valid and the precommitted median-round deployable refit passes every executable audit gate.",
+  "deployable_refit": {
+    "evidence_label": "all-development refit",
+    "feature_importance_split_count": {
+      "average_rating": 8,
+      "average_rating_missing": 0,
+      "catalog_quality": 30,
+      "category_overlap": 52,
+      "category_overlap_missing": 0,
+      "description_overlap": 0,
+      "description_overlap_missing": 0,
+      "details_overlap": 0,
+      "details_overlap_missing": 0,
+      "feature_overlap": 0,
+      "feature_overlap_missing": 0,
+      "log_rating_number": 87,
+      "metadata_completeness": 19,
+      "original_rank": 33,
+      "query_token_count": 0,
+      "rank_percentile": 40,
+      "rating_number_missing": 0,
+      "reciprocal_rank": 67,
+      "store_overlap": 0,
+      "store_overlap_missing": 0,
+      "title_overlap": 0,
+      "title_overlap_missing": 0
+    },
+    "feature_names": [
+      "original_rank",
+      "rank_percentile",
+      "reciprocal_rank",
+      "query_token_count",
+      "title_overlap",
+      "category_overlap",
+      "feature_overlap",
+      "details_overlap",
+      "store_overlap",
+      "description_overlap",
+      "title_overlap_missing",
+      "category_overlap_missing",
+      "feature_overlap_missing",
+      "details_overlap_missing",
+      "store_overlap_missing",
+      "description_overlap_missing",
+      "catalog_quality",
+      "average_rating",
+      "average_rating_missing",
+      "log_rating_number",
+      "rating_number_missing",
+      "metadata_completeness"
+    ],
+    "metrics": {
+      "hit_rate_at_10": 0.973333,
+      "mrr": 0.661624,
+      "mttc": 2.38,
+      "recommended_technical_score": 0.857554,
+      "scenario_metrics": {
+        "boundary": {
+          "hit_rate_at_10": 0.875,
+          "mrr": 0.703125,
+          "mttc": 3.875,
+          "sample_count": 8
+        },
+        "browsing": {
+          "hit_rate_at_10": 1.0,
+          "mrr": 0.613578,
+          "mttc": 1.966667,
+          "sample_count": 60
+        },
+        "buying": {
+          "hit_rate_at_10": 0.966667,
+          "mrr": 0.662407,
+          "mttc": 2.0,
+          "sample_count": 60
+        },
+        "intent_override": {
+          "hit_rate_at_10": 0.954545,
+          "mrr": 0.775433,
+          "mttc": 4.0,
+          "sample_count": 22
+        }
+      }
+    },
+    "model_asset_bytes": 77779,
+    "model_path": "artifacts/models/gbdt_reranker_v2_round56.json",
+    "model_sha256": "10782d08ce20f8c9a60d3e2482ff577c887a35cc74e456c69c781409eb4df4d6",
+    "response_instrumentation": {
+      "failure_count": 0,
+      "failure_counts": {
+        "invalid_responses": 0,
+        "reset_exceptions": 0,
+        "response_exceptions": 0
+      },
+      "response_calls": 353
+    },
+    "rounds": 56,
+    "training_groups": 1307,
+    "training_rows": 65350,
+    "training_sample_count": 150
+  },
+  "deployable_round_rule": {
+    "alternative_aggregations_may_be_compared_against_all_development_outcomes": false,
+    "rounds": 56,
+    "rule": "median of the five previously selected outer-fold stopping rounds",
+    "sorted_rounds": [
+      4,
+      34,
+      56,
+      98,
+      100
+    ]
+  },
+  "elapsed_seconds": 109.065374,
+  "gates": {
+    "determinism": {
+      "first_model_sha256": "10782d08ce20f8c9a60d3e2482ff577c887a35cc74e456c69c781409eb4df4d6",
+      "first_response_failure_count": 0,
+      "model_bytes_identical": true,
+      "passed": true,
+      "second_model_sha256": "10782d08ce20f8c9a60d3e2482ff577c887a35cc74e456c69c781409eb4df4d6",
+      "second_response_failure_count": 0,
+      "session_outcomes": {
+        "mismatch_count": 0,
+        "mismatches": {},
+        "passed": true
+      }
+    },
+    "fold": {
+      "checks": [
+        {
+          "candidate_score": 0.854194,
+          "control_score": 0.790603,
+          "delta": 0.063591,
+          "outer_fold": 0,
+          "passed": true
+        },
+        {
+          "candidate_score": 0.849892,
+          "control_score": 0.805357,
+          "delta": 0.044535,
+          "outer_fold": 1,
+          "passed": true
+        },
+        {
+          "candidate_score": 0.864528,
+          "control_score": 0.801968,
+          "delta": 0.06256,
+          "outer_fold": 2,
+          "passed": true
+        },
+        {
+          "candidate_score": 0.857644,
+          "control_score": 0.819754,
+          "delta": 0.03789,
+          "outer_fold": 3,
+          "passed": true
+        },
+        {
+          "candidate_score": 0.882011,
+          "control_score": 0.873818,
+          "delta": 0.008193,
+          "outer_fold": 4,
+          "passed": true
+        }
+      ],
+      "passed": true,
+      "rule": "candidate technical score exceeds matched linear control in every outer fold"
+    },
+    "packaging": {
+      "checks": {
+        "cold_start": true,
+        "external_calls": true,
+        "model_asset": true,
+        "peak_memory": true,
+        "response_failures": true,
+        "warm_turn_p95": true
+      },
+      "passed": true
+    },
+    "parity": {
+      "mismatches": {},
+      "passed": true
+    },
+    "scenario": {
+      "checks": [
+        {
+          "candidate_hit_rate_at_10": 0.875,
+          "candidate_technical_score": 0.754688,
+          "control_hit_rate_at_10": 0.875,
+          "control_technical_score": 0.747857,
+          "hit_rate_passed": true,
+          "passed": true,
+          "scenario": "boundary",
+          "technical_score_delta": 0.006831,
+          "technical_score_passed": true
+        },
+        {
+          "candidate_hit_rate_at_10": 1.0,
+          "candidate_technical_score": 0.890014,
+          "control_hit_rate_at_10": 0.966667,
+          "control_technical_score": 0.84899,
+          "hit_rate_passed": true,
+          "passed": true,
+          "scenario": "browsing",
+          "technical_score_delta": 0.041024,
+          "technical_score_passed": true
+        },
+        {
+          "candidate_hit_rate_at_10": 0.95,
+          "candidate_technical_score": 0.844903,
+          "control_hit_rate_at_10": 0.933333,
+          "control_technical_score": 0.811002,
+          "hit_rate_passed": true,
+          "passed": true,
+          "scenario": "buying",
+          "technical_score_delta": 0.033901,
+          "technical_score_passed": true
+        },
+        {
+          "candidate_hit_rate_at_10": 1.0,
+          "candidate_technical_score": 0.867273,
+          "control_hit_rate_at_10": 0.863636,
+          "control_technical_score": 0.775682,
+          "hit_rate_passed": true,
+          "passed": true,
+          "scenario": "intent_override",
+          "technical_score_delta": 0.091591,
+          "technical_score_passed": true
+        }
+      ],
+      "passed": true,
+      "rule": "no scenario Hit@10 regression and technical-score delta >= floor",
+      "technical_score_delta_floor": -0.005
+    }
+  },
+  "holdout_accessed": false,
+  "immutable_oof_family_evidence": {
+    "metrics": {
+      "hit_rate_at_10": 0.973333,
+      "mrr": 0.680278,
+      "mttc": 2.466667,
+      "recommended_technical_score": 0.861417
+    },
+    "paired_vs_linear": {
+      "losses": 29,
+      "mean_paired_session_reward_delta": 0.043767,
+      "paired_bootstrap_95_interval": [
+        0.016708,
+        0.073183
+      ],
+      "paired_randomization_p_value": 0.0026,
+      "resamples": 10000,
+      "ties": 62,
+      "wins": 59
+    }
+  },
+  "isolated_runtime": {
+    "cold_start_seconds": 4.727217,
+    "external_calls_per_turn": 0,
+    "failure_count": 0,
+    "failure_counts": {
+      "invalid_responses": 0,
+      "reset_exceptions": 0,
+      "response_exceptions": 0
+    },
+    "measurement_scope": "all-development refit runtime",
+    "memory_after_init_mb": 1039.359,
+    "memory_before_init_mb": 41.078,
+    "metrics": {
+      "hit_rate_at_10": 0.973333,
+      "mrr": 0.661624,
+      "mttc": 2.38,
+      "recommended_technical_score": 0.857554
+    },
+    "model_asset_bytes": 77779,
+    "model_asset_mb": 0.074176,
+    "peak_process_memory_mb": 1174.922,
+    "response_calls": 353,
+    "sample_count": 150,
+    "turn_count": 353,
+    "warm_turn_max_ms": 202.0145,
+    "warm_turn_mean_ms": 23.524778,
+    "warm_turn_p95_ms": 47.720541
+  },
+  "provenance": {
+    "catalog_sha256": "da979b05a68af864cb0dcf9ee6a81c010c7e66a57978ad286c7a2e005fc69a67",
+    "code_hashes": {
+      "ghostlab/evaluation/gbdt_audit.py": "837dcc0a470e36df3ff8cb68a84f464f660729e775cfa18c8fdabf36a922ad11",
+      "ghostlab/retrieval/gbdt.py": "b67ab431793bff6d100ac0ddab0738efa0de0797462806719f7f719c95d94173",
+      "scripts/measure_gbdt_runtime.py": "9785121e179643fe30a29d7c5c3b55d27ef6343a3b1433db699b8bb3368823b6",
+      "scripts/resolve_gbdt_deployment_audit.py": "eb9c6cbbd539c668a898c4a31e06b477f6753142605e8d6a789178b596c3cc82"
+    },
+    "data_sha256": "857259f7a438e6188ac63e18995b6ff4489bfcfc4a716a798b9a2aa0ee8f7579",
+    "lock_sha256": "c54f42d0d9d4539787405c75b12fa6b75523cf5046fbdc4d16c7cc558a170def",
+    "split_sha256": "1c4fed9f5bb228191b0ee8e121cb9694a00f52b78f3f0fade2a041c20dd05cee"
+  },
+  "schema_version": 1,
+  "selected_candidate_id": "shallow_metadata_depth3",
+  "source_oof_report": "artifacts/reports/gbdt_reranker_v1.json",
+  "source_oof_report_sha256": "6df48bc2eb7c5ba388d2f94caffd8df21e58e6fb2aee99c3d4a07f3f5b355b0b"
+}

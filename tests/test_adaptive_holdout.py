@@ -1,0 +1,410 @@
+from __future__ import annotations
+
+from pathlib import Path
+
+import pytest
+
+from ghostlab.runtime.adaptive_factory import load_adaptive_hybrid_config
+from ghostlab.runtime.selected import sha256_file
+from scripts.evaluate_adaptive_holdout import (
+    build_fair_holdout_report,
+    compare_reports,
+    verify_frozen_holdout_inputs,
+)
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+def _report(
+    *,
+    score: float,
+    buying: float,
+    violations: int = 0,
+    target_removals: int = 0,
+) -> dict:
+    return {
+        "recommended_technical_score": score,
+        "hit_rate_at_10": score,
+        "mrr": score,
+        "mttc": 2.0,
+        "scenario_metrics": {
+            "buying": {"hit_rate_at_10": buying, "mrr": buying},
+            "browsing": {"hit_rate_at_10": score, "mrr": score},
+        },
+        "source_metrics": {
+            "data/public_set.jsonl": {"hit_rate_at_10": score, "mrr": score}
+        },
+        "route_metrics": {
+            "buying": {"hit_rate_at_10": buying, "mrr": buying},
+            "browsing": {"hit_rate_at_10": score, "mrr": score},
+        },
+        "adaptive_runtime": {
+            "trace_count": 10,
+            "fallback_count": 0,
+            "output_constraint_violation_count": violations,
+            "overload_cutoff_trace_violations": 0,
+        },
+        "target_survival_audit": {
+            "confirmed_target_removal_count": target_removals
+        },
+    }
+
+
+def _gates() -> dict:
+    return {
+        "combined_score_min_delta": 0.0,
+        "buying_hit_at_10_max_regression": 0.01,
+        "buying_mrr_max_regression": 0.01,
+        "scenario_hit_at_10_max_regression": 0.02,
+        "route_hit_at_10_max_regression": 0.02,
+        "source_hit_at_10_max_regression": 0.02,
+        "mttc_max_regression": 0.5,
+        "fallback_rate_max_regression": 0.01,
+        "require_zero_output_constraint_violations": True,
+        "require_zero_overload_trace_violations": True,
+    }
+
+
+def _frozen_dependencies() -> dict[str, str]:
+    control = ROOT / "configs/adaptive_hybrid_1a_3b_v1.json"
+    reference_a = ROOT / "baseline/official_reference.py"
+    gates = ROOT / "configs/evaluation/adaptive_holdout_gates_v2.json"
+    return {
+        "control_config_path": control.relative_to(ROOT).as_posix(),
+        "control_config_file_sha256": sha256_file(control),
+        "control_config_canonical_sha256": load_adaptive_hybrid_config(
+            control
+        ).canonical_hash(),
+        "reference_a_implementation_path": reference_a.relative_to(ROOT).as_posix(),
+        "reference_a_implementation_sha256": sha256_file(reference_a),
+        "gates_path": gates.relative_to(ROOT).as_posix(),
+        "gates_sha256": sha256_file(gates),
+    }
+
+
+def test_holdout_dependencies_are_frozen_before_access() -> None:
+    frozen = _frozen_dependencies()
+    verified = verify_frozen_holdout_inputs(
+        frozen,
+        control_config_path=ROOT / frozen["control_config_path"],
+        reference_a_path=ROOT / frozen["reference_a_implementation_path"],
+        gates_path=ROOT / frozen["gates_path"],
+    )
+    assert verified["control_config_file_sha256"] == frozen[
+        "control_config_file_sha256"
+    ]
+    assert verified["control_config_canonical_sha256"] == frozen[
+        "control_config_canonical_sha256"
+    ]
+
+
+def test_holdout_rejects_control_not_frozen_by_development() -> None:
+    frozen = _frozen_dependencies()
+    with pytest.raises(ValueError, match="control_config_path"):
+        verify_frozen_holdout_inputs(
+            frozen,
+            control_config_path=ROOT / "configs/adaptive_hybrid_structural_smoke.json",
+            reference_a_path=ROOT / frozen["reference_a_implementation_path"],
+            gates_path=ROOT / frozen["gates_path"],
+        )
+
+
+def test_holdout_gates_accept_like_for_like_improvement() -> None:
+    rows = compare_reports(
+        _report(score=0.82, buying=0.90),
+        _report(score=0.80, buying=0.90),
+        _gates(),
+    )
+    assert rows
+    assert all(row["passed"] for row in rows)
+
+
+def test_holdout_gates_reject_constraint_violation() -> None:
+    rows = compare_reports(
+        _report(score=0.82, buying=0.90, violations=1),
+        _report(score=0.80, buying=0.90),
+        _gates(),
+    )
+    failed = {row["gate"] for row in rows if not row["passed"]}
+    assert "zero_output_constraint_violations" in failed
+
+
+def test_holdout_target_removals_are_diagnostic_not_a_promotion_gate() -> None:
+    rows = compare_reports(
+        _report(score=0.82, buying=0.90, target_removals=12),
+        _report(score=0.80, buying=0.90, target_removals=12),
+        _gates(),
+    )
+    assert "zero_confirmed_target_removals" not in {
+        row["gate"] for row in rows
+    }
+    assert all(row["passed"] for row in rows)
+
+
+def _fair_report(score: float) -> dict:
+    return {
+        "evaluation_contract": {
+            "harness_id": "shared-v1",
+            "contract_sha256": "same-contract",
+        },
+        "hit_rate_at_10": score,
+        "mrr": score,
+        "mttc": 2.0,
+        "recommended_technical_score": score,
+        "scenario_metrics": {"buying": {"hit_rate_at_10": score}},
+        "source_metrics": {"public": {"hit_rate_at_10": score}},
+        "sessions": [
+            {
+                "sample_id": f"holdout_{index:04d}",
+                "scenario_type": "buying",
+                "hit": True,
+                "first_hit_turn": 1,
+                "best_rank": 1,
+                "reciprocal_rank": 1.0,
+            }
+            for index in range(550)
+        ],
+    }
+
+
+def _frozen_three() -> list[dict]:
+    return [
+        {
+            "development_rank": index,
+            "candidate_id": f"challenger-test-{index}",
+            "config_path": f"configs/finalist-{index}.json",
+            "config_sha256": f"file-hash-{index}",
+        }
+        for index in range(1, 4)
+    ]
+
+
+def _selection_rule() -> dict:
+    return {
+        "tie_break_order": [
+            "recommended_technical_score:desc",
+            "mrr:desc",
+            "hit_rate_at_10:desc",
+            "mttc:asc",
+            "fallback_rate:asc",
+            "development_rank:asc",
+            "candidate_id:asc",
+        ],
+        "no_post_selection_tuning": True,
+    }
+
+
+def test_fair_holdout_report_keeps_references_out_of_promotion() -> None:
+    reports = [_fair_report(score) for score in (0.4, 0.6, 0.8, 0.82, 0.84, 0.83)]
+    for report in reports:
+        report["adaptive_runtime"] = {"trace_count": 10, "fallback_count": 0}
+    report = build_fair_holdout_report(
+        frozen=_frozen_three(),
+        selection_rule=_selection_rule(),
+        reference_a=reports[0],
+        control=reports[2],
+        challengers=reports[3:],
+        reference_a_path="a.json",
+        control_path="c.json",
+        challenger_paths=["d1.json", "d2.json", "d3.json"],
+        control_config="configs/control.json",
+        control_config_sha256="control-hash",
+        challenger_config_canonical_sha256=["canonical-1", "canonical-2", "canonical-3"],
+        gate_results=[
+            [{"gate": "score", "passed": True}],
+            [{"gate": "score", "passed": True}],
+            [{"gate": "score", "passed": True}],
+        ],
+        paired=[
+            {"mean_paired_delta": 0.02},
+            {"mean_paired_delta": 0.04},
+            {"mean_paired_delta": 0.03},
+        ],
+        pairwise={
+            "C_minus_A": {"mean_paired_delta": 0.2},
+            "D_challenger-test-1_minus_C": {"mean_paired_delta": 0.02},
+            "D_challenger-test-2_minus_C": {"mean_paired_delta": 0.04},
+            "D_challenger-test-3_minus_C": {"mean_paired_delta": 0.03},
+        },
+        receipt_path="receipt.json",
+    )
+
+    assert report["system_count"] == 5
+    assert report["reference_count"] == 1
+    assert report["comparison_semantics"]["same_ground"] is True
+    assert [item["champion_eligible"] for item in report["systems"]] == [
+        False,
+        True,
+        True,
+        True,
+        True,
+    ]
+    assert len(report["promotion_comparisons"]) == 3
+    assert [
+        item["system_id"] for item in report["systems"][2:]
+    ] == [
+        "GhostLab_Challenger_1",
+        "GhostLab_Challenger_2",
+        "GhostLab_Challenger_3",
+    ]
+    assert [
+        item["display_name"] for item in report["systems"][2:]
+    ] == [
+        "GhostLab Challenger 1",
+        "GhostLab Challenger 2",
+        "GhostLab Challenger 3",
+    ]
+    assert all(
+        item["control_system_id"].startswith("C_")
+        for item in report["promotion_comparisons"]
+    )
+    assert report["selected_candidate_id"] == "challenger-test-2"
+    assert report["challenger"]["config_sha256"] == "canonical-2"
+    assert report["challenger"]["config_file_sha256"] == "file-hash-2"
+    assert report["decision"] == "PROMOTE"
+
+
+def test_fair_holdout_report_accepts_one_frozen_challenger() -> None:
+    reports = [_fair_report(score) for score in (0.4, 0.6, 0.8, 0.84)]
+    for report in reports:
+        report["adaptive_runtime"] = {"trace_count": 10, "fallback_count": 0}
+    frozen = _frozen_three()[:1]
+    report = build_fair_holdout_report(
+        frozen=frozen,
+        selection_rule=_selection_rule(),
+        reference_a=reports[0],
+        control=reports[2],
+        challengers=reports[3:],
+        reference_a_path="a.json",
+        control_path="c.json",
+        challenger_paths=["d1.json"],
+        control_config="configs/control.json",
+        control_config_sha256="control-hash",
+        challenger_config_canonical_sha256=["canonical-1"],
+        gate_results=[[{"gate": "score", "passed": True}]],
+        paired=[{"mean_paired_delta": 0.04}],
+        pairwise={
+            "C_minus_A": {"mean_paired_delta": 0.2},
+            "D_challenger-test-1_minus_C": {"mean_paired_delta": 0.04},
+        },
+        receipt_path="receipt.json",
+    )
+
+    assert report["system_count"] == 3
+    assert report["challenger_count"] == 1
+    assert report["systems"][2]["system_id"] == "GhostLab_Challenger"
+    assert report["systems"][2]["display_name"] == "GhostLab Challenger"
+    assert report["frozen_candidate_ids"] == ["challenger-test-1"]
+    assert report["selected_candidate_id"] == "challenger-test-1"
+    assert report["decision"] == "PROMOTE"
+
+
+def test_fair_holdout_report_retains_control_when_every_d_fails() -> None:
+    reports = [_fair_report(score) for score in (0.4, 0.6, 0.8, 0.82, 0.84, 0.83)]
+    for report in reports:
+        report["adaptive_runtime"] = {"trace_count": 10, "fallback_count": 0}
+    report = build_fair_holdout_report(
+        frozen=_frozen_three(),
+        selection_rule=_selection_rule(),
+        reference_a=reports[0],
+        control=reports[2],
+        challengers=reports[3:],
+        reference_a_path="a.json",
+        control_path="c.json",
+        challenger_paths=["d1.json", "d2.json", "d3.json"],
+        control_config="configs/control.json",
+        control_config_sha256="control-hash",
+        challenger_config_canonical_sha256=["hash-1", "hash-2", "hash-3"],
+        gate_results=[
+            [{"gate": "score", "passed": False}],
+            [{"gate": "score", "passed": False}],
+            [{"gate": "score", "passed": False}],
+        ],
+        paired=[{}, {}, {}],
+        pairwise={},
+        receipt_path="receipt.json",
+    )
+
+    assert report["decision"] == "RETAIN_CONTROL"
+    assert report["selected_system_id"] == "C_fixed_adaptive_architecture"
+    assert report["selected_candidate_id"] is None
+    assert report["challenger"] is None
+
+
+def test_fair_holdout_report_rejects_changed_tie_break_order() -> None:
+    reports = [_fair_report(score) for score in (0.4, 0.6, 0.8, 0.82, 0.84, 0.83)]
+    for report in reports:
+        report["adaptive_runtime"] = {"trace_count": 10, "fallback_count": 0}
+    changed = _selection_rule()
+    changed["tie_break_order"] = list(reversed(changed["tie_break_order"]))
+    with pytest.raises(ValueError, match="tie-break order"):
+        build_fair_holdout_report(
+            frozen=_frozen_three(),
+            selection_rule=changed,
+            reference_a=reports[0],
+            control=reports[2],
+            challengers=reports[3:],
+            reference_a_path="a.json",
+            control_path="c.json",
+            challenger_paths=["d1.json", "d2.json", "d3.json"],
+            control_config="configs/control.json",
+            control_config_sha256="control-hash",
+            challenger_config_canonical_sha256=["hash-1", "hash-2", "hash-3"],
+            gate_results=[[], [], []],
+            paired=[{}, {}, {}],
+            pairwise={},
+            receipt_path="receipt.json",
+        )
+
+
+def test_fair_holdout_report_rejects_mismatched_session_order() -> None:
+    reports = [_fair_report(score) for score in (0.4, 0.6, 0.8, 0.82, 0.84, 0.83)]
+    for report in reports:
+        report["adaptive_runtime"] = {"trace_count": 10, "fallback_count": 0}
+    reports[2]["sessions"] = list(reversed(reports[2]["sessions"]))
+    with pytest.raises(ValueError, match="same 550 ordered session IDs"):
+        build_fair_holdout_report(
+            frozen=_frozen_three(),
+            selection_rule=_selection_rule(),
+            reference_a=reports[0],
+            control=reports[2],
+            challengers=reports[3:],
+            reference_a_path="a.json",
+            control_path="c.json",
+            challenger_paths=["d1.json", "d2.json", "d3.json"],
+            control_config="configs/control.json",
+            control_config_sha256="control-hash",
+            challenger_config_canonical_sha256=["hash-1", "hash-2", "hash-3"],
+            gate_results=[[], [], []],
+            paired=[{}, {}, {}],
+            pairwise={},
+            receipt_path="receipt.json",
+        )
+
+
+def test_fair_holdout_report_rejects_different_evaluator_contract() -> None:
+    reports = [_fair_report(score) for score in (0.4, 0.6, 0.8, 0.82, 0.84, 0.83)]
+    for report in reports:
+        report["adaptive_runtime"] = {"trace_count": 10, "fallback_count": 0}
+    reports[3]["evaluation_contract"] = {
+        "harness_id": "different-v2",
+        "contract_sha256": "different-contract",
+    }
+    with pytest.raises(ValueError, match="identical evaluation contract"):
+        build_fair_holdout_report(
+            frozen=_frozen_three(),
+            selection_rule=_selection_rule(),
+            reference_a=reports[0],
+            control=reports[2],
+            challengers=reports[3:],
+            reference_a_path="a.json",
+            control_path="c.json",
+            challenger_paths=["d1.json", "d2.json", "d3.json"],
+            control_config="configs/control.json",
+            control_config_sha256="control-hash",
+            challenger_config_canonical_sha256=["hash-1", "hash-2", "hash-3"],
+            gate_results=[[], [], []],
+            paired=[{}, {}, {}],
+            pairwise={},
+            receipt_path="receipt.json",
+        )

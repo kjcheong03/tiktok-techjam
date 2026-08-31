@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "experiment_id": "state_baseline_v2_other_v1",
+  "engine": "experimental",
+  "state_variant": "baseline_v2",
+  "query_variant": "coverage_adaptive_v2",
+  "question_variant": "other_always",
+  "question_order": [],
+  "retrieval_route": "keyword",
+  "dense_backend": "off",
+  "negative_evidence": false,
+  "provenance": false,
+  "override_invalidation": false,
+  "recommendation_history": "correction_scoped",
+  "profile_prior_weight": 0.0,
+  "quality_prior_weight": 0.0,
+  "reranker": "none"
+}

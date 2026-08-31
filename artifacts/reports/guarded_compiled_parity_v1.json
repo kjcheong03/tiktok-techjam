@@ -1,0 +1,76 @@
+{
+  "candidate_config": {
+    "canonical_sha256": "f34ef3f66d745c3506b3f9b559c0fb40545c5dea59452631484d46e15eac4f29",
+    "path": "configs/techniques/guarded_constraint_gbdt_v1.json",
+    "sha256": "6aac183675c323a10b6d33d21b9d8c8db1067af1891e2caf7d5bbe2a0ba147ff"
+  },
+  "compiled_runtime_has_experiment_trace": false,
+  "default_config_matches_candidate_techniques": true,
+  "gate": "guarded_research_compiled_and_adapter_exact_parity",
+  "holdout_accessed": false,
+  "metrics": {
+    "hit_rate_at_10": 0.973333,
+    "mrr": 0.757508,
+    "mttc": 2.353333,
+    "recommended_technical_score": 0.886852,
+    "sample_count": 150,
+    "scenario_metrics": {
+      "boundary": {
+        "hit_rate_at_10": 0.875,
+        "mrr": 0.770833,
+        "mttc": 3.875,
+        "sample_count": 8
+      },
+      "browsing": {
+        "hit_rate_at_10": 1.0,
+        "mrr": 0.735556,
+        "mttc": 1.95,
+        "sample_count": 60
+      },
+      "buying": {
+        "hit_rate_at_10": 0.966667,
+        "mrr": 0.771111,
+        "mttc": 1.95,
+        "sample_count": 60
+      },
+      "intent_override": {
+        "hit_rate_at_10": 0.954545,
+        "mrr": 0.775433,
+        "mttc": 4.0,
+        "sample_count": 22
+      }
+    }
+  },
+  "mismatch_count": 0,
+  "mismatches": [],
+  "model_assets": {
+    "base": {
+      "actual_sha256": "10782d08ce20f8c9a60d3e2482ff577c887a35cc74e456c69c781409eb4df4d6",
+      "configured_sha256": "10782d08ce20f8c9a60d3e2482ff577c887a35cc74e456c69c781409eb4df4d6",
+      "path": "artifacts/models/gbdt_reranker_v2_round56.json"
+    },
+    "constraint": {
+      "actual_sha256": "2a3dc13284bb5ca53b9b795c9ec69ac921883be55efe6a239072302c4d4f6e6b",
+      "configured_sha256": "2a3dc13284bb5ca53b9b795c9ec69ac921883be55efe6a239072302c4d4f6e6b",
+      "path": "artifacts/models/gbdt_constraint_interaction_v2.json"
+    }
+  },
+  "passed": true,
+  "research_vs_compiled_exact": true,
+  "response_fields_compared": [
+    "message",
+    "ask_attribute",
+    "recommendations",
+    "usage"
+  ],
+  "sample_count": 150,
+  "schema_version": 1,
+  "starter_adapter_required": true,
+  "starter_vs_research_exact": true,
+  "trace_sha256": {
+    "compiled": "c5fbe098a1ac27c869c71a100d0f3eb95b42494f53e1230112fc3015ba283f63",
+    "research": "c5fbe098a1ac27c869c71a100d0f3eb95b42494f53e1230112fc3015ba283f63",
+    "starter": "c5fbe098a1ac27c869c71a100d0f3eb95b42494f53e1230112fc3015ba283f63"
+  },
+  "turn_count": 349
+}

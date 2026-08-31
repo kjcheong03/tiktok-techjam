@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "experiment_id": "dense_query_e2e_v1",
+  "parent_commit": "25d7fc3cb44b49876ee0def075d4ef236abccaf5",
+  "authorization": {
+    "retrieval_report": "artifacts/reports/dense_query_interaction_v1.json",
+    "selected_query": "negation_safe_structured",
+    "retrieval_gate_passed": true
+  },
+  "hypothesis": "The selected structured E5 query's additional BM25-union coverage can be ranked into the official Top-10 by applying the frozen fold-local champion quality and two-feature linear ranker to the complete sparse-first candidate union.",
+  "candidate_limit": 1,
+  "split": "nested_v1",
+  "evaluation_label": "outer-fold/out-of-fold",
+  "holdout_accessed": false,
+  "candidate": {
+    "sparse_query": "unchanged raw history",
+    "sparse_candidates": 200,
+    "dense_query": "negation_safe_structured",
+    "dense_candidates": 200,
+    "union_order": "all sparse candidates first, then unseen dense candidates",
+    "union_limit": 400,
+    "quality_weight": 0.2,
+    "quality_rerank_k": 400,
+    "linear_rerank_k": 400,
+    "linear_features": [
+      "feature_overlap",
+      "catalog_quality"
+    ],
+    "linear_models": "existing phase20 feature_quality fold-local weights; no refit or tuning",
+    "final_feature_query": "unchanged raw history",
+    "question_policy": "frozen champion sequence"
+  },
+  "promotion_gate": {
+    "all_required": [
+      "OOF technical-score delta versus fold-local champion >= 0.005",
+      "OOF Hit@10 does not decrease",
+      "session-reward delta is non-negative in at least 4 of 5 outer folds",
+      "warm turn p95 <= 500 ms and failure rate is zero"
+    ],
+    "action_if_fail": "Park query+dense interaction and retain it only as dependency evidence."
+  },
+  "no_additional_variants": true
+}

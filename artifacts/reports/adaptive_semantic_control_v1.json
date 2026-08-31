@@ -1,0 +1,34 @@
+{
+  "architecture": "adaptive_hybrid_1a_3b_v1",
+  "asset_verification": {
+    "files": null,
+    "verification": "pinned-revision-receipt"
+  },
+  "development_only": true,
+  "ghostlab_semantic_grid": {
+    "f0_depth": 10,
+    "f1_survivor_depth": 20,
+    "weights": [
+      0.05,
+      0.1,
+      0.15,
+      0.2
+    ]
+  },
+  "input_config": "configs/adaptive_hybrid_1a_3b_1650_final_v1.json",
+  "mode": "fixed_semantic_control",
+  "model_family_search_reopened": false,
+  "output_config": "configs/adaptive_hybrid_1a_3b_1650_final_v1_selected.json",
+  "output_config_sha256": "444f1771d9c230373f2b35eda4da6ffa2fa843ff977fa522af2e66a3244397c3",
+  "protected_holdout_accessed": false,
+  "schema_version": 1,
+  "semantic_policy": {
+    "activation_policy": "browsing_only",
+    "depth": 10,
+    "fallback_model": "artifacts/cache/models/ms-marco-MiniLM-L6-v2",
+    "model_id": "smollm2-1.7b-instruct",
+    "model_revision": "31b70e2e869a7173562077fd711b654946d38674",
+    "model_sha256": "5e62af96e6791d21407ebbcdd629f96bb3589a764b01f60b2b87bfa237b9dcac",
+    "weight": 0.05
+  }
+}

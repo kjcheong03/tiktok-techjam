@@ -1,0 +1,40 @@
+{
+  "control_config_canonical_sha256": "959d9c43ccc046f4aeea0c5e2d33364d51eb56ddb43c1b0a32807624595f47fc",
+  "control_config_sha256": "dd103254f3ca1a77cf6776eda694da5d6b34444c1c8f29bc0cde110763475c44",
+  "decision": "RETAIN_CONTROL",
+  "development_evidence": [
+    {
+      "campaign_manifest_verified": true,
+      "campaign_partition": "development",
+      "candidate_id": "warm-start-d4e040a07e6d-translated-v2-sem-w0p10-d10-f1-add-fusion_rrf-714a27f0249c",
+      "fit_receipt_checked": true,
+      "holdout_ids_in_development_evidence": 0
+    }
+  ],
+  "evaluated_systems": [
+    "Organizer BM25 Starter",
+    "Fixed Adaptive Architecture",
+    "GhostLab Challenger"
+  ],
+  "frozen_candidates": [
+    {
+      "candidate_id": "warm-start-d4e040a07e6d-translated-v2-sem-w0p10-d10-f1-add-fusion_rrf-714a27f0249c",
+      "config_canonical_sha256": "da98a47884822d7d3f589be073c92e653d47c896bb9aea02f97a0422d45773e0",
+      "config_file_sha256": "907b7a92f06ad06447073bf6d0013fb30c1dc3b08b5bfe29897b6e1802a3f050",
+      "config_path": "configs/finalists/adaptive_hybrid_1650/rank_1_warm-start-d4e040a07e6d-translated-v2-sem-w0p10-d10-f1-add-fusion_rrf-714a27f0249c.json",
+      "development_rank": 1
+    }
+  ],
+  "gates_sha256": "b40c9ec0e87f025e5d15c1ad423fe3c942c5fd108f9d0cce136bb4d186552e6f",
+  "holdout_ids_sha256": "59cecc4cb459f457cd732978033ce87302a440585c3860d20756f3fa21df4e6c",
+  "holdout_sample_count": 550,
+  "lineage_manifest_sha256": "de01ab4fae4891f4d122518c3eeb3b422095c171ac9964725cb445089f3b9842",
+  "proposal_report_path": "artifacts/reports/adaptive_hybrid_top3.json",
+  "proposal_report_sha256": "73f9bf4d8d87a7ec5fa1e1a46090db9442e0478694c0a03c4b23e2c86f685704",
+  "protocol": "one_time_final_selection_set",
+  "reference_a_implementation_sha256": "cd0fdade2d743aaf220b93a6cd3bfa7fb1b9b9065d2fbd174128ed2b0f1b812d",
+  "schema_version": 3,
+  "selected_candidate_id": null,
+  "selected_system_id": "C_fixed_adaptive_architecture",
+  "status": "complete"
+}

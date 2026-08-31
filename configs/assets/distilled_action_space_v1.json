@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "actions": {
+    "base": {
+      "ask_attribute": null,
+      "retrieval_route": "keyword",
+      "retrieval_k": 100,
+      "sparse_weight": 0.75,
+      "dense_weight": 0.25
+    },
+    "ask_other": {
+      "ask_attribute": "other",
+      "retrieval_route": "keyword",
+      "retrieval_k": 200,
+      "sparse_weight": 0.75,
+      "dense_weight": 0.25
+    },
+    "ask_color": {
+      "ask_attribute": "color",
+      "retrieval_route": "keyword",
+      "retrieval_k": 200,
+      "sparse_weight": 0.75,
+      "dense_weight": 0.25
+    },
+    "ask_budget": {
+      "ask_attribute": "budget",
+      "retrieval_route": "keyword",
+      "retrieval_k": 200,
+      "sparse_weight": 0.75,
+      "dense_weight": 0.25
+    }
+  },
+  "allowed_routes": ["keyword"],
+  "allowed_depths": [100, 200],
+  "confidence_threshold": 0.55,
+  "fallback_action_id": "base"
+}

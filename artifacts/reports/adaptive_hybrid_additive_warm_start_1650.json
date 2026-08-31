@@ -1,0 +1,2578 @@
+{
+  "schema_version": 2,
+  "mode": "race",
+  "architecture": "adaptive_hybrid_1a_3b_v1",
+  "workflow_static": true,
+  "search_mode": "additive_warm_start",
+  "reuse_checkpoint": "artifacts/campaigns/adaptive_hybrid_1650_v1/checkpoint.json",
+  "catalog_total": 88,
+  "compulsory_count": 19,
+  "promotable_count": 20,
+  "dataset_sources": [
+    {
+      "path": "data/public_set.jsonl",
+      "sha256": "857259f7a438e6188ac63e18995b6ff4489bfcfc4a716a798b9a2aa0ee8f7579",
+      "sample_count": 200
+    },
+    {
+      "path": "data/synthetic_1000_public_like.jsonl",
+      "sha256": "3c49c100c79a1ec7ee30515041e0fc0b703d65626a3c98abcd8ebcd72cb3ab28",
+      "sample_count": 1000
+    },
+    {
+      "path": "data/independent_template_1000.jsonl",
+      "sha256": "6479214f07e5253e99e900eb5db948112894e6bb89151fd1c84e7d99dd41f70b",
+      "sample_count": 1000
+    }
+  ],
+  "sample_count": 1650,
+  "partition": "development",
+  "lineage_manifest": "data/splits/adaptive_hybrid_lineage_75_25_v1.json",
+  "lineage_manifest_sha256": "de01ab4fae4891f4d122518c3eeb3b422095c171ac9964725cb445089f3b9842",
+  "lineage_cluster_count": 300,
+  "fidelity_sample_counts": {
+    "f0": 330,
+    "f1": 825,
+    "f2": 1650
+  },
+  "incumbent": {
+    "candidate_id": "control-adaptive_hybrid_1a_3b_1650_final_v1_smollm2_control",
+    "baseline_id": "adaptive_hybrid_1a_3b_1650_final_v1_smollm2_control",
+    "techniques": [
+      "adaptation.profile_update.v1",
+      "filter.structured",
+      "fusion.multi_route_union.v1",
+      "guard.override_fallback",
+      "guidance.pre_dense_overload.v1",
+      "orchestration.atomic_commit.v1",
+      "prior.profile",
+      "query.coverage_adaptive_v2",
+      "question.candidate_eig.v1",
+      "ranking.cross_encoder",
+      "ranking.local_llm_semantic.v1",
+      "ranking.source_aware_union.v1",
+      "recommendation.correction_scoped_history",
+      "retrieval.category_independent.v1",
+      "retrieval.e5",
+      "retrieval.sparse",
+      "routing.dual_track_observable.v1",
+      "state.baseline_v2",
+      "termination.reward_aware.v1"
+    ],
+    "parameters": [],
+    "complexity": 0,
+    "generation": "control"
+  },
+  "phase_control": {
+    "candidate_id": "warm-start-d4e040a07e6d-translated-v2-sem-w0p10-d10-f1",
+    "baseline_id": "adaptive_hybrid_1a_3b_1650_final_v1_smollm2_control",
+    "techniques": [
+      "adaptation.profile_update.v1",
+      "filter.structured",
+      "fusion.multi_route_union.v1",
+      "guard.override_fallback",
+      "guidance.pre_dense_overload.v1",
+      "orchestration.atomic_commit.v1",
+      "prior.profile",
+      "prior.quality",
+      "query.coverage_adaptive_v2",
+      "question.candidate_eig.v1",
+      "ranking.cross_encoder",
+      "ranking.local_llm_semantic.v1",
+      "ranking.source_aware_union.v1",
+      "ranking.top10_residual_reranker.v2",
+      "recommendation.correction_scoped_history",
+      "retrieval.category_independent.v1",
+      "retrieval.e5",
+      "retrieval.sparse",
+      "routing.dual_track_observable.v1",
+      "state.baseline_v2",
+      "termination.reward_aware.v1"
+    ],
+    "parameters": [
+      [
+        "quality_prior_weight",
+        0.2
+      ],
+      [
+        "quality_rerank_k",
+        50
+      ],
+      [
+        "semantic_rerank_k",
+        10
+      ],
+      [
+        "semantic_weight",
+        0.1
+      ]
+    ],
+    "complexity": 2,
+    "generation": "beam"
+  },
+  "selected": {
+    "candidate_id": "warm-start-d4e040a07e6d-translated-v2-sem-w0p10-d10-f1",
+    "baseline_id": "adaptive_hybrid_1a_3b_1650_final_v1_smollm2_control",
+    "techniques": [
+      "adaptation.profile_update.v1",
+      "filter.structured",
+      "fusion.multi_route_union.v1",
+      "guard.override_fallback",
+      "guidance.pre_dense_overload.v1",
+      "orchestration.atomic_commit.v1",
+      "prior.profile",
+      "prior.quality",
+      "query.coverage_adaptive_v2",
+      "question.candidate_eig.v1",
+      "ranking.cross_encoder",
+      "ranking.local_llm_semantic.v1",
+      "ranking.source_aware_union.v1",
+      "ranking.top10_residual_reranker.v2",
+      "recommendation.correction_scoped_history",
+      "retrieval.category_independent.v1",
+      "retrieval.e5",
+      "retrieval.sparse",
+      "routing.dual_track_observable.v1",
+      "state.baseline_v2",
+      "termination.reward_aware.v1"
+    ],
+    "parameters": [
+      [
+        "quality_prior_weight",
+        0.2
+      ],
+      [
+        "quality_rerank_k",
+        50
+      ],
+      [
+        "semantic_rerank_k",
+        10
+      ],
+      [
+        "semantic_weight",
+        0.1
+      ]
+    ],
+    "complexity": 2,
+    "generation": "beam"
+  },
+  "promoted": false,
+  "semantic_tuning": {
+    "model_fixed": "smollm2-1.7b-instruct",
+    "activation_policy_fixed": "browsing_only",
+    "frozen_from_warm_start": true,
+    "f0_weight_grid": [],
+    "f0_depth": 10,
+    "f0_surviving_weights": [
+      0.1
+    ],
+    "selected_weight": 0.1,
+    "f1_survivor_depth": null,
+    "selected_depth": 10,
+    "depth_30_or_50_tested": false,
+    "model_family_search_reopened": false
+  },
+  "warm_start": {
+    "specification": "configs/warm_starts/adaptive_d4e040a07e6d_to_1a_3b_f1_selected_v1.json",
+    "warm_start_id": "d4e040a07e6d-translated-v2-sem-w0p10-d10-f1",
+    "source_candidate_id": "challenger-d4e040a07e6d",
+    "candidate": {
+      "candidate_id": "warm-start-d4e040a07e6d-translated-v2-sem-w0p10-d10-f1",
+      "baseline_id": "adaptive_hybrid_1a_3b_1650_final_v1_smollm2_control",
+      "techniques": [
+        "adaptation.profile_update.v1",
+        "filter.structured",
+        "fusion.multi_route_union.v1",
+        "guard.override_fallback",
+        "guidance.pre_dense_overload.v1",
+        "orchestration.atomic_commit.v1",
+        "prior.profile",
+        "prior.quality",
+        "query.coverage_adaptive_v2",
+        "question.candidate_eig.v1",
+        "ranking.cross_encoder",
+        "ranking.local_llm_semantic.v1",
+        "ranking.source_aware_union.v1",
+        "ranking.top10_residual_reranker.v2",
+        "recommendation.correction_scoped_history",
+        "retrieval.category_independent.v1",
+        "retrieval.e5",
+        "retrieval.sparse",
+        "routing.dual_track_observable.v1",
+        "state.baseline_v2",
+        "termination.reward_aware.v1"
+      ],
+      "parameters": [
+        [
+          "quality_prior_weight",
+          0.2
+        ],
+        [
+          "quality_rerank_k",
+          50
+        ],
+        [
+          "semantic_rerank_k",
+          10
+        ],
+        [
+          "semantic_weight",
+          0.1
+        ]
+      ],
+      "complexity": 2,
+      "generation": "beam"
+    },
+    "inherited_mechanisms": [
+      "State V2 query coverage is compulsory in the fixed architecture",
+      "correction-scoped recommendation history is compulsory",
+      "source-aware union GBDT remains compulsory",
+      "quality prior remains an architecture-safe additive seed",
+      "top-10 residual reranking transfers by technique ID and is freshly fold-fitted",
+      "SmolLM2 Browsing-only semantic weight 0.10 and depth 10 were selected on the 825-session development fidelity"
+    ],
+    "excluded_source_techniques": {
+      "question.fixed+question.other_always": "replaced by compulsory candidate-EIG guidance",
+      "retrieval.sparse_only": "replaced by the compulsory Buying/Browsing dual track",
+      "ranking.fixed_lexical+ranking.metadata_gbdt": "replaced by the compulsory source-aware union GBDT"
+    },
+    "historical_runtime_executed": false
+  },
+  "stage_counts": {
+    "f0": 14,
+    "f1": 5,
+    "f2": 3
+  },
+  "records": {
+    "f0": [
+      {
+        "candidate": {
+          "candidate_id": "control-adaptive_hybrid_1a_3b_1650_final_v1_smollm2_control",
+          "baseline_id": "adaptive_hybrid_1a_3b_1650_final_v1_smollm2_control",
+          "techniques": [
+            "adaptation.profile_update.v1",
+            "filter.structured",
+            "fusion.multi_route_union.v1",
+            "guard.override_fallback",
+            "guidance.pre_dense_overload.v1",
+            "orchestration.atomic_commit.v1",
+            "prior.profile",
+            "query.coverage_adaptive_v2",
+            "question.candidate_eig.v1",
+            "ranking.cross_encoder",
+            "ranking.local_llm_semantic.v1",
+            "ranking.source_aware_union.v1",
+            "recommendation.correction_scoped_history",
+            "retrieval.category_independent.v1",
+            "retrieval.e5",
+            "retrieval.sparse",
+            "routing.dual_track_observable.v1",
+            "state.baseline_v2",
+            "termination.reward_aware.v1"
+          ],
+          "parameters": [],
+          "complexity": 0,
+          "generation": "control"
+        },
+        "score": 0.811564,
+        "decision": "HOLD_MORE_DATA",
+        "fit_required": [
+          "ranking.source_aware_union.v1"
+        ],
+        "fit_verified": true,
+        "gate_failures": [],
+        "mean_paired_delta": -0.03172871572871574,
+        "latency_p95_ms": 638.215645075825,
+        "semantic_latency_p95_ms": 611.710665980354,
+        "semantic_activations": 257,
+        "semantic_rescue_opportunities": 0,
+        "semantic_rescues": 0,
+        "semantic_regressions": 0,
+        "hit_rate_at_10": 0.948485,
+        "mrr": 0.584809,
+        "mttc": 2.906061,
+        "gate_metrics": [
+          [
+            "route:browsing",
+            0.8129843444227006
+          ],
+          [
+            "route:buying",
+            0.8104367236024845
+          ],
+          [
+            "scenario:boundary",
+            0.839968253968254
+          ],
+          [
+            "scenario:browsing",
+            0.8110317460317461
+          ],
+          [
+            "scenario:buying",
+            0.8274936868686869
+          ],
+          [
+            "scenario:intent_override",
+            0.7633566760037349
+          ],
+          [
+            "source:data/independent_template_1000.jsonl",
+            0.8169142857142858
+          ],
+          [
+            "source:data/public_set.jsonl",
+            0.8243015873015873
+          ],
+          [
+            "source:data/synthetic_1000_public_like.jsonl",
+            0.8036658730158731
+          ]
+        ],
+        "constraint_violations": 0
+      },
+      {
+        "candidate": {
+          "candidate_id": "warm-start-d4e040a07e6d-translated-v2-sem-w0p10-d10-f1",
+          "baseline_id": "adaptive_hybrid_1a_3b_1650_final_v1_smollm2_control",
+          "techniques": [
+            "adaptation.profile_update.v1",
+            "filter.structured",
+            "fusion.multi_route_union.v1",
+            "guard.override_fallback",
+            "guidance.pre_dense_overload.v1",
+            "orchestration.atomic_commit.v1",
+            "prior.profile",
+            "prior.quality",
+            "query.coverage_adaptive_v2",
+            "question.candidate_eig.v1",
+            "ranking.cross_encoder",
+            "ranking.local_llm_semantic.v1",
+            "ranking.source_aware_union.v1",
+            "ranking.top10_residual_reranker.v2",
+            "recommendation.correction_scoped_history",
+            "retrieval.category_independent.v1",
+            "retrieval.e5",
+            "retrieval.sparse",
+            "routing.dual_track_observable.v1",
+            "state.baseline_v2",
+            "termination.reward_aware.v1"
+          ],
+          "parameters": [
+            [
+              "quality_prior_weight",
+              0.2
+            ],
+            [
+              "quality_rerank_k",
+              50
+            ],
+            [
+              "semantic_rerank_k",
+              10
+            ],
+            [
+              "semantic_weight",
+              0.1
+            ]
+          ],
+          "complexity": 2,
+          "generation": "beam"
+        },
+        "score": 0.8432926000000001,
+        "decision": "HOLD_MORE_DATA",
+        "fit_required": [
+          "ranking.source_aware_union.v1",
+          "ranking.top10_residual_reranker.v2"
+        ],
+        "fit_verified": true,
+        "gate_failures": [],
+        "mean_paired_delta": 0.0,
+        "latency_p95_ms": 1525.9270589636412,
+        "semantic_latency_p95_ms": 608.2555410102941,
+        "semantic_activations": 256,
+        "semantic_rescue_opportunities": 0,
+        "semantic_rescues": 0,
+        "semantic_regressions": 0,
+        "hit_rate_at_10": 0.948485,
+        "mrr": 0.690167,
+        "mttc": 2.9,
+        "gate_metrics": [
+          [
+            "route:browsing",
+            0.822133887801696
+          ],
+          [
+            "route:buying",
+            0.8600815217391306
+          ],
+          [
+            "scenario:boundary",
+            0.8452698412698413
+          ],
+          [
+            "scenario:browsing",
+            0.8205492424242425
+          ],
+          [
+            "scenario:buying",
+            0.8752398989898991
+          ],
+          [
+            "scenario:intent_override",
+            0.8188888888888889
+          ],
+          [
+            "source:data/independent_template_1000.jsonl",
+            0.8472126984126984
+          ],
+          [
+            "source:data/public_set.jsonl",
+            0.8356507936507938
+          ],
+          [
+            "source:data/synthetic_1000_public_like.jsonl",
+            0.8409007936507937
+          ]
+        ],
+        "constraint_violations": 0
+      },
+      {
+        "candidate": {
+          "candidate_id": "warm-start-d4e040a07e6d-translated-v2-sem-w0p10-d10-f1-add-fusion_rrf-714a27f0249c",
+          "baseline_id": "adaptive_hybrid_1a_3b_1650_final_v1_smollm2_control",
+          "techniques": [
+            "adaptation.profile_update.v1",
+            "filter.structured",
+            "fusion.multi_route_union.v1",
+            "fusion.rrf",
+            "guard.override_fallback",
+            "guidance.pre_dense_overload.v1",
+            "orchestration.atomic_commit.v1",
+            "prior.profile",
+            "prior.quality",
+            "query.coverage_adaptive_v2",
+            "question.candidate_eig.v1",
+            "ranking.cross_encoder",
+            "ranking.local_llm_semantic.v1",
+            "ranking.source_aware_union.v1",
+            "ranking.top10_residual_reranker.v2",
+            "recommendation.correction_scoped_history",
+            "retrieval.category_independent.v1",
+            "retrieval.e5",
+            "retrieval.sparse",
+            "routing.dual_track_observable.v1",
+            "state.baseline_v2",
+            "termination.reward_aware.v1"
+          ],
+          "parameters": [
+            [
+              "quality_prior_weight",
+              0.2
+            ],
+            [
+              "quality_rerank_k",
+              50
+            ],
+            [
+              "semantic_rerank_k",
+              10
+            ],
+            [
+              "semantic_weight",
+              0.1
+            ]
+          ],
+          "complexity": 3,
+          "generation": "beam"
+        },
+        "score": 0.84905542,
+        "decision": "PROMOTE",
+        "fit_required": [
+          "ranking.source_aware_union.v1",
+          "ranking.top10_residual_reranker.v2"
+        ],
+        "fit_verified": true,
+        "gate_failures": [],
+        "mean_paired_delta": 0.005762987012987013,
+        "latency_p95_ms": 1703.1986530303998,
+        "semantic_latency_p95_ms": 639.5684590097517,
+        "semantic_activations": 241,
+        "semantic_rescue_opportunities": 0,
+        "semantic_rescues": 0,
+        "semantic_regressions": 0,
+        "hit_rate_at_10": 0.954545,
+        "mrr": 0.695034,
+        "mttc": 2.836364,
+        "gate_metrics": [
+          [
+            "route:browsing",
+            0.835481859410431
+          ],
+          [
+            "route:buying",
+            0.8599590163934426
+          ],
+          [
+            "scenario:boundary",
+            0.8507142857142858
+          ],
+          [
+            "scenario:browsing",
+            0.833750901875902
+          ],
+          [
+            "scenario:buying",
+            0.8755113636363637
+          ],
+          [
+            "scenario:intent_override",
+            0.8197058823529412
+          ],
+          [
+            "source:data/independent_template_1000.jsonl",
+            0.8511404761904763
+          ],
+          [
+            "source:data/public_set.jsonl",
+            0.8541666666666667
+          ],
+          [
+            "source:data/synthetic_1000_public_like.jsonl",
+            0.8459484126984127
+          ]
+        ],
+        "constraint_violations": 0
+      },
+      {
+        "candidate": {
+          "candidate_id": "warm-start-d4e040a07e6d-translated-v2-sem-w0p10-d10-f1-add-fusion_sparse_first_union-4bdedcdc61ef",
+          "baseline_id": "adaptive_hybrid_1a_3b_1650_final_v1_smollm2_control",
+          "techniques": [
+            "adaptation.profile_update.v1",
+            "filter.structured",
+            "fusion.multi_route_union.v1",
+            "fusion.sparse_first_union",
+            "guard.override_fallback",
+            "guidance.pre_dense_overload.v1",
+            "orchestration.atomic_commit.v1",
+            "prior.profile",
+            "prior.quality",
+            "query.coverage_adaptive_v2",
+            "question.candidate_eig.v1",
+            "ranking.cross_encoder",
+            "ranking.local_llm_semantic.v1",
+            "ranking.source_aware_union.v1",
+            "ranking.top10_residual_reranker.v2",
+            "recommendation.correction_scoped_history",
+            "retrieval.category_independent.v1",
+            "retrieval.e5",
+            "retrieval.sparse",
+            "routing.dual_track_observable.v1",
+            "state.baseline_v2",
+            "termination.reward_aware.v1"
+          ],
+          "parameters": [
+            [
+              "quality_prior_weight",
+              0.2
+            ],
+            [
+              "quality_rerank_k",
+              50
+            ],
+            [
+              "semantic_rerank_k",
+              10
+            ],
+            [
+              "semantic_weight",
+              0.1
+            ]
+          ],
+          "complexity": 3,
+          "generation": "beam"
+        },
+        "score": 0.8475754,
+        "decision": "REJECT",
+        "fit_required": [
+          "ranking.source_aware_union.v1",
+          "ranking.top10_residual_reranker.v2"
+        ],
+        "fit_verified": true,
+        "gate_failures": [
+          "mrr_regression:0.685655<0.690167"
+        ],
+        "mean_paired_delta": 0.004282828282828284,
+        "latency_p95_ms": 1680.755148233253,
+        "semantic_latency_p95_ms": 635.5437079910189,
+        "semantic_activations": 244,
+        "semantic_rescue_opportunities": 0,
+        "semantic_rescues": 0,
+        "semantic_regressions": 0,
+        "hit_rate_at_10": 0.957576,
+        "mrr": 0.685655,
+        "mttc": 2.845455,
+        "gate_metrics": [
+          [
+            "route:browsing",
+            0.8338975864318331
+          ],
+          [
+            "route:buying",
+            0.8584284420289856
+          ],
+          [
+            "scenario:boundary",
+            0.8374920634920636
+          ],
+          [
+            "scenario:browsing",
+            0.8344444444444445
+          ],
+          [
+            "scenario:buying",
+            0.8733017676767677
+          ],
+          [
+            "scenario:intent_override",
+            0.8179411764705883
+          ],
+          [
+            "source:data/independent_template_1000.jsonl",
+            0.8532896825396826
+          ],
+          [
+            "source:data/public_set.jsonl",
+            0.8474444444444446
+          ],
+          [
+            "source:data/synthetic_1000_public_like.jsonl",
+            0.8418873015873016
+          ]
+        ],
+        "constraint_violations": 0
+      },
+      {
+        "candidate": {
+          "candidate_id": "warm-start-d4e040a07e6d-translated-v2-sem-w0p10-d10-f1-add-prior_profile_union_feature_v1-1da4f17f1f55",
+          "baseline_id": "adaptive_hybrid_1a_3b_1650_final_v1_smollm2_control",
+          "techniques": [
+            "adaptation.profile_update.v1",
+            "filter.structured",
+            "fusion.multi_route_union.v1",
+            "guard.override_fallback",
+            "guidance.pre_dense_overload.v1",
+            "orchestration.atomic_commit.v1",
+            "prior.profile",
+            "prior.profile_union_feature.v1",
+            "prior.quality",
+            "query.coverage_adaptive_v2",
+            "question.candidate_eig.v1",
+            "ranking.cross_encoder",
+            "ranking.local_llm_semantic.v1",
+            "ranking.source_aware_union.v1",
+            "ranking.top10_residual_reranker.v2",
+            "recommendation.correction_scoped_history",
+            "retrieval.category_independent.v1",
+            "retrieval.e5",
+            "retrieval.sparse",
+            "routing.dual_track_observable.v1",
+            "state.baseline_v2",
+            "termination.reward_aware.v1"
+          ],
+          "parameters": [
+            [
+              "quality_prior_weight",
+              0.2
+            ],
+            [
+              "quality_rerank_k",
+              50
+            ],
+            [
+              "semantic_rerank_k",
+              10
+            ],
+            [
+              "semantic_weight",
+              0.1
+            ]
+          ],
+          "complexity": 3,
+          "generation": "beam"
+        },
+        "score": 0.8432926000000001,
+        "decision": "PROMOTE",
+        "fit_required": [
+          "prior.profile_union_feature.v1",
+          "ranking.source_aware_union.v1",
+          "ranking.top10_residual_reranker.v2"
+        ],
+        "fit_verified": true,
+        "gate_failures": [],
+        "mean_paired_delta": 0.0,
+        "latency_p95_ms": 1729.7040107331916,
+        "semantic_latency_p95_ms": 651.0502920136787,
+        "semantic_activations": 256,
+        "semantic_rescue_opportunities": 0,
+        "semantic_rescues": 0,
+        "semantic_regressions": 0,
+        "hit_rate_at_10": 0.948485,
+        "mrr": 0.690167,
+        "mttc": 2.9,
+        "gate_metrics": [
+          [
+            "route:browsing",
+            0.822133887801696
+          ],
+          [
+            "route:buying",
+            0.8600815217391306
+          ],
+          [
+            "scenario:boundary",
+            0.8452698412698413
+          ],
+          [
+            "scenario:browsing",
+            0.8205492424242425
+          ],
+          [
+            "scenario:buying",
+            0.8752398989898991
+          ],
+          [
+            "scenario:intent_override",
+            0.8188888888888889
+          ],
+          [
+            "source:data/independent_template_1000.jsonl",
+            0.8472126984126984
+          ],
+          [
+            "source:data/public_set.jsonl",
+            0.8356507936507938
+          ],
+          [
+            "source:data/synthetic_1000_public_like.jsonl",
+            0.8409007936507937
+          ]
+        ],
+        "constraint_violations": 0
+      },
+      {
+        "candidate": {
+          "candidate_id": "warm-start-d4e040a07e6d-translated-v2-sem-w0p10-d10-f1-add-ranking_facet_diversity_v1-e7e7c0848bfc",
+          "baseline_id": "adaptive_hybrid_1a_3b_1650_final_v1_smollm2_control",
+          "techniques": [
+            "adaptation.profile_update.v1",
+            "filter.structured",
+            "fusion.multi_route_union.v1",
+            "guard.override_fallback",
+            "guidance.pre_dense_overload.v1",
+            "orchestration.atomic_commit.v1",
+            "prior.profile",
+            "prior.quality",
+            "query.coverage_adaptive_v2",
+            "question.candidate_eig.v1",
+            "ranking.cross_encoder",
+            "ranking.facet_diversity.v1",
+            "ranking.local_llm_semantic.v1",
+            "ranking.source_aware_union.v1",
+            "ranking.top10_residual_reranker.v2",
+            "recommendation.correction_scoped_history",
+            "retrieval.category_independent.v1",
+            "retrieval.e5",
+            "retrieval.sparse",
+            "routing.dual_track_observable.v1",
+            "state.baseline_v2",
+            "termination.reward_aware.v1"
+          ],
+          "parameters": [
+            [
+              "quality_prior_weight",
+              0.2
+            ],
+            [
+              "quality_rerank_k",
+              50
+            ],
+            [
+              "semantic_rerank_k",
+              10
+            ],
+            [
+              "semantic_weight",
+              0.1
+            ]
+          ],
+          "complexity": 3,
+          "generation": "beam"
+        },
+        "score": 0.8432926000000001,
+        "decision": "PROMOTE",
+        "fit_required": [
+          "ranking.source_aware_union.v1",
+          "ranking.top10_residual_reranker.v2"
+        ],
+        "fit_verified": true,
+        "gate_failures": [],
+        "mean_paired_delta": 0.0,
+        "latency_p95_ms": 1854.1139881332956,
+        "semantic_latency_p95_ms": 687.9102920065634,
+        "semantic_activations": 256,
+        "semantic_rescue_opportunities": 0,
+        "semantic_rescues": 0,
+        "semantic_regressions": 0,
+        "hit_rate_at_10": 0.948485,
+        "mrr": 0.690167,
+        "mttc": 2.9,
+        "gate_metrics": [
+          [
+            "route:browsing",
+            0.822133887801696
+          ],
+          [
+            "route:buying",
+            0.8600815217391306
+          ],
+          [
+            "scenario:boundary",
+            0.8452698412698413
+          ],
+          [
+            "scenario:browsing",
+            0.8205492424242425
+          ],
+          [
+            "scenario:buying",
+            0.8752398989898991
+          ],
+          [
+            "scenario:intent_override",
+            0.8188888888888889
+          ],
+          [
+            "source:data/independent_template_1000.jsonl",
+            0.8472126984126984
+          ],
+          [
+            "source:data/public_set.jsonl",
+            0.8356507936507938
+          ],
+          [
+            "source:data/synthetic_1000_public_like.jsonl",
+            0.8409007936507937
+          ]
+        ],
+        "constraint_violations": 0
+      },
+      {
+        "candidate": {
+          "candidate_id": "warm-start-d4e040a07e6d-translated-v2-sem-w0p10-d10-f1-add-retrieval_dense_embedding_mmr_v1-55d2655854fb",
+          "baseline_id": "adaptive_hybrid_1a_3b_1650_final_v1_smollm2_control",
+          "techniques": [
+            "adaptation.profile_update.v1",
+            "filter.structured",
+            "fusion.multi_route_union.v1",
+            "guard.override_fallback",
+            "guidance.pre_dense_overload.v1",
+            "orchestration.atomic_commit.v1",
+            "prior.profile",
+            "prior.quality",
+            "query.coverage_adaptive_v2",
+            "question.candidate_eig.v1",
+            "ranking.cross_encoder",
+            "ranking.local_llm_semantic.v1",
+            "ranking.source_aware_union.v1",
+            "ranking.top10_residual_reranker.v2",
+            "recommendation.correction_scoped_history",
+            "retrieval.category_independent.v1",
+            "retrieval.dense_embedding_mmr.v1",
+            "retrieval.e5",
+            "retrieval.sparse",
+            "routing.dual_track_observable.v1",
+            "state.baseline_v2",
+            "termination.reward_aware.v1"
+          ],
+          "parameters": [
+            [
+              "quality_prior_weight",
+              0.2
+            ],
+            [
+              "quality_rerank_k",
+              50
+            ],
+            [
+              "semantic_rerank_k",
+              10
+            ],
+            [
+              "semantic_weight",
+              0.1
+            ]
+          ],
+          "complexity": 3,
+          "generation": "beam"
+        },
+        "score": 0.8451685200000001,
+        "decision": "PROMOTE",
+        "fit_required": [
+          "ranking.source_aware_union.v1",
+          "ranking.top10_residual_reranker.v2"
+        ],
+        "fit_verified": true,
+        "gate_failures": [],
+        "mean_paired_delta": 0.0018759018759018766,
+        "latency_p95_ms": 1874.5492395211124,
+        "semantic_latency_p95_ms": 713.8919169665314,
+        "semantic_activations": 249,
+        "semantic_rescue_opportunities": 0,
+        "semantic_rescues": 0,
+        "semantic_regressions": 0,
+        "hit_rate_at_10": 0.948485,
+        "mrr": 0.695814,
+        "mttc": 2.890909,
+        "gate_metrics": [
+          [
+            "route:browsing",
+            0.8249787997390738
+          ],
+          [
+            "route:buying",
+            0.8611885351966875
+          ],
+          [
+            "scenario:boundary",
+            0.8655555555555556
+          ],
+          [
+            "scenario:browsing",
+            0.8213906926406926
+          ],
+          [
+            "scenario:buying",
+            0.8753499278499279
+          ],
+          [
+            "scenario:intent_override",
+            0.8225980392156863
+          ],
+          [
+            "source:data/independent_template_1000.jsonl",
+            0.8456150793650794
+          ],
+          [
+            "source:data/public_set.jsonl",
+            0.851373015873016
+          ],
+          [
+            "source:data/synthetic_1000_public_like.jsonl",
+            0.8434809523809524
+          ]
+        ],
+        "constraint_violations": 0
+      },
+      {
+        "candidate": {
+          "candidate_id": "warm-start-d4e040a07e6d-translated-v2-sem-w0p10-d10-f1-add-retrieval_dense_view_balanced_v1-e2f830f634d6",
+          "baseline_id": "adaptive_hybrid_1a_3b_1650_final_v1_smollm2_control",
+          "techniques": [
+            "adaptation.profile_update.v1",
+            "filter.structured",
+            "fusion.multi_route_union.v1",
+            "guard.override_fallback",
+            "guidance.pre_dense_overload.v1",
+            "orchestration.atomic_commit.v1",
+            "prior.profile",
+            "prior.quality",
+            "query.coverage_adaptive_v2",
+            "question.candidate_eig.v1",
+            "ranking.cross_encoder",
+            "ranking.local_llm_semantic.v1",
+            "ranking.source_aware_union.v1",
+            "ranking.top10_residual_reranker.v2",
+            "recommendation.correction_scoped_history",
+            "retrieval.category_independent.v1",
+            "retrieval.dense_view_balanced.v1",
+            "retrieval.e5",
+            "retrieval.sparse",
+            "routing.dual_track_observable.v1",
+            "state.baseline_v2",
+            "termination.reward_aware.v1"
+          ],
+          "parameters": [
+            [
+              "quality_prior_weight",
+              0.2
+            ],
+            [
+              "quality_rerank_k",
+              50
+            ],
+            [
+              "semantic_rerank_k",
+              10
+            ],
+            [
+              "semantic_weight",
+              0.1
+            ]
+          ],
+          "complexity": 3,
+          "generation": "beam"
+        },
+        "score": 0.8432926000000001,
+        "decision": "PROMOTE",
+        "fit_required": [
+          "ranking.source_aware_union.v1",
+          "ranking.top10_residual_reranker.v2"
+        ],
+        "fit_verified": true,
+        "gate_failures": [],
+        "mean_paired_delta": 0.0,
+        "latency_p95_ms": 1819.8929176757563,
+        "semantic_latency_p95_ms": 683.2508749794215,
+        "semantic_activations": 256,
+        "semantic_rescue_opportunities": 0,
+        "semantic_rescues": 0,
+        "semantic_regressions": 0,
+        "hit_rate_at_10": 0.948485,
+        "mrr": 0.690167,
+        "mttc": 2.9,
+        "gate_metrics": [
+          [
+            "route:browsing",
+            0.822133887801696
+          ],
+          [
+            "route:buying",
+            0.8600815217391306
+          ],
+          [
+            "scenario:boundary",
+            0.8452698412698413
+          ],
+          [
+            "scenario:browsing",
+            0.8205492424242425
+          ],
+          [
+            "scenario:buying",
+            0.8752398989898991
+          ],
+          [
+            "scenario:intent_override",
+            0.8188888888888889
+          ],
+          [
+            "source:data/independent_template_1000.jsonl",
+            0.8472126984126984
+          ],
+          [
+            "source:data/public_set.jsonl",
+            0.8356507936507938
+          ],
+          [
+            "source:data/synthetic_1000_public_like.jsonl",
+            0.8409007936507937
+          ]
+        ],
+        "constraint_violations": 0
+      },
+      {
+        "candidate": {
+          "candidate_id": "challenger-232263bfaee6",
+          "baseline_id": "adaptive_hybrid_1a_3b_1650_final_v1_smollm2_control",
+          "techniques": [
+            "adaptation.profile_update.v1",
+            "filter.structured",
+            "fusion.multi_route_union.v1",
+            "fusion.rrf",
+            "guard.override_fallback",
+            "guidance.pre_dense_overload.v1",
+            "orchestration.atomic_commit.v1",
+            "prior.profile",
+            "prior.quality",
+            "query.coverage_adaptive_v2",
+            "question.candidate_eig.v1",
+            "ranking.cross_encoder",
+            "ranking.local_llm_semantic.v1",
+            "ranking.source_aware_union.v1",
+            "ranking.top10_residual_reranker.v2",
+            "recommendation.correction_scoped_history",
+            "retrieval.category_independent.v1",
+            "retrieval.dense_embedding_mmr.v1",
+            "retrieval.e5",
+            "retrieval.sparse",
+            "routing.dual_track_observable.v1",
+            "state.baseline_v2",
+            "termination.reward_aware.v1"
+          ],
+          "parameters": [
+            [
+              "quality_prior_weight",
+              0.2
+            ],
+            [
+              "quality_rerank_k",
+              50
+            ],
+            [
+              "semantic_rerank_k",
+              10
+            ],
+            [
+              "semantic_weight",
+              0.1
+            ]
+          ],
+          "complexity": 4,
+          "generation": "beam"
+        },
+        "score": 0.84633822,
+        "decision": "PROMOTE",
+        "fit_required": [
+          "ranking.source_aware_union.v1",
+          "ranking.top10_residual_reranker.v2"
+        ],
+        "fit_verified": true,
+        "gate_failures": [],
+        "mean_paired_delta": 0.003045815295815296,
+        "latency_p95_ms": 1827.6970227273662,
+        "semantic_latency_p95_ms": 644.8228330118582,
+        "semantic_activations": 250,
+        "semantic_rescue_opportunities": 0,
+        "semantic_rescues": 0,
+        "semantic_regressions": 0,
+        "hit_rate_at_10": 0.951515,
+        "mrr": 0.694461,
+        "mttc": 2.887879,
+        "gate_metrics": [
+          [
+            "route:browsing",
+            0.8248320287018918
+          ],
+          [
+            "route:buying",
+            0.863403209109731
+          ],
+          [
+            "scenario:boundary",
+            0.8585
+          ],
+          [
+            "scenario:browsing",
+            0.8220301226551228
+          ],
+          [
+            "scenario:buying",
+            0.8793082611832612
+          ],
+          [
+            "scenario:intent_override",
+            0.820343137254902
+          ],
+          [
+            "source:data/independent_template_1000.jsonl",
+            0.849815873015873
+          ],
+          [
+            "source:data/public_set.jsonl",
+            0.8521349206349207
+          ],
+          [
+            "source:data/synthetic_1000_public_like.jsonl",
+            0.8417015873015873
+          ]
+        ],
+        "constraint_violations": 0
+      },
+      {
+        "candidate": {
+          "candidate_id": "challenger-9143c11d2b7a",
+          "baseline_id": "adaptive_hybrid_1a_3b_1650_final_v1_smollm2_control",
+          "techniques": [
+            "adaptation.profile_update.v1",
+            "filter.structured",
+            "fusion.multi_route_union.v1",
+            "fusion.rrf",
+            "guard.override_fallback",
+            "guidance.pre_dense_overload.v1",
+            "orchestration.atomic_commit.v1",
+            "prior.profile",
+            "prior.profile_union_feature.v1",
+            "prior.quality",
+            "query.coverage_adaptive_v2",
+            "question.candidate_eig.v1",
+            "ranking.cross_encoder",
+            "ranking.local_llm_semantic.v1",
+            "ranking.source_aware_union.v1",
+            "ranking.top10_residual_reranker.v2",
+            "recommendation.correction_scoped_history",
+            "retrieval.category_independent.v1",
+            "retrieval.e5",
+            "retrieval.sparse",
+            "routing.dual_track_observable.v1",
+            "state.baseline_v2",
+            "termination.reward_aware.v1"
+          ],
+          "parameters": [
+            [
+              "quality_prior_weight",
+              0.2
+            ],
+            [
+              "quality_rerank_k",
+              50
+            ],
+            [
+              "semantic_rerank_k",
+              10
+            ],
+            [
+              "semantic_weight",
+              0.1
+            ]
+          ],
+          "complexity": 4,
+          "generation": "beam"
+        },
+        "score": 0.84905542,
+        "decision": "PROMOTE",
+        "fit_required": [
+          "prior.profile_union_feature.v1",
+          "ranking.source_aware_union.v1",
+          "ranking.top10_residual_reranker.v2"
+        ],
+        "fit_verified": true,
+        "gate_failures": [],
+        "mean_paired_delta": 0.005762987012987013,
+        "latency_p95_ms": 1709.5400828271963,
+        "semantic_latency_p95_ms": 711.6264159558341,
+        "semantic_activations": 241,
+        "semantic_rescue_opportunities": 0,
+        "semantic_rescues": 0,
+        "semantic_regressions": 0,
+        "hit_rate_at_10": 0.954545,
+        "mrr": 0.695034,
+        "mttc": 2.836364,
+        "gate_metrics": [
+          [
+            "route:browsing",
+            0.835481859410431
+          ],
+          [
+            "route:buying",
+            0.8599590163934426
+          ],
+          [
+            "scenario:boundary",
+            0.8507142857142858
+          ],
+          [
+            "scenario:browsing",
+            0.833750901875902
+          ],
+          [
+            "scenario:buying",
+            0.8755113636363637
+          ],
+          [
+            "scenario:intent_override",
+            0.8197058823529412
+          ],
+          [
+            "source:data/independent_template_1000.jsonl",
+            0.8511404761904763
+          ],
+          [
+            "source:data/public_set.jsonl",
+            0.8541666666666667
+          ],
+          [
+            "source:data/synthetic_1000_public_like.jsonl",
+            0.8459484126984127
+          ]
+        ],
+        "constraint_violations": 0
+      },
+      {
+        "candidate": {
+          "candidate_id": "challenger-af0403307620",
+          "baseline_id": "adaptive_hybrid_1a_3b_1650_final_v1_smollm2_control",
+          "techniques": [
+            "adaptation.profile_update.v1",
+            "filter.structured",
+            "fusion.multi_route_union.v1",
+            "fusion.rrf",
+            "guard.override_fallback",
+            "guidance.pre_dense_overload.v1",
+            "orchestration.atomic_commit.v1",
+            "prior.profile",
+            "prior.quality",
+            "query.coverage_adaptive_v2",
+            "question.candidate_eig.v1",
+            "ranking.cross_encoder",
+            "ranking.facet_diversity.v1",
+            "ranking.local_llm_semantic.v1",
+            "ranking.source_aware_union.v1",
+            "ranking.top10_residual_reranker.v2",
+            "recommendation.correction_scoped_history",
+            "retrieval.category_independent.v1",
+            "retrieval.e5",
+            "retrieval.sparse",
+            "routing.dual_track_observable.v1",
+            "state.baseline_v2",
+            "termination.reward_aware.v1"
+          ],
+          "parameters": [
+            [
+              "quality_prior_weight",
+              0.2
+            ],
+            [
+              "quality_rerank_k",
+              50
+            ],
+            [
+              "semantic_rerank_k",
+              10
+            ],
+            [
+              "semantic_weight",
+              0.1
+            ]
+          ],
+          "complexity": 4,
+          "generation": "beam"
+        },
+        "score": 0.84905542,
+        "decision": "PROMOTE",
+        "fit_required": [
+          "ranking.source_aware_union.v1",
+          "ranking.top10_residual_reranker.v2"
+        ],
+        "fit_verified": true,
+        "gate_failures": [],
+        "mean_paired_delta": 0.005762987012987013,
+        "latency_p95_ms": 1930.1392906546507,
+        "semantic_latency_p95_ms": 811.48375000339,
+        "semantic_activations": 239,
+        "semantic_rescue_opportunities": 0,
+        "semantic_rescues": 0,
+        "semantic_regressions": 0,
+        "hit_rate_at_10": 0.954545,
+        "mrr": 0.695034,
+        "mttc": 2.836364,
+        "gate_metrics": [
+          [
+            "route:browsing",
+            0.835481859410431
+          ],
+          [
+            "route:buying",
+            0.8599590163934426
+          ],
+          [
+            "scenario:boundary",
+            0.8507142857142858
+          ],
+          [
+            "scenario:browsing",
+            0.833750901875902
+          ],
+          [
+            "scenario:buying",
+            0.8755113636363637
+          ],
+          [
+            "scenario:intent_override",
+            0.8197058823529412
+          ],
+          [
+            "source:data/independent_template_1000.jsonl",
+            0.8511404761904763
+          ],
+          [
+            "source:data/public_set.jsonl",
+            0.8541666666666667
+          ],
+          [
+            "source:data/synthetic_1000_public_like.jsonl",
+            0.8459484126984127
+          ]
+        ],
+        "constraint_violations": 0
+      },
+      {
+        "candidate": {
+          "candidate_id": "challenger-0183cc0dbcc1",
+          "baseline_id": "adaptive_hybrid_1a_3b_1650_final_v1_smollm2_control",
+          "techniques": [
+            "adaptation.profile_update.v1",
+            "filter.structured",
+            "fusion.multi_route_union.v1",
+            "fusion.rrf",
+            "guard.override_fallback",
+            "guidance.pre_dense_overload.v1",
+            "orchestration.atomic_commit.v1",
+            "prior.profile",
+            "prior.profile_union_feature.v1",
+            "prior.quality",
+            "query.coverage_adaptive_v2",
+            "question.candidate_eig.v1",
+            "ranking.cross_encoder",
+            "ranking.local_llm_semantic.v1",
+            "ranking.source_aware_union.v1",
+            "ranking.top10_residual_reranker.v2",
+            "recommendation.correction_scoped_history",
+            "retrieval.category_independent.v1",
+            "retrieval.dense_embedding_mmr.v1",
+            "retrieval.e5",
+            "retrieval.sparse",
+            "routing.dual_track_observable.v1",
+            "state.baseline_v2",
+            "termination.reward_aware.v1"
+          ],
+          "parameters": [
+            [
+              "quality_prior_weight",
+              0.2
+            ],
+            [
+              "quality_rerank_k",
+              50
+            ],
+            [
+              "semantic_rerank_k",
+              10
+            ],
+            [
+              "semantic_weight",
+              0.1
+            ]
+          ],
+          "complexity": 5,
+          "generation": "triple"
+        },
+        "score": 0.84633822,
+        "decision": "PROMOTE",
+        "fit_required": [
+          "prior.profile_union_feature.v1",
+          "ranking.source_aware_union.v1",
+          "ranking.top10_residual_reranker.v2"
+        ],
+        "fit_verified": true,
+        "gate_failures": [],
+        "mean_paired_delta": 0.003045815295815296,
+        "latency_p95_ms": 1900.6437960848086,
+        "semantic_latency_p95_ms": 780.4417499573901,
+        "semantic_activations": 250,
+        "semantic_rescue_opportunities": 0,
+        "semantic_rescues": 0,
+        "semantic_regressions": 0,
+        "hit_rate_at_10": 0.951515,
+        "mrr": 0.694461,
+        "mttc": 2.887879,
+        "gate_metrics": [
+          [
+            "route:browsing",
+            0.8248320287018918
+          ],
+          [
+            "route:buying",
+            0.863403209109731
+          ],
+          [
+            "scenario:boundary",
+            0.8585
+          ],
+          [
+            "scenario:browsing",
+            0.8220301226551228
+          ],
+          [
+            "scenario:buying",
+            0.8793082611832612
+          ],
+          [
+            "scenario:intent_override",
+            0.820343137254902
+          ],
+          [
+            "source:data/independent_template_1000.jsonl",
+            0.849815873015873
+          ],
+          [
+            "source:data/public_set.jsonl",
+            0.8521349206349207
+          ],
+          [
+            "source:data/synthetic_1000_public_like.jsonl",
+            0.8417015873015873
+          ]
+        ],
+        "constraint_violations": 0
+      },
+      {
+        "candidate": {
+          "candidate_id": "challenger-6e93b6457e04",
+          "baseline_id": "adaptive_hybrid_1a_3b_1650_final_v1_smollm2_control",
+          "techniques": [
+            "adaptation.profile_update.v1",
+            "filter.structured",
+            "fusion.multi_route_union.v1",
+            "fusion.rrf",
+            "guard.override_fallback",
+            "guidance.pre_dense_overload.v1",
+            "orchestration.atomic_commit.v1",
+            "prior.profile",
+            "prior.profile_union_feature.v1",
+            "prior.quality",
+            "query.coverage_adaptive_v2",
+            "question.candidate_eig.v1",
+            "ranking.cross_encoder",
+            "ranking.local_llm_semantic.v1",
+            "ranking.source_aware_union.v1",
+            "ranking.top10_residual_reranker.v2",
+            "recommendation.correction_scoped_history",
+            "retrieval.category_independent.v1",
+            "retrieval.dense_view_balanced.v1",
+            "retrieval.e5",
+            "retrieval.sparse",
+            "routing.dual_track_observable.v1",
+            "state.baseline_v2",
+            "termination.reward_aware.v1"
+          ],
+          "parameters": [
+            [
+              "quality_prior_weight",
+              0.2
+            ],
+            [
+              "quality_rerank_k",
+              50
+            ],
+            [
+              "semantic_rerank_k",
+              10
+            ],
+            [
+              "semantic_weight",
+              0.1
+            ]
+          ],
+          "complexity": 5,
+          "generation": "triple"
+        },
+        "score": 0.84905542,
+        "decision": "PROMOTE",
+        "fit_required": [
+          "prior.profile_union_feature.v1",
+          "ranking.source_aware_union.v1",
+          "ranking.top10_residual_reranker.v2"
+        ],
+        "fit_verified": true,
+        "gate_failures": [],
+        "mean_paired_delta": 0.005762987012987013,
+        "latency_p95_ms": 1863.338868687755,
+        "semantic_latency_p95_ms": 803.6316249636002,
+        "semantic_activations": 240,
+        "semantic_rescue_opportunities": 0,
+        "semantic_rescues": 0,
+        "semantic_regressions": 0,
+        "hit_rate_at_10": 0.954545,
+        "mrr": 0.695034,
+        "mttc": 2.836364,
+        "gate_metrics": [
+          [
+            "route:browsing",
+            0.835481859410431
+          ],
+          [
+            "route:buying",
+            0.8599590163934426
+          ],
+          [
+            "scenario:boundary",
+            0.8507142857142858
+          ],
+          [
+            "scenario:browsing",
+            0.833750901875902
+          ],
+          [
+            "scenario:buying",
+            0.8755113636363637
+          ],
+          [
+            "scenario:intent_override",
+            0.8197058823529412
+          ],
+          [
+            "source:data/independent_template_1000.jsonl",
+            0.8511404761904763
+          ],
+          [
+            "source:data/public_set.jsonl",
+            0.8541666666666667
+          ],
+          [
+            "source:data/synthetic_1000_public_like.jsonl",
+            0.8459484126984127
+          ]
+        ],
+        "constraint_violations": 0
+      },
+      {
+        "candidate": {
+          "candidate_id": "challenger-f28f0818fc67",
+          "baseline_id": "adaptive_hybrid_1a_3b_1650_final_v1_smollm2_control",
+          "techniques": [
+            "adaptation.profile_update.v1",
+            "filter.structured",
+            "fusion.multi_route_union.v1",
+            "fusion.rrf",
+            "guard.override_fallback",
+            "guidance.pre_dense_overload.v1",
+            "orchestration.atomic_commit.v1",
+            "prior.profile",
+            "prior.profile_union_feature.v1",
+            "prior.quality",
+            "query.coverage_adaptive_v2",
+            "question.candidate_eig.v1",
+            "ranking.cross_encoder",
+            "ranking.facet_diversity.v1",
+            "ranking.local_llm_semantic.v1",
+            "ranking.source_aware_union.v1",
+            "ranking.top10_residual_reranker.v2",
+            "recommendation.correction_scoped_history",
+            "retrieval.category_independent.v1",
+            "retrieval.e5",
+            "retrieval.sparse",
+            "routing.dual_track_observable.v1",
+            "state.baseline_v2",
+            "termination.reward_aware.v1"
+          ],
+          "parameters": [
+            [
+              "quality_prior_weight",
+              0.2
+            ],
+            [
+              "quality_rerank_k",
+              50
+            ],
+            [
+              "semantic_rerank_k",
+              10
+            ],
+            [
+              "semantic_weight",
+              0.1
+            ]
+          ],
+          "complexity": 5,
+          "generation": "triple"
+        },
+        "score": 0.84905542,
+        "decision": "PROMOTE",
+        "fit_required": [
+          "prior.profile_union_feature.v1",
+          "ranking.source_aware_union.v1",
+          "ranking.top10_residual_reranker.v2"
+        ],
+        "fit_verified": true,
+        "gate_failures": [],
+        "mean_paired_delta": 0.005762987012987013,
+        "latency_p95_ms": 2106.506686869684,
+        "semantic_latency_p95_ms": 884.1565840411931,
+        "semantic_activations": 240,
+        "semantic_rescue_opportunities": 0,
+        "semantic_rescues": 0,
+        "semantic_regressions": 0,
+        "hit_rate_at_10": 0.954545,
+        "mrr": 0.695034,
+        "mttc": 2.836364,
+        "gate_metrics": [
+          [
+            "route:browsing",
+            0.835481859410431
+          ],
+          [
+            "route:buying",
+            0.8599590163934426
+          ],
+          [
+            "scenario:boundary",
+            0.8507142857142858
+          ],
+          [
+            "scenario:browsing",
+            0.833750901875902
+          ],
+          [
+            "scenario:buying",
+            0.8755113636363637
+          ],
+          [
+            "scenario:intent_override",
+            0.8197058823529412
+          ],
+          [
+            "source:data/independent_template_1000.jsonl",
+            0.8511404761904763
+          ],
+          [
+            "source:data/public_set.jsonl",
+            0.8541666666666667
+          ],
+          [
+            "source:data/synthetic_1000_public_like.jsonl",
+            0.8459484126984127
+          ]
+        ],
+        "constraint_violations": 0
+      }
+    ],
+    "f1": [
+      {
+        "candidate": {
+          "candidate_id": "control-adaptive_hybrid_1a_3b_1650_final_v1_smollm2_control",
+          "baseline_id": "adaptive_hybrid_1a_3b_1650_final_v1_smollm2_control",
+          "techniques": [
+            "adaptation.profile_update.v1",
+            "filter.structured",
+            "fusion.multi_route_union.v1",
+            "guard.override_fallback",
+            "guidance.pre_dense_overload.v1",
+            "orchestration.atomic_commit.v1",
+            "prior.profile",
+            "query.coverage_adaptive_v2",
+            "question.candidate_eig.v1",
+            "ranking.cross_encoder",
+            "ranking.local_llm_semantic.v1",
+            "ranking.source_aware_union.v1",
+            "recommendation.correction_scoped_history",
+            "retrieval.category_independent.v1",
+            "retrieval.e5",
+            "retrieval.sparse",
+            "routing.dual_track_observable.v1",
+            "state.baseline_v2",
+            "termination.reward_aware.v1"
+          ],
+          "parameters": [],
+          "complexity": 0,
+          "generation": "control"
+        },
+        "score": 0.820525,
+        "decision": "HOLD_MORE_DATA",
+        "fit_required": [
+          "ranking.source_aware_union.v1"
+        ],
+        "fit_verified": true,
+        "gate_failures": [],
+        "mean_paired_delta": -0.029063780663780667,
+        "latency_p95_ms": 597.8532667175839,
+        "semantic_latency_p95_ms": 655.3932909737341,
+        "semantic_activations": 621,
+        "semantic_rescue_opportunities": 0,
+        "semantic_rescues": 0,
+        "semantic_regressions": 0,
+        "hit_rate_at_10": 0.956364,
+        "mrr": 0.592941,
+        "mttc": 2.77697,
+        "gate_metrics": [
+          [
+            "route:browsing",
+            0.8259112965838511
+          ],
+          [
+            "route:buying",
+            0.8161873502136084
+          ],
+          [
+            "scenario:boundary",
+            0.8224969474969476
+          ],
+          [
+            "scenario:browsing",
+            0.82672113997114
+          ],
+          [
+            "scenario:buying",
+            0.8333113275613276
+          ],
+          [
+            "scenario:intent_override",
+            0.7701974678760394
+          ],
+          [
+            "source:data/independent_template_1000.jsonl",
+            0.8248264944275584
+          ],
+          [
+            "source:data/public_set.jsonl",
+            0.8300650793650795
+          ],
+          [
+            "source:data/synthetic_1000_public_like.jsonl",
+            0.8142869875222817
+          ]
+        ],
+        "constraint_violations": 0
+      },
+      {
+        "candidate": {
+          "candidate_id": "warm-start-d4e040a07e6d-translated-v2-sem-w0p10-d10-f1",
+          "baseline_id": "adaptive_hybrid_1a_3b_1650_final_v1_smollm2_control",
+          "techniques": [
+            "adaptation.profile_update.v1",
+            "filter.structured",
+            "fusion.multi_route_union.v1",
+            "guard.override_fallback",
+            "guidance.pre_dense_overload.v1",
+            "orchestration.atomic_commit.v1",
+            "prior.profile",
+            "prior.quality",
+            "query.coverage_adaptive_v2",
+            "question.candidate_eig.v1",
+            "ranking.cross_encoder",
+            "ranking.local_llm_semantic.v1",
+            "ranking.source_aware_union.v1",
+            "ranking.top10_residual_reranker.v2",
+            "recommendation.correction_scoped_history",
+            "retrieval.category_independent.v1",
+            "retrieval.e5",
+            "retrieval.sparse",
+            "routing.dual_track_observable.v1",
+            "state.baseline_v2",
+            "termination.reward_aware.v1"
+          ],
+          "parameters": [
+            [
+              "quality_prior_weight",
+              0.2
+            ],
+            [
+              "quality_rerank_k",
+              50
+            ],
+            [
+              "semantic_rerank_k",
+              10
+            ],
+            [
+              "semantic_weight",
+              0.1
+            ]
+          ],
+          "complexity": 2,
+          "generation": "beam"
+        },
+        "score": 0.8495888,
+        "decision": "HOLD_MORE_DATA",
+        "fit_required": [
+          "ranking.source_aware_union.v1",
+          "ranking.top10_residual_reranker.v2"
+        ],
+        "fit_verified": true,
+        "gate_failures": [],
+        "mean_paired_delta": 0.0,
+        "latency_p95_ms": 1361.0258217684388,
+        "semantic_latency_p95_ms": 639.5129589946009,
+        "semantic_activations": 618,
+        "semantic_rescue_opportunities": 0,
+        "semantic_rescues": 0,
+        "semantic_regressions": 0,
+        "hit_rate_at_10": 0.956364,
+        "mrr": 0.689255,
+        "mttc": 2.768485,
+        "gate_metrics": [
+          [
+            "route:browsing",
+            0.8327811206004141
+          ],
+          [
+            "route:buying",
+            0.8631228508909035
+          ],
+          [
+            "scenario:boundary",
+            0.8309920634920636
+          ],
+          [
+            "scenario:browsing",
+            0.8333780663780664
+          ],
+          [
+            "scenario:buying",
+            0.8759877344877346
+          ],
+          [
+            "scenario:intent_override",
+            0.8286602418745277
+          ],
+          [
+            "source:data/independent_template_1000.jsonl",
+            0.8506785081053698
+          ],
+          [
+            "source:data/public_set.jsonl",
+            0.8586650793650794
+          ],
+          [
+            "source:data/synthetic_1000_public_like.jsonl",
+            0.8466727145403616
+          ]
+        ],
+        "constraint_violations": 0
+      },
+      {
+        "candidate": {
+          "candidate_id": "warm-start-d4e040a07e6d-translated-v2-sem-w0p10-d10-f1-add-fusion_rrf-714a27f0249c",
+          "baseline_id": "adaptive_hybrid_1a_3b_1650_final_v1_smollm2_control",
+          "techniques": [
+            "adaptation.profile_update.v1",
+            "filter.structured",
+            "fusion.multi_route_union.v1",
+            "fusion.rrf",
+            "guard.override_fallback",
+            "guidance.pre_dense_overload.v1",
+            "orchestration.atomic_commit.v1",
+            "prior.profile",
+            "prior.quality",
+            "query.coverage_adaptive_v2",
+            "question.candidate_eig.v1",
+            "ranking.cross_encoder",
+            "ranking.local_llm_semantic.v1",
+            "ranking.source_aware_union.v1",
+            "ranking.top10_residual_reranker.v2",
+            "recommendation.correction_scoped_history",
+            "retrieval.category_independent.v1",
+            "retrieval.e5",
+            "retrieval.sparse",
+            "routing.dual_track_observable.v1",
+            "state.baseline_v2",
+            "termination.reward_aware.v1"
+          ],
+          "parameters": [
+            [
+              "quality_prior_weight",
+              0.2
+            ],
+            [
+              "quality_rerank_k",
+              50
+            ],
+            [
+              "semantic_rerank_k",
+              10
+            ],
+            [
+              "semantic_weight",
+              0.1
+            ]
+          ],
+          "complexity": 3,
+          "generation": "beam"
+        },
+        "score": 0.8557681399999999,
+        "decision": "HOLD_MORE_DATA",
+        "fit_required": [
+          "ranking.source_aware_union.v1",
+          "ranking.top10_residual_reranker.v2"
+        ],
+        "fit_verified": true,
+        "gate_failures": [],
+        "mean_paired_delta": 0.006179653679653681,
+        "latency_p95_ms": 1471.713265807255,
+        "semantic_latency_p95_ms": 814.2288750386797,
+        "semantic_activations": 599,
+        "semantic_rescue_opportunities": 0,
+        "semantic_rescues": 0,
+        "semantic_regressions": 0,
+        "hit_rate_at_10": 0.961212,
+        "mrr": 0.699591,
+        "mttc": 2.735758,
+        "gate_metrics": [
+          [
+            "route:browsing",
+            0.8440360046457608
+          ],
+          [
+            "route:buying",
+            0.8652621136173768
+          ],
+          [
+            "scenario:boundary",
+            0.8308608058608059
+          ],
+          [
+            "scenario:browsing",
+            0.8455930735930737
+          ],
+          [
+            "scenario:buying",
+            0.8795014430014431
+          ],
+          [
+            "scenario:intent_override",
+            0.8279686318972034
+          ],
+          [
+            "source:data/independent_template_1000.jsonl",
+            0.8547948328267477
+          ],
+          [
+            "source:data/public_set.jsonl",
+            0.8731761904761906
+          ],
+          [
+            "source:data/synthetic_1000_public_like.jsonl",
+            0.8532559842118667
+          ]
+        ],
+        "constraint_violations": 0
+      },
+      {
+        "candidate": {
+          "candidate_id": "warm-start-d4e040a07e6d-translated-v2-sem-w0p10-d10-f1-add-fusion_rrf-714a27f0249c-hpo-001-194a7227b9a3",
+          "baseline_id": "adaptive_hybrid_1a_3b_1650_final_v1_smollm2_control",
+          "techniques": [
+            "adaptation.profile_update.v1",
+            "filter.structured",
+            "fusion.multi_route_union.v1",
+            "fusion.rrf",
+            "guard.override_fallback",
+            "guidance.pre_dense_overload.v1",
+            "orchestration.atomic_commit.v1",
+            "prior.profile",
+            "prior.quality",
+            "query.coverage_adaptive_v2",
+            "question.candidate_eig.v1",
+            "ranking.cross_encoder",
+            "ranking.local_llm_semantic.v1",
+            "ranking.source_aware_union.v1",
+            "ranking.top10_residual_reranker.v2",
+            "recommendation.correction_scoped_history",
+            "retrieval.category_independent.v1",
+            "retrieval.e5",
+            "retrieval.sparse",
+            "routing.dual_track_observable.v1",
+            "state.baseline_v2",
+            "termination.reward_aware.v1"
+          ],
+          "parameters": [
+            [
+              "buying_residual_weight",
+              0.2370469492917316
+            ],
+            [
+              "quality_prior_weight",
+              0.2
+            ],
+            [
+              "quality_rerank_k",
+              50
+            ],
+            [
+              "router_history_specificity_weight",
+              0.4123651390237957
+            ],
+            [
+              "router_query_length_weight",
+              0.12664974298465237
+            ],
+            [
+              "semantic_rerank_k",
+              10
+            ],
+            [
+              "semantic_weight",
+              0.1
+            ]
+          ],
+          "complexity": 3,
+          "generation": "beam"
+        },
+        "score": 0.85574354,
+        "decision": "HOLD_MORE_DATA",
+        "fit_required": [
+          "ranking.source_aware_union.v1",
+          "ranking.top10_residual_reranker.v2"
+        ],
+        "fit_verified": true,
+        "gate_failures": [],
+        "mean_paired_delta": 0.006154978354978356,
+        "latency_p95_ms": 1436.041875555194,
+        "semantic_latency_p95_ms": 767.7748749847524,
+        "semantic_activations": 599,
+        "semantic_rescue_opportunities": 0,
+        "semantic_rescues": 0,
+        "semantic_regressions": 0,
+        "hit_rate_at_10": 0.961212,
+        "mrr": 0.699509,
+        "mttc": 2.735758,
+        "gate_metrics": [
+          [
+            "route:browsing",
+            0.8440360046457608
+          ],
+          [
+            "route:buying",
+            0.8652174707602339
+          ],
+          [
+            "scenario:boundary",
+            0.8308608058608059
+          ],
+          [
+            "scenario:browsing",
+            0.8455930735930737
+          ],
+          [
+            "scenario:buying",
+            0.8794559884559886
+          ],
+          [
+            "scenario:intent_override",
+            0.8279261148904007
+          ],
+          [
+            "source:data/independent_template_1000.jsonl",
+            0.8547948328267477
+          ],
+          [
+            "source:data/public_set.jsonl",
+            0.8731761904761906
+          ],
+          [
+            "source:data/synthetic_1000_public_like.jsonl",
+            0.8532015533486123
+          ]
+        ],
+        "constraint_violations": 0
+      },
+      {
+        "candidate": {
+          "candidate_id": "challenger-9143c11d2b7a",
+          "baseline_id": "adaptive_hybrid_1a_3b_1650_final_v1_smollm2_control",
+          "techniques": [
+            "adaptation.profile_update.v1",
+            "filter.structured",
+            "fusion.multi_route_union.v1",
+            "fusion.rrf",
+            "guard.override_fallback",
+            "guidance.pre_dense_overload.v1",
+            "orchestration.atomic_commit.v1",
+            "prior.profile",
+            "prior.profile_union_feature.v1",
+            "prior.quality",
+            "query.coverage_adaptive_v2",
+            "question.candidate_eig.v1",
+            "ranking.cross_encoder",
+            "ranking.local_llm_semantic.v1",
+            "ranking.source_aware_union.v1",
+            "ranking.top10_residual_reranker.v2",
+            "recommendation.correction_scoped_history",
+            "retrieval.category_independent.v1",
+            "retrieval.e5",
+            "retrieval.sparse",
+            "routing.dual_track_observable.v1",
+            "state.baseline_v2",
+            "termination.reward_aware.v1"
+          ],
+          "parameters": [
+            [
+              "quality_prior_weight",
+              0.2
+            ],
+            [
+              "quality_rerank_k",
+              50
+            ],
+            [
+              "semantic_rerank_k",
+              10
+            ],
+            [
+              "semantic_weight",
+              0.1
+            ]
+          ],
+          "complexity": 4,
+          "generation": "beam"
+        },
+        "score": 0.8557681399999999,
+        "decision": "HOLD_MORE_DATA",
+        "fit_required": [
+          "prior.profile_union_feature.v1",
+          "ranking.source_aware_union.v1",
+          "ranking.top10_residual_reranker.v2"
+        ],
+        "fit_verified": true,
+        "gate_failures": [],
+        "mean_paired_delta": 0.006179653679653681,
+        "latency_p95_ms": 1446.9225422230154,
+        "semantic_latency_p95_ms": 649.4767079711892,
+        "semantic_activations": 599,
+        "semantic_rescue_opportunities": 0,
+        "semantic_rescues": 0,
+        "semantic_regressions": 0,
+        "hit_rate_at_10": 0.961212,
+        "mrr": 0.699591,
+        "mttc": 2.735758,
+        "gate_metrics": [
+          [
+            "route:browsing",
+            0.8440360046457608
+          ],
+          [
+            "route:buying",
+            0.8652621136173768
+          ],
+          [
+            "scenario:boundary",
+            0.8308608058608059
+          ],
+          [
+            "scenario:browsing",
+            0.8455930735930737
+          ],
+          [
+            "scenario:buying",
+            0.8795014430014431
+          ],
+          [
+            "scenario:intent_override",
+            0.8279686318972034
+          ],
+          [
+            "source:data/independent_template_1000.jsonl",
+            0.8547948328267477
+          ],
+          [
+            "source:data/public_set.jsonl",
+            0.8731761904761906
+          ],
+          [
+            "source:data/synthetic_1000_public_like.jsonl",
+            0.8532559842118667
+          ]
+        ],
+        "constraint_violations": 0
+      }
+    ],
+    "f2": [
+      {
+        "candidate": {
+          "candidate_id": "control-adaptive_hybrid_1a_3b_1650_final_v1_smollm2_control",
+          "baseline_id": "adaptive_hybrid_1a_3b_1650_final_v1_smollm2_control",
+          "techniques": [
+            "adaptation.profile_update.v1",
+            "filter.structured",
+            "fusion.multi_route_union.v1",
+            "guard.override_fallback",
+            "guidance.pre_dense_overload.v1",
+            "orchestration.atomic_commit.v1",
+            "prior.profile",
+            "query.coverage_adaptive_v2",
+            "question.candidate_eig.v1",
+            "ranking.cross_encoder",
+            "ranking.local_llm_semantic.v1",
+            "ranking.source_aware_union.v1",
+            "recommendation.correction_scoped_history",
+            "retrieval.category_independent.v1",
+            "retrieval.e5",
+            "retrieval.sparse",
+            "routing.dual_track_observable.v1",
+            "state.baseline_v2",
+            "termination.reward_aware.v1"
+          ],
+          "parameters": [],
+          "complexity": 0,
+          "generation": "control"
+        },
+        "score": 0.822898,
+        "decision": "HOLD_MORE_DATA",
+        "fit_required": [
+          "ranking.source_aware_union.v1"
+        ],
+        "fit_verified": true,
+        "gate_failures": [],
+        "mean_paired_delta": -0.030842568542568546,
+        "latency_p95_ms": 620.7508630303059,
+        "semantic_latency_p95_ms": 691.5029580122791,
+        "semantic_activations": 1227,
+        "semantic_rescue_opportunities": 0,
+        "semantic_rescues": 0,
+        "semantic_regressions": 0,
+        "hit_rate_at_10": 0.958788,
+        "mrr": 0.597701,
+        "mttc": 2.790303,
+        "gate_metrics": [
+          [
+            "route:browsing",
+            0.8314825957556936
+          ],
+          [
+            "route:buying",
+            0.815985594456601
+          ],
+          [
+            "scenario:boundary",
+            0.8267501546072975
+          ],
+          [
+            "scenario:browsing",
+            0.8322294372294373
+          ],
+          [
+            "scenario:buying",
+            0.8293252164502164
+          ],
+          [
+            "scenario:intent_override",
+            0.780617353660832
+          ],
+          [
+            "source:data/independent_template_1000.jsonl",
+            0.8277076190476191
+          ],
+          [
+            "source:data/public_set.jsonl",
+            0.8374563492063493
+          ],
+          [
+            "source:data/synthetic_1000_public_like.jsonl",
+            0.8151771428571429
+          ]
+        ],
+        "constraint_violations": 0
+      },
+      {
+        "candidate": {
+          "candidate_id": "warm-start-d4e040a07e6d-translated-v2-sem-w0p10-d10-f1",
+          "baseline_id": "adaptive_hybrid_1a_3b_1650_final_v1_smollm2_control",
+          "techniques": [
+            "adaptation.profile_update.v1",
+            "filter.structured",
+            "fusion.multi_route_union.v1",
+            "guard.override_fallback",
+            "guidance.pre_dense_overload.v1",
+            "orchestration.atomic_commit.v1",
+            "prior.profile",
+            "prior.quality",
+            "query.coverage_adaptive_v2",
+            "question.candidate_eig.v1",
+            "ranking.cross_encoder",
+            "ranking.local_llm_semantic.v1",
+            "ranking.source_aware_union.v1",
+            "ranking.top10_residual_reranker.v2",
+            "recommendation.correction_scoped_history",
+            "retrieval.category_independent.v1",
+            "retrieval.e5",
+            "retrieval.sparse",
+            "routing.dual_track_observable.v1",
+            "state.baseline_v2",
+            "termination.reward_aware.v1"
+          ],
+          "parameters": [
+            [
+              "quality_prior_weight",
+              0.2
+            ],
+            [
+              "quality_rerank_k",
+              50
+            ],
+            [
+              "semantic_rerank_k",
+              10
+            ],
+            [
+              "semantic_weight",
+              0.1
+            ]
+          ],
+          "complexity": 2,
+          "generation": "beam"
+        },
+        "score": 0.8537407800000001,
+        "decision": "HOLD_MORE_DATA",
+        "fit_required": [
+          "ranking.source_aware_union.v1",
+          "ranking.top10_residual_reranker.v2"
+        ],
+        "fit_verified": true,
+        "gate_failures": [],
+        "mean_paired_delta": 0.0,
+        "latency_p95_ms": 1318.0545096466615,
+        "semantic_latency_p95_ms": 674.4137920322828,
+        "semantic_activations": 1219,
+        "semantic_rescue_opportunities": 0,
+        "semantic_rescues": 0,
+        "semantic_regressions": 0,
+        "hit_rate_at_10": 0.958788,
+        "mrr": 0.699863,
+        "mttc": 2.780606,
+        "gate_metrics": [
+          [
+            "route:browsing",
+            0.8384451022256729
+          ],
+          [
+            "route:buying",
+            0.8660576221735959
+          ],
+          [
+            "scenario:boundary",
+            0.8359121830550402
+          ],
+          [
+            "scenario:browsing",
+            0.8389247835497837
+          ],
+          [
+            "scenario:buying",
+            0.8723984487734489
+          ],
+          [
+            "scenario:intent_override",
+            0.8491450216450217
+          ],
+          [
+            "source:data/independent_template_1000.jsonl",
+            0.8556812698412699
+          ],
+          [
+            "source:data/public_set.jsonl",
+            0.8611103174603175
+          ],
+          [
+            "source:data/synthetic_1000_public_like.jsonl",
+            0.8503263492063493
+          ]
+        ],
+        "constraint_violations": 0
+      },
+      {
+        "candidate": {
+          "candidate_id": "warm-start-d4e040a07e6d-translated-v2-sem-w0p10-d10-f1-add-fusion_rrf-714a27f0249c",
+          "baseline_id": "adaptive_hybrid_1a_3b_1650_final_v1_smollm2_control",
+          "techniques": [
+            "adaptation.profile_update.v1",
+            "filter.structured",
+            "fusion.multi_route_union.v1",
+            "fusion.rrf",
+            "guard.override_fallback",
+            "guidance.pre_dense_overload.v1",
+            "orchestration.atomic_commit.v1",
+            "prior.profile",
+            "prior.quality",
+            "query.coverage_adaptive_v2",
+            "question.candidate_eig.v1",
+            "ranking.cross_encoder",
+            "ranking.local_llm_semantic.v1",
+            "ranking.source_aware_union.v1",
+            "ranking.top10_residual_reranker.v2",
+            "recommendation.correction_scoped_history",
+            "retrieval.category_independent.v1",
+            "retrieval.e5",
+            "retrieval.sparse",
+            "routing.dual_track_observable.v1",
+            "state.baseline_v2",
+            "termination.reward_aware.v1"
+          ],
+          "parameters": [
+            [
+              "quality_prior_weight",
+              0.2
+            ],
+            [
+              "quality_rerank_k",
+              50
+            ],
+            [
+              "semantic_rerank_k",
+              10
+            ],
+            [
+              "semantic_weight",
+              0.1
+            ]
+          ],
+          "complexity": 3,
+          "generation": "beam"
+        },
+        "score": 0.8572681200000001,
+        "decision": "HOLD_MORE_DATA",
+        "fit_required": [
+          "ranking.source_aware_union.v1",
+          "ranking.top10_residual_reranker.v2"
+        ],
+        "fit_verified": true,
+        "gate_failures": [],
+        "mean_paired_delta": 0.003527489177489178,
+        "latency_p95_ms": 1302.5515130557346,
+        "semantic_latency_p95_ms": 638.9435000019148,
+        "semantic_activations": 1184,
+        "semantic_rescue_opportunities": 0,
+        "semantic_rescues": 0,
+        "semantic_regressions": 0,
+        "hit_rate_at_10": 0.961818,
+        "mrr": 0.704793,
+        "mttc": 2.753939,
+        "gate_metrics": [
+          [
+            "route:browsing",
+            0.8488155004199781
+          ],
+          [
+            "route:buying",
+            0.8640915610493924
+          ],
+          [
+            "scenario:boundary",
+            0.8326484230055659
+          ],
+          [
+            "scenario:browsing",
+            0.8507016594516595
+          ],
+          [
+            "scenario:buying",
+            0.870929292929293
+          ],
+          [
+            "scenario:intent_override",
+            0.8462539996235648
+          ],
+          [
+            "source:data/independent_template_1000.jsonl",
+            0.8553368253968254
+          ],
+          [
+            "source:data/public_set.jsonl",
+            0.867154761904762
+          ],
+          [
+            "source:data/synthetic_1000_public_like.jsonl",
+            0.857222380952381
+          ]
+        ],
+        "constraint_violations": 0
+      }
+    ]
+  },
+  "architecture_rejections": [],
+  "search_round_count": 3,
+  "hpo_trials_per_surviving_structure": 1,
+  "fixed_six_capability_limit": false,
+  "elapsed_seconds": 16706.017579166975
+}

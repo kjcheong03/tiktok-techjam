@@ -2,12 +2,12 @@ from __future__ import annotations
 
 import hashlib
 import json
+from collections.abc import Iterable, Sequence
 from pathlib import Path
-from typing import Iterable, Sequence
 
 import numpy as np
 
-from starter.agent import Agent as OfficialKeywordAgent
+from baseline.official_reference import Agent as OfficialKeywordAgent
 
 
 def _text(value: object) -> str:
@@ -29,7 +29,9 @@ def catalog_document(product: dict) -> str:
         ("Description", product.get("description")),
         ("Brand", product.get("store")),
     )
-    return " ".join(f"{label}: {_text(value)}" for label, value in fields if _text(value))
+    return " ".join(
+        f"{label}: {_text(value)}" for label, value in fields if _text(value)
+    )
 
 
 class KeywordRetriever:
@@ -142,7 +144,9 @@ def reciprocal_rank_fusion(
     best_rank: dict[str, int] = {}
     for ranking in rankings:
         for rank, identifier in enumerate(ranking, start=1):
-            scores[identifier] = scores.get(identifier, 0.0) + 1.0 / (rank_constant + rank)
+            scores[identifier] = scores.get(identifier, 0.0) + 1.0 / (
+                rank_constant + rank
+            )
             best_rank[identifier] = min(best_rank.get(identifier, rank), rank)
     ordered = sorted(scores, key=lambda item: (-scores[item], best_rank[item], item))
     return ordered[:limit]

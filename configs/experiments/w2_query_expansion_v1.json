@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "experiment_id": "w2_query_expansion_v1",
+  "technique_ids": ["query.catalog_prf.v1", "query.expansion_guard.v1"],
+  "availability": "available",
+  "split": "adaptive_v1",
+  "holdout_accessed": false,
+  "frozen_parameters": {
+    "feedback_k": 5,
+    "minimum_support": 0.4,
+    "max_terms": 4,
+    "max_added_ratio": 0.5
+  },
+  "primary_gate": "depth-matched target recall does not regress and at least one lexical miss is uniquely rescued",
+  "retest_triggers": ["catalog_normalizer_available", "retrieval_head_changed", "state_query_changed"]
+}

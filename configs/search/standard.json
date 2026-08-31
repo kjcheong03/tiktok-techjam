@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "name": "standard_adaptive_v1",
+  "split": "adaptive_v1",
+  "max_candidates": 500,
+  "max_minutes": 120,
+  "seeds": [17, 29, 43],
+  "tie_band": 0.01,
+  "routes": ["keyword", "dense", "rrf", "weighted"],
+  "checkpoint": "artifacts/campaigns/standard_adaptive_v1.jsonl",
+  "guarded_holdout_access": false
+}

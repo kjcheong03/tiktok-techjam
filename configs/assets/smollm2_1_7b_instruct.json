@@ -1,0 +1,8 @@
+{
+  "schema_version": 1,
+  "asset_id": "smollm2_1_7b_instruct",
+  "destination": "artifacts/cache/models/smollm2-1.7b-instruct",
+  "license": "Apache-2.0",
+  "model_name": "HuggingFaceTB/SmolLM2-1.7B-Instruct",
+  "revision": "31b70e2e869a7173562077fd711b654946d38674"
+}

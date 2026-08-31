@@ -1,0 +1,4561 @@
+{
+  "candidate_count": 500,
+  "candidates": [
+    {
+      "candidate_hash": "456ce11593278424ce296ab3a7d70e00b45d2f00576aff0d4e2748b3856450c1",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.0,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": 0.0,
+      "f2_mean_delta": 0.0,
+      "family": "keyword:other_always:multi"
+    },
+    {
+      "candidate_hash": "d03167fbf2efe008b027bace06ac1df356663db37a5c97df163dabc5b11ad362",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.1,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.064005,
+      "f2_mean_delta": -0.060961,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "8f8041fd5045d2cd7b1f399db93ee9c83d1a66ba69933aaa8cce4a4764f8fcf4",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": -0.003333,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.007825,
+      "f2_mean_delta": -0.008679,
+      "family": "keyword:other_always:raw_history"
+    },
+    {
+      "candidate_hash": "20e3b6dec38fe57930bd508d22077593419e96f4aa29a38ccf355ce9c972d354",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": -0.001667,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.003468,
+      "f2_mean_delta": -0.003967,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "1654079e88de2fe221115e28a7290e6c981fcfead6a15fc33004ccf6afba9502",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.052917,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.118591,
+      "f2_mean_delta": -0.120265,
+      "family": "keyword:sequence:single"
+    },
+    {
+      "candidate_hash": "e168b8f26bff7bbda0d282ec266439ed9ee8297a271ea08aa482dbb36d3f0ca0",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.0,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": 0.0,
+      "f2_mean_delta": 0.0,
+      "family": "keyword:other_always:compressed"
+    },
+    {
+      "candidate_hash": "c65427fada9bdbf6585e7de2b9dd61c9e3084f0bde99064024bb63203cffeff9",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.045833,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.040968,
+      "f2_mean_delta": -0.033733,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "bdaafc70857772735b91ad68625c16b5ba3b25bf67e40b7dc21195f0fe968129",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.083333,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.064551,
+      "f2_mean_delta": -0.072571,
+      "family": "keyword:sequence:single"
+    },
+    {
+      "candidate_hash": "cba8e8748913b927d52683cfc5a537d73017535c299bff004570d6eae1bb4d61",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.009167,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.004247,
+      "f2_mean_delta": -0.002425,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "d2f6f790d694be54ebb9eee41edf36a2cb386c550eb6eba6498ab7044090887c",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.32,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.246071,
+      "f2_mean_delta": -0.218018,
+      "family": "rrf:other_always:single"
+    },
+    {
+      "candidate_hash": "bdd8e8e6c496767fb875ebec40a2a6012c72730b776b0f1ee319bd815b81c68b",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.001667,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.009919,
+      "f2_mean_delta": -0.0111,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "54107a2c6f34321a8b2351693bc4e2fa442b2f93251237daca324835f4179be0",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.195,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.212675,
+      "f2_mean_delta": -0.22458,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "162cbf8f9608765e4adb23e7ea5d0cf61f710ec3f91126941fb72bb3d5bd0d0e",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.33125,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.386459,
+      "f2_mean_delta": -0.39315,
+      "family": "dense:sequence:multi"
+    },
+    {
+      "candidate_hash": "a9463f6009fa1f25e69c4fa42aeaa64e120091d656ff67bb65c1c639b1d35f31",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.241667,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.164409,
+      "f2_mean_delta": -0.15758,
+      "family": "keyword:missing_priority:compressed"
+    },
+    {
+      "candidate_hash": "8f1eb9ac5f18d5ec97d52585e8566b9d12aef3d6ae0363413ea1ba8e98ad89e5",
+      "f0_decision": "NOVELTY_RESERVE",
+      "f0_mean_delta": 0.016766,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.086258,
+      "f2_mean_delta": -0.090379,
+      "family": "weighted:sequence:single"
+    },
+    {
+      "candidate_hash": "74d26bd74d214ec438e03b60b1b15e3247c9ee3fc530832bde9aecf42cfc78d4",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.305833,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.228773,
+      "f2_mean_delta": -0.211144,
+      "family": "rrf:sequence:single"
+    },
+    {
+      "candidate_hash": "de55e7fe11c9edcda9a00ead903bbf40cb8beaa54faba0c0daad72c78f485113",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.014167,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.041909,
+      "f2_mean_delta": -0.04488,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "d6c4b9293bbf2735e0af8b724d6fc4ceaed7612d6e24a04d12d5a7a0cd12e7a5",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.065833,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.047151,
+      "f2_mean_delta": -0.03833,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "6cceda5b7dd95a26ba4b10727850d07ee13391be416d1f218711680c69068c37",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.0,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": 0.0,
+      "f2_mean_delta": 0.0,
+      "family": "keyword:other_always:multi"
+    },
+    {
+      "candidate_hash": "15d97c83c39fa8798efc86d819849823e97f614d6891332a6920cc7c46264dd2",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.0,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": 0.0,
+      "f2_mean_delta": 0.0,
+      "family": "keyword:other_always:multi"
+    },
+    {
+      "candidate_hash": "ed8afdad4e015637cae5f10798532afdf2d3c35b30c098b35fb934f71305a975",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.0,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": 0.0,
+      "f2_mean_delta": 0.0,
+      "family": "keyword:other_always:multi"
+    },
+    {
+      "candidate_hash": "94a55aefd8cbe1e94f1fd2acd6c5e88bc5724f08f900a385800b52e21ee4c334",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.033333,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.012258,
+      "f2_mean_delta": -0.005555,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "a47e3424f86ace263a08021d67451d8b61b3ab30f1ce8b61522a6f47d38647de",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.083333,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.065518,
+      "f2_mean_delta": -0.073104,
+      "family": "keyword:sequence:single"
+    },
+    {
+      "candidate_hash": "1f7e5d3a68cd75aacb1c4944b0d6d0bc426d13d540c289c2c0e8b722126d9057",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.188304,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.191717,
+      "f2_mean_delta": -0.177016,
+      "family": "weighted:sequence:single"
+    },
+    {
+      "candidate_hash": "be6b59bb44b400cb3d2cd80241cc23aa7064e9db6b4f663c11d507fd59a22923",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": -0.003333,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.008306,
+      "f2_mean_delta": -0.0061,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "e5fbd05f7f0388aa8348e57f164df568983cee93292daf7f51590eb37e137f2c",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": -0.001875,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.024336,
+      "f2_mean_delta": -0.026237,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "00a73406b59a02cf22fb130936eef0617ebb26bcafda6d81850728c06471066d",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.464167,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.532992,
+      "f2_mean_delta": -0.494622,
+      "family": "rrf:sequence:compressed"
+    },
+    {
+      "candidate_hash": "a5152296097462ce2729bd9ffa98bf8aa3b5ef7f886be1ac532755ad8056d845",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.075595,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.069773,
+      "f2_mean_delta": -0.077629,
+      "family": "keyword:sequence:single"
+    },
+    {
+      "candidate_hash": "815694815f6cced1b556cb11bffc785453c067b787ec1bc520c784b74cacfe62",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.203095,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.178604,
+      "f2_mean_delta": -0.160724,
+      "family": "keyword:sequence:single"
+    },
+    {
+      "candidate_hash": "10446f83ceef0f610ecb8b058c0fc146f6becaeb9586f33f347d71fad53c8d59",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.676429,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.592145,
+      "f2_mean_delta": -0.560975,
+      "family": "weighted:sequence:multi"
+    },
+    {
+      "candidate_hash": "c70135f2974310a6479dc313fa09b7f2447eb6be381165f799658bbf2cb47787",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.0075,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.00457,
+      "f2_mean_delta": -0.002691,
+      "family": "keyword:sequence:compressed"
+    },
+    {
+      "candidate_hash": "66f32aee645a65e6379a7682926bed9764cde9cc673cbf7810c2dd66a6e050b5",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": -0.001667,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.00379,
+      "f2_mean_delta": -0.00235,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "eb3f5f1b85f4184307b594e15cce7f60dc47aff60ada9253bee1d209edf0c9aa",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.440208,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.527325,
+      "f2_mean_delta": -0.517902,
+      "family": "dense:sequence:raw_history"
+    },
+    {
+      "candidate_hash": "63ae297567f1e06f1912046e0ae85bf2697399463658f606a3b577350884359c",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": -0.008333,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.019839,
+      "f2_mean_delta": -0.01925,
+      "family": "keyword:sequence:compressed"
+    },
+    {
+      "candidate_hash": "450d82b9d9b556f0019eeeea07ad18ade047489d17ead6602160484ac3a05a93",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.014167,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.014167,
+      "f2_mean_delta": -0.009941,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "3b8d1e74348687794bbb925194182f7e370d11ae10d59cd10ed69f1f385e2efe",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.260833,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.292097,
+      "f2_mean_delta": -0.27946,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "e4cdbc63cd75e8f0b7fc315615e8e28589f74ed651d78e6ffbdb8d93c3f1162a",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.018333,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.007097,
+      "f2_mean_delta": -0.007283,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "30a991bceda51e390c5e575b4bd799316fa55cbc76b8236ef610af5850d98c8f",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.16,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.22951,
+      "f2_mean_delta": -0.243648,
+      "family": "keyword:sequence:single"
+    },
+    {
+      "candidate_hash": "0bdbab4c2dfda879c58ba6a719838a4ea88f9cc6b4c6ff45413ea9823e7140fa",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.241667,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.164409,
+      "f2_mean_delta": -0.15758,
+      "family": "keyword:missing_priority:multi"
+    },
+    {
+      "candidate_hash": "3e2e28b1a5c97231669df24d6ba74913968915cd5f849bc81090eb65a6d89fc3",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.522917,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.514355,
+      "f2_mean_delta": -0.476013,
+      "family": "keyword:sequence:raw_history"
+    },
+    {
+      "candidate_hash": "1c716ce74345f8c7fa8f307e16b3bf797c1ad4213ad7ce49506cec4cf26c9df6",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.0,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": 0.0,
+      "f2_mean_delta": 0.0,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "5a9708955c628ef227a7d233f7dcd17c2606fe3553acbaf5ed77e97350701ed2",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.225833,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.27203,
+      "f2_mean_delta": -0.289449,
+      "family": "keyword:sequence:compressed"
+    },
+    {
+      "candidate_hash": "f38e493a0a088f3064173ee6d2ae3f949bef4f9237ff5fdd155daa8fe8d42dcf",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.023214,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.030265,
+      "f2_mean_delta": -0.025304,
+      "family": "keyword:sequence:raw_history"
+    },
+    {
+      "candidate_hash": "2b5e5f5d0cda57cf16aa713470b0d81a88bc86771a04338a646223da79a7d0fb",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": -0.003333,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.010565,
+      "f2_mean_delta": -0.009433,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "b241dee68b9d27f0a6d857af40ae4e1edca85a103f7bc7dabc8c61c637cfc499",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.41,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.527594,
+      "f2_mean_delta": -0.533116,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "f3564ac46eb059f65f958360bff09e00bd0ac6c90b92ab81e2276e66617e836c",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.041667,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": 0.007258,
+      "f2_mean_delta": 0.004379,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "33a11fce76ee36ad2b352e8788319d581b3e237ea21581605479073d6c7f4ef1",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.138333,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.116164,
+      "f2_mean_delta": -0.123421,
+      "family": "keyword:sequence:single"
+    },
+    {
+      "candidate_hash": "00b36829dceb983d19c6b6caa4f75007274c7773cb6b4bfd7a24c7b04e8dcbb7",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.034167,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.054505,
+      "f2_mean_delta": -0.074685,
+      "family": "keyword:sequence:single"
+    },
+    {
+      "candidate_hash": "b66f4485f1195042c2f1307c0d03543a62df044abeafe68bffad63ed3bb29993",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.038333,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.061774,
+      "f2_mean_delta": -0.047538,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "3ef0e431e7e32f1214a3b43a4aaf9379a40e727ccfca8d3e34ea13b5020f2467",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.460833,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.550088,
+      "f2_mean_delta": -0.522169,
+      "family": "rrf:sequence:single"
+    },
+    {
+      "candidate_hash": "30fecbfd5f0e5c2458bc7440676951cb5776a27805d3de3f9adac352235bd559",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.0,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.000645,
+      "f2_mean_delta": -0.000533,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "7d8c87380f85fdd4ddbc0bcecf142b791bd4cb98496fae414778b1bbaab216a8",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": -0.003333,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.007825,
+      "f2_mean_delta": -0.008679,
+      "family": "keyword:other_always:raw_history"
+    },
+    {
+      "candidate_hash": "d6a69e0409818c55b91819392725b70ac6fbb0a62d151e1e7774a51c09bf591e",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.0275,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.055357,
+      "f2_mean_delta": -0.066637,
+      "family": "keyword:sequence:single"
+    },
+    {
+      "candidate_hash": "1a86cab675805eb79326456d4318bf174646a787dc409140739ee6b2925f30af",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.045,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.020806,
+      "f2_mean_delta": -0.030905,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "1794617b6fb8166dd04a67e70f91a8a3e429ac340e67c6980855560ec87a2cfc",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.241667,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.164409,
+      "f2_mean_delta": -0.15758,
+      "family": "keyword:missing_priority:compressed"
+    },
+    {
+      "candidate_hash": "46712b642ef2e66d8f792c8c42d68f09eb4bc0b2de1058f10e3dbc2e2e0f10bf",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.065833,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.047151,
+      "f2_mean_delta": -0.044463,
+      "family": "keyword:sequence:compressed"
+    },
+    {
+      "candidate_hash": "df2838bf8b628468689f03b953754feac766b68b8b722fcd88c68eeffce6924f",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.594167,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.563239,
+      "f2_mean_delta": -0.514863,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "f25a283fbec1459ce14cb4f254f31f22763f59cadfc07444b3c9b64cdd5bf6ce",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.148542,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.062884,
+      "f2_mean_delta": -0.063948,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "5e6576463e1289648c4941848e426b8b84a37fd17f5ac06bbd920893c15c8797",
+      "f0_decision": "NOVELTY_RESERVE",
+      "f0_mean_delta": -0.002014,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.066886,
+      "f2_mean_delta": -0.070236,
+      "family": "weighted:other_always:multi"
+    },
+    {
+      "candidate_hash": "9b3864fd0e0ffd5fede532b72044608ccdef30ec598a505f26cfef1528153239",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.16,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.163468,
+      "f2_mean_delta": -0.183025,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "ac74bf6d3841998c5bf1ee5d6c8fe061fb3c2ff992f2f1d7d1a11f9fb613b0ec",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.0,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": 0.0,
+      "f2_mean_delta": 0.0,
+      "family": "keyword:other_always:multi"
+    },
+    {
+      "candidate_hash": "b2197d954263db5da746ddb1b29b3f0dc1e02a0945b4ebb028a24b6590c81c9d",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": -0.01,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.094758,
+      "f2_mean_delta": -0.126758,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "ad146d48612ade4e380361c5f7f94bf0735aeb3df430fe82a4ee770f40d2c63f",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.435556,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.539973,
+      "f2_mean_delta": -0.523997,
+      "family": "keyword:sequence:raw_history"
+    },
+    {
+      "candidate_hash": "0db3a2f14539cac32cf5d68f831e30ad332edb570b074ee2d0c561a611e24f95",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.005,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.006532,
+      "f2_mean_delta": -0.0093,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "4138ae398f79890db52d42c2847c3aae8ccdad7a74deebe3c999128e0b473851",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.383929,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.262945,
+      "f2_mean_delta": -0.260193,
+      "family": "keyword:missing_priority:single"
+    },
+    {
+      "candidate_hash": "0eee4383020c5523efe47566bba85b6bbdf22c2a0560f437d275bd5399ecc8ac",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.41,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.546903,
+      "f2_mean_delta": -0.556078,
+      "family": "keyword:sequence:single"
+    },
+    {
+      "candidate_hash": "724d7732d5fc8c6a2bb5e27770a4222786212c4129907714cb12de63f430ebad",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.005,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.006532,
+      "f2_mean_delta": -0.009167,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "97d53fa76b40627445d47b0ba104f286ceed30ee3f3a09a5f31a577caec55198",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.243065,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.449768,
+      "f2_mean_delta": -0.450651,
+      "family": "dense:sequence:raw_history"
+    },
+    {
+      "candidate_hash": "5885f11b3f721bbc5fa7ae4085e9d6f0627fd9f7d5fd0d4cdf125e74affd12bd",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.0,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": 0.0,
+      "f2_mean_delta": 0.0,
+      "family": "keyword:other_always:multi"
+    },
+    {
+      "candidate_hash": "1e2e2a04123989f75af0a2a56a96a9fd9e5842354320a1abfb2c8d8745fbea9f",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.337917,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.402796,
+      "f2_mean_delta": -0.39651,
+      "family": "dense:sequence:multi"
+    },
+    {
+      "candidate_hash": "acec04acc7b5086c4e87c292b563630ff75b435c85c7c45a557143846eaf5f1d",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.185625,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.190795,
+      "f2_mean_delta": -0.150917,
+      "family": "weighted:sequence:multi"
+    },
+    {
+      "candidate_hash": "3520692dccd4d77d38eac6712a3f46f4cc3bd74089edb1227566e8683bf1c43c",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.074167,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.077097,
+      "f2_mean_delta": -0.079939,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "1cb78beabda10dde3f548db72b697c10f7e073129499c8b14eac7ab4cdb3facf",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.0,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": 0.0,
+      "f2_mean_delta": 0.0,
+      "family": "keyword:sequence:compressed"
+    },
+    {
+      "candidate_hash": "edef846af6bde63136221be0f31671c0fc88f22c1a5acf47246ccbfc15fcc270",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.573333,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.578952,
+      "f2_mean_delta": -0.546002,
+      "family": "keyword:sequence:raw_history"
+    },
+    {
+      "candidate_hash": "4722fc51d0037997d1e39eb9e7ead79b1cd1b8dfed2fd7747c34b168c19cc11b",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.0,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": 0.0,
+      "f2_mean_delta": 0.0,
+      "family": "keyword:other_always:multi"
+    },
+    {
+      "candidate_hash": "e376d2f0173a5255f5e9828b97521be2734399d6e57102282164ef56be8e82c8",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.416667,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.460497,
+      "f2_mean_delta": -0.47613,
+      "family": "keyword:sequence:compressed"
+    },
+    {
+      "candidate_hash": "0cb535461c9959890419ce295f971887a4350f023769b0e81984327dea07668c",
+      "f0_decision": "NOVELTY_RESERVE",
+      "f0_mean_delta": 0.011905,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.073946,
+      "f2_mean_delta": -0.058887,
+      "family": "weighted:sequence:raw_history"
+    },
+    {
+      "candidate_hash": "5fad2b057e354dd47a3748ee5bd0c7d16447fef5df7eaf2f77f9affaa9a6fe76",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.353095,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.448422,
+      "f2_mean_delta": -0.438486,
+      "family": "keyword:sequence:raw_history"
+    },
+    {
+      "candidate_hash": "961fc58a76a93d10adaf9137e5a5614eb181c31a14ace739d3bd92b1ca0809c3",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.045,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.050887,
+      "f2_mean_delta": -0.062258,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "03ae0afa6544e8f7b413b090cab6b013759e54d3a6ddb9ab4a46029700375602",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.0,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": 0.0,
+      "f2_mean_delta": 0.0,
+      "family": "keyword:other_always:multi"
+    },
+    {
+      "candidate_hash": "6e1591fc92105e84da7491dd9d41782e6c7d1112f6aaabb60fcba407eafbd0cd",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.33125,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.386621,
+      "f2_mean_delta": -0.388891,
+      "family": "dense:sequence:compressed"
+    },
+    {
+      "candidate_hash": "5ef523e0a3921519f268add7604f6047a8e87449b81f92e847bec32f46052bcc",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.0025,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.039651,
+      "f2_mean_delta": -0.04268,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "168791998fc9bba516b66f66f1f952b953688e12d8824d5421d222ac9b46de52",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.484375,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.433948,
+      "f2_mean_delta": -0.394002,
+      "family": "rrf:sequence:multi"
+    },
+    {
+      "candidate_hash": "a57f1c9947a85856c6f30b1242b9cd0c839ba6e7ef05fa633267b2ee7662bb0e",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": -0.003333,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.004758,
+      "f2_mean_delta": -0.007117,
+      "family": "keyword:sequence:compressed"
+    },
+    {
+      "candidate_hash": "90d5062d8e24b2448047057b27d587f187558ddbf7c4f7412351a6113ed114cb",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.023333,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.032177,
+      "f2_mean_delta": -0.015311,
+      "family": "keyword:sequence:raw_history"
+    },
+    {
+      "candidate_hash": "0483c8d6d77e0e2f60dcd3fb5eeec448b4958876aee9cffe8f437f5d0abf3713",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.245833,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.165881,
+      "f2_mean_delta": -0.164164,
+      "family": "keyword:missing_priority:multi"
+    },
+    {
+      "candidate_hash": "6aafd721ce6d26ffcdb4dcbc7ea4fc0463064fa2ec1fa7d660475270a517405d",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.0,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.000323,
+      "f2_mean_delta": -0.0004,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "4eb9ee6fcda58a555f6195ade7944d6b86fc5c0f3036f2d8f6aa6895739bbd92",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.354167,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.305968,
+      "f2_mean_delta": -0.292227,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "41d622abbf7fc3789a74271f793f7aad5fa5e0dadcafd7b7ec1b90217dcbfc9b",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.009167,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.004247,
+      "f2_mean_delta": -0.002025,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "304ef13f2c916f84a8cdb1c5a0321bc677eb4220a7a127f069a6b7fb455fd30b",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.198889,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.296358,
+      "f2_mean_delta": -0.310397,
+      "family": "keyword:sequence:raw_history"
+    },
+    {
+      "candidate_hash": "f129de68cb75f1e2dbc630c0753c56e0590b3182fb5f55f6158f3578d440309f",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.150833,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.184113,
+      "f2_mean_delta": -0.199375,
+      "family": "keyword:sequence:raw_history"
+    },
+    {
+      "candidate_hash": "ffc7ecd64d38cef6028fb4df4282e13d439f703e6db1b1219eab5cc7d9b7614d",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.138929,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.094182,
+      "f2_mean_delta": -0.106917,
+      "family": "keyword:sequence:single"
+    },
+    {
+      "candidate_hash": "2d2b53b42fbe38760c45b9e106ce3ba92c6e538aad3dd6374f4ff54f6352e157",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.0475,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.033174,
+      "f2_mean_delta": -0.036749,
+      "family": "keyword:sequence:raw_history"
+    },
+    {
+      "candidate_hash": "146f864d3f9537749bfa530029e9451930e08b6bb503d53ec0d986e0b1f1f157",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.084167,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.128099,
+      "f2_mean_delta": -0.170151,
+      "family": "keyword:sequence:raw_history"
+    },
+    {
+      "candidate_hash": "51c70cb6ad95212d22eed4717c0c5a6b4c1136c36062f07ee9b3b26aa18c281a",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.299167,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.25505,
+      "f2_mean_delta": -0.236976,
+      "family": "rrf:sequence:single"
+    },
+    {
+      "candidate_hash": "d0be9f47570e146ee22eef36c84cc1aad7b1b32ac7c8c147b7112f905e57b960",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.0,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": 0.0,
+      "f2_mean_delta": 0.0,
+      "family": "keyword:other_always:compressed"
+    },
+    {
+      "candidate_hash": "0a8ce879492bf921832e9978a13a2f7dbe380ad07de4929aa1629b1e301cb3d3",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.089583,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.079282,
+      "f2_mean_delta": -0.098151,
+      "family": "keyword:sequence:single"
+    },
+    {
+      "candidate_hash": "69adf08af514560b0b7a013d6d8dc2d9312405311e9753a61b614c0e9d6ea97e",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.013304,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.078203,
+      "f2_mean_delta": -0.06349,
+      "family": "keyword:sequence:raw_history"
+    },
+    {
+      "candidate_hash": "4e2379526a66a0bdb8b20e08ff7b90d9e3b27fdcf124b7c3229fbb267023efee",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": -0.003333,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.013145,
+      "f2_mean_delta": -0.0143,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "4e7d4d16880c830ad91fb876e66072552ca81c74fd2f108e61dd971607373417",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.594167,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.563239,
+      "f2_mean_delta": -0.528044,
+      "family": "keyword:sequence:compressed"
+    },
+    {
+      "candidate_hash": "d6d72402428b081a1fee3dcc31cf3d1f014012402e14b4a8f5479aa7716757c6",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.165556,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.234053,
+      "f2_mean_delta": -0.199453,
+      "family": "weighted:sequence:multi"
+    },
+    {
+      "candidate_hash": "9f4d8dac5e1a2aaea165e06aa21cbbebb91d42eea25ea7dfd96c99afa30e09d1",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.0,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": 0.0,
+      "f2_mean_delta": 0.0,
+      "family": "keyword:other_always:compressed"
+    },
+    {
+      "candidate_hash": "a133136367a49dd81ec426841db55261fdf7329a5a35b1e89f1855fb61e11762",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.47375,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.590941,
+      "f2_mean_delta": -0.591905,
+      "family": "dense:sequence:multi"
+    },
+    {
+      "candidate_hash": "39c23b120988c1dc03fb2d3be7e898ceb11830e81d1752eb25440bd4c97a6b72",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": -0.001667,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.004113,
+      "f2_mean_delta": -0.003017,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "895bf4d6c736c3f69cb1192c0609dea133305f633ffe1c641e32b7b795e5f73c",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.33125,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.38283,
+      "f2_mean_delta": -0.389213,
+      "family": "dense:sequence:compressed"
+    },
+    {
+      "candidate_hash": "54d3be45c1f9cd0950a1dbb5daa300247631d949a8195c7e53134c5c2da879f8",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.023333,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.029798,
+      "f2_mean_delta": -0.037113,
+      "family": "keyword:sequence:raw_history"
+    },
+    {
+      "candidate_hash": "fc549f49d73f2f3f4f9d8626886b4ec63def4e787556e36a3151379600138c03",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.243333,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.213982,
+      "f2_mean_delta": -0.175152,
+      "family": "rrf:sequence:multi"
+    },
+    {
+      "candidate_hash": "6cf22903c47ba2ef3d30a55ec85e3fe988d3619643d75b33fe96e55967813f5c",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.529167,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.403677,
+      "f2_mean_delta": -0.405311,
+      "family": "keyword:sequence:single"
+    },
+    {
+      "candidate_hash": "e6d4b25d2d9b1704246a5c11c88e1dcad16c3604c0efdda7f7f75d13cdb538c0",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.01,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.005202,
+      "f2_mean_delta": -0.009525,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "8680b70d613f5797991e06dd45c704169a3d0e897763c0778d2a77826e3d2326",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.0,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.015161,
+      "f2_mean_delta": -0.0188,
+      "family": "keyword:sequence:compressed"
+    },
+    {
+      "candidate_hash": "f2af29fe7e2dfadcd0602daff0a6389e2f45002709dad0f231b7ce0c1cb87fe1",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.083333,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.061371,
+      "f2_mean_delta": -0.066252,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "a25ef9faa90d7cc9c50aea7529994aa86307d968034153d5b73d94eeabb12e28",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.473542,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.534639,
+      "f2_mean_delta": -0.493667,
+      "family": "weighted:sequence:raw_history"
+    },
+    {
+      "candidate_hash": "33c6c9807b57d71f5d2010a6d90c1b9119bd9e8117b1646ce11d4b297a56b83e",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.095,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.085148,
+      "f2_mean_delta": -0.085389,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "075e0d9eb188d179814b6740778846489e4a978a174484e9cb7ca0d4992c8c83",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.08,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.071002,
+      "f2_mean_delta": -0.077504,
+      "family": "keyword:other_always:single"
+    },
+    {
+      "candidate_hash": "13fab457c0e511c9bc5ee4ff09e41140adabbab0d61a0865e2245413d38de283",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.023333,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": 0.008888,
+      "f2_mean_delta": 0.002866,
+      "family": "keyword:sequence:raw_history"
+    },
+    {
+      "candidate_hash": "3df2479a2a1f323d20e4c04e2927384eb83f187f022b23c84bd26275b3328ab0",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.16,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.175269,
+      "f2_mean_delta": -0.19455,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "13325dd0827562334780a28aee040670af4c81cecaf0866a14c1244e764784ca",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.383929,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.262945,
+      "f2_mean_delta": -0.260193,
+      "family": "keyword:missing_priority:single"
+    },
+    {
+      "candidate_hash": "de618e07f53eaeb5b1bd72d9a6bbc863a4c7d6798bc2fc34b5752c46f2e79674",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.0,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.015161,
+      "f2_mean_delta": -0.0188,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "15d9b1e779df27181e680f4ae02a7fa55171d9458dc21a8fd913976137212759",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.0,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": 0.0,
+      "f2_mean_delta": 0.0,
+      "family": "keyword:other_always:compressed"
+    },
+    {
+      "candidate_hash": "3b6c978378a9840291d570a3aa1fb1e853ccdc705b18dacdb6cf07eb8428eeb1",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.288333,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.271855,
+      "f2_mean_delta": -0.258289,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "ea8f2e6257bd30d4632b25bb6da82f4298b33f5ec899456a41f422ad734a2ee7",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.016667,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.017016,
+      "f2_mean_delta": -0.018167,
+      "family": "keyword:sequence:compressed"
+    },
+    {
+      "candidate_hash": "ac9fe6cbcfb5445ef5c3493727616c67e367ef1d00ba9b3ffc74296d85632bdf",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.0,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": 0.0,
+      "f2_mean_delta": 0.0,
+      "family": "keyword:other_always:compressed"
+    },
+    {
+      "candidate_hash": "1a273aac463d93c6c5ff7ab0e06bbe57c921012b7b5e2809225f76ec1c29cd95",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.08,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.107016,
+      "f2_mean_delta": -0.153291,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "b4666da04d336ca35c725cbc4d2aab27c6495b0926147cce3dc5cd08b357d7a8",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.16,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.163468,
+      "f2_mean_delta": -0.183025,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "4e1fd1d7570dd55ac5c9c9f271184948d52bf1031e956e3f800d9e1d809b2740",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.025833,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.027736,
+      "f2_mean_delta": -0.013224,
+      "family": "keyword:sequence:raw_history"
+    },
+    {
+      "candidate_hash": "5318efab7a69118be5a1673118aa9d4fc01585f90337aef7b9dbc75470d98030",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.33125,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.387266,
+      "f2_mean_delta": -0.385202,
+      "family": "dense:sequence:multi"
+    },
+    {
+      "candidate_hash": "83a8273b3de0aebc981ef6124392c302c2513e6a30b0160b782480b03e6e0039",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.004167,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.016747,
+      "f2_mean_delta": -0.016108,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "a853b09ee37be12bde9afb5a46a8d705ba73b50d934a83a221857fbc1e248304",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.41,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.527594,
+      "f2_mean_delta": -0.545916,
+      "family": "keyword:sequence:compressed"
+    },
+    {
+      "candidate_hash": "36b114f2f6ab09f359edfec01fc0a5a2e8f208fbd321d0d051d2402b3277f78a",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.039167,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.034677,
+      "f2_mean_delta": -0.0294,
+      "family": "keyword:sequence:compressed"
+    },
+    {
+      "candidate_hash": "0da5d07681f375b7d862d08266d7390bdc703e5ced8435ccf46c4ddc3d88fade",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.233542,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.160707,
+      "f2_mean_delta": -0.1784,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "08d4cb94f46451d8a9794c89a1a6a6205156adb8f17def2e594f4a9662eadd06",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.0,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.015161,
+      "f2_mean_delta": -0.0188,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "c15dca71956a1b67f50c71386b407fb800724c2758285040775114997b86cdf9",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.086875,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.07398,
+      "f2_mean_delta": -0.102664,
+      "family": "keyword:sequence:single"
+    },
+    {
+      "candidate_hash": "c00583e7697074f668f71ece4599daf70793ab7d39f745a61f249a78b678679a",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.514167,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.532272,
+      "f2_mean_delta": -0.508463,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "7be16fb1e7cf21bbf165a793d480d6d9db1c4fab61a288abf48d6846fd91945c",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.030833,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.027419,
+      "f2_mean_delta": -0.0208,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "f0717a69d6c56ad6a6b59f1a1163eff9f70bd559ee076053e457ae560bbeeaef",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.465833,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.349449,
+      "f2_mean_delta": -0.353316,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "32968a1908644f8928fe496f0dd97da0e4fef714a9ad0abec90772688f4387bc",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.164167,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.232997,
+      "f2_mean_delta": -0.259733,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "bb6dfd17d8cadab047feecb6c44e155928d9ae224ba6beabab0629a78a45ad8e",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.023571,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.017185,
+      "f2_mean_delta": -0.013898,
+      "family": "keyword:sequence:raw_history"
+    },
+    {
+      "candidate_hash": "57b47543f184b93d84d20cadd622155e76464718f8494340eec9b13d78863651",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": -0.003333,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.004113,
+      "f2_mean_delta": -0.0045,
+      "family": "keyword:sequence:compressed"
+    },
+    {
+      "candidate_hash": "50998edea812ec610a82c93413a902f587dc193ba68db9fadb643b5d7448dce8",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.465833,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.36125,
+      "f2_mean_delta": -0.35886,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "dbc95be627e51d7a58f043acb6367236ffc3cf81b411f997451e3acf6e6ea529",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.459167,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.374107,
+      "f2_mean_delta": -0.356839,
+      "family": "keyword:sequence:single"
+    },
+    {
+      "candidate_hash": "388594038204e0095ccb8eb5b21dd6e7294ea6146292955e2b6471ad43cafd72",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.155,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.124113,
+      "f2_mean_delta": -0.152375,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "f45c576d08419cc806f6101f7d217c60f910fc39408bd963e704ff392e0d41d6",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.6675,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.624852,
+      "f2_mean_delta": -0.599599,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "6e7c11c18f9fdfc8fad15644b339358df160d4b6b48860730ce14321e76e7ffa",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.45875,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.492897,
+      "f2_mean_delta": -0.43265,
+      "family": "keyword:sequence:raw_history"
+    },
+    {
+      "candidate_hash": "79a6c4c095991166025fbda3ab1bb9996ac9f0b166cc5c5270493481348ab2c6",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.148056,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.188187,
+      "f2_mean_delta": -0.211443,
+      "family": "weighted:missing_priority:multi"
+    },
+    {
+      "candidate_hash": "bd3b83c3524e1c0f83a1d3d8f1b482f6d3572b4f9ad525b82d8ca8ffe76974a6",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.010833,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.025726,
+      "f2_mean_delta": -0.0265,
+      "family": "keyword:sequence:compressed"
+    },
+    {
+      "candidate_hash": "06c0cd7974f0d65c66fc7f20717aaca303939675b306cfec7d150a6eeab65781",
+      "f0_decision": "NOVELTY_RESERVE",
+      "f0_mean_delta": 0.023611,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.058475,
+      "f2_mean_delta": -0.058967,
+      "family": "weighted:sequence:multi"
+    },
+    {
+      "candidate_hash": "405b8f70e26d72f558965d89ad2af3b8b5bc432e82e60c06318748eb82064fa6",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.511667,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.559435,
+      "f2_mean_delta": -0.494509,
+      "family": "keyword:sequence:raw_history"
+    },
+    {
+      "candidate_hash": "ed5d735e6cc72bd8498c77ec4e2f415b8dc35f23ae813327681eabf7ffd705fb",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.013333,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.056325,
+      "f2_mean_delta": -0.071237,
+      "family": "keyword:sequence:single"
+    },
+    {
+      "candidate_hash": "9da47588fcb06b9f6b5f325f03ae283c738b0a970a20987b7042589f498218e1",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": -0.005208,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.03111,
+      "f2_mean_delta": -0.032215,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "fe69dd1b5478846306d75ca58f326fa223203bab85748e509f47f0ac8ef1c697",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.321667,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.235749,
+      "f2_mean_delta": -0.210968,
+      "family": "rrf:sequence:single"
+    },
+    {
+      "candidate_hash": "e8d42c4772ef983b59d651bdfa9aa05f93a7423c9d23d8c0b528d6271ee19a37",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.0,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.015161,
+      "f2_mean_delta": -0.0188,
+      "family": "keyword:sequence:compressed"
+    },
+    {
+      "candidate_hash": "a5a5ac439cbd679febbbc29b9edbab92583f83180800e022783e33d482ddecc9",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": -0.001667,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.003145,
+      "f2_mean_delta": -0.003233,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "d751f9c92144c3d3f3e9c193a0967ac6c5eacdc49498f0b2febd89b49b989086",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.05125,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.073637,
+      "f2_mean_delta": -0.090315,
+      "family": "keyword:sequence:single"
+    },
+    {
+      "candidate_hash": "247589530ef070195d6008b4e2712a1e97daccd33b40528320dab4795ba862a8",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.145833,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.090376,
+      "f2_mean_delta": -0.079913,
+      "family": "keyword:sequence:compressed"
+    },
+    {
+      "candidate_hash": "7646f41ec73649fa2ef0e54db3892f63dcc7b3cc2032647615e38096fb00bf81",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.043472,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.113677,
+      "f2_mean_delta": -0.097131,
+      "family": "weighted:sequence:multi"
+    },
+    {
+      "candidate_hash": "9857a76f47d178fd9638cb9eade780955171b9c4f942f04aa0c3ecc491a5aff2",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.094792,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.079107,
+      "f2_mean_delta": -0.088867,
+      "family": "keyword:other_always:single"
+    },
+    {
+      "candidate_hash": "5223801026f38d3726ff1ed753e3e29fe0b061e811293e16b34db2daba793065",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.08,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.07197,
+      "f2_mean_delta": -0.079104,
+      "family": "keyword:sequence:single"
+    },
+    {
+      "candidate_hash": "ca9c910fedc7d61abaacde4fd89a96357b4119a2a2ddce5b552dca004b042132",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.020833,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.036815,
+      "f2_mean_delta": -0.04274,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "3c3c00fea3a3af221b718c837faaf2423264a7a5187f0c22aba611f466a41295",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.0,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": 0.0,
+      "f2_mean_delta": 0.0,
+      "family": "keyword:other_always:multi"
+    },
+    {
+      "candidate_hash": "c4a4ee5dcc7e180a2cf1daf94aae6a3e23e0456533bb4c424b922c386daeec1e",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.036667,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": 0.007581,
+      "f2_mean_delta": 0.001712,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "e03bed7f41e182b418b2caffdd38eb2a579a1b15464a22584246873fa29d7b2d",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.324792,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.423045,
+      "f2_mean_delta": -0.419877,
+      "family": "dense:sequence:raw_history"
+    },
+    {
+      "candidate_hash": "c0f669cbe67509089d896b0dd92fadcf24605f48ce501ad7a09f28698aa5d227",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.081667,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.156446,
+      "f2_mean_delta": -0.189864,
+      "family": "keyword:sequence:single"
+    },
+    {
+      "candidate_hash": "6555e54b2b7b7fbed1f4a89154990a80171c9c42c3dfd14357bb100513a98776",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.256667,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.242744,
+      "f2_mean_delta": -0.195403,
+      "family": "rrf:sequence:raw_history"
+    },
+    {
+      "candidate_hash": "5c5ba6c06eeafec129e5f5f6b148e906ec0e1469f4e5c564c909e5fb9508def0",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.527262,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.573099,
+      "f2_mean_delta": -0.53203,
+      "family": "keyword:sequence:raw_history"
+    },
+    {
+      "candidate_hash": "4fbd44321ae18b4efa0b34ab419c6fc602ce8fd2d787650dfecdeec3ae566711",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.022262,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.102988,
+      "f2_mean_delta": -0.090187,
+      "family": "weighted:sequence:multi"
+    },
+    {
+      "candidate_hash": "2769e2b86e95cc9a4cd247ca92aac9f16ea1b4a3d6989fb3f3df1c21990d61c3",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.043333,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": 0.009516,
+      "f2_mean_delta": 0.003579,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "06350c7d636fc8961bb7fc0463397979bdc58cadfc7024a9c417a2e258132fa3",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": -0.003333,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.022986,
+      "f2_mean_delta": -0.021576,
+      "family": "keyword:sequence:raw_history"
+    },
+    {
+      "candidate_hash": "0e344ec779dc54d164cc907c98314ae49b30c27515cf3a9769877c2e93be59b4",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.594167,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.582548,
+      "f2_mean_delta": -0.550625,
+      "family": "keyword:sequence:single"
+    },
+    {
+      "candidate_hash": "dd7011789ca56753d5389da35de90f18c1557dfa102c8947184a2b5494aefe3a",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.256875,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.197316,
+      "f2_mean_delta": -0.163204,
+      "family": "rrf:sequence:multi"
+    },
+    {
+      "candidate_hash": "1ec45242b7211c74bb576ee8d43aac10f1db1ae80c8497fddd5228568e8158dd",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.041071,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.049424,
+      "f2_mean_delta": -0.049845,
+      "family": "keyword:sequence:raw_history"
+    },
+    {
+      "candidate_hash": "152018dfad881e5098ece3d61aaba8334943203a58b2e212673398ec264b0ae3",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.4225,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.530013,
+      "f2_mean_delta": -0.534283,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "87541df0a74804db2404df7ac7c9335727e4c73f3fa3d05171a70d734af8ab97",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.0,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": 0.0,
+      "f2_mean_delta": 0.0,
+      "family": "keyword:other_always:multi"
+    },
+    {
+      "candidate_hash": "9d8bdc44a7d2a9aeacd528f0af64d107dd30c922cd4273ca12ce86975897ab4c",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.08,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.071002,
+      "f2_mean_delta": -0.077504,
+      "family": "keyword:other_always:single"
+    },
+    {
+      "candidate_hash": "1882395bcff6de8aa0c81e9cc47dbf1fa000f130a1d6ee6fc86c3a4e06d4c1d2",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.281042,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.277536,
+      "f2_mean_delta": -0.258492,
+      "family": "rrf:missing_priority:multi"
+    },
+    {
+      "candidate_hash": "e6200e14e6da5d8b8bab7b17ba67ec5d283ca8e5ba317ff03011da64a6282b59",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.16,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.175269,
+      "f2_mean_delta": -0.19455,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "a82df373862925fa71e3ce5034bbc574f095be5523b06f7856f8e36698094fdd",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.083333,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.060357,
+      "f2_mean_delta": -0.070571,
+      "family": "keyword:sequence:single"
+    },
+    {
+      "candidate_hash": "82b53fa934d1c28864961b83362042d6059398bb01cfa3e020d4029453231c7a",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.513095,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.517467,
+      "f2_mean_delta": -0.517422,
+      "family": "weighted:sequence:multi"
+    },
+    {
+      "candidate_hash": "10845e11bf256f25fb310e049a2183f5849b80bc412aad84038e7ff8c3d0a01f",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.001458,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.015949,
+      "f2_mean_delta": -0.021148,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "608b3cf23dd582123b37cf1e274770214e67da74c30c4344aa9d2df4f3876e35",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": -0.003333,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.007825,
+      "f2_mean_delta": -0.008679,
+      "family": "keyword:other_always:raw_history"
+    },
+    {
+      "candidate_hash": "c8aa5e03375a7e07490879b0595dda5554a3b4b6785d52f5bb7401d7c5dedf29",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": -0.001667,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.00379,
+      "f2_mean_delta": -0.003767,
+      "family": "keyword:sequence:compressed"
+    },
+    {
+      "candidate_hash": "0cc6d2892b4da41a6836dd2560c4a29363dc4c7e51cab0610c6083086d42f62f",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": -0.008333,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.013952,
+      "f2_mean_delta": -0.0191,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "039088e5973197fb4b8546d639595dcbfe1f88f85ebb02d71a186a224b0f437a",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": -0.001667,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.019194,
+      "f2_mean_delta": -0.022,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "1b5b113fcdc97535dc2a586a83d1994f4136214d9d43649ce41480c5d7b6b718",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.576667,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.59211,
+      "f2_mean_delta": -0.579649,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "9f6893aec93bbaa4ed014516aa2db495f94d9d928fbd05abd9cc0ece0619390f",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.019167,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.042554,
+      "f2_mean_delta": -0.040956,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "0fab95d77a3d61e39192248b653d985fad51791b7f4f99f122047b51f18b2093",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.241667,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.164409,
+      "f2_mean_delta": -0.15758,
+      "family": "keyword:missing_priority:compressed"
+    },
+    {
+      "candidate_hash": "7acfe4ece6a397b2ae2ba5bc7f6433aa0f43e377b9c4e79c6396f2dbdb5783ed",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.0925,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.058038,
+      "f2_mean_delta": -0.057822,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "a6718b47c10eb68ae4d1b9100b868709eaa616df2a15df170e6c5b7aba094d89",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.260833,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.307258,
+      "f2_mean_delta": -0.29826,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "470987f2dd7111834206bb3d75db641a2e433792bd64b91dec6ddda6eda2f404",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.233333,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.154435,
+      "f2_mean_delta": -0.171175,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "b490e419b716ed45a2f2c8b101aae72f54b05e74b1655d0ef7208e1ad9acba86",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.05,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.065027,
+      "f2_mean_delta": -0.07395,
+      "family": "keyword:sequence:raw_history"
+    },
+    {
+      "candidate_hash": "5a0d1251643bf662020aed4a17ffc54f596643fcf43393a1b7e3bc2c95b7ef1d",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.08,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.086164,
+      "f2_mean_delta": -0.108837,
+      "family": "keyword:sequence:single"
+    },
+    {
+      "candidate_hash": "4801d591ad0ac46ac3ce24ab925cc85707c118a1ae6af0903957ae1a228982b4",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.028333,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.006613,
+      "f2_mean_delta": -0.010905,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "7593545737998839ce5be1c75540aedb54d163dca8d1e2435e1f83c842ffe27e",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.395417,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.447776,
+      "f2_mean_delta": -0.467611,
+      "family": "dense:missing_priority:single"
+    },
+    {
+      "candidate_hash": "e999a8d0963fb897858e1e95b3617de43ea6bd05e8c907e4ee8faf647f905499",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.015208,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.022561,
+      "f2_mean_delta": -0.031615,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "ae7b15fae8d9ad27e4c333254a5bd80ef88a766c6518ed7b31e46eda7fdb4ff4",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.151667,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.067177,
+      "f2_mean_delta": -0.063017,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "b393b4b42867ce5c60a8cb462bf715992658475bfeae5d5de3c5eff5f0f00c1b",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.241667,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.164409,
+      "f2_mean_delta": -0.15758,
+      "family": "keyword:missing_priority:compressed"
+    },
+    {
+      "candidate_hash": "196f4e0446e152c331e0abcfafaee0900b373008ebb3bdae3715c0fd58c65253",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": -0.001667,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.005403,
+      "f2_mean_delta": -0.0063,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "3e4ebe63c20ad6d8b498c7994a3934d2ec17e0e9bc87ced95d5b7ba0fd3359f7",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.225556,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.289566,
+      "f2_mean_delta": -0.276303,
+      "family": "keyword:sequence:raw_history"
+    },
+    {
+      "candidate_hash": "9c4fe5f786f8ee851b07a7b3c09e277f9748b8f0d6dbefc53a9811c5c131f4dc",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.595833,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.538401,
+      "f2_mean_delta": -0.505663,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "09977a07a1f8a787c06b258d232b736edc7107f4582ea9fc09c19031f478187d",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.062262,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.067771,
+      "f2_mean_delta": -0.078467,
+      "family": "keyword:sequence:single"
+    },
+    {
+      "candidate_hash": "9ed945151a233b064cd120e2d5227dd1de46e4f6beb4a23e5f0541ae53c94981",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.241667,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.164409,
+      "f2_mean_delta": -0.15758,
+      "family": "keyword:missing_priority:multi"
+    },
+    {
+      "candidate_hash": "f07128f7182c2708baa84b5d56aaf3ddfe15efbaf7564ed184e76b5c72290ab6",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.035833,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.077978,
+      "f2_mean_delta": -0.080495,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "d17a45bc7fa7233a1f0de3811baa147db02697d802786dd3ae2f3edb9e3ccf85",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.0,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": 0.0,
+      "f2_mean_delta": 0.0,
+      "family": "keyword:other_always:multi"
+    },
+    {
+      "candidate_hash": "e21e7f99a49172ed1b041bd3074d189441e9f40c1482858332357907e90c1554",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": -0.003333,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.009274,
+      "f2_mean_delta": -0.0073,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "0c99348027fcde1f79e798160a132e0e597fb0a541e4f62d16617f5a15c4c88c",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.011667,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.015242,
+      "f2_mean_delta": -0.019433,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "a88bcf22ce1aa86eda6a66235f53278a5dffd4fe3328a3e98c0919594f3ed089",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": -0.001875,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.0324,
+      "f2_mean_delta": -0.034348,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "0f2ec2180d2741bbd41e8450e0fbb5e58c6eabe3bb3650942cb65347ff0ff41a",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.035,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.014032,
+      "f2_mean_delta": -0.010688,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "985d4c42dedb7243c2cdd10742515fce072445d153555e56689afde833db8fce",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.148333,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.119113,
+      "f2_mean_delta": -0.149308,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "3a9bdc499f7eddb8c0ebede06280f96bf07970ee54309b5b5ef4a0e616bee7c7",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.41,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.527594,
+      "f2_mean_delta": -0.545916,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "6d7a3f25ae1a561bcfec818d116491295f2cdd026d2e9900b17458f98c32ec99",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.241667,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.164409,
+      "f2_mean_delta": -0.15758,
+      "family": "keyword:missing_priority:multi"
+    },
+    {
+      "candidate_hash": "a19d8184a8572d8e8d5b432496e8d9228f0bad9658159d59fc92c5424f55b87a",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": -0.003333,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.007825,
+      "f2_mean_delta": -0.008679,
+      "family": "keyword:other_always:raw_history"
+    },
+    {
+      "candidate_hash": "b0a0ec71bbdc3c92d557da1dcc867f5e4afd5994685edf35571c53f62480eeb6",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.396667,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.253965,
+      "f2_mean_delta": -0.267213,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "7e73824c19e34c4eb529935f7d89744aeed28c9a1aab8313d79f8e4300626c57",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.16,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.175269,
+      "f2_mean_delta": -0.19455,
+      "family": "keyword:sequence:compressed"
+    },
+    {
+      "candidate_hash": "e461743adf3abc4cf32e5107fe44b5752f7a2ea4d5e8be56fecbbffccbcc6ad4",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.074167,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.054489,
+      "f2_mean_delta": -0.055813,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "2fde85b841ca14818aa1529e78a29366bacf5e78d0455bbcdff6493f6c41f3e8",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.311667,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.189086,
+      "f2_mean_delta": -0.18183,
+      "family": "keyword:missing_priority:compressed"
+    },
+    {
+      "candidate_hash": "793a39ec29e2b63421c33e62db32766aed37a1c32ecf6eb274d72569819682eb",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.039167,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.03629,
+      "f2_mean_delta": -0.03045,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "aab6ef98bb15de25e0ad16b2e30761dcbecbfef389f808cc82bf4f52d8483455",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.033056,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.039249,
+      "f2_mean_delta": -0.044887,
+      "family": "keyword:sequence:raw_history"
+    },
+    {
+      "candidate_hash": "057f8d0c5ab1ff1cbcdeb8408c259349e5d7f585a16d4d7852cd2f556132af02",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.606667,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.565659,
+      "f2_mean_delta": -0.530144,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "2c6d4606910128e3e5ccbd10d4660971cbe61b8fed97949cc0c470d1110348e9",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.448929,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.507179,
+      "f2_mean_delta": -0.502478,
+      "family": "weighted:sequence:multi"
+    },
+    {
+      "candidate_hash": "405095f9a6c9df172ba5ee78c81b272625976b83c28b427febff90321061c1fb",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.241667,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.164409,
+      "f2_mean_delta": -0.15758,
+      "family": "keyword:missing_priority:multi"
+    },
+    {
+      "candidate_hash": "9e2e9e07990d4510bc92f18a71de216cbf6a49e660737e1cfd8a6676a1dd6097",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.573333,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.59082,
+      "f2_mean_delta": -0.598563,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "73a70cf4c1764800a7ed6a798ce8126a810bc38a791936f029e900c69e4027f1",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": -0.006667,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.002581,
+      "f2_mean_delta": -0.009683,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "392dbedfcbcf97dd25e8bb959093490f6c5ef5c3bacba33f57227285a4c90284",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": -0.001667,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.00379,
+      "f2_mean_delta": -0.00235,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "6dd7b4ba2d70014b45fb4b70070d6798181f03627a1813430f1731de231e3557",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.085,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.059839,
+      "f2_mean_delta": -0.069105,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "b114633db2ba7008b7e04181fa8b6bb089e728a4552ab48d63f7607ef955230a",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.0,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": 0.0,
+      "f2_mean_delta": 0.0,
+      "family": "keyword:other_always:multi"
+    },
+    {
+      "candidate_hash": "e0c7a9b4ef41eb12a1f60e513ad51443c0d1e313ea9fbb0dd0cb0081fc2e3854",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.044167,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.040161,
+      "f2_mean_delta": -0.0374,
+      "family": "keyword:sequence:compressed"
+    },
+    {
+      "candidate_hash": "1d48fcc0c2b2d94c033f696de55d639c947ce28edcbdc73217de459fb59cd0f6",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.395,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.3312,
+      "f2_mean_delta": -0.309739,
+      "family": "rrf:sequence:compressed"
+    },
+    {
+      "candidate_hash": "099d50c73673554ebbc1e98b14ac2e59220e7d9bf4abf6c597f5ea6bbcb29c90",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.005,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.0075,
+      "f2_mean_delta": -0.009567,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "096bb571394ed513e2321ba24db014ed8a3afeae4094f2d6af6beb45ff013160",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.245833,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.165881,
+      "f2_mean_delta": -0.164164,
+      "family": "keyword:missing_priority:multi"
+    },
+    {
+      "candidate_hash": "55acdcddfe1eb125c5ccccf9c909bb8ad2b961b5f4217d37f9714c6df837212d",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.08,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.071002,
+      "f2_mean_delta": -0.077504,
+      "family": "keyword:other_always:single"
+    },
+    {
+      "candidate_hash": "0e78a68bb5772e98a952aaa1ff2b39684ea79dde6f41460a3c09c49204ed38de",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.0,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.000323,
+      "f2_mean_delta": -0.006533,
+      "family": "keyword:sequence:compressed"
+    },
+    {
+      "candidate_hash": "20ee7d42b53ee1789fda02dcf801d72aac422a824918317b5928811574c9a5a4",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.010833,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.002634,
+      "f2_mean_delta": -0.000558,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "ed539173b39f69a3d9c08fb161010b4cc740d2c226b822bca6426a0a1a5c87b7",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.3425,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.320109,
+      "f2_mean_delta": -0.271763,
+      "family": "rrf:sequence:single"
+    },
+    {
+      "candidate_hash": "447dcc6cdada3f9903e53b53b7eb5e3975497923734a5dac286738cdfb54ad84",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": -0.006667,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.012823,
+      "f2_mean_delta": -0.013167,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "39cfcbacb944bf4490ad8eb0fa2573d6e4e62911b2338870bb11bd86f5164f9d",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.0,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": 0.0,
+      "f2_mean_delta": 0.0,
+      "family": "keyword:other_always:compressed"
+    },
+    {
+      "candidate_hash": "8048d33404fcc41528be89f2026e2bb377dd29da8f3459573810c38bf11c48f9",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.072917,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.074927,
+      "f2_mean_delta": -0.082351,
+      "family": "keyword:sequence:single"
+    },
+    {
+      "candidate_hash": "76771c5a0109e18cfc9a148929c4d0e8c8b01b828d8344354f2c440ba3df3b48",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": -0.003333,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.007825,
+      "f2_mean_delta": -0.008679,
+      "family": "keyword:other_always:raw_history"
+    },
+    {
+      "candidate_hash": "a2eea2864f4606e6fdda7aeeef95e79b5114b5c68c030fa6f47386e6015bfc96",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.1375,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.095296,
+      "f2_mean_delta": -0.09338,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "f18bfb3fcf4bb41b276be5502e936fa8721941db4c4cad019d4e65dca0d14e60",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.329306,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.308723,
+      "f2_mean_delta": -0.3054,
+      "family": "weighted:missing_priority:single"
+    },
+    {
+      "candidate_hash": "5bda45314f58244a11301132b3cf3e7a6763dcb1387ad7a4a32929f9d671c462",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.025179,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.093088,
+      "f2_mean_delta": -0.092218,
+      "family": "keyword:sequence:raw_history"
+    },
+    {
+      "candidate_hash": "2332458ddfac8a4c6c1fc2f3dd2ad46c7113859b4feaaf4339435ed127a3a0e0",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.098333,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.142419,
+      "f2_mean_delta": -0.158608,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "057b43c4514bb7d04d64574d0d2c5633f4eed370334d59c27f7dc8c5cac5dfb0",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.655,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.622433,
+      "f2_mean_delta": -0.598563,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "7085230f81cc3594448dda0acac826c67d01b3e2243f61520a7ed5ba6f25e632",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.028333,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.008952,
+      "f2_mean_delta": -0.009902,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "045a715efef40e600a3e78bdf7f441d73f66489d6ed44e0ab6406889f7a54fdb",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.185833,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.164194,
+      "f2_mean_delta": -0.162485,
+      "family": "keyword:missing_priority:raw_history"
+    },
+    {
+      "candidate_hash": "2a9d655773d597afd2b22ac9aac8fbe953d58e6e5d4c566b3c57f70b9156af1a",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.203056,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.274215,
+      "f2_mean_delta": -0.246359,
+      "family": "keyword:sequence:raw_history"
+    },
+    {
+      "candidate_hash": "1bb88dab65deead2927a972912fef89509956ab838677394820df69a5011eaf5",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.591667,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.577298,
+      "f2_mean_delta": -0.553578,
+      "family": "weighted:sequence:multi"
+    },
+    {
+      "candidate_hash": "9062daf2c4266eb7ae5dee48483e605d9a70014ac69bb272b70d079c76dc7526",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.079583,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.111379,
+      "f2_mean_delta": -0.133667,
+      "family": "keyword:sequence:single"
+    },
+    {
+      "candidate_hash": "5a3cce00b5983d18e7dcbb43050835da78515048424a20acde82f3f400135c33",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.334583,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.381102,
+      "f2_mean_delta": -0.385397,
+      "family": "dense:sequence:multi"
+    },
+    {
+      "candidate_hash": "1d782f1a5416f47e59b2f496d9e496e653467a11f3c4be85d2a5c7403e22b1e0",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": -0.0025,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.019005,
+      "f2_mean_delta": -0.017308,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "18a95fc9c299d82fc49c18210f54e697129e4a5f96b3c14af9d0b9c626756dec",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.09625,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.080088,
+      "f2_mean_delta": -0.080351,
+      "family": "keyword:sequence:single"
+    },
+    {
+      "candidate_hash": "7d14e41dae591fc8daf7a339e5fc814ac85947fc75a8459f1f9022d3166f2dc0",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.32,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.246071,
+      "f2_mean_delta": -0.218418,
+      "family": "rrf:sequence:single"
+    },
+    {
+      "candidate_hash": "6917f8f06711d25fe11339c0f1427b5dafc0e6424664ad82efa0e8242efa0cb5",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.344583,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.38578,
+      "f2_mean_delta": -0.393497,
+      "family": "dense:sequence:multi"
+    },
+    {
+      "candidate_hash": "e6fcaa2d7e6f41677173ef9e21fc54395fa4e077006729e9a3490363df56faa3",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.0375,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.0525,
+      "f2_mean_delta": -0.051567,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "c340215d916ca6e80c2c2f3dd4f059dd92d2aa2919844acbdbab5042b37be598",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": -0.003333,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.00129,
+      "f2_mean_delta": -0.002617,
+      "family": "keyword:sequence:compressed"
+    },
+    {
+      "candidate_hash": "f241bb957981303660c18dfbba8472a4834a031adfa6e07f9818084e3f0cb332",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.046875,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.195712,
+      "f2_mean_delta": -0.224728,
+      "family": "keyword:sequence:raw_history"
+    },
+    {
+      "candidate_hash": "58848f08d90824782ad940d4b07a94437bf0751b16287cb118a313fc985efab4",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.105208,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.168401,
+      "f2_mean_delta": -0.171069,
+      "family": "keyword:sequence:raw_history"
+    },
+    {
+      "candidate_hash": "409303ea92f51e3d7966000aa1532190ad84e2724301d40cc9bd1bd8e84543ef",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.3275,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.292617,
+      "f2_mean_delta": -0.258544,
+      "family": "rrf:sequence:compressed"
+    },
+    {
+      "candidate_hash": "e3c0fa9b84af97663824f1298f302d0f613f8fb0af5f87912b116c0bf2a70877",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.0,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": 0.0,
+      "f2_mean_delta": -0.000133,
+      "family": "keyword:sequence:compressed"
+    },
+    {
+      "candidate_hash": "d864bfd4a464984105c066b4c5aa298d135dd1092de3cf8fa6aea12dd38da588",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.021667,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.097339,
+      "f2_mean_delta": -0.135291,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "20043cbc002019c8bc3595c35d9747e3174a635d8c0b35f73dc6e65bbdd9c97b",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.01,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.090403,
+      "f2_mean_delta": -0.120291,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "4d0b91f6fbdf33c555de597b18226f066cfa2513448bbe35d46213d1e0d4bd75",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.074167,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.054489,
+      "f2_mean_delta": -0.05468,
+      "family": "keyword:sequence:compressed"
+    },
+    {
+      "candidate_hash": "3e7f8f21e6a622ea7a6aa032a4b2ebf3233ac8e96a1df603cffeca2b474c6f33",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.0125,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.003602,
+      "f2_mean_delta": -0.000308,
+      "family": "keyword:sequence:compressed"
+    },
+    {
+      "candidate_hash": "dcaddb79f6984fb7a77c4a44616c43923d511a1bca97443bb05fb8c8939195bd",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.109583,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.091217,
+      "f2_mean_delta": -0.092401,
+      "family": "keyword:sequence:single"
+    },
+    {
+      "candidate_hash": "af036fc5b48da1ec4ab995ff5dbb00b6677222630fcc19f941b8d4e02cd47550",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.0375,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.022339,
+      "f2_mean_delta": -0.0255,
+      "family": "keyword:sequence:raw_history"
+    },
+    {
+      "candidate_hash": "2b2ff7d1c81f390f40f61527f93791a3d4da38202cbafd55845e93d40adedf2d",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.0,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": 0.0,
+      "f2_mean_delta": -0.006267,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "98341759007e9d546787dbb9598e09a43f23aa9d9e539bdbe2e06910e160c31b",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.0475,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.027608,
+      "f2_mean_delta": -0.017093,
+      "family": "keyword:sequence:raw_history"
+    },
+    {
+      "candidate_hash": "e40a16a6badad5170661b9d53ab482095423f4e7ee98cc3bac36becbeab7d0b5",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": -0.000208,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.006075,
+      "f2_mean_delta": -0.012934,
+      "family": "keyword:other_always:multi"
+    },
+    {
+      "candidate_hash": "21736128b9ebdabe663265579c120a4bc7dbbeefe1928b671d7f04080ebaf2dd",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": -0.001667,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.012823,
+      "f2_mean_delta": -0.0129,
+      "family": "keyword:sequence:compressed"
+    },
+    {
+      "candidate_hash": "3a8116c66c6862e2d8484bdf113de95a6ad70d51be5a5e308891a6d846dc1974",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.160208,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.169739,
+      "f2_mean_delta": -0.189317,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "ebfa437f63d999e78de561d348869046c3894fe085b7733edf678d4bc11d9341",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.0125,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.001667,
+      "f2_mean_delta": 0.002225,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "2bbcdb43d3e50a0c19e9e20ad1094f9dd069ded08e3744a07a940b04f4f6b8c3",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.24,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.260478,
+      "f2_mean_delta": -0.268981,
+      "family": "keyword:sequence:single"
+    },
+    {
+      "candidate_hash": "188727438689cf6d3bdcee955dcda36da4348d8fcbc02adec364a737113359f0",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.156667,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.139597,
+      "f2_mean_delta": -0.166308,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "7512f6e6f9d5490392346b4a2eba66f631ceccad52ff51d8102ef574533acb1c",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.065595,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.090741,
+      "f2_mean_delta": -0.084412,
+      "family": "keyword:sequence:single"
+    },
+    {
+      "candidate_hash": "5847057056e52c2b8a7d58553819ab2a16b105c8950478e7cb7f981fe92bb959",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.158333,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.125403,
+      "f2_mean_delta": -0.154441,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "d129826a27f8dce9bd4af25948cf632450b1ab2e029f539885415200c4525d7a",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": -0.003333,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.007825,
+      "f2_mean_delta": -0.008679,
+      "family": "keyword:other_always:raw_history"
+    },
+    {
+      "candidate_hash": "ca90d7273dc6b7d8f9e30dfa0dba2b89d90478dbe26957793aa685594182494a",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.068333,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.043871,
+      "f2_mean_delta": -0.055571,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "fa633edac752a79f41bbcb5aab06cdd381589d11526a91973b7990240d02a51a",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.064306,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.119451,
+      "f2_mean_delta": -0.09921,
+      "family": "weighted:sequence:multi"
+    },
+    {
+      "candidate_hash": "8250268ca5478c5ef82f9cbc275968f51605c0274ede81c3ff5c1e7d029d3cb6",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.0,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": 0.0,
+      "f2_mean_delta": 0.0,
+      "family": "keyword:other_always:multi"
+    },
+    {
+      "candidate_hash": "dc92498867c687390d2c471f3ddbf5376c6f177a180718f8771ce637ca1869a1",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.0075,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.002634,
+      "f2_mean_delta": 0.001559,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "8797c2f82df50073c7a7d6a7f20df01addeb7090d83b29f3bb5dd36417a8e6e2",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.335625,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.390048,
+      "f2_mean_delta": -0.392667,
+      "family": "dense:sequence:multi"
+    },
+    {
+      "candidate_hash": "804342ce9fd8592814416bde4b1d227b404b1fc98748d5376fbb4763f562db9c",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.174167,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.112177,
+      "f2_mean_delta": -0.138441,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "95251d6cb5ae753ca27602f4bd18446c6970859af5cbf5c0d43c4bd8b9cac037",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.409167,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.331857,
+      "f2_mean_delta": -0.318687,
+      "family": "rrf:missing_priority:single"
+    },
+    {
+      "candidate_hash": "53d0f3f3d54dc60b9a60eba8571773a05339171a0f75c27ec323d7bc8a4c40f1",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.0,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.000323,
+      "f2_mean_delta": -0.0004,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "85d3750d916525b0e47be7ffaa5e5f9fdf5bd9a902cd8f168caca8d361f0df4f",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.026667,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.005806,
+      "f2_mean_delta": -0.014505,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "bb155ec8ec4c36b1c127235e2bccb982590aa3fa5eb2d5475b07eca53e2d11cf",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.053065,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.122611,
+      "f2_mean_delta": -0.12895,
+      "family": "weighted:sequence:single"
+    },
+    {
+      "candidate_hash": "8177a11b00d0b1fd6adc2e77b7d704c36e995413d519742e3433f9911b78c867",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.238333,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.205273,
+      "f2_mean_delta": -0.171336,
+      "family": "rrf:sequence:multi"
+    },
+    {
+      "candidate_hash": "4ddfea7f19e5739d58b4bc1a934cc1511ef38ec71c8770114f48c727e2ebc0a5",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.306458,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.383024,
+      "f2_mean_delta": -0.371552,
+      "family": "keyword:sequence:single"
+    },
+    {
+      "candidate_hash": "9890acbe99effea357ca3e3a34095705ff9ab174a3ecfa633d940b27a5d7213f",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.048095,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.07193,
+      "f2_mean_delta": -0.060713,
+      "family": "keyword:sequence:raw_history"
+    },
+    {
+      "candidate_hash": "e87265d52c98cdac12d3757b4a642ae173a12c51b1dad0346086aca3d97d73ad",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.16,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.163468,
+      "f2_mean_delta": -0.183025,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "740743bb4429d77056988e95dd3cceeedbec92e1c4d1c26a9fd91f9343b0aed2",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.373095,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.413738,
+      "f2_mean_delta": -0.39599,
+      "family": "keyword:sequence:single"
+    },
+    {
+      "candidate_hash": "8b3a0f99590f0b1d9a2fbba1f83041756db151cc21280f3ab06cfe6aecc15a39",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.0175,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.009919,
+      "f2_mean_delta": -0.005833,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "f347a455ccd9e8625f66eb18274b1b62203007c0606a2d153028fd45815dc4ad",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": -0.008333,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.076855,
+      "f2_mean_delta": -0.109375,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "0d85f749a9d1db0fa72e1c0f61e91503a60bf2c95702a350fec8fdacb663b764",
+      "f0_decision": "NOVELTY_RESERVE",
+      "f0_mean_delta": 0.021667,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.031824,
+      "f2_mean_delta": -0.030207,
+      "family": "weighted:sequence:raw_history"
+    },
+    {
+      "candidate_hash": "2b75293a3bed67b8961fdbdbee32cbd86ac3503bffec53e93d82722a31e2ac52",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.051806,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.111876,
+      "f2_mean_delta": -0.08868,
+      "family": "weighted:sequence:multi"
+    },
+    {
+      "candidate_hash": "be5510117a326782e20849a465c3d01f180a202e9637dbac2f5e43678dc5442b",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.5875,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.593884,
+      "f2_mean_delta": -0.593216,
+      "family": "keyword:sequence:compressed"
+    },
+    {
+      "candidate_hash": "d52334e0b756e05a0fd34a04ce8486111c70069a2250fe65545e5cd44383f633",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": -0.004901,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.054053,
+      "f2_mean_delta": -0.04331,
+      "family": "keyword:sequence:raw_history"
+    },
+    {
+      "candidate_hash": "012760436c4d9947b9bcc552626e8b686ec1101f14e296c10515184ac9ef6200",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.379762,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.4189,
+      "f2_mean_delta": -0.39519,
+      "family": "keyword:sequence:single"
+    },
+    {
+      "candidate_hash": "c42b3f64554bf64179b8d496ee6551273649370e30c9ab2a13aa9a231488327d",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.013333,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.026935,
+      "f2_mean_delta": -0.0278,
+      "family": "keyword:sequence:compressed"
+    },
+    {
+      "candidate_hash": "37f0fec4fedbe89ffca1b0538b1babaf476c39c5b8a33dc6fcd36d5b036b0b46",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.01,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.023065,
+      "f2_mean_delta": -0.02465,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "ee7754cdb5e7f287240e8a40eab0f12b013db70e76a3291ff86b27023e864b57",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.06,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.052892,
+      "f2_mean_delta": -0.064468,
+      "family": "keyword:sequence:single"
+    },
+    {
+      "candidate_hash": "0d72077fe8bbc7b54fa32164af48fa77af7278be89e4d23d67a318ef1b666b4f",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.253542,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.201557,
+      "f2_mean_delta": -0.161881,
+      "family": "rrf:other_always:multi"
+    },
+    {
+      "candidate_hash": "2d981320576fb70bb71f0034a7b44620dbcfe73f9306f7d657a23c38db4923ca",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.0875,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.045081,
+      "f2_mean_delta": -0.047367,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "5475ca7d396e8c7004ba2e414be609d208b61ff947f126b3bf15e52903887ef4",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.0,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": 0.0,
+      "f2_mean_delta": 0.0,
+      "family": "keyword:other_always:multi"
+    },
+    {
+      "candidate_hash": "2296390a6be102009821a22274f2b71ff7a4bcd9d553e94cae319887f1cd842b",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.325417,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.44457,
+      "f2_mean_delta": -0.433608,
+      "family": "dense:missing_priority:multi"
+    },
+    {
+      "candidate_hash": "33f68f99b15d0932029f8f80ecf4713906b04928f4f509bea23b15d93db08c81",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.088333,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.076371,
+      "f2_mean_delta": -0.068317,
+      "family": "keyword:sequence:compressed"
+    },
+    {
+      "candidate_hash": "41f3ea56ada59a5b86313d614cfd5dbbce33b2d5bfcc9055d3b961998ebc5c81",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.573333,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.610129,
+      "f2_mean_delta": -0.621144,
+      "family": "keyword:sequence:single"
+    },
+    {
+      "candidate_hash": "c27db394c242aee72e6e25ed505bf3d1cdbb3eaed3a9b6aaf395b4e52f0b9af7",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.396875,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.266782,
+      "f2_mean_delta": -0.267303,
+      "family": "keyword:missing_priority:single"
+    },
+    {
+      "candidate_hash": "dab2bd5621945915ecaf18a497acc58b80dedc1cd1710e7e0de5f668e41466ee",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.290833,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.349053,
+      "f2_mean_delta": -0.342553,
+      "family": "weighted:sequence:compressed"
+    },
+    {
+      "candidate_hash": "dd95bec5c19fdd441f53d5c13bdc778df239e1cbc36e4bc558692acabab38c39",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.151667,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.067177,
+      "f2_mean_delta": -0.058633,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "be7c36d1ce863b7489b72556fa17660f81dca4087cc5e679f0f0e2199014191c",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.0,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.015161,
+      "f2_mean_delta": -0.012533,
+      "family": "keyword:sequence:compressed"
+    },
+    {
+      "candidate_hash": "a96a27aea1a2493b7ddb12788bfb50ed7350526c96462f4c1f4e809d44094912",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.031042,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.023207,
+      "f2_mean_delta": -0.027815,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "50fc04ea9612bb8ef53c93d4fda945a0ccb2b76a62eae6c98801cfab251f5b68",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.159167,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.255417,
+      "f2_mean_delta": -0.270933,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "7f12924123b417c812daaf5b5cfdbc54134b32a076d3d1251aedc7ac2b6f3e2d",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": -0.000208,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.006075,
+      "f2_mean_delta": -0.012934,
+      "family": "keyword:other_always:multi"
+    },
+    {
+      "candidate_hash": "5031d9c5d10a93abeb53ccd11415eb434e41a3cc07624f591695e1bc2952da2a",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": -0.006667,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.002903,
+      "f2_mean_delta": -0.00395,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "3830377ce54b9a2bbd04ba317078a35ae29dd399baced91649afcf36680697bf",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.083333,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.138871,
+      "f2_mean_delta": -0.164341,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "31350c9b928135e50d26efadd1d5b25365efdfdf8cb5a95647fce405d7c98e5b",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.001667,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.009919,
+      "f2_mean_delta": -0.009433,
+      "family": "keyword:sequence:compressed"
+    },
+    {
+      "candidate_hash": "e8af93b90ea4511c1e4650e6ca23526d56b5431aaf25816425b817a25eabedcd",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.001667,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.006855,
+      "f2_mean_delta": -0.009233,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "bcf10fc5043968e4487e94c67d74c410f451022dbe4079cba9ec47de8b229bb1",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.178333,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.149,
+      "f2_mean_delta": -0.141392,
+      "family": "keyword:sequence:single"
+    },
+    {
+      "candidate_hash": "ef11d3958ad3919f53b1bca2c29f612ba1679ffd99c0977880ef730a7b0194b9",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.005278,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.033468,
+      "f2_mean_delta": -0.054498,
+      "family": "keyword:sequence:raw_history"
+    },
+    {
+      "candidate_hash": "d42b06c73934b02feca7fe36b348f265f0c019c0d374a028cb28f02603e213be",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": -0.005,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.01379,
+      "f2_mean_delta": -0.011683,
+      "family": "keyword:sequence:compressed"
+    },
+    {
+      "candidate_hash": "dda538dc5d63fbf7585dc17f279d5d8a7116e7b097d2d30a0ac9a3232289fcfc",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.5225,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.572177,
+      "f2_mean_delta": -0.504042,
+      "family": "keyword:sequence:raw_history"
+    },
+    {
+      "candidate_hash": "715f30acefab81ee717ab0b0747db5f7d5175994d06c962ba4d4bc3e03af641e",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.042083,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.123959,
+      "f2_mean_delta": -0.141548,
+      "family": "keyword:sequence:single"
+    },
+    {
+      "candidate_hash": "b5747d39945c30515a74101df2b70bf97d8d538ccc5227feee6284dbb117d57b",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.08,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.071002,
+      "f2_mean_delta": -0.077504,
+      "family": "keyword:sequence:single"
+    },
+    {
+      "candidate_hash": "f0dba8336faa5106804c5711f549a2054afcdd6d30786c96ac21f7a18e88bd26",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.02,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.031774,
+      "f2_mean_delta": -0.031533,
+      "family": "keyword:sequence:compressed"
+    },
+    {
+      "candidate_hash": "ea2d800ecb14d7827705bf5175d22b473ac6dd7c419973ac3d364951e18b0c39",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.08,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.071002,
+      "f2_mean_delta": -0.077504,
+      "family": "keyword:other_always:single"
+    },
+    {
+      "candidate_hash": "1d15412b4b9bc04f88ecea86b6f505c25b1f4cdbc0788d62d3985d514f93b106",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.16,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.175269,
+      "f2_mean_delta": -0.19455,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "e7d38231b4c252dab751c9f1d88ea01fd065d4e79e2bfd7ca28e518dfb1297e5",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.055,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.013047,
+      "f2_mean_delta": 0.003946,
+      "family": "keyword:sequence:raw_history"
+    },
+    {
+      "candidate_hash": "8b0246c325265ed0e446b50b224ba44c6fe952790c8bb5bce7f0e0c24b499284",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": -0.003333,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": 0.010563,
+      "f2_mean_delta": 0.007971,
+      "family": "keyword:sequence:raw_history"
+    },
+    {
+      "candidate_hash": "2f074edeb976ad60815871b53e9945c7d06087a517b4cc5d466a07fd617f4a57",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.083333,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.060196,
+      "f2_mean_delta": -0.081387,
+      "family": "keyword:sequence:single"
+    },
+    {
+      "candidate_hash": "4abd89259e5b6ac9d9c185a5271569dd843937e3a73b97aad84cca493044b3d5",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": -0.001667,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.016452,
+      "f2_mean_delta": -0.018983,
+      "family": "keyword:sequence:compressed"
+    },
+    {
+      "candidate_hash": "adcfb2b14fd802465e2e3009a343344e7e8e5eaf362429b0dbfba5d0e9885cab",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.115556,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.160115,
+      "f2_mean_delta": -0.134826,
+      "family": "weighted:sequence:multi"
+    },
+    {
+      "candidate_hash": "e2a2026921a27bf5f9929844250b92c8ce423e06becc9685f725f0004bb964a0",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.050526,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.063644,
+      "f2_mean_delta": -0.07381,
+      "family": "keyword:sequence:raw_history"
+    },
+    {
+      "candidate_hash": "2d4206cf3325e9533747fefb1e6215b6248f84de66e9a15d41449e015ffab533",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.09,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.145962,
+      "f2_mean_delta": -0.179648,
+      "family": "keyword:sequence:single"
+    },
+    {
+      "candidate_hash": "2c18e5c11430d5a30158a0878b95b2242ea7fa2ba99aaac9b8173a076cf71119",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.086667,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.065518,
+      "f2_mean_delta": -0.081187,
+      "family": "keyword:sequence:single"
+    },
+    {
+      "candidate_hash": "103507ae43967f8c78e3dba60a6974e254cbcabdec17f4b517f46177d9eab457",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.337917,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.391459,
+      "f2_mean_delta": -0.394917,
+      "family": "dense:sequence:multi"
+    },
+    {
+      "candidate_hash": "1c0a8d8a3562fae337d1bd23e4f71f6209a9d15a2b141f505f3a2aec4fd2aedf",
+      "f0_decision": "NOVELTY_RESERVE",
+      "f0_mean_delta": -0.007292,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.085373,
+      "f2_mean_delta": -0.085729,
+      "family": "weighted:sequence:compressed"
+    },
+    {
+      "candidate_hash": "ed3d2d68fbef7d39f355ec9ce5816f63cbe01dd046c61ddcacc2e3b7db32beeb",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.465833,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.36125,
+      "f2_mean_delta": -0.35886,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "e6e5392e8d4d28fc73f37f04366ae7a718382048175a31e7f81f6615e557e2aa",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.0,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": 0.0,
+      "f2_mean_delta": 0.0,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "fe96ce26414fb2d0855b5f2fb441c769c2933645e827e373747ce8c10f518cb6",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.041667,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.05371,
+      "f2_mean_delta": -0.042571,
+      "family": "keyword:sequence:compressed"
+    },
+    {
+      "candidate_hash": "ed251c898b22ef5ca4b85de08932ac3fa55f0a97b3985163fa1b10b3c9dd5870",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.233333,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.154435,
+      "f2_mean_delta": -0.172441,
+      "family": "keyword:sequence:compressed"
+    },
+    {
+      "candidate_hash": "4726102fc48c4d04dadf96719563618107444f0ced9491b757308210b1f6b94a",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.030625,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.012575,
+      "f2_mean_delta": -0.006426,
+      "family": "keyword:sequence:raw_history"
+    },
+    {
+      "candidate_hash": "ad20ec555ee21f099a2da6723691891a176722f5ea3210fca8849cf305a6781a",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.001667,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.007823,
+      "f2_mean_delta": -0.013033,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "6260100a9f6bd8546126b2f174f59c48ff60f6ad17ac0156c148aac357a22f08",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.021667,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.066647,
+      "f2_mean_delta": -0.083771,
+      "family": "keyword:sequence:single"
+    },
+    {
+      "candidate_hash": "5065cd173f5d122f1350bc400718e980e9d977210a353fea1d81b98b427794ea",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.0,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": 0.0,
+      "f2_mean_delta": 0.0,
+      "family": "keyword:other_always:multi"
+    },
+    {
+      "candidate_hash": "6fd57a4951d695ae991ad10fd08f1c62bda81a08428e293618a355b01c564ca5",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.241667,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.164409,
+      "f2_mean_delta": -0.15758,
+      "family": "keyword:missing_priority:multi"
+    },
+    {
+      "candidate_hash": "0b6d3d6160d65bb0fee5648ecd66b5d1fe8ec9c87ad5931e280d78fa43cabf67",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.241667,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.164409,
+      "f2_mean_delta": -0.15758,
+      "family": "keyword:missing_priority:multi"
+    },
+    {
+      "candidate_hash": "c36db1476632df6675f8bc8e1d00b7795e03393eb72dd67a5c776f73344649ba",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.105208,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.168401,
+      "f2_mean_delta": -0.171069,
+      "family": "keyword:sequence:raw_history"
+    },
+    {
+      "candidate_hash": "cd157404a736a2235eaca9654d4c86b040a985455a77f2450fd7946fd45def59",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.267083,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.220568,
+      "f2_mean_delta": -0.187361,
+      "family": "rrf:sequence:multi"
+    },
+    {
+      "candidate_hash": "e9395831403a239b3d338ccd6b665c13c6db90b2a5009e444406417648ff0e47",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.385833,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.318481,
+      "f2_mean_delta": -0.334116,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "3fc8d6e26753b9067a4efb252b8bd663b80a03e560ed48c0a89631eda646cc7a",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.33125,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.382588,
+      "f2_mean_delta": -0.38118,
+      "family": "dense:sequence:multi"
+    },
+    {
+      "candidate_hash": "9e9afb57cf557205cbe400e1adcacbf8f219e222056f87a2c2b0feced8b69e2d",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.0,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": 0.0,
+      "f2_mean_delta": 0.0,
+      "family": "keyword:other_always:multi"
+    },
+    {
+      "candidate_hash": "6428f26baf8ec186e9857a864c40e614b3e42c93aaeb35913f3d5161671185da",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.185833,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.164194,
+      "f2_mean_delta": -0.162485,
+      "family": "keyword:missing_priority:raw_history"
+    },
+    {
+      "candidate_hash": "d0584343d450cdeea21d1ee2952846dd77eeef029bfa462e0cc173ba771fcd9f",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.594762,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.598906,
+      "f2_mean_delta": -0.551225,
+      "family": "keyword:sequence:raw_history"
+    },
+    {
+      "candidate_hash": "961a8d07366efb70302280aae8e4c1056942c454bae42c8d12becbb3c8131a50",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.241667,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.164409,
+      "f2_mean_delta": -0.15758,
+      "family": "keyword:missing_priority:compressed"
+    },
+    {
+      "candidate_hash": "9800a3e113e79e5b7cc5a7e9dd02114e8af2a22318735fb751c5a47595f2be4b",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.082262,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.078886,
+      "f2_mean_delta": -0.078976,
+      "family": "keyword:sequence:single"
+    },
+    {
+      "candidate_hash": "8422d85fd5a380e5d3654eb10c31b7bb0125ab61f76e6cdf258e66a9b7539c5f",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.081667,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.065196,
+      "f2_mean_delta": -0.082037,
+      "family": "keyword:sequence:single"
+    },
+    {
+      "candidate_hash": "c4dabf198a229fc2f1591c5fcc30c8fafb324029c5da183ac63c343886f376d3",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.34125,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.425457,
+      "f2_mean_delta": -0.414741,
+      "family": "dense:sequence:multi"
+    },
+    {
+      "candidate_hash": "6353fc735ffb7ebe4fc24ae6be7ff105f4fb7a426be19b3bdd5a00e8e6550133",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.33125,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.394247,
+      "f2_mean_delta": -0.418255,
+      "family": "dense:sequence:compressed"
+    },
+    {
+      "candidate_hash": "4646861532af393ce88f22edf542a7f02a9185c3e8e295c02b4655f010761c8e",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": -0.006667,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.103468,
+      "f2_mean_delta": -0.136508,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "5a55c00e19fcae4800322013d6aedd4d3c258b0c40dc841281c95bec41a9472d",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.16,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.064758,
+      "f2_mean_delta": -0.05245,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "2aa580ddce537417e41f393677d7a7331e7b356bc92446caf708af71b838cafe",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.340833,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.322742,
+      "f2_mean_delta": -0.322308,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "42537a1aed552afbcd6ccc90ac91a5a570a7c533005ffc7ea8c38bb8f2ef1627",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.026667,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.005323,
+      "f2_mean_delta": -0.011238,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "9241c7bd8f1628fa139fbd5bbda4cd33c707e7c942c1c8304ceb8f141367520e",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.0,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.000645,
+      "f2_mean_delta": -0.0008,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "4486cf0154b2cf9bf035d1b2c061d77318bc40fde31b049a5ebf4bd8408d8d90",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": -0.002222,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.040096,
+      "f2_mean_delta": -0.051354,
+      "family": "keyword:sequence:raw_history"
+    },
+    {
+      "candidate_hash": "3013a8ef3248d791a0340ce4510485f884fd8ae55f0c5a13188c1c6f20cbf417",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.048333,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.054228,
+      "f2_mean_delta": -0.034884,
+      "family": "keyword:sequence:raw_history"
+    },
+    {
+      "candidate_hash": "151d52704cc44eb12cfc5191dd5e1da5326c5e427e7065c859f7c71f82655d5e",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": -0.000208,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.021237,
+      "f2_mean_delta": -0.030734,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "57fc71202dbb602e5227b2894ac38f8be6e5e660b5e487fa434af7fb6e36880d",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.331042,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.312487,
+      "f2_mean_delta": -0.308233,
+      "family": "keyword:sequence:raw_history"
+    },
+    {
+      "candidate_hash": "a711af482653377e6889a53f4dcdc2e2711b5de599d376247dad1b8b77766c77",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.034722,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.067986,
+      "f2_mean_delta": -0.078548,
+      "family": "keyword:sequence:raw_history"
+    },
+    {
+      "candidate_hash": "6a38e2f527cadcd968e76416c33093ba7948ce343482c2c371e4b20b3176f967",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.16,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.175269,
+      "f2_mean_delta": -0.19455,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "4b98dddee0e588a6f4c069f1e6db19cf052d4942887e1c7fbc447e6b9f5a922c",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.023333,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.014821,
+      "f2_mean_delta": -0.011695,
+      "family": "keyword:sequence:raw_history"
+    },
+    {
+      "candidate_hash": "982298828712bc1c6d5ad43497fb77f2a36015d3d725289fd990594dbde93827",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.02119,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.044539,
+      "f2_mean_delta": -0.031984,
+      "family": "keyword:sequence:raw_history"
+    },
+    {
+      "candidate_hash": "0f1a82e162918e7aae3a69573504d71696c567806ff419f81cda7e90446d54c4",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": -0.003333,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.023145,
+      "f2_mean_delta": -0.02275,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "f987de0b54bf9487ee5562d17453c5c68377d310be7b3e4993ccf603f6c17923",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.254792,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.268669,
+      "f2_mean_delta": -0.274758,
+      "family": "keyword:sequence:single"
+    },
+    {
+      "candidate_hash": "5b7b0c61b4104ca5c6caed8bcc4fadd8b04f4d67ca60d4341c953f3895a73f73",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.241667,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.164409,
+      "f2_mean_delta": -0.15758,
+      "family": "keyword:missing_priority:multi"
+    },
+    {
+      "candidate_hash": "fcea307bdd6cb8d751f1d237dc05a0512db7e0c99f29fd45ccd8fa43f77a67ad",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.32,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.246071,
+      "f2_mean_delta": -0.218018,
+      "family": "rrf:sequence:single"
+    },
+    {
+      "candidate_hash": "673c89bad2140937b8d8d3d58c24f4f217864be0bac42f660c3e8fd315b44b2f",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.08,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.071002,
+      "f2_mean_delta": -0.077504,
+      "family": "keyword:sequence:single"
+    },
+    {
+      "candidate_hash": "95f2c280a244051ff4aa98f4898ba86a413d5d13424dcdef6f366d044208060b",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.076667,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.135645,
+      "f2_mean_delta": -0.160075,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "510b92ac78c55a04f4d08bfd563c177861e1c4d161fad3f36bcb07720970b810",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.0325,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.029355,
+      "f2_mean_delta": -0.022667,
+      "family": "keyword:sequence:compressed"
+    },
+    {
+      "candidate_hash": "d52d036846163752112be2efb0b4fe0cd1eb8c0877c6a8c003a4751df005054d",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.094792,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.079107,
+      "f2_mean_delta": -0.088867,
+      "family": "keyword:sequence:single"
+    },
+    {
+      "candidate_hash": "75cc52c4782ffe581dfbb2debcb48318c936cf2ee8cd7430896aef89a9ef8954",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.0,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": 0.0,
+      "f2_mean_delta": 0.0,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "b8a973a7e2d8831f031180f5976430cb511f8abeb79658c29cabb7227953bf00",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.0,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.015161,
+      "f2_mean_delta": -0.0188,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "79945a193833e1324994108b903187d06832220939fc99acb11c0a4d5225cd75",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.239167,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.221223,
+      "f2_mean_delta": -0.25303,
+      "family": "keyword:sequence:compressed"
+    },
+    {
+      "candidate_hash": "e8af864b35c34332becc48f189734f8412ea15a944d194eacaf7c6049464f257",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.253542,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.201557,
+      "f2_mean_delta": -0.161881,
+      "family": "rrf:other_always:multi"
+    },
+    {
+      "candidate_hash": "b58335e9a73de5cdbe751ac6e751ed7010041f38c329ee00e82f35b3853c46af",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.256875,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.239412,
+      "f2_mean_delta": -0.218537,
+      "family": "rrf:sequence:multi"
+    },
+    {
+      "candidate_hash": "d99b4e2561ff447a71c382438bbb0770ba018934423dd258096b3eb232ef3d03",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.035,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": 0.000161,
+      "f2_mean_delta": -0.005271,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "a0ba401355bcda55b25ecb7e0e0f2d9624d5e23efb768ef2e5182005053b5ac0",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.008571,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.056548,
+      "f2_mean_delta": -0.074712,
+      "family": "keyword:sequence:single"
+    },
+    {
+      "candidate_hash": "8b0e39608a29e452cd0aa67db88d71968797d2b4d4e195f24e34db96302efa1f",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.0,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.001613,
+      "f2_mean_delta": -0.002,
+      "family": "keyword:sequence:compressed"
+    },
+    {
+      "candidate_hash": "261f14cdcdc961be4872b2ed0b706bd4e8d582d19721f84e30a382179e996181",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.021667,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.034355,
+      "f2_mean_delta": -0.03525,
+      "family": "keyword:sequence:compressed"
+    },
+    {
+      "candidate_hash": "a1ff168b23a7c63e0dd49d5a3110fbce269383f200cb6f530be05e4175d2ee8c",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.015,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.04707,
+      "f2_mean_delta": -0.039444,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "7d01386285410114bc6bcdb09ed3ecd234b658ade275d764946508a424ff3d07",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.08,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.071002,
+      "f2_mean_delta": -0.077504,
+      "family": "keyword:other_always:single"
+    },
+    {
+      "candidate_hash": "ced67ee17f3a484335e29cc215745d8f46726de9ebcf47ccbd6d4ef2362b5cad",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.185833,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.164194,
+      "f2_mean_delta": -0.162485,
+      "family": "keyword:missing_priority:raw_history"
+    },
+    {
+      "candidate_hash": "556d1f151bd5149434c5a5e8fa53926781d97ab18e45ddcbec9aa9098095c855",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.036667,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.079839,
+      "f2_mean_delta": -0.070244,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "efae6b4957dce90229a6b0ffa75cdbed0caf88e687ac5f74ca98052be1f1620c",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.08,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.134194,
+      "f2_mean_delta": -0.161275,
+      "family": "keyword:sequence:compressed"
+    },
+    {
+      "candidate_hash": "9f1332d0a60e865ca3f14dc4be2923677dc951c6f2b1b11024b00ecc46175ba3",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.08,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.071002,
+      "f2_mean_delta": -0.077504,
+      "family": "keyword:other_always:single"
+    },
+    {
+      "candidate_hash": "736ed6636b91f57486a9fbcfc6760041bec9cf338c9f4bbbb8609899aaa8925d",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.508333,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.472414,
+      "f2_mean_delta": -0.476759,
+      "family": "weighted:sequence:multi"
+    },
+    {
+      "candidate_hash": "147bf26e0f338f5d9b94cbbc6b76528115960a726ce1a1e29038d3a97c07168e",
+      "f0_decision": "NOVELTY_RESERVE",
+      "f0_mean_delta": 0.017183,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.041991,
+      "f2_mean_delta": -0.032957,
+      "family": "weighted:sequence:multi"
+    },
+    {
+      "candidate_hash": "1c019d81ed1a63e74500b66ce4ea006456aefe0fcdcf09252e0a660456ee432a",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.012262,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.094324,
+      "f2_mean_delta": -0.077386,
+      "family": "weighted:sequence:multi"
+    },
+    {
+      "candidate_hash": "8037e35a1419e9bbef50f9f82a70e87f8eb90473eec2618d6a35346f84835f3a",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.33125,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.38533,
+      "f2_mean_delta": -0.385969,
+      "family": "dense:sequence:multi"
+    },
+    {
+      "candidate_hash": "e7143a951e58f43be0ac2c3097ee011be28c7a41dec0025a765018dcd89661d0",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.41,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.527594,
+      "f2_mean_delta": -0.533116,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "5ac8c821171fdf5b6ba0be6e7e8646720d3fa50ffb0cac80f4b773db5a751f32",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.0,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.015161,
+      "f2_mean_delta": -0.0188,
+      "family": "keyword:sequence:compressed"
+    },
+    {
+      "candidate_hash": "69a978d60d2d7c90eaa538b4e5c9067f1634bcf535a60ee6ee81a1f096647ae7",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.185833,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.164194,
+      "f2_mean_delta": -0.162485,
+      "family": "keyword:missing_priority:raw_history"
+    },
+    {
+      "candidate_hash": "3cd42e04f3965e7d9a58e6b78cec6766285c76b4657628f2923fae834c29df21",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.0125,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.031989,
+      "f2_mean_delta": -0.038197,
+      "family": "keyword:sequence:compressed"
+    },
+    {
+      "candidate_hash": "3ef4221d5e8f4fc75162de80fe32a61b31c010f260f500119dda9ceffc925049",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.16,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.214026,
+      "f2_mean_delta": -0.232331,
+      "family": "keyword:sequence:single"
+    },
+    {
+      "candidate_hash": "1cce57e4a3d246cd20027edaba6868b121aad7dee98502fdc91662b56a42762b",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.241667,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.164409,
+      "f2_mean_delta": -0.15758,
+      "family": "keyword:missing_priority:multi"
+    },
+    {
+      "candidate_hash": "0145c9fecc4398dd068ae90c2e630de659d911a10bd1033969be88da19858208",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.113333,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.035968,
+      "f2_mean_delta": -0.036821,
+      "family": "keyword:sequence:compressed"
+    },
+    {
+      "candidate_hash": "62456af68fad0967ed3b54a2e625fd4544cc1198bd628f493d0f8c20f88de6d0",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.0,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.00129,
+      "f2_mean_delta": -0.007333,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "255d0320f3f08100556ec5753e16feb379265e526037c73e3bbbbb26e4236674",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.151667,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.135887,
+      "f2_mean_delta": -0.164775,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "c0d8eedee96bdbfbb58df7e5446ba59041fa2e13a3bef9a9f3d19d7c20ee7363",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.26875,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.247999,
+      "f2_mean_delta": -0.186844,
+      "family": "rrf:sequence:compressed"
+    },
+    {
+      "candidate_hash": "ed6d06e0a359407f983a2b56dce9cb4368fbea6c5aa93742f96fae8126d54d24",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.263333,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.226025,
+      "f2_mean_delta": -0.18198,
+      "family": "rrf:sequence:multi"
+    },
+    {
+      "candidate_hash": "62ff1a64afae1f60cb30f0d27e625743acc58a23ce24cd7b2ba55a184d0f5790",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.096458,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.073462,
+      "f2_mean_delta": -0.093467,
+      "family": "keyword:sequence:single"
+    },
+    {
+      "candidate_hash": "2ec3538d948af8256ca360dfe3182ff712374834e4f9f70285b56634a6f6599c",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.2875,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.269933,
+      "f2_mean_delta": -0.291733,
+      "family": "keyword:sequence:compressed"
+    },
+    {
+      "candidate_hash": "cb71136240b64d549d1dd45106891c3bfd8681ff772a713330d04a728c643cb3",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.148333,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.050403,
+      "f2_mean_delta": -0.052017,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "4f8c77336be9334284bff6dc28390f74434869e3f965e53fc36752973eab2a72",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.225556,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.289566,
+      "f2_mean_delta": -0.276303,
+      "family": "keyword:sequence:raw_history"
+    },
+    {
+      "candidate_hash": "983cbdf3e644b6c0796ecaf4b9b9239cb1cd30c4215a53f763c997df622dcbd7",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.261875,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.195346,
+      "f2_mean_delta": -0.165037,
+      "family": "rrf:sequence:multi"
+    },
+    {
+      "candidate_hash": "fb2b2aa2b47aa4f75bb093d5a046b0d63a934ad9c7bdf070206305d35651d352",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.0,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": 0.0,
+      "f2_mean_delta": 0.0,
+      "family": "keyword:other_always:multi"
+    },
+    {
+      "candidate_hash": "ed324cd09a4ab3f6204766a75bc6d1092c85fcc7bf8f2efd1a418fba0a27e0f7",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": -0.003333,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": 0.011692,
+      "f2_mean_delta": 0.013046,
+      "family": "keyword:sequence:raw_history"
+    },
+    {
+      "candidate_hash": "fe5668e13de78ed6b277946b04367f2832c5c201248d3f2a970f9e8113c4c9e6",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.41,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.527594,
+      "f2_mean_delta": -0.533116,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "8edfa4d6d5e6e2d09e384e275ba717a606c25bc84039a52816457518fcdc528f",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.016042,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.042865,
+      "f2_mean_delta": -0.047031,
+      "family": "weighted:sequence:compressed"
+    },
+    {
+      "candidate_hash": "4f3b6acf8175f9d461d2bc3ea44dadccde6a54cdcfdfc852ee7792362de032b0",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.575,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.610774,
+      "f2_mean_delta": -0.601944,
+      "family": "keyword:sequence:single"
+    },
+    {
+      "candidate_hash": "e20f1979c8bd29c110e6d44f23207c3c45908d065d01b0d647f3aea08ab8952b",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.008333,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.004919,
+      "f2_mean_delta": -0.006233,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "68c78fa941eec885625471dc2074965c013eeac09d557b853d9172418c79a6d9",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.0,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": 0.0,
+      "f2_mean_delta": 0.0,
+      "family": "keyword:other_always:multi"
+    },
+    {
+      "candidate_hash": "17d8862539929dca6596541637e955e27c96ccfede47c257db40cfa90d3ad385",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.575,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.591465,
+      "f2_mean_delta": -0.592049,
+      "family": "keyword:sequence:compressed"
+    },
+    {
+      "candidate_hash": "718b305ca52b22f74f1bf65f0a3968f4cc40219eb3dfcbcba623c4832a55b707",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.036667,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.001855,
+      "f2_mean_delta": -0.003102,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "67a426107eb4dc3858d4a320d94f83bdf2d6602f86de6e966fa27e19bc475cb7",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.033333,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": 0.001935,
+      "f2_mean_delta": 0.000312,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "f5689265013bf16903ed5fcb4b27fecf61db9ef008800ce56fb0d9b1d5756e8c",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.311667,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.189086,
+      "f2_mean_delta": -0.18183,
+      "family": "keyword:missing_priority:multi"
+    },
+    {
+      "candidate_hash": "ba40713519e06190d08def063e4c1c4b1d43171997155878e094c7ed8fdf0689",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": -0.001667,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.00379,
+      "f2_mean_delta": -0.004633,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "aea84daf47d2af649c2c4d11edbbd1af7600fde8e7ac91449ce1ef2b0e8abfbe",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.389167,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.319772,
+      "f2_mean_delta": -0.325999,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "05c8305965d91066e9c7e0163c1bf2c434fcbdd23fb4554e335d818404cd3dc6",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.065833,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.047151,
+      "f2_mean_delta": -0.044463,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "bb986ce7f200cf6dd95444e75e6d4f482499c91cab612ce101f32c0b38a1bad5",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.16,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.137339,
+      "f2_mean_delta": -0.172225,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "f78062b7988df34dd26958f2e32daebe7a0f54eb7c0f8ea6408b2f9ca19923dd",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.16,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.137339,
+      "f2_mean_delta": -0.172225,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "f0004d5ae18e1c5c11877cc3982d82d319e2692e0ad958eb6d7eb6a881f81375",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.41,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.527594,
+      "f2_mean_delta": -0.533116,
+      "family": "keyword:sequence:compressed"
+    },
+    {
+      "candidate_hash": "43978314e7282bcbc8c1115d688912d356ae22d3a5448c7132a725623411621f",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.043333,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": 0.009516,
+      "f2_mean_delta": 0.003579,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "e6389721c1e01437361a89a9be762aa9ef801bb6cb2970b30ba3548f5060dc43",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.07125,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.12365,
+      "f2_mean_delta": -0.13267,
+      "family": "keyword:sequence:raw_history"
+    },
+    {
+      "candidate_hash": "bd0831308f3d0790d28f547d18f9d3b54a7a578d0ccc0f28d446d7a86b257917",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": -0.005,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.01379,
+      "f2_mean_delta": -0.011683,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "1261dfb87140221a0203e832e9665e5f7c8cb9accaf6a9434c2503d9af6a8f1b",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.4375,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.477755,
+      "f2_mean_delta": -0.486063,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "0ecec67ec4fa6ad73443a6e42888db2c462631e67de322e873c213087cbc4144",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.184167,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.164839,
+      "f2_mean_delta": -0.171675,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "8c71a7014e19fdae6d3f1796067878c8ec721d7689b06d0bcafe4b9cfc8c681b",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.351042,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.291085,
+      "f2_mean_delta": -0.277475,
+      "family": "rrf:missing_priority:multi"
+    },
+    {
+      "candidate_hash": "a8e6fa9964f112f25a17c518f9bd0f3d3daaebb5b2b4bc524c93bdfc5b8e3bba",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.339583,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.480088,
+      "f2_mean_delta": -0.495969,
+      "family": "dense:sequence:single"
+    },
+    {
+      "candidate_hash": "dc554c47dfb20421b999b027bedabc9997ef71790d503c23920f58bf351f0745",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.0,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.015161,
+      "f2_mean_delta": -0.0188,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "9cf6e7ed6e84f873fd8b9a93bc7e491e7a73fec4aa117b808516918b6ad1522f",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.0,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": 0.0,
+      "f2_mean_delta": 0.0,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "b6004ce9e3d87f5c058d112b56d25210d4f21d2188269ba2f9b47a8d65bb4525",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.0,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": 0.0,
+      "f2_mean_delta": 0.0,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "c5e9ef569eecebde72d957e82732729a0ff97054cec8ae08b7e28dd6d0f3b26f",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": -0.003333,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.007825,
+      "f2_mean_delta": -0.01189,
+      "family": "keyword:sequence:raw_history"
+    },
+    {
+      "candidate_hash": "848b2e445a63f6ce753606fc32ff7614c804aa76f4b20a10770beaa0d4212643",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.24,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.260478,
+      "f2_mean_delta": -0.268981,
+      "family": "keyword:sequence:single"
+    },
+    {
+      "candidate_hash": "065f23f0d722d5019c1199f82155103b57d2173d88221223350824104c94b062",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.41,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.546903,
+      "f2_mean_delta": -0.556344,
+      "family": "keyword:sequence:single"
+    },
+    {
+      "candidate_hash": "0fbe9eadf42614cba4171b7c890376894570a51e1bfea1daa6f9b2dcb76d0a53",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.241667,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.164409,
+      "f2_mean_delta": -0.15758,
+      "family": "keyword:missing_priority:compressed"
+    },
+    {
+      "candidate_hash": "52e53841773005fdc8ce05175a0919ee34a7953ecfcf6f192118bdc776eb8c36",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.573333,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.610129,
+      "f2_mean_delta": -0.621144,
+      "family": "keyword:sequence:single"
+    },
+    {
+      "candidate_hash": "37f2536858aa19f82ad67a633708af8c042ed6e18eaa4de875b30d01eb29f300",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.655,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.622433,
+      "f2_mean_delta": -0.598183,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "11b3c6a63fc2c276245ebbad668af108d993c1a0171ac7333a577dfa1a3e6ffd",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.335625,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.387629,
+      "f2_mean_delta": -0.388733,
+      "family": "dense:sequence:compressed"
+    },
+    {
+      "candidate_hash": "bd9ee1ee2d0152a59385d049078c2e422402f7b4e1cedd5a8e14cdf1314d1e41",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.026667,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.013199,
+      "f2_mean_delta": -0.016372,
+      "family": "keyword:sequence:raw_history"
+    },
+    {
+      "candidate_hash": "3ef7e28f061a629e784dd536547e70399c6565c290c3f6945b63c83a45ab2b55",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.330833,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.321361,
+      "f2_mean_delta": -0.28381,
+      "family": "rrf:sequence:multi"
+    },
+    {
+      "candidate_hash": "acab7d8a54bb79ab9cce2c7c5331d3d380905fe9780066afdbf34376b66d5cec",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.338958,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.489772,
+      "f2_mean_delta": -0.478249,
+      "family": "dense:sequence:compressed"
+    },
+    {
+      "candidate_hash": "df9930bd16c1627e6760c782229dc7fb2bbf4d8e2b153213c41e6bc429994584",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.16,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.22951,
+      "f2_mean_delta": -0.243514,
+      "family": "keyword:sequence:single"
+    },
+    {
+      "candidate_hash": "1aa2bcddd471b75bea54e0db32e0621b19ab37234e493d5b7d605e753b307327",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.311667,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.273306,
+      "f2_mean_delta": -0.248756,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "3ab8e7165f91b6d0395dec03124bc51b0fae04b89da1cb76088cbc0b5c24a5bc",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.004167,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.010618,
+      "f2_mean_delta": -0.006808,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "ea3673f2a524e16d3b4b2ef58c216d146136df12d9ce530c7051a0a2de4939b8",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.25,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.210676,
+      "f2_mean_delta": -0.174947,
+      "family": "rrf:sequence:compressed"
+    },
+    {
+      "candidate_hash": "c3221a8bd20b8e3ad742ad39c8c9ec3b299d588e5ed88b34b85e483627a4b427",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.004167,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.025309,
+      "f2_mean_delta": -0.026053,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "2587ff50357b8a94cc10df189b3bf4cd81b270db85a862e84d356da66daaa148",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.575,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.610774,
+      "f2_mean_delta": -0.615011,
+      "family": "keyword:sequence:single"
+    },
+    {
+      "candidate_hash": "86aca45d61ed4070f5ac79aa3b7b82f4445e24ed75a98d8cfb2d4d66c078da26",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.008333,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.004919,
+      "f2_mean_delta": -0.006233,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "f99324c88238cc092695447f47dfeaaf54d533b797be667aa09a425f67d8de9c",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.083333,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.060357,
+      "f2_mean_delta": -0.070571,
+      "family": "keyword:sequence:single"
+    },
+    {
+      "candidate_hash": "ad1695de151c7f4c1532a3bf7f221df8c9734cfecf55a0fbe1f15db462d8d23c",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.33125,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.382588,
+      "f2_mean_delta": -0.384583,
+      "family": "dense:other_always:multi"
+    },
+    {
+      "candidate_hash": "ece01f516a62dd1fb26c0a26604df971b5c04c33593acb01d2a39ffdbea9d117",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.018333,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.017661,
+      "f2_mean_delta": -0.0173,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "0712dad1d2714fd9d77420f47eb99e874c9a2866e3eb52b68b88524485c19a06",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.655,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.622433,
+      "f2_mean_delta": -0.611249,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "76e5e20f7210f72c0514f807a59c984bf1f4c5a2c10b384133e58166a7b82766",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": -0.008333,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.018629,
+      "f2_mean_delta": -0.021633,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "f7b06620b3ccdf15cd34e310849122f167c47da5dfe1804c05bba7604bc13829",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.298304,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.401238,
+      "f2_mean_delta": -0.390904,
+      "family": "dense:sequence:raw_history"
+    },
+    {
+      "candidate_hash": "ef299d578c53dc0015fa78889ad7585f4d32d6003ffd51dbea672a7c1cae8034",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": -0.003333,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.009274,
+      "f2_mean_delta": -0.0073,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "7d1023c5aff15ca8806c47ff8b69e9f7d18af9e66eb520a432ef30d790495e0e",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.241667,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.164409,
+      "f2_mean_delta": -0.15758,
+      "family": "keyword:missing_priority:compressed"
+    },
+    {
+      "candidate_hash": "783cdb2ddb5ea4fbb2ab865572e09ed2e1df1f049dbc4f6f16542bebf8139eea",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": -0.003333,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.01121,
+      "f2_mean_delta": -0.00795,
+      "family": "keyword:sequence:compressed"
+    },
+    {
+      "candidate_hash": "08b437bee281ba268d8c374087c91e8c997eb1159c2049195833d71f1e985d44",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.036667,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": 0.002419,
+      "f2_mean_delta": -0.005021,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "54d55bf31a932dee27954338dcedc5ac8cb87e5ec1d81551c0d9317fde906390",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.1675,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.180806,
+      "f2_mean_delta": -0.189475,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "4c719fa729f851d690705633954adb0d5afa1ae7a69f5927f9d63f837a1ca8c8",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": -0.003333,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.007825,
+      "f2_mean_delta": -0.008679,
+      "family": "keyword:other_always:raw_history"
+    },
+    {
+      "candidate_hash": "833e5b9b8e1ec22fde1a91017f3dc56761bd5f564d687605f8538cd48edf3c63",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.038333,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.108065,
+      "f2_mean_delta": -0.127958,
+      "family": "keyword:sequence:compressed"
+    },
+    {
+      "candidate_hash": "332576413b1770947c84ca945688e37e45039b1e03c042040acfd1b8c24c823e",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.311667,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.189086,
+      "f2_mean_delta": -0.18183,
+      "family": "keyword:missing_priority:multi"
+    },
+    {
+      "candidate_hash": "2d4ee39bd5681f73b335eb802ee2648a2017b9f691bebcd962ab04ba585ecbfb",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": -0.005,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.02379,
+      "f2_mean_delta": -0.01535,
+      "family": "keyword:sequence:compressed"
+    },
+    {
+      "candidate_hash": "8295349c7703f9aa13afacdbee267afdc9601752330265273a0f58e29468d728",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.2525,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.085726,
+      "f2_mean_delta": -0.056967,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "0c009b7f263c004c8690ac57511fae3b645703c8418b1195a58ca6677ad44e88",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.0,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": 0.0,
+      "f2_mean_delta": 0.0,
+      "family": "keyword:other_always:compressed"
+    },
+    {
+      "candidate_hash": "a76d7cf31abd066427319070e90fed72161e92eca1dbaffaa1a8d79226328445",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.265833,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.261371,
+      "f2_mean_delta": -0.245022,
+      "family": "keyword:sequence:compressed"
+    },
+    {
+      "candidate_hash": "6c87c74fb290712d7d3f16e82ff81fefa90e1af02796fe2d9a015e696483e511",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.27,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.236582,
+      "f2_mean_delta": -0.219099,
+      "family": "rrf:sequence:single"
+    },
+    {
+      "candidate_hash": "4d1520f1da5109a9b206ce0d0d4a0726002ef220b152ec4b209798ec985c8c28",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.264167,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.307903,
+      "f2_mean_delta": -0.292394,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "0dff524cd4c6c45b4dbf0516dc606c3231727851693164e77ee60121a04b3b65",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.284524,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.270831,
+      "f2_mean_delta": -0.271658,
+      "family": "weighted:missing_priority:single"
+    },
+    {
+      "candidate_hash": "2c020f76b7874d05dcdf632473fd96257a69590b4600b62d85cbc8ec13f8a32f",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.086667,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.086164,
+      "f2_mean_delta": -0.092954,
+      "family": "keyword:sequence:single"
+    },
+    {
+      "candidate_hash": "a4a708cadc294f1fabf4db510ac416490692f81d1add18445f5b187ed1c13670",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.08625,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.072992,
+      "f2_mean_delta": -0.073284,
+      "family": "keyword:sequence:single"
+    },
+    {
+      "candidate_hash": "8fb1de601511effd33e40d95a40cce78172664ace6e7d49b71f04f08fb3ec945",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.085,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.058548,
+      "f2_mean_delta": -0.0638,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "5a4d66bc833cd5fca77b91aff03c85c91f2dd16447b814ce80d004176d90d499",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.0425,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.075236,
+      "f2_mean_delta": -0.072348,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "a678b79623ccaa36191de17ca18d93420bec1a57ace5194d5387640ba1f3cfa3",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": -0.003333,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.013145,
+      "f2_mean_delta": -0.0143,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "62bdea2d41c131a6cf58e54ebadd50931997017b53a05aca16b5530e9a8f1849",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.286667,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.272487,
+      "f2_mean_delta": -0.271055,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "75195fe3ae9d1510e7f00d95758182ba4d9a69357aecbb24181a2f78bb7c4984",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.655,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.622433,
+      "f2_mean_delta": -0.598183,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "043dcd4699b43aa22ad711d286655959441dea4b72238648b5024b7e255f44ca",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.383929,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.262945,
+      "f2_mean_delta": -0.260193,
+      "family": "keyword:missing_priority:single"
+    },
+    {
+      "candidate_hash": "d80de1f01573685478792f68267e7a39454ebe68618e5ed35dd1646b83ae925c",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.0,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": 0.0,
+      "f2_mean_delta": 0.0,
+      "family": "keyword:other_always:multi"
+    },
+    {
+      "candidate_hash": "5266281938e5d2bd9d0dcfd11dfa119921c39872959f32001062dd7c96fcad40",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.383929,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.262945,
+      "f2_mean_delta": -0.260193,
+      "family": "keyword:missing_priority:single"
+    },
+    {
+      "candidate_hash": "76011e825c5c29d3d0124bae93a1050bc430a34f5bfb316abd4cee57ef972176",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.106667,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.138548,
+      "f2_mean_delta": -0.157675,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "a1b494cefad15f5da9eddafa3eb61d1c6b9ab7e95233cad6ba5c3d161a46ef51",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.043333,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": 0.009516,
+      "f2_mean_delta": 0.003579,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "95d681aa9d767baf007542c5916a3156fb03b438542a87a768dd5a3f90e84b92",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.0,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": 0.0,
+      "f2_mean_delta": 0.0,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "f93b16386006dee818c5e8478eae05c491ea8b5dce62723cfb756e1e23b261a2",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": -0.005,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.002581,
+      "f2_mean_delta": -0.009817,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "9a6c89d23e4026957d7dac222534dfe262458b78069fc1024508e1ed83c214c0",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.1025,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.140276,
+      "f2_mean_delta": -0.11582,
+      "family": "weighted:sequence:compressed"
+    },
+    {
+      "candidate_hash": "2128329128ff022f83849fa7d3db28b4fcb557ec93d7159bd7aaf773a6e7551e",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.070595,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.068483,
+      "f2_mean_delta": -0.074679,
+      "family": "keyword:sequence:single"
+    },
+    {
+      "candidate_hash": "6e72186a2dd9d5d90d898c10c340dfa45d82159726b12278993b2ddebdfa12db",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.039167,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.034677,
+      "f2_mean_delta": -0.0294,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "39e9993433e7e8ed169051ba0ef99087c553aac0914c738755faaf8f1cdb942a",
+      "f0_decision": "REJECT",
+      "f0_mean_delta": -0.383929,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.262945,
+      "f2_mean_delta": -0.260193,
+      "family": "keyword:missing_priority:single"
+    },
+    {
+      "candidate_hash": "79aac09f15aa41af3c3efcff27bc0884a5746cf8b024c66d4452f338221333d4",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": 0.026488,
+      "f1_decision": "HOLD_MORE_DATA",
+      "f1_mean_delta": -0.034075,
+      "f2_mean_delta": -0.042203,
+      "family": "keyword:sequence:raw_history"
+    },
+    {
+      "candidate_hash": "0673e4531c0016befe5a024ccc772b6ab15f7fecd2cc15d27e695b04494fd8ad",
+      "f0_decision": "PROMOTE",
+      "f0_mean_delta": -0.005,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.091667,
+      "f2_mean_delta": -0.107275,
+      "family": "keyword:sequence:raw_history"
+    },
+    {
+      "candidate_hash": "f4453b39cd1dbd8ee3a720b9721bcfbb27f4953e411127295cd87b5ce23481cd",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.0175,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.025457,
+      "f2_mean_delta": -0.020941,
+      "family": "keyword:sequence:multi"
+    },
+    {
+      "candidate_hash": "121169fbbb0b375fe2b0d75da738505cedcad2170a8c0b08f7540062ac6ba8e7",
+      "f0_decision": "HOLD_MORE_DATA",
+      "f0_mean_delta": -0.029167,
+      "f1_decision": "REJECT",
+      "f1_mean_delta": -0.017984,
+      "f2_mean_delta": -0.015967,
+      "family": "keyword:sequence:multi"
+    }
+  ],
+  "decision_counts_f0": {
+    "HOLD_MORE_DATA": 135,
+    "NOVELTY_RESERVE": 7,
+    "PROMOTE": 159,
+    "REJECT": 199
+  },
+  "decision_counts_f1": {
+    "HOLD_MORE_DATA": 153,
+    "REJECT": 347
+  },
+  "duplicate_outcome_policies": 107,
+  "f0_count": 12,
+  "f0_f2_spearman": 0.92611,
+  "f1_count": 62,
+  "f2_count": 150,
+  "gate": "multi_fidelity_evidence_analysis",
+  "next_family_allocation": {
+    "dense:missing_priority:multi": 0.02699672115572781,
+    "dense:missing_priority:single": 0.026094178548977488,
+    "dense:other_always:multi": 0.02835320353123498,
+    "dense:sequence:compressed": 0.023751019006009844,
+    "dense:sequence:multi": 0.022425537879122118,
+    "dense:sequence:raw_history": 0.0234504820013893,
+    "dense:sequence:single": 0.025364595122625556,
+    "keyword:missing_priority:compressed": 0.02943914238831001,
+    "keyword:missing_priority:multi": 0.028568384060300205,
+    "keyword:missing_priority:raw_history": 0.03110098410119228,
+    "keyword:missing_priority:single": 0.027216258534427842,
+    "keyword:other_always:compressed": 0.034918597073779686,
+    "keyword:other_always:multi": 0.032518173706223834,
+    "keyword:other_always:raw_history": 0.03461686473154226,
+    "keyword:other_always:single": 0.032262069796004086,
+    "keyword:sequence:compressed": 0.02795810917018851,
+    "keyword:sequence:multi": 0.026946315477208195,
+    "keyword:sequence:raw_history": 0.02682126265372868,
+    "keyword:sequence:single": 0.02570253429169088,
+    "rrf:missing_priority:multi": 0.029863438080184018,
+    "rrf:missing_priority:single": 0.03028450073896198,
+    "rrf:other_always:multi": 0.033206236453060554,
+    "rrf:other_always:single": 0.033491949700104544,
+    "rrf:sequence:compressed": 0.02698698307516833,
+    "rrf:sequence:multi": 0.02762730133345666,
+    "rrf:sequence:raw_history": 0.03425800232208532,
+    "rrf:sequence:single": 0.02655895365937927,
+    "weighted:missing_priority:multi": 0.03371289817571762,
+    "weighted:missing_priority:single": 0.0292561464715076,
+    "weighted:other_always:multi": 0.03882590359020542,
+    "weighted:sequence:compressed": 0.03156159549722549,
+    "weighted:sequence:multi": 0.026014473595166034,
+    "weighted:sequence:raw_history": 0.03093206279368288,
+    "weighted:sequence:single": 0.032915121284410764
+  },
+  "phase": 8,
+  "top20_false_prune_count": 0,
+  "top20_false_pruned_candidates": [],
+  "unique_outcome_signatures": 393
+}

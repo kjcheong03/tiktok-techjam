@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "technique_id": "retrieval.colbert_rescue.v1",
+  "availability": "unavailable",
+  "model_name": "candidate ColBERT/BGE-M3 model not admitted",
+  "revision": null,
+  "model_path": null,
+  "index_path": null,
+  "index_sha256": null,
+  "catalog_sha256": null,
+  "max_length": 128,
+  "unavailable_reason": "No pinned local late-interaction model or token index exists; the conservative 50k-product flat MaxSim feasibility estimate exceeds the current query-compute gate."
+}

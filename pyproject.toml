@@ -5,8 +5,66 @@ description = "Reproducible retrieval and conversation-state baselines for TechJ
 requires-python = ">=3.10,<3.14"
 dependencies = [
   "numpy>=1.26,<3",
+  "pydantic>=2.10,<3",
+]
+
+[project.optional-dependencies]
+gbdt = [
+  "scikit-learn>=1.7,<2",
+]
+dense = [
+  "huggingface-hub>=1.0,<2",
   "sentence-transformers>=6,<7",
+]
+neural = [
+  "huggingface-hub>=1.0,<2",
+  "sentence-transformers>=6,<7",
+  "torch>=2.2,<3",
+]
+all = [
+  "huggingface-hub>=1.0,<2",
+  "scikit-learn>=1.7,<2",
+  "sentence-transformers>=6,<7",
+  "torch>=2.2,<3",
+]
+
+[dependency-groups]
+dev = [
+  "mypy>=1.15,<2",
+  "pytest>=8.3,<9",
+  "ruff>=0.11,<1",
+]
+
+[tool.ruff]
+extend-exclude = [
+  "README.md",
+  "docs",
+  "baseline/official_reference.py",
+  "evaluator",
+  "tests/test_evaluator.py",
 ]
 
 [tool.uv]
 package = false
+
+[[tool.mypy.overrides]]
+module = "ghostlab.retrieval.dense"
+ignore_errors = true
+
+[[tool.mypy.overrides]]
+module = [
+  "ghostlab.retrieval.learned_sparse",
+  "ghostlab.retrieval.late_interaction",
+]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "sklearn.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = [
+  "ghostlab.runtime.experimental",
+  "ghostlab.runtime.experimental_questions",
+]
+ignore_errors = true

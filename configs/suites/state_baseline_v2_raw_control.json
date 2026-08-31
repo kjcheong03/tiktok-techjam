@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "experiment_id": "state_baseline_v2_raw_control_v1",
+  "engine": "experimental",
+  "state_variant": "raw_history",
+  "query_variant": "raw_history",
+  "question_variant": "sequence",
+  "question_order": [
+    "material",
+    "color",
+    "style",
+    "use_case",
+    "feature",
+    "budget",
+    "size"
+  ],
+  "retrieval_route": "keyword",
+  "dense_backend": "off",
+  "negative_evidence": false,
+  "provenance": false,
+  "override_invalidation": false,
+  "recommendation_history": "off",
+  "profile_prior_weight": 0.0,
+  "quality_prior_weight": 0.0,
+  "reranker": "none"
+}

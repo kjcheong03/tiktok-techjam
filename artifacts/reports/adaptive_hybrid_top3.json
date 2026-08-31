@@ -1,0 +1,150 @@
+{
+  "architecture": "adaptive_hybrid_1a_3b_v1",
+  "automatic_activation": false,
+  "campaign_report": "artifacts/reports/adaptive_hybrid_additive_warm_start_1650.json",
+  "finalists": [
+    {
+      "campaign_decision": "HOLD_MORE_DATA",
+      "candidate_id": "warm-start-d4e040a07e6d-translated-v2-sem-w0p10-d10-f1-add-fusion_rrf-714a27f0249c",
+      "commands": {
+        "activate_after_validation": "PYTHONPATH=. .venv/bin/python scripts/activate_adaptive_candidate.py --preset configs/finalists/adaptive_hybrid_1650/rank_1_warm-start-d4e040a07e6d-translated-v2-sem-w0p10-d10-f1-add-fusion_rrf-714a27f0249c.json --expected-sha256 907b7a92f06ad06447073bf6d0013fb30c1dc3b08b5bfe29897b6e1802a3f050 --top3-report artifacts/reports/adaptive_hybrid_top3.json --holdout-report artifacts/reports/adaptive_final_holdout.json",
+        "evaluate": "PYTHONPATH=. .venv/bin/python scripts/run_adaptive_hybrid.py --config configs/finalists/adaptive_hybrid_1650/rank_1_warm-start-d4e040a07e6d-translated-v2-sem-w0p10-d10-f1-add-fusion_rrf-714a27f0249c.json --dataset data/public_set.jsonl --dataset data/synthetic_1000_public_like.jsonl --dataset data/independent_template_1000.jsonl --lineage-manifest data/splits/adaptive_hybrid_lineage_75_25_v1.json --partition development --output artifacts/reports/finalists/warm-start-d4e040a07e6d-translated-v2-sem-w0p10-d10-f1-add-fusion_rrf-714a27f0249c_evaluation.json",
+        "test": "PYTHONPATH=. .venv/bin/pytest -q",
+        "validate": "PYTHONPATH=. .venv/bin/python scripts/validate_adaptive_hybrid.py --config configs/finalists/adaptive_hybrid_1650/rank_1_warm-start-d4e040a07e6d-translated-v2-sem-w0p10-d10-f1-add-fusion_rrf-714a27f0249c.json --adaptive-report artifacts/reports/finalists/warm-start-d4e040a07e6d-translated-v2-sem-w0p10-d10-f1-add-fusion_rrf-714a27f0249c_evaluation.json --training-report artifacts/reports/adaptive_hybrid_training_1650_final_v1.json --output artifacts/reports/finalists/warm-start-d4e040a07e6d-translated-v2-sem-w0p10-d10-f1-add-fusion_rrf-714a27f0249c_validation.json",
+        "verify_active": "PYTHONPATH=. .venv/bin/python scripts/verify_active_candidate.py"
+      },
+      "config_path": "configs/finalists/adaptive_hybrid_1650/rank_1_warm-start-d4e040a07e6d-translated-v2-sem-w0p10-d10-f1-add-fusion_rrf-714a27f0249c.json",
+      "config_sha256": "907b7a92f06ad06447073bf6d0013fb30c1dc3b08b5bfe29897b6e1802a3f050",
+      "constraint_violations": 0,
+      "gate_failures": [],
+      "metrics": {
+        "hit_rate_at_10": 0.961818,
+        "latency_p95_ms": 1302.5515130557346,
+        "mean_paired_delta": 0.003527489177489178,
+        "mrr": 0.704793,
+        "mttc": 2.753939,
+        "score": 0.8572681200000001
+      },
+      "parameters": {
+        "quality_prior_weight": 0.2,
+        "quality_rerank_k": 50,
+        "semantic_rerank_k": 10,
+        "semantic_weight": 0.1
+      },
+      "promotion_eligible": true,
+      "rank": 1,
+      "runtime_assets": {
+        "asset_path": "artifacts/models/adaptive_top10_residual/bfd2d0a5da85c4bc/f2.fold0.joblib",
+        "asset_sha256": "d38077a41225a7d938032a37a3ba7e5bd8adf95522ee1d14b3de63ae5c5cb927",
+        "receipt_path": "artifacts/models/adaptive_top10_residual/bfd2d0a5da85c4bc/f2.fold0.fit_receipt.json",
+        "receipt_sha256": "fbc7cf41417c673a69e62c0196c0021929806f861fe26fb9561af0d7c8818997"
+      },
+      "techniques": [
+        "adaptation.profile_update.v1",
+        "filter.structured",
+        "fusion.multi_route_union.v1",
+        "fusion.rrf",
+        "guard.override_fallback",
+        "guidance.pre_dense_overload.v1",
+        "orchestration.atomic_commit.v1",
+        "prior.profile",
+        "prior.quality",
+        "query.coverage_adaptive_v2",
+        "question.candidate_eig.v1",
+        "ranking.cross_encoder",
+        "ranking.local_llm_semantic.v1",
+        "ranking.source_aware_union.v1",
+        "ranking.top10_residual_reranker.v2",
+        "recommendation.correction_scoped_history",
+        "retrieval.category_independent.v1",
+        "retrieval.e5",
+        "retrieval.sparse",
+        "routing.dual_track_observable.v1",
+        "state.baseline_v2",
+        "termination.reward_aware.v1"
+      ]
+    }
+  ],
+  "frozen_dependencies": {
+    "control_config_canonical_sha256": "959d9c43ccc046f4aeea0c5e2d33364d51eb56ddb43c1b0a32807624595f47fc",
+    "control_config_file_sha256": "dd103254f3ca1a77cf6776eda694da5d6b34444c1c8f29bc0cde110763475c44",
+    "control_config_path": "configs/adaptive_hybrid_1a_3b_1650_final_v1_selected.json",
+    "gates_path": "configs/evaluation/adaptive_holdout_gates_v1.json",
+    "gates_sha256": "b40c9ec0e87f025e5d15c1ad423fe3c942c5fd108f9d0cce136bb4d186552e6f",
+    "reference_a_implementation_path": "baseline/official_reference.py",
+    "reference_a_implementation_sha256": "cd0fdade2d743aaf220b93a6cd3bfa7fb1b9b9065d2fbd174128ed2b0f1b812d",
+    "reference_b_config_path": "configs/suites/state_baseline_v2_other.json",
+    "reference_b_config_sha256": "72759a775784d05ef4693a16832e36624fbf2a0bc2e1747f947c36904cb5483f"
+  },
+  "frozen_proposals": [
+    {
+      "candidate_id": "warm-start-d4e040a07e6d-translated-v2-sem-w0p10-d10-f1-add-fusion_rrf-714a27f0249c",
+      "config_canonical_sha256": "da98a47884822d7d3f589be073c92e653d47c896bb9aea02f97a0422d45773e0",
+      "config_path": "configs/finalists/adaptive_hybrid_1650/rank_1_warm-start-d4e040a07e6d-translated-v2-sem-w0p10-d10-f1-add-fusion_rrf-714a27f0249c.json",
+      "config_sha256": "907b7a92f06ad06447073bf6d0013fb30c1dc3b08b5bfe29897b6e1802a3f050",
+      "development_rank": 1,
+      "final_selection_accessed": false,
+      "lineage_manifest_sha256": "de01ab4fae4891f4d122518c3eeb3b422095c171ac9964725cb445089f3b9842"
+    }
+  ],
+  "maximum_challenger_count": 3,
+  "minimum_challenger_count": 1,
+  "packaged_challenger_count": 1,
+  "promotion_process": [
+    "Freeze every eligible development finalist, capped at three, using development evidence only.",
+    "Evaluate frozen A/B references, C and every frozen D finalist once on the 550-session final selection set.",
+    "Apply the predeclared gates to every D versus C and use only the frozen tie-breaks.",
+    "Run activation only for the selected winner; activation is never automatic.",
+    "Run verify_active and the full test-suite command."
+  ],
+  "recommendation": "freeze_up_to_three_for_one_time_final_selection",
+  "recommended_candidate_id": "warm-start-d4e040a07e6d-translated-v2-sem-w0p10-d10-f1-add-fusion_rrf-714a27f0249c",
+  "requested_challenger_count": 3,
+  "schema_version": 3,
+  "selection_evidence": {
+    "datasets": [
+      {
+        "path": "data/public_set.jsonl",
+        "sample_count": 200,
+        "sha256": "857259f7a438e6188ac63e18995b6ff4489bfcfc4a716a798b9a2aa0ee8f7579"
+      },
+      {
+        "path": "data/synthetic_1000_public_like.jsonl",
+        "sample_count": 1000,
+        "sha256": "3c49c100c79a1ec7ee30515041e0fc0b703d65626a3c98abcd8ebcd72cb3ab28"
+      },
+      {
+        "path": "data/independent_template_1000.jsonl",
+        "sample_count": 1000,
+        "sha256": "6479214f07e5253e99e900eb5db948112894e6bb89151fd1c84e7d99dd41f70b"
+      }
+    ],
+    "f3_accessed": false,
+    "nested_oof_is_permanent_holdout": false,
+    "note": "Only the 1,650-session development partition may participate in fitting and campaign selection. The 550-session holdout remains unaccessed until the available one-to-three challengers and the immutable selection rule are frozen. It is a final selection set, not an unbiased holdout.",
+    "one_time_final_selection_set_exists": true,
+    "sample_count": 1650,
+    "selection_data_held_out": false
+  },
+  "selection_rule": {
+    "eligible_systems": [
+      "C_fixed_adaptive_architecture",
+      "D1"
+    ],
+    "gates_applied_independently_against": "C_fixed_adaptive_architecture",
+    "no_post_selection_tuning": true,
+    "reference_only_systems": [
+      "A_official_stateless_bm25",
+      "B_state_baseline_v2_tagged_best"
+    ],
+    "tie_break_order": [
+      "recommended_technical_score:desc",
+      "mrr:desc",
+      "hit_rate_at_10:desc",
+      "mttc:asc",
+      "fallback_rate:asc",
+      "development_rank:asc",
+      "candidate_id:asc"
+    ]
+  }
+}

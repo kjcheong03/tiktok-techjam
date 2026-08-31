@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "experiment_id": "w2_splade_rescue_v1",
+  "technique_ids": ["retrieval.splade_rescue.v1", "fusion.sparse_semantic_union.v1"],
+  "availability": "blocked_missing_asset",
+  "split": "adaptive_v1",
+  "holdout_accessed": false,
+  "primary_gate": "unique target recall at 10/50/100/200 versus depth-matched BM25",
+  "asset_manifest": "configs/assets/splade_rescue_v1.json",
+  "candidate_depths": [10, 50, 100, 200],
+  "fusion_weight_space": [0.1, 0.2, 0.25, 0.35, 0.5],
+  "promotion_rule": "No end-to-end run until the offline asset, unique-recall, p95 latency, memory, disk, and license gates pass."
+}

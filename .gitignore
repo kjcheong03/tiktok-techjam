@@ -7,6 +7,14 @@ results.json
 data/catalog.jsonl
 data/releases/
 artifacts/cache/
+artifacts/guarded/
+artifacts/assets/
+artifacts/campaign/
+artifacts/campaigns/
+artifacts/proposals/
+artifacts/reports/autonomous_*.json
+artifacts/reports/pure_baseline_smoke_*.json
+artifacts/reports/w2_integration_control_screen.json
 # Organizer-only code, private evaluation data, manifests, and build reports.
 organizer/
 secure/

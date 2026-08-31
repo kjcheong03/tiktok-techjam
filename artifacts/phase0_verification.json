@@ -1,0 +1,37 @@
+{
+  "phase": 0,
+  "status": "PASS",
+  "manifest": "configs/integrity/official_v1.json",
+  "protected_integrity": {
+    "checked": 9,
+    "passed": true,
+    "mismatches": []
+  },
+  "starter_reference": {
+    "frozen_path": "baseline/official_reference.py",
+    "frozen_hash": "cd0fdade2d743aaf220b93a6cd3bfa7fb1b9b9065d2fbd174128ed2b0f1b812d",
+    "frozen_matches": true,
+    "current_source_path": "starter/agent.py",
+    "current_source_matches_reference": false
+  },
+  "baseline_metrics": {
+    "passed": true,
+    "expected": {
+      "sample_count": 200,
+      "hit_rate_at_10": 0.125,
+      "mrr": 0.068034,
+      "mttc": 9.81,
+      "efficiency": 0.119,
+      "recommended_technical_score": 0.10671
+    },
+    "actual": {
+      "sample_count": 200,
+      "hit_rate_at_10": 0.125,
+      "mrr": 0.068034,
+      "mttc": 9.81,
+      "efficiency": 0.119,
+      "recommended_technical_score": 0.10671
+    },
+    "mismatches": {}
+  }
+}

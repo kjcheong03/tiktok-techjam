@@ -1,0 +1,14 @@
+{
+  "experiment_id": "challenger_query_v1",
+  "parent_commit": "189f0c6338e2d2ec1a795dce543e881ff2037f2a",
+  "family": "query",
+  "hypothesis": "A non-destructive raw-plus-structured query can preserve lexical recall while removing invalidated conversational noise.",
+  "primary_metric": "recommended_technical_score",
+  "secondary_metrics": ["hit_rate_at_10", "mrr", "mttc", "candidate_recall_at_200"],
+  "candidate_limit": 6,
+  "wall_clock_limit_seconds": 3600,
+  "seeds": [20260826],
+  "split": "nested_v1",
+  "holdout_accessed": false,
+  "promotion_rule": "Promote only for stable nested OOF gain over raw_history; otherwise retain a dependency-gated interaction candidate when candidate recall or intent-override behavior improves."
+}

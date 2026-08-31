@@ -1,0 +1,28 @@
+{
+  "schema_version": 3,
+  "evaluation_scope": "one_time_final_selection_set",
+  "minimum_challenger_count": 1,
+  "maximum_challenger_count": 3,
+  "selection_tie_break_order": [
+    "recommended_technical_score:desc",
+    "mrr:desc",
+    "hit_rate_at_10:desc",
+    "mttc:asc",
+    "fallback_rate:asc",
+    "development_rank:asc",
+    "candidate_id:asc"
+  ],
+  "no_post_selection_tuning": true,
+  "combined_score_min_delta": 0.0,
+  "buying_hit_at_10_max_regression": 0.01,
+  "buying_mrr_max_regression": 0.01,
+  "scenario_hit_at_10_max_regression": 0.02,
+  "route_hit_at_10_max_regression": 0.02,
+  "source_hit_at_10_max_regression": 0.02,
+  "mttc_max_regression": 0.5,
+  "fallback_rate_max_regression": 0.01,
+  "paired_cluster_mean_min": 0.0,
+  "paired_cluster_ci_lower_min": -0.005,
+  "require_zero_output_constraint_violations": true,
+  "require_zero_overload_trace_violations": true
+}

@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "experiment_id": "gbdt_constraint_interaction_v1",
+  "parent_commit": "cbfd7d5dd595c5637608ba28f46f57777c7e153e",
+  "parent_policy_id": "shallow_metadata_depth3",
+  "family": "gbdt_constraint_interaction",
+  "hypothesis": "Runtime-observable structured constraint coverage, explicit-negative contradiction, neutral no-preference, provenance/invalidation, turn, and sparse-confidence features improve the audited metadata depth-3 GBDT without hidden or future information.",
+  "primary_metric": "recommended_technical_score",
+  "split": "nested_v1",
+  "holdout_accessed": false,
+  "manifest_created_before_evaluation": true,
+  "candidate_limit": 1,
+  "candidate": {
+    "candidate_id": "metadata_depth3_plus_runtime_constraints",
+    "base_feature_set": "metadata",
+    "added_feature_set": "constraint_runtime_v1",
+    "max_depth": 3,
+    "num_leaves": 7,
+    "learning_rate": 0.03,
+    "outer_fold_rounds": [100, 4, 56, 98, 34],
+    "all_development_rounds": 56,
+    "min_data_in_leaf": 40,
+    "min_impurity_decrease": 1e-7,
+    "rerank_k": 50,
+    "seed": 20260826
+  },
+  "controls": {
+    "matched_oof_control": "audited metadata depth-3 GBDT with identical folds, training groups, Top-50 head, and frozen per-fold round counts",
+    "required_control_score": 0.861417,
+    "backward_ablation": "remove every constraint_runtime_v1 feature while preserving all other code, data, folds, and rounds"
+  },
+  "feature_semantics": {
+    "positive": "Coverage uses active positive ConversationState values only.",
+    "negative": "Contradiction uses active explicit negative values only.",
+    "no_preference": "No-preference is neutral context and is never scored as candidate-negative.",
+    "override": "Inactive/invalidated values are counted only as context and never used for candidate coverage.",
+    "provenance": "Explicit and simulator-answer active coverage are separate; profile/scenario/target fields are absent.",
+    "confidence": "Top-1 sparse margin and normalized sparse score entropy are computed from the current runtime retrieval result."
+  },
+  "selection_prohibitions": [
+    "no hyperparameter search",
+    "no tree-depth or round search",
+    "no global feature selection",
+    "no target, profile, scenario, future-turn, or holdout features",
+    "no post-outcome candidate amendment"
+  ],
+  "promotion_gates": {
+    "minimum_oof_score_delta": 0.005,
+    "minimum_nonnegative_outer_folds": 4,
+    "minimum_hit_rate_delta": -0.005,
+    "minimum_each_scenario_score_delta": -0.005,
+    "required_failure_count": 0,
+    "cold_start_seconds_max": 30.0,
+    "warm_turn_p95_ms_max": 500.0,
+    "peak_process_memory_mb_max": 4096.0,
+    "model_asset_mb_max": 500.0,
+    "exact_control_reproduction_tolerance": 0.000001
+  },
+  "outcomes_observed": false
+}

@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "architecture": "adaptive_hybrid_1a_3b_v1",
+  "workflow_static": true,
+  "dataset": "data/public_set.jsonl",
+  "sample_count": 1,
+  "records": [
+    {
+      "ordinal": 1,
+      "candidate_sha256": "4735e3a370a6a344d0101393f6c309b3d09d3880eb7f8c340b15821296c32094",
+      "trial": {
+        "buying_min_specific_constraints": 1,
+        "router_abstain_confidence": 0.6,
+        "buying_retrieval_k": 200,
+        "dense_retrieval_per_view": 400,
+        "dense_output_k": 200,
+        "category_k": 120,
+        "merged_k": 320,
+        "buying_vector_support_k": 40,
+        "browsing_keyword_support_k": 40,
+        "buying_keyword_share": 0.9,
+        "browsing_vector_share": 0.8,
+        "semantic_weight": 0.5,
+        "semantic_rerank_k": 20,
+        "semantic_fallback_weight": 0.5,
+        "overload_min_candidates": 180,
+        "question_value_margin": 0.0,
+        "broad_discovery_turns": 2,
+        "profile_weight": 0.02,
+        "profile_max_explicit_constraints": 2
+      },
+      "architecture_valid": true,
+      "metrics": {
+        "hit_rate_at_10": 1.0,
+        "mrr": 0.333333,
+        "mttc": 2.0,
+        "recommended_technical_score": 0.78
+      },
+      "runtime": {
+        "route_counts": {
+          "buying": 2,
+          "browsing": 0
+        },
+        "semantic_activations": 2,
+        "fallbacks": 0
+      },
+      "wall_seconds": 15.893406
+    }
+  ],
+  "selected_candidate_sha256": "4735e3a370a6a344d0101393f6c309b3d09d3880eb7f8c340b15821296c32094",
+  "selected_ordinal": 1
+}

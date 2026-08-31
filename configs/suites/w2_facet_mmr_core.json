@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "experiment_id": "w2_facet_mmr_core_v1",
+  "engine": "experimental",
+  "state_variant": "raw_history",
+  "question_variant": "sequence",
+  "question_order": ["other", "other", "use_case", "other", "size", "other", "other", "size"],
+  "retrieval_route": "keyword",
+  "dense_backend": "off",
+  "sparse_weights": [2.0, 8.0, 4.0, 2.5, 1.5, 1.0],
+  "quality_prior_weight": 0.2,
+  "reranker": "metadata_gbdt",
+  "reranker_model_asset": "artifacts/models/gbdt_reranker_v2_round56.json",
+  "rerank_k": 50,
+  "diversification": "facet_mmr",
+  "diversification_weight": 0.85,
+  "diversification_rerank_k": 30,
+  "diversification_output_k": 10,
+  "diversification_max_turn": 2,
+  "diversification_max_constraints": 1
+}

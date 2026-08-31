@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "asset_id": "gemma3_1b_it",
+  "destination": "artifacts/cache/models/gemma-3-1b-it",
+  "license": "gemma",
+  "model_name": "google/gemma-3-1b-it",
+  "notes": "Gated asset: accept Google's Gemma terms and authenticate before fetching.",
+  "revision": "dcc83ea841ab6100d6b47a070329e1ba4cf78752"
+}

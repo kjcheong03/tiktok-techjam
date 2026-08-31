@@ -1,0 +1,40 @@
+{
+  "base_recall": {
+    "at_10": 0.173333,
+    "at_100": 0.56,
+    "at_200": 0.713333,
+    "at_50": 0.406667
+  },
+  "combined_warm_latency_ms": {
+    "mean": 38.076552,
+    "p95": 68.72025
+  },
+  "evaluation_label": "F0 first-turn mechanism gate; not OOF champion evidence",
+  "facet_mmr": {
+    "mean_facet_coverage_at_10_base": 379.046667,
+    "mean_facet_coverage_at_10_candidate": 382.48,
+    "recall": {
+      "at_10": 0.18,
+      "at_100": 0.56,
+      "at_200": 0.713333,
+      "at_50": 0.406667
+    },
+    "target_rank_improved": 3,
+    "target_rank_regressed": 0
+  },
+  "holdout_accessed": false,
+  "prf": {
+    "mean_expansion_terms": 3.973333,
+    "recall": {
+      "at_10": 0.166667,
+      "at_100": 0.506667,
+      "at_200": 0.693333,
+      "at_50": 0.413333
+    },
+    "unique_losses_at_200": 23,
+    "unique_rescues_at_200": 20
+  },
+  "sample_count": 150,
+  "schema_version": 1,
+  "split": "adaptive_v1"
+}

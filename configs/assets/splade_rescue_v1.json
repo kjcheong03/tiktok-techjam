@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "technique_id": "retrieval.splade_rescue.v1",
+  "availability": "unavailable",
+  "model_name": "candidate SPLADE model not admitted",
+  "revision": null,
+  "model_path": null,
+  "index_path": null,
+  "index_sha256": null,
+  "catalog_sha256": null,
+  "max_terms": 128,
+  "unavailable_reason": "No pinned local SPLADE model or 50k-product index exists in this worktree; offline load, license, recall, latency, memory, and packaging gates have not been run."
+}

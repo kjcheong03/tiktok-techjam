@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "base_config": "configs/suites/keyword_research.json",
+  "dimensions": {
+    "state_variant": ["raw_history", "multi", "compressed"],
+    "query_variant": [null, "raw_history", "raw_plus_active", "negation_safe_hybrid"],
+    "question_variant": ["none", "sequence", "adaptive"],
+    "retrieval_route": ["keyword"],
+    "reranker": ["none", "linear", "metadata_gbdt"],
+    "reranker_model_asset": [null, "artifacts/models/gbdt_reranker_v2_round56.json"],
+    "structured_filter": [false, true],
+    "profile_prior_weight": [0.0, 0.1],
+    "quality_prior_weight": [0.0, 0.2]
+  },
+  "notes": "The planner rejects incompatible candidates. Learned questions, dense assets and cross-encoder dimensions are added through their named presets so path-dependent fields remain coupled."
+}

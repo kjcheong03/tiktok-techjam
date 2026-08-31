@@ -1,0 +1,77 @@
+{
+  "schema_version": 1,
+  "experiment_id": "neural_rank_interaction_v1",
+  "parent_commit": "404948d0952171113cbba238c67cdfa5d8f5541a",
+  "family": "bounded_ranking_interaction",
+  "hypothesis": "The pinned zero-shot cross-encoder score provides semantic evidence that the already-selected shallow metadata LambdaMART can use conditionally, improving complete outer-OOF policy quality beyond the audited GBDT control even though the cross-encoder lost standalone.",
+  "primary_metric": "recommended_technical_score",
+  "secondary_metrics": [
+    "hit_rate_at_10",
+    "mrr",
+    "mttc"
+  ],
+  "split": "nested_v1",
+  "sample_count": 150,
+  "holdout_accessed": false,
+  "control": {
+    "candidate_id": "shallow_metadata_depth3",
+    "report": "artifacts/reports/gbdt_reranker_v1.json",
+    "report_parent_commit": "404948d0952171113cbba238c67cdfa5d8f5541a",
+    "feature_set": "metadata",
+    "rerank_k": 50
+  },
+  "candidate_limit": 1,
+  "candidate": {
+    "candidate_id": "shallow_metadata_depth3_plus_pinned_ce",
+    "feature_names": "audited metadata features followed by cross_encoder_score and cross_encoder_score_missing",
+    "max_depth": 3,
+    "num_leaves": 7,
+    "learning_rate": 0.03,
+    "max_rounds": 160,
+    "early_stopping_rounds": 20,
+    "rerank_k": 50,
+    "inner_validation": "next frozen outer fold among the outer-training side",
+    "outer_refit": "refit on the complete outer-training side at the inner-selected round count"
+  },
+  "cross_encoder": {
+    "model": "cross-encoder/ms-marco-MiniLM-L6-v2",
+    "model_revision": "233902d25c440f23af6f7d6e94d2946bac0bee0a",
+    "passage_schema_version": "catalog_fields_v2",
+    "max_length": 256,
+    "batch_size": 32,
+    "activation": "sigmoid",
+    "device": "cpu",
+    "local_files_only": true,
+    "score_scope": "every candidate in the fixed quality-reranked Top-50 for every frozen adaptive trajectory query",
+    "missing_value": "native NaN",
+    "missing_indicator": "cross_encoder_score_missing"
+  },
+  "fixed_training_constraints": {
+    "objective": "grouped_pairwise_lambdarank",
+    "metric": "ndcg",
+    "eval_at": [
+      10
+    ],
+    "min_data_in_leaf": 40,
+    "min_impurity_decrease": 1e-7,
+    "l2": 1.0,
+    "deterministic": true,
+    "num_threads": 1,
+    "session_grouping": true,
+    "all_learned_tree_fits_remain_inside_outer_folds": true
+  },
+  "backward_ablations": [
+    "audited shallow_metadata_depth3 without cross-encoder score",
+    "parked standalone pinned zero-shot cross-encoder evidence from commit 071eda9"
+  ],
+  "statistical_evidence": {
+    "paired_bootstrap_resamples": 10000,
+    "paired_randomization_resamples": 10000,
+    "seed": 20260826,
+    "report_complete_oof_sessions": true,
+    "report_folds_and_scenarios": true
+  },
+  "promotion_rule": "Reject leakage, cache completeness, determinism, packaging, or runtime failure. Promote only if the single candidate improves mean paired OOF session reward by at least 0.005 versus the audited shallow metadata GBDT, its paired bootstrap lower bound is at least -0.002, Hit@10 does not regress, at least four of five fold deltas are positive with no fold below -0.005, no aggregate scenario Hit@10 regresses by more than 0.025, cross_encoder_score has nonzero split importance, and cold start <=30 seconds, warm-turn p95 <=500 milliseconds, peak memory <=4096 MB, total model assets <=500 MB, failures=0, external calls=0. Otherwise park the interaction and do not create a deployable neural model artifact.",
+  "wall_clock_limit_seconds": 7200,
+  "manifest_created_before_score_generation_and_outcome_evaluation": true
+}

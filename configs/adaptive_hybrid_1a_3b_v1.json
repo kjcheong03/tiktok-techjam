@@ -1,0 +1,118 @@
+{
+  "schema_version": 1,
+  "architecture": "adaptive_hybrid_1a_3b_v1",
+  "policy_id": "adaptive_hybrid_1a_3b_v1",
+  "submission_eligible": true,
+  "state": {
+    "component": "state_v2"
+  },
+  "router": {
+    "component": "buying_browsing_router",
+    "buying_min_specific_constraints": 1,
+    "browsing_markers": [
+      "still exploring",
+      "browsing",
+      "ideas",
+      "not sure",
+      "use your judgment",
+      "recommend something"
+    ],
+    "abstain_confidence": 0.6
+  },
+  "buying": {
+    "component": "field_bm25_precision",
+    "retrieval_k": 200,
+    "field_weights": [2.0, 8.0, 4.0, 2.5, 1.5, 1.0]
+  },
+  "browsing": {
+    "component": "diverse_e5_multiview",
+    "model_path": "artifacts/cache/models/e5-small-v2",
+    "cache_dir": "artifacts/cache/dense",
+    "retrieval_per_view": 400,
+    "output_k": 200,
+    "selection": "multiview_max_relevance",
+    "safe_ranker_backend": "deterministic",
+    "safe_ranker_model_path": null,
+    "safe_ranker_model_sha256": null,
+    "safe_rerank_k": 200,
+    "safe_ranker_weight": 0.0
+  },
+  "merger": {
+    "component": "keyword_category_vector_merge",
+    "strategy": "weighted",
+    "rrf_constant": 60,
+    "category_k": 120,
+    "merged_k": 320,
+    "buying_vector_support_k": 40,
+    "browsing_keyword_support_k": 40,
+    "buying_keyword_weight": 0.9,
+    "buying_category_weight": 0.05,
+    "buying_vector_weight": 0.05,
+    "browsing_vector_weight": 0.8,
+    "browsing_category_weight": 0.1,
+    "browsing_keyword_weight": 0.1
+  },
+  "union_ranker": {
+    "component": "union_aware_ranker",
+    "backend": "gbdt",
+    "model_path": "artifacts/models/adaptive_union_gbdt_v1.json",
+    "model_sha256": "d1c336a3b7fd0fa13d7d5bd5ef87c97503fd339ff0682723a6485baded35f59c",
+    "rerank_k": 320
+  },
+  "semantic_ranker": {
+    "component": "bounded_local_llm_semantic_ranker",
+    "backend": "qwen_causal_relevance",
+    "model_path": "artifacts/cache/models/qwen2.5-0.5b-instruct",
+    "model_revision": "7ae557604adf67be50417f59c2c2f167def9a775",
+    "model_sha256": "31b07963d699962dbbc9fdcb9d4cfaa496f5e56abc29c8e597e18195b87ebe77",
+    "fallback_model_path": "artifacts/cache/models/ms-marco-MiniLM-L6-v2",
+    "fallback_model_revision": "c5ee24cb16019beea089334287d17c69e06eb577",
+    "fallback_cache_dir": "artifacts/cache/cross_encoder",
+    "rerank_k": 10,
+    "weight": 0.5,
+    "fallback_weight": 0.5,
+    "batch_size": 8,
+    "max_length": 256,
+    "timeout_ms": 30000,
+    "device": "auto",
+    "activation_policy": "browsing_only",
+    "activate_for_browsing": true
+  },
+  "guidance": {
+    "component": "over_generality_guidance",
+    "overload_min_candidates": 180,
+    "overload_max_specific_constraints": 0,
+    "question_candidate_k": 100,
+    "question_value_margin": 0.0,
+    "broad_discovery_turns": 2,
+    "max_question_turn": 8
+  },
+  "runtime_adaptation": {
+    "component": "conflict_safe_context_distillation",
+    "profile_confidence": 0.6,
+    "profile_weight": 0.02,
+    "maximum_explicit_constraints_for_profile": 2
+  },
+  "orchestration": {
+    "component": "fixed_adaptive_coordinator",
+    "max_recommendations": 10,
+    "atomic_commit": true,
+    "emit_reason_codes": true,
+    "fallback": "complete_precision_path"
+  },
+  "extensions": {
+    "quality_prior_weight": 0.0,
+    "quality_rerank_k": 50,
+    "query_prf_enabled": false,
+    "query_prf_feedback_k": 5,
+    "query_prf_minimum_support": 0.4,
+    "query_prf_max_terms": 4,
+    "query_prf_max_added_ratio": 0.5,
+    "facet_diversity_enabled": false,
+    "facet_relevance_weight": 0.85,
+    "facet_rerank_k": 30,
+    "facet_output_k": 10,
+    "facet_max_turn": 2,
+    "facet_max_constraints": 1
+  }
+}

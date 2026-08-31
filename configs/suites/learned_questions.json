@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "experiment_id": "unified_learned_questions_v1",
+  "engine": "experimental",
+  "state_variant": "raw_history",
+  "question_variant": "learned",
+  "learned_question_asset": "artifacts/experiments/learned_question_linear_v1/linear_action_value_model.json",
+  "retrieval_route": "keyword",
+  "dense_backend": "off",
+  "sparse_weights": [2.0, 8.0, 4.0, 2.5, 1.5, 1.0],
+  "quality_prior_weight": 0.2,
+  "reranker": "metadata_gbdt",
+  "reranker_model_asset": "artifacts/models/gbdt_reranker_v2_round56.json",
+  "rerank_k": 50
+}
