@@ -1,0 +1,126 @@
+{
+  "comparison_contract": {
+    "post_evaluation_tuning_allowed": false,
+    "same_catalog": true,
+    "same_evaluator_contract": true,
+    "same_ordered_session_ids": true,
+    "systems": [
+      "A",
+      "C",
+      "GhostLab Champion"
+    ]
+  },
+  "deltas": {
+    "C_minus_A": {
+      "hit_rate_at_10": 0.845,
+      "mrr": 0.5042909999999999,
+      "mttc": -7.035,
+      "normalized_efficiency": 0.7035,
+      "technical_score": 0.714487
+    },
+    "Champion_minus_A": {
+      "hit_rate_at_10": 0.85,
+      "mrr": 0.620367,
+      "mttc": -7.045,
+      "normalized_efficiency": 0.7045,
+      "technical_score": 0.7520100000000001
+    },
+    "Champion_minus_C": {
+      "hit_rate_at_10": 0.0050000000000000044,
+      "mrr": 0.11607600000000007,
+      "mttc": -0.009999999999999787,
+      "normalized_efficiency": 0.0010000000000000009,
+      "technical_score": 0.037523000000000084
+    }
+  },
+  "evaluation_scope": "official_public_200_benchmark",
+  "independent_holdout": false,
+  "inputs": {
+    "catalog_path": "data/catalog.jsonl",
+    "catalog_sha256": "da979b05a68af864cb0dcf9ee6a81c010c7e66a57978ad286c7a2e005fc69a67",
+    "dataset_path": "data/public_set.jsonl",
+    "dataset_sha256": "857259f7a438e6188ac63e18995b6ff4489bfcfc4a716a798b9a2aa0ee8f7579",
+    "evaluation_contract": {
+      "catalog_sha256": "da979b05a68af864cb0dcf9ee6a81c010c7e66a57978ad286c7a2e005fc69a67",
+      "contract_sha256": "9fe55c77de845333883a7c41e5f2cbb269c6cf11d86ee04ea6d58da6f953616a",
+      "evaluation_seed": 2026,
+      "harness_id": "ghostlab.research.replay.evaluate_shared.v1",
+      "harness_sha256": "8492dc7fabb52e617ecc8c6880af231c2acdf2bc6943d03a558644b308f277ab",
+      "max_turns": 10,
+      "ordered_session_ids_sha256": "653fa55317a4b659738e3a3e260f8af1a600071d1c668b3fcfedb727063a958b",
+      "profile_contract": "sanitized user_profile supplied to reset",
+      "published_evaluator_sha256": "79a5ea06f9a1b8c5036f30efa85dc1f36b8f6b06eb8feb8f545dfa767bc45564",
+      "response_contract": "exceptions and invalid responses become empty responses; catalog IDs are validated, deduplicated and capped at Top K",
+      "sample_count": 200,
+      "timeout_policy": "no evaluator wall-clock cutoff; component timeouts are frozen in each hash-bound system configuration and latency is reported separately",
+      "top_k": 10
+    },
+    "local_assets": {
+      "e5_cache_sidecar": {
+        "byte_size": 765,
+        "path": "artifacts/cache/dense/e5_small_v2-da979b05a68a-eb21af922f8c.json",
+        "sha256": "fa254f55ada0ae5a7c1b3dddced9564001612c2952a6e066456a9f79a1be56c2"
+      },
+      "e5_product_embeddings": {
+        "byte_size": 76800128,
+        "path": "artifacts/cache/dense/e5_small_v2-da979b05a68a-eb21af922f8c.npy",
+        "sha256": "d55a4720d50bf6c73b4772872f62a87b04e9315432118d0e33693b4cce5f70a0"
+      }
+    },
+    "ordered_session_ids_sha256": "653fa55317a4b659738e3a3e260f8af1a600071d1c668b3fcfedb727063a958b"
+  },
+  "interpretation": "Public organizer benchmark for reproducibility and demonstration; not an unseen generalization estimate.",
+  "sample_count": 200,
+  "schema_version": 1,
+  "selection_or_training_overlap": true,
+  "systems": [
+    {
+      "display_name": "Organizer BM25 Starter",
+      "metrics": {
+        "hit_rate_at_10": 0.125,
+        "mrr": 0.068034,
+        "mttc": 9.81,
+        "normalized_efficiency": 0.119,
+        "technical_score": 0.10671
+      },
+      "report_path": "artifacts/reports/adaptive_public_200_runs/reference_a.json",
+      "report_sha256": "62709966cd6393bcfaacc5363dd6c88e52c6c1a612362c236a1accee042fbb48",
+      "role": "reference",
+      "system_id": "A_official_stateless_bm25"
+    },
+    {
+      "config_canonical_sha256": "959d9c43ccc046f4aeea0c5e2d33364d51eb56ddb43c1b0a32807624595f47fc",
+      "config_file_sha256": "dd103254f3ca1a77cf6776eda694da5d6b34444c1c8f29bc0cde110763475c44",
+      "config_path": "configs/adaptive_hybrid_1a_3b_1650_final_v1_selected.json",
+      "display_name": "Fixed Adaptive Architecture",
+      "metrics": {
+        "hit_rate_at_10": 0.97,
+        "mrr": 0.572325,
+        "mttc": 2.775,
+        "normalized_efficiency": 0.8225,
+        "technical_score": 0.821197
+      },
+      "report_path": "artifacts/reports/adaptive_public_200_runs/control_c.json",
+      "report_sha256": "59d5a3a4e0f0db75eaa749a3dab4f349e1fe47850bd2152f2ce7aba583a568c6",
+      "role": "control",
+      "system_id": "C_fixed_adaptive_architecture"
+    },
+    {
+      "config_canonical_sha256": "da98a47884822d7d3f589be073c92e653d47c896bb9aea02f97a0422d45773e0",
+      "config_file_sha256": "907b7a92f06ad06447073bf6d0013fb30c1dc3b08b5bfe29897b6e1802a3f050",
+      "config_path": "configs/finalists/adaptive_hybrid_1650/rank_1_warm-start-d4e040a07e6d-translated-v2-sem-w0p10-d10-f1-add-fusion_rrf-714a27f0249c.json",
+      "display_name": "GhostLab Champion",
+      "metrics": {
+        "hit_rate_at_10": 0.975,
+        "mrr": 0.688401,
+        "mttc": 2.765,
+        "normalized_efficiency": 0.8235,
+        "technical_score": 0.85872
+      },
+      "report_path": "artifacts/reports/adaptive_public_200_runs/ghostlab_finalist.json",
+      "report_sha256": "3f50b8844ae00bc4b2dc0aa0c20f8af4b782c8302ad36cdc7149ac5fdb82377c",
+      "role": "champion",
+      "system_id": "GhostLab_Champion"
+    }
+  ]
+}
