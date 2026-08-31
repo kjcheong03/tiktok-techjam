@@ -55,5 +55,6 @@
     }
   ],
   "release_tag": "dense-index-50k-v1",
+  "repository": "kjcheong03/tiktok-techjam",
   "schema_version": 1
 }

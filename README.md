@@ -238,6 +238,9 @@ dtypes before installation. To check an existing installation without downloadin
 uv run python -m scripts.fetch_dense_index_asset --verify-only
 ```
 
+For a private repository, the downloader uses `GH_TOKEN`, `GITHUB_TOKEN`, or the active
+GitHub CLI login. No authentication is required after the repository is public.
+
 Runtime loading is forced offline after assets are present. If the released dense-index
 asset is unavailable, the content-addressed indexes can still be rebuilt locally from
 the pinned models and matching catalog when the dense runtime is first initialized.

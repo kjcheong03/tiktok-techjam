@@ -5,6 +5,7 @@ import hashlib
 import json
 import os
 import shutil
+import subprocess
 import tarfile
 import tempfile
 import urllib.request
@@ -154,8 +155,59 @@ def extract_archive(
     return result
 
 
-def download(url: str, destination: Path) -> None:
-    request = urllib.request.Request(url, headers={"User-Agent": "GhostLab-setup/1"})
+def _github_token() -> str | None:
+    token = os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN")
+    if token:
+        return token
+    try:
+        result = subprocess.run(
+            ["gh", "auth", "token"],
+            capture_output=True,
+            check=False,
+            text=True,
+        )
+    except FileNotFoundError:
+        return None
+    return result.stdout.strip() if result.returncode == 0 else None
+
+
+def _authenticated_asset_url(manifest: dict[str, Any], token: str) -> str:
+    repository = str(manifest["repository"])
+    release_tag = str(manifest["release_tag"])
+    request = urllib.request.Request(
+        f"https://api.github.com/repos/{repository}/releases/tags/{release_tag}",
+        headers={
+            "Accept": "application/vnd.github+json",
+            "Authorization": f"Bearer {token}",
+            "User-Agent": "GhostLab-setup/1",
+            "X-GitHub-Api-Version": "2022-11-28",
+        },
+    )
+    with urllib.request.urlopen(request) as response:
+        release = json.load(response)
+    expected_name = str(manifest["asset_name"])
+    for asset in release.get("assets", []):
+        if asset.get("name") == expected_name:
+            return str(asset["url"])
+    raise RuntimeError(f"release asset not found: {expected_name}")
+
+
+def download(
+    manifest: dict[str, Any], destination: Path, url_override: str | None = None
+) -> None:
+    token = None if url_override else _github_token()
+    url = str(url_override or manifest["download_url"])
+    headers = {"User-Agent": "GhostLab-setup/1"}
+    if token:
+        url = _authenticated_asset_url(manifest, token)
+        headers.update(
+            {
+                "Accept": "application/octet-stream",
+                "Authorization": f"Bearer {token}",
+                "X-GitHub-Api-Version": "2022-11-28",
+            }
+        )
+    request = urllib.request.Request(url, headers=headers)
     with urllib.request.urlopen(request) as response, destination.open("wb") as output:
         shutil.copyfileobj(response, output)
 
@@ -181,7 +233,7 @@ def main() -> None:
                 archive_path = args.archive.resolve()
             else:
                 archive_path = Path(temporary) / str(manifest["asset_name"])
-                download(str(args.url or manifest["download_url"]), archive_path)
+                download(manifest, archive_path, args.url)
             result = extract_archive(manifest, archive_path, destination_root)
         action = "installed"
 
