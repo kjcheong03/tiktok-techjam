@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content="Visualize and compare GhostLab evaluation results." />
-    <title>GhostLab Run Observatory</title>
+    <title>GhostLab Dashboard</title>
     <link rel="stylesheet" href="/dashboard/styles.css" />
   </head>
   <body>
@@ -13,35 +13,26 @@
 
     <header class="site-header">
       <a class="brand" href="/dashboard/" aria-label="GhostLab dashboard home">
-        <span class="brand-mark" aria-hidden="true"><span></span></span>
-        <span>
-          <strong>GhostLab</strong>
-          <small>Run Observatory</small>
-        </span>
+        <img class="brand-logo" src="/dashboard/ghostlab-logo.jpg" alt="" />
+        <strong>GhostLab</strong>
       </a>
       <div class="header-actions">
-        <span class="status-pill" id="server-status"><i></i> Connecting</span>
         <button class="button button-secondary" id="upload-button" type="button">Import JSON</button>
         <input id="file-input" type="file" accept="application/json,.json" multiple hidden />
       </div>
     </header>
 
     <main>
-      <section class="hero">
-        <div>
-          <p class="eyebrow">Evaluation workspace</p>
-          <h1>See how every run <em>really performs.</em></h1>
-          <p class="hero-copy">Compare technical scores, inspect scenario tradeoffs, and trace failures down to the session—all without reading raw JSON.</p>
-        </div>
+      <section class="report-toolbar" aria-label="Report controls">
         <div class="report-picker">
-          <label for="report-select">Report library</label>
+          <label for="report-select">Model</label>
           <div class="picker-row">
-            <select id="report-select" aria-label="Available result reports">
-              <option>Discovering reports…</option>
+            <select id="report-select" aria-label="Available models">
+              <option>Discovering models…</option>
             </select>
-            <button class="button button-primary" id="load-report" type="button">Load report</button>
+            <button class="button button-primary" id="load-report" type="button">Load model</button>
           </div>
-          <p id="report-hint">Existing artifacts appear here automatically.</p>
+          <p id="report-hint">Choose one of the four evaluation systems.</p>
         </div>
       </section>
 
@@ -133,36 +124,6 @@
           </article>
         </section>
 
-        <section class="section-block session-section">
-          <div class="section-heading session-heading">
-            <div>
-              <p class="eyebrow">Session explorer</p>
-              <h2>Individual outcomes</h2>
-            </div>
-            <span class="muted" id="session-count">0 sessions</span>
-          </div>
-          <div class="filters">
-            <label class="search-field">
-              <span aria-hidden="true">⌕</span>
-              <input id="session-search" type="search" placeholder="Search sample ID" />
-            </label>
-            <select id="scenario-filter" class="small-select" aria-label="Filter scenario">
-              <option value="all">All scenarios</option>
-            </select>
-            <select id="outcome-filter" class="small-select" aria-label="Filter outcome">
-              <option value="all">All outcomes</option>
-              <option value="hit">Hits</option>
-              <option value="miss">Misses</option>
-            </select>
-          </div>
-          <div class="table-wrap">
-            <table>
-              <thead><tr><th>Sample</th><th>Scenario</th><th>Outcome</th><th>First hit</th><th>Best rank</th><th>Reciprocal rank</th></tr></thead>
-              <tbody id="session-table"></tbody>
-            </table>
-            <div id="no-sessions" class="table-empty" hidden>No matching session-level records.</div>
-          </div>
-        </section>
       </div>
     </main>
 

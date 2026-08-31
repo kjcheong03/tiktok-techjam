@@ -9,14 +9,12 @@ const SYSTEM_DISPLAY_NAMES = {
 const state = { reports: [], runs: [], activeId: null, comparisonMeta: null, selectedChallengerId: null };
 const $ = (selector) => document.querySelector(selector);
 const elements = {
-  status: $("#server-status"), reportSelect: $("#report-select"), reportHint: $("#report-hint"),
+  reportSelect: $("#report-select"), reportHint: $("#report-hint"),
   loadReport: $("#load-report"), fileInput: $("#file-input"), runTabs: $("#run-tabs"), runCount: $("#run-count"),
   empty: $("#empty-state"), content: $("#dashboard-content"), selectedName: $("#selected-run-name"),
   selectedSource: $("#selected-run-source"), metricGrid: $("#metric-grid"), comparison: $("#comparison-chart"),
   scenarioMetric: $("#scenario-metric"), scenarioChart: $("#scenario-chart"), rankChart: $("#rank-chart"),
-  distributionLabel: $("#distribution-label"), sessionSearch: $("#session-search"), scenarioFilter: $("#scenario-filter"),
-  outcomeFilter: $("#outcome-filter"), sessionTable: $("#session-table"), sessionCount: $("#session-count"),
-  noSessions: $("#no-sessions"), dropOverlay: $("#drop-overlay"), toast: $("#toast"),
+  distributionLabel: $("#distribution-label"), dropOverlay: $("#drop-overlay"), toast: $("#toast"),
   comparisonContract: $("#comparison-contract"), comparisonContractTitle: $("#comparison-contract-title"),
   comparisonContractCopy: $("#comparison-contract-copy"), comparisonContractBadges: $("#comparison-contract-badges"),
   promotionDecision: $("#promotion-decision"),
@@ -146,31 +144,54 @@ async function loadReport(report, quiet = false) {
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const payload = await response.json();
     const extracted = extractReport(payload, report.label, report.path);
-    if (!extracted.runs.length) throw new Error("No evaluation metrics were found");
-    const added = addRuns(extracted.runs, extracted.meta);
+    let runs = extracted.runs;
+    if (report.system_id) runs = runs.filter((run) => run.systemId === report.system_id);
+    if (report.run_key) runs = runs.filter((run) => run.id.endsWith(`::key-${report.run_key}`));
+    if (!runs.length) throw new Error("No evaluation metrics were found for this model");
+    if (report.model_id) {
+      const stableId = `model::${report.model_id}`;
+      const wasActive = state.activeId === stableId;
+      state.runs = state.runs.filter((run) => run.id !== stableId);
+      runs = [runs[0]].map((run) => ({
+        ...run,
+        id: stableId,
+        name: report.label,
+        systemId: report.model_id,
+        role: report.role,
+        championEligible: report.champion_eligible === true,
+      }));
+      const added = addRuns(runs);
+      if (wasActive) {
+        state.activeId = stableId;
+        render();
+      }
+      if (!quiet) showToast(`Loaded ${report.label}`);
+      return added;
+    }
+    const added = addRuns(runs, extracted.meta);
     if (!quiet) showToast(added ? `Loaded ${added} run${added === 1 ? "" : "s"}` : "Those runs are already loaded");
+    return added;
   } catch (error) {
-    showToast(`Could not load report: ${error.message}`);
+    showToast(`Could not load model: ${error.message}`);
+    return 0;
   }
 }
 
 async function discoverReports() {
   try {
-    const response = await fetch("/api/reports", { cache: "no-store" });
+    const response = await fetch("/api/models", { cache: "no-store" });
     if (!response.ok) throw new Error("dashboard server unavailable");
     const payload = await response.json();
-    state.reports = payload.reports || [];
-    elements.status.className = "status-pill online";
-    elements.status.innerHTML = "<i></i> Local server online";
+    state.reports = payload.models || [];
     elements.reportSelect.innerHTML = state.reports.map((report, index) =>
-      `<option value="${index}">${escapeHtml(report.label)} · ${report.run_count} run${report.run_count === 1 ? "" : "s"}</option>`).join("");
-    elements.reportHint.textContent = `${state.reports.length} compatible reports discovered in artifacts.`;
+      `<option value="${index}">${escapeHtml(report.label)}</option>`).join("");
+    elements.reportHint.textContent = `${state.reports.length} curated evaluation models available.`;
     const featured = state.reports.filter((report) => report.featured);
+    const featuredIndex = state.reports.findIndex((report) => report.featured);
+    if (featuredIndex >= 0) elements.reportSelect.value = String(featuredIndex);
     for (const report of featured) await loadReport(report, true);
   } catch (_error) {
-    elements.status.className = "status-pill offline";
-    elements.status.innerHTML = "<i></i> Import-only mode";
-    elements.reportSelect.innerHTML = "<option>Start the dashboard server to browse artifacts</option>";
+    elements.reportSelect.innerHTML = "<option>Start the dashboard server to browse models</option>";
     elements.reportSelect.disabled = true;
     elements.loadReport.disabled = true;
     elements.reportHint.textContent = "You can still import JSON files from your computer.";
@@ -334,33 +355,6 @@ function renderRankChart(run) {
   }).join("");
 }
 
-function resetScenarioFilter(run) {
-  const previous = elements.scenarioFilter.value;
-  const names = [...new Set(run.sessions.map((session) => session.scenario_type).filter(Boolean))].sort();
-  elements.scenarioFilter.innerHTML = '<option value="all">All scenarios</option>' + names.map((name) => `<option value="${escapeHtml(name)}">${escapeHtml(name.replaceAll("_", " "))}</option>`).join("");
-  if (names.includes(previous)) elements.scenarioFilter.value = previous;
-}
-
-function renderSessions(run, resetFilter = false) {
-  if (resetFilter) resetScenarioFilter(run);
-  const query = elements.sessionSearch.value.trim().toLowerCase();
-  const scenario = elements.scenarioFilter.value;
-  const outcome = elements.outcomeFilter.value;
-  const filtered = run.sessions.filter((session) => {
-    if (query && !String(session.sample_id || "").toLowerCase().includes(query)) return false;
-    if (scenario !== "all" && session.scenario_type !== scenario) return false;
-    if (outcome === "hit" && !session.hit) return false;
-    if (outcome === "miss" && session.hit) return false;
-    return true;
-  });
-  const displayed = filtered.slice(0, 250);
-  elements.sessionCount.textContent = run.sessions.length ? `${filtered.length} of ${run.sessions.length} sessions${filtered.length > 250 ? " · showing first 250" : ""}` : "No session detail";
-  elements.sessionTable.innerHTML = displayed.map((session) => `
-    <tr><td>${escapeHtml(session.sample_id || "—")}</td><td><span class="scenario-badge">${escapeHtml(String(session.scenario_type || "unknown").replaceAll("_", " "))}</span></td>
-    <td><span class="outcome-badge ${session.hit ? "hit" : "miss"}">${session.hit ? "Hit" : "Miss"}</span></td><td>${session.first_hit_turn ?? "—"}</td><td>${session.best_rank ?? "—"}</td><td>${decimal(session.reciprocal_rank)}</td></tr>`).join("");
-  elements.noSessions.hidden = displayed.length > 0;
-}
-
 function render() {
   renderTabs();
   renderChallengerPicker();
@@ -378,7 +372,6 @@ function render() {
   renderComparison();
   renderScenarios(run);
   renderRankChart(run);
-  renderSessions(run, true);
 }
 
 let toastTimer;
@@ -408,7 +401,7 @@ elements.loadReport.addEventListener("click", () => {
 });
 elements.reportSelect.addEventListener("change", () => {
   const report = state.reports[Number(elements.reportSelect.value)];
-  if (report) elements.reportHint.textContent = `${report.path} · ${report.run_count} compatible run${report.run_count === 1 ? "" : "s"}`;
+  if (report) elements.reportHint.textContent = report.label;
 });
 $("#upload-button").addEventListener("click", () => elements.fileInput.click());
 $("#empty-upload").addEventListener("click", () => elements.fileInput.click());
@@ -424,7 +417,6 @@ elements.comparison.addEventListener("click", (event) => {
   if (target) chooseRun(target.dataset.selectId);
 });
 elements.scenarioMetric.addEventListener("change", () => renderScenarios(activeRun()));
-[elements.sessionSearch, elements.scenarioFilter, elements.outcomeFilter].forEach((element) => element.addEventListener("input", () => renderSessions(activeRun())));
 
 let dragDepth = 0;
 window.addEventListener("dragenter", (event) => { event.preventDefault(); dragDepth += 1; elements.dropOverlay.hidden = false; });

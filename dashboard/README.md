@@ -11,10 +11,13 @@ uv run python dashboard/server.py
 
 Then open <http://127.0.0.1:8787/dashboard/>. Stop the server with `Ctrl+C`.
 
-The dashboard discovers compatible JSON files in `artifacts/reports/`, plus
-`artifacts/baseline_results.json` and `results.json`. Newly generated reports appear
-after refreshing the page. You can also use **Import JSON** or drag files anywhere onto
-the page; imported files are parsed only in the browser and are not uploaded.
+The model selector intentionally exposes only four stable slots: **A: BM25**,
+**B: BM25 + teammate State V2**, **C: adaptive control**, and **D: frozen GhostLab
+champion / challenger**. When a fair comparison report is available, those slots resolve
+to its matching system rows. D uses the selected champion or the top frozen challenger,
+so a promoted challenger is never listed twice. You can still use **Import JSON** or drag
+files anywhere onto the page; imported files are parsed only in the browser and are not
+uploaded.
 
 Supported result shapes include:
 

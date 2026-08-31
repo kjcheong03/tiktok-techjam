@@ -2,7 +2,12 @@ from __future__ import annotations
 
 import unittest
 
-from server import count_visualizable_runs, discover_reports
+from server import (
+    _select_comparison_systems,
+    count_visualizable_runs,
+    discover_models,
+    discover_reports,
+)
 
 
 class ReportDiscoveryTests(unittest.TestCase):
@@ -53,6 +58,44 @@ class ReportDiscoveryTests(unittest.TestCase):
         paths = {str(report["path"]) for report in reports}
         self.assertIn("artifacts/reports/unified_champion_verification_v1.json", paths)
         self.assertTrue(all(int(report["run_count"]) > 0 for report in reports))
+
+    def test_discovers_only_four_stable_model_slots(self) -> None:
+        models = discover_models()
+        self.assertEqual([model["model_id"] for model in models], ["A", "B", "C", "D"])
+        self.assertEqual(
+            [model["label"] for model in models],
+            [
+                "A: BM25",
+                "B: BM25 + teammate State V2",
+                "C: adaptive control",
+                "D: frozen GhostLab champion / challenger",
+            ],
+        )
+        self.assertEqual(len({model["model_id"] for model in models}), 4)
+        self.assertEqual(sum(bool(model["featured"]) for model in models), 1)
+
+    def test_promoted_challenger_occupies_one_d_slot(self) -> None:
+        payload = {
+            "selected_system_id": "champion_latest",
+            "systems": [
+                {"system_id": "A_bm25"},
+                {"system_id": "B_state_v2"},
+                {"system_id": "C_adaptive"},
+                {
+                    "system_id": "D1_candidate_42",
+                    "candidate_id": "candidate_42",
+                    "role": "ghostlab_challenger",
+                },
+                {
+                    "system_id": "champion_latest",
+                    "candidate_id": "candidate_42",
+                    "role": "ghostlab_champion",
+                },
+            ],
+        }
+        selected = _select_comparison_systems(payload)
+        self.assertEqual(set(selected), {"A", "B", "C", "D"})
+        self.assertEqual(selected["D"]["system_id"], "champion_latest")
 
 
 if __name__ == "__main__":
