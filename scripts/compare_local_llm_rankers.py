@@ -17,7 +17,10 @@ from typing import Any, cast
 from evaluator.local_evaluator import catalog_index, evaluate, metric_summary
 from ghostlab.optimization.adaptive_hybrid import AdaptiveArchitectureAudit
 from ghostlab.runtime.adaptive_factory import load_adaptive_hybrid_config
-from ghostlab.runtime.adaptive_hybrid import AdaptiveHybridAgent
+from ghostlab.runtime.adaptive_hybrid import (
+    AdaptiveCandidateSnapshot,
+    AdaptiveHybridAgent,
+)
 from ghostlab.training.adaptive_datasets import (
     AdaptiveTrainingCorpus,
     load_adaptive_training_corpus,
@@ -95,7 +98,9 @@ def _tree_sha256(path: Path) -> str:
 
 def _int_value(value: object) -> int:
     if not isinstance(value, (int, float, str)):
-        raise TypeError(f"expected integer-compatible value, got {type(value).__name__}")
+        raise TypeError(
+            f"expected integer-compatible value, got {type(value).__name__}"
+        )
     return int(value)
 
 
@@ -135,7 +140,9 @@ def required_asset_evidence(
             manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
             declared = root / str(manifest["destination"])
             if declared.resolve() != destination.resolve():
-                raise RuntimeError("manifest destination does not match experiment path")
+                raise RuntimeError(
+                    "manifest destination does not match experiment path"
+                )
             verification = verify_asset(manifest, destination)
             if not (destination / "config.json").is_file():
                 raise RuntimeError("missing config.json")
@@ -158,8 +165,7 @@ def required_asset_evidence(
             }
         )
     return {
-        "all_verified": bool(models)
-        and all(bool(item["verified"]) for item in models),
+        "all_verified": bool(models) and all(bool(item["verified"]) for item in models),
         "models": models,
     }
 
@@ -275,21 +281,31 @@ def _peak_memory_mb() -> float:
 
 
 def _candidate_pool_evidence(agent: AdaptiveHybridAgent) -> tuple[str, int]:
+    traces = {
+        (item.session_id, item.turn): item
+        for item in agent.traces
+        if item.semantic_executed
+    }
+    first_eligible_by_session: dict[str, AdaptiveCandidateSnapshot] = {}
+    for item in agent.candidate_snapshots:
+        if (item.session_id, item.turn) not in traces:
+            continue
+        first_eligible_by_session.setdefault(item.session_id, item)
     rows = [
         {
-            "session_id": item.session_id,
+            "ordinal": ordinal,
             "turn": item.turn,
-            "candidates": list(item.candidates),
+            "candidates": list(item.pre_semantic_candidates or item.candidates),
         }
-        for item in sorted(
-            agent.candidate_snapshots, key=lambda item: (item.session_id, item.turn)
-        )
+        for ordinal, item in enumerate(first_eligible_by_session.values())
     ]
     return _canonical_sha256(rows), len(rows)
 
 
 def _semantic_rescue_metrics(
-    agent: AdaptiveHybridAgent, samples: Mapping[str, dict[str, Any]]
+    agent: AdaptiveHybridAgent,
+    samples: Mapping[str, dict[str, Any]],
+    sample_id_by_runtime_session: Mapping[str, str],
 ) -> dict[str, int]:
     traces = {(item.session_id, item.turn): item for item in agent.traces}
     rescued = 0
@@ -298,19 +314,18 @@ def _semantic_rescue_metrics(
     confirmed_target_removals = 0
     for snapshot in agent.candidate_snapshots:
         trace = traces.get((snapshot.session_id, snapshot.turn))
-        sample = samples.get(snapshot.session_id)
+        sample_id = sample_id_by_runtime_session.get(snapshot.session_id)
+        sample = samples.get(sample_id) if sample_id is not None else None
         if trace is None or sample is None or not trace.semantic_executed:
             continue
         target = str(sample.get("ground_truth", {}).get("parent_asin", ""))
         if not target:
             continue
         evaluated += 1
-        before = (
-            snapshot.candidates.index(target) + 1
-            if target in snapshot.candidates
-            else None
-        )
-        after = trace.top_ids.index(target) + 1 if target in trace.top_ids else None
+        pre_semantic = snapshot.pre_semantic_candidates or snapshot.candidates
+        before = pre_semantic.index(target) + 1 if target in pre_semantic else None
+        post_semantic = snapshot.post_semantic_candidates
+        after = post_semantic.index(target) + 1 if target in post_semantic else None
         rescued += bool(
             before is not None and before > 10 and after is not None and after <= 10
         )
@@ -391,7 +406,17 @@ def _worker_trial(spec: dict[str, Any]) -> dict[str, Any]:
         for fold_index, sample_ids in enumerate(fold_ids)
     ]
     candidate_pool_hash, candidate_pool_turns = _candidate_pool_evidence(agent)
-    rescue = _semantic_rescue_metrics(agent, development.samples)
+    runtime_session_ids = tuple(agent.sessions)
+    if len(runtime_session_ids) != len(ordered_ids):
+        raise RuntimeError("runtime session/sample mapping is incomplete")
+    sample_id_by_runtime_session = dict(
+        zip(runtime_session_ids, ordered_ids, strict=True)
+    )
+    rescue = _semantic_rescue_metrics(
+        agent,
+        development.samples,
+        sample_id_by_runtime_session,
+    )
     diagnostics = agent.semantic.diagnostics()
     attempts = _int_value(diagnostics["primary_attempts"])
     successes = _int_value(diagnostics["primary_successes"])

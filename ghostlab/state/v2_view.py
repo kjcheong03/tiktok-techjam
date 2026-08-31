@@ -45,6 +45,7 @@ class V2StateView:
     asked_attributes: tuple[str, ...]
     no_preference_attributes: frozenset[str]
     turn: int
+    exploratory_intent: bool = False
 
     def active_values(self) -> tuple[ConstraintView, ...]:
         """Compatibility projection used by immutable question policies."""
@@ -107,6 +108,7 @@ class V2SessionController:
         profile_overlay_attributes: frozenset[str] = frozenset(),
         profile_overlay_confidence: float = 0.0,
         profile_overlay_epoch: int | None = None,
+        exploratory_intent: bool = False,
     ) -> AdaptiveTurnContext:
         if turn < 0:
             raise ValueError("turn must be non-negative")
@@ -122,6 +124,7 @@ class V2SessionController:
             asked_attributes=tuple(self.state.asked_attributes),
             no_preference_attributes=frozenset(self.state.no_preference_attributes),
             turn=turn,
+            exploratory_intent=exploratory_intent,
             session_id=self.state.session_id,
             current_message=current_message,
             supplied_profile_terms=supplied_profile_terms,

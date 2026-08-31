@@ -6,10 +6,12 @@ The fixed Track 4 architecture and its GhostLab integration are implemented and 
 implementation-level validation. The architecture cannot be removed or reordered by a
 challenger; GhostLab can tune required implementations and race compatible additions.
 
-The final 1,650-development fit, bounded LLM family comparison, and large GhostLab
-campaign are deliberately deferred. They are optimization/model-selection work, not
-missing runtime implementation. The 550-session final selection set remains unaccessed,
-the previous active candidate was not modified, and F3 was not accessed.
+The final 1,650-development structural fit has completed. The first bounded LLM family
+run was correctly rejected because no selected turn reached semantic execution; the
+activation and paired-pool defects found by that run are now corrected and the model
+comparison must be rerun. The large GhostLab campaign remains deferred. The 550-session
+final selection set remains unaccessed, the previous active candidate was not modified,
+and F3 was not accessed.
 
 ## Problem-statement coverage
 
@@ -39,8 +41,32 @@ Ask-only deferral is not the default architecture.
 | Turn context was only partly immutable | Router, retrieval, guidance, ranking, clarification and profile adaptation consume one frozen per-turn context | Frozen-dataclass and atomic commit tests pass |
 | Profile adaptation was too weak/decorative | Added optional profile query view, union feature and question suppression plus explicit update attributes | Conflict, query-view, feature and question tests pass; explicit current intent remains dominant |
 | LLM configuration lacked a controlled family study | Added pinned manifests for Qwen2.5, Qwen3, Gemma 3 1B IT and SmolLM2-1.7B, a generic local-causal backend, symmetric depth/weight grids, isolated workers and MiniLM control/fallback | Selection now requires verified assets and an exact 45-trial attempt ledger; failures remain recorded but ineligible, partial downloads are rejected, and Qwen3 uses explicit non-thinking chat rendering for immediate yes/no scoring; the full comparison remains deferred |
+| Clarified exploration collapsed into Buying | Persisted explicit exploratory intent within its correction epoch; after an overload clarification, exploratory sessions remain Browsing while hard constraints stay route-independent | The same 60-session development replay now reaches 75 semantic calls across 58 sessions; all five paired backends execute without fallback |
+| Paired-pool evidence included random evaluator session IDs and pre-union order | Hashes now exclude runtime UUIDs and use the first actual ordered pre-semantic pool per session | Two independent 60-session replays produced the identical pool hash and 58 paired semantic cases |
+| Descriptive negation became a hard exclusion | Restricted exclusion extraction so phrases such as `not including buckle` and `not quite right yet` are not product prohibitions while genuine exclusions such as `not formal` remain authoritative | Confirmed target removals on the paired smoke dropped from 8 to 0; focused adversarial tests and the complete suite pass |
 | GhostLab could reject required architecture | Added compulsory/adaptive classifications, preflight architecture audit, fit receipts, resumable checkpoints and source/scenario/constraint gates | Plan contains all 19 compulsory capabilities in every one of 28 initial candidates |
 | Final comparison could drift after development | Finalist validation uses the shared 1,650-session evaluator; packaging freezes D1-D3, C, A/B definitions, gates, tie-breaks and lineage hashes before final selection | Tests reject changed paths/hashes and mismatched evaluation contracts/session order before any access receipt is written |
+
+## Post-fix local-LLM activation smoke
+
+A bounded one-setting smoke used the same 60 lineage-safe development sessions,
+pre-semantic pools, depth 10 and weight 0.35. It is protocol validation, not the full
+45-trial model selection.
+
+| Backend | Technical score | Semantic calls | Rescues/demotions | Fallback | p95 latency |
+|---|---:|---:|---:|---:|---:|
+| No-op semantic control | 0.880895 | 75 | 0 / 0 | 0 | n/a |
+| Qwen2.5-0.5B | 0.862853 | 75 | 0 / 0 | 0 | 209.5 ms |
+| Qwen3-0.6B | 0.858651 | 75 | 0 / 0 | 0 | 398.5 ms |
+| Gemma 3 1B IT | 0.835934 | 75 | 0 / 0 | 0 | 808.1 ms |
+| SmolLM2-1.7B | 0.870437 | 75 | 0 / 0 | 0 | 609.7 ms |
+| MiniLM control | 0.882234 | 75 | 0 / 0 | 0 | 63.1 ms |
+
+The earlier missing-output error is resolved: all trials completed, candidate/session
+pairing passed, selection was valid and a smoke config was emitted. However, no genuine
+LLM beat the no-op control at this one setting. The smoke-selected SmolLM2 config must
+not be promoted; the full depth/weight grid must test whether a smaller semantic weight
+or different depth creates a net benefit.
 
 ## Diverse-dense result
 
@@ -115,7 +141,7 @@ deferred optimization. No partial campaign is presented as a completed result.
 
 ## Code-quality validation
 
-- Full regression suite: 464 passed, 1 skipped.
+- Full regression suite: 475 passed, 1 skipped.
 - Repository-wide Ruff: clean.
 - Focused mypy over the changed trainer, LLM comparison and validator: clean.
 - `git diff --check`: clean.
@@ -124,13 +150,13 @@ deferred optimization. No partial campaign is presented as a completed result.
 
 ## Deliberately deferred work
 
-1. Complete the 1,650-development five-fold structural fit using lineage-preserving
-   outer and inner folds. Historical 2,200-session artifacts are not eligible because
-   they consumed what is now the one-time final selection set. No incomplete model is bound or
-   claimed.
-2. Run the symmetric bounded local-LLM comparison after fitted candidate pools are
-   frozen: Qwen2.5, Qwen3, Gemma 3 1B IT and SmolLM2-1.7B all receive the same
-   Top-10/20/30 depth and weight grid; MiniLM remains the non-LLM control/fallback.
+1. Retain the completed 1,650-development structural fit and its lineage-preserving
+   outer/inner-fold receipts. Historical 2,200-session artifacts remain ineligible
+   because they consumed what is now the one-time final selection set.
+2. Rerun the symmetric bounded local-LLM comparison after the activation and paired-pool
+   corrections. The fitted candidate pipeline remains frozen: Qwen2.5, Qwen3,
+   Gemma 3 1B IT and SmolLM2-1.7B all receive the same Top-10/20/30 depth and
+   weight grid; MiniLM remains the non-LLM control/fallback.
 3. Use the emitted selected LLM config for a full public run and validation.
 4. Run the resumable F0/F1/F2 GhostLab campaign with grouped source/scenario gates.
 5. Package exactly three eligible development finalists, freeze D1-D3 plus A/B/C,

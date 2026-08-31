@@ -84,8 +84,7 @@ def test_missing_or_duplicate_grid_trial_invalidates_ledger() -> None:
     assert trial_ledger_evidence(matrix, missing)["all_trials_attempted_once"] is False
     duplicated = [*missing, missing[0], {**matrix[-1], "status": "complete"}]
     assert (
-        trial_ledger_evidence(matrix, duplicated)["all_trials_attempted_once"]
-        is False
+        trial_ledger_evidence(matrix, duplicated)["all_trials_attempted_once"] is False
     )
 
 
@@ -141,12 +140,8 @@ def test_complete_receipted_asset_is_verified(tmp_path: Path) -> None:
 
 
 def test_qwen3_disables_thinking_for_direct_yes_no_scoring() -> None:
-    assert causal_chat_template_options("qwen3-0.6b") == {
-        "enable_thinking": False
-    }
-    assert causal_chat_template_options("Qwen/Qwen3-0.6B") == {
-        "enable_thinking": False
-    }
+    assert causal_chat_template_options("qwen3-0.6b") == {"enable_thinking": False}
+    assert causal_chat_template_options("Qwen/Qwen3-0.6B") == {"enable_thinking": False}
     assert causal_chat_template_options("gemma-3-1b-it") == {}
 
     class RecordingTokenizer:
@@ -177,9 +172,7 @@ def test_candidate_pool_or_session_mismatch_invalidates_pairing() -> None:
     assert paired_trial_evidence([common, dict(common)])["paired_candidate_pools"]
 
     different_pool = {**common, "candidate_pool_sha256": "pool-b"}
-    assert not paired_trial_evidence([common, different_pool])[
-        "paired_candidate_pools"
-    ]
+    assert not paired_trial_evidence([common, different_pool])["paired_candidate_pools"]
 
     different_sessions = {**common, "ordered_session_ids_sha256": "sessions-b"}
     assert not paired_trial_evidence([common, different_sessions])[
@@ -208,3 +201,79 @@ def test_development_sample_selection_preserves_lineage_folds() -> None:
             assert development.samples[sample_id]["scenario_type"] == "browsing"
             group = manifest.group_by_sample[sample_id]
             assert owners.setdefault(group, fold_index) == fold_index
+
+
+def test_candidate_pool_pairing_ignores_random_runtime_session_ids() -> None:
+    from ghostlab.runtime.adaptive_hybrid import AdaptiveCandidateSnapshot
+    from scripts.compare_local_llm_rankers import _candidate_pool_evidence
+
+    def agent_with(session_id: str):
+        agent = type("AgentEvidence", (), {})()
+        agent.candidate_snapshots = [
+            AdaptiveCandidateSnapshot(
+                session_id=session_id,
+                turn=2,
+                query="summer wedding",
+                route="browsing",
+                candidates=("A", "B", "C"),
+                overloaded=False,
+                pre_semantic_candidates=("B", "A", "C"),
+            )
+        ]
+        agent.traces = [
+            type(
+                "TraceEvidence",
+                (),
+                {"session_id": session_id, "turn": 2, "semantic_executed": True},
+            )()
+        ]
+        return agent
+
+    left = _candidate_pool_evidence(agent_with("random-a"))
+    right = _candidate_pool_evidence(agent_with("random-b"))
+
+    assert left == right
+    assert left[1] == 1
+
+
+def test_semantic_rescue_uses_runtime_to_dataset_session_mapping() -> None:
+    from ghostlab.runtime.adaptive_hybrid import AdaptiveCandidateSnapshot
+    from scripts.compare_local_llm_rankers import _semantic_rescue_metrics
+
+    agent = type("AgentEvidence", (), {})()
+    pre_semantic = (*(f"P{index}" for index in range(10)), "TARGET")
+    agent.candidate_snapshots = [
+        AdaptiveCandidateSnapshot(
+            session_id="runtime-random",
+            turn=2,
+            query="summer wedding",
+            route="browsing",
+            candidates=pre_semantic,
+            overloaded=False,
+            pre_semantic_candidates=pre_semantic,
+            post_semantic_candidates=("TARGET", *pre_semantic[:-1]),
+        )
+    ]
+    agent.traces = [
+        type(
+            "TraceEvidence",
+            (),
+            {
+                "session_id": "runtime-random",
+                "turn": 2,
+                "semantic_executed": True,
+                "top_ids": ("A", "B"),
+            },
+        )()
+    ]
+    samples = {"dataset-id": {"ground_truth": {"parent_asin": "TARGET"}}}
+
+    result = _semantic_rescue_metrics(
+        agent,
+        samples,
+        {"runtime-random": "dataset-id"},
+    )
+
+    assert result["semantic_target_turns"] == 1
+    assert result["target_rescued_into_top10"] == 1
+    assert result["target_demoted_from_top10"] == 0

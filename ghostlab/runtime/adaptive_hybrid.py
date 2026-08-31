@@ -47,6 +47,24 @@ from ghostlab.state.baseline_v2 import (
 )
 from ghostlab.state.v2_view import AdaptiveTurnContext, V2SessionController, V2StateView
 
+_DIRECT_EXCLUSION_RE = re.compile(
+    r"\b(?:avoid|without|exclude)\s+([^.;,]+)", re.IGNORECASE
+)
+_NOT_EXCLUSION_RE = re.compile(
+    r"\bnot\s+(?!(?:including|quite|sure|necessarily|only|just|yet)\b)([^.;,]+)",
+    re.IGNORECASE,
+)
+
+
+def _explicit_exclusion_values(message: str) -> tuple[str, ...]:
+    """Extract user exclusions while ignoring descriptive/discourse negation."""
+
+    values = [
+        *(_DIRECT_EXCLUSION_RE.findall(message)),
+        *(_NOT_EXCLUSION_RE.findall(message)),
+    ]
+    return tuple(dict.fromkeys(value for value in values if normalize_value(value)))
+
 
 @dataclass(frozen=True)
 class AdaptiveActionRecord:
@@ -112,6 +130,8 @@ class AdaptiveCandidateSnapshot:
     route: str
     candidates: tuple[str, ...]
     overloaded: bool
+    pre_semantic_candidates: tuple[str, ...] = ()
+    post_semantic_candidates: tuple[str, ...] = ()
     pre_authority_candidates: tuple[str, ...] = ()
     authority_removed_ids: tuple[str, ...] = ()
     evidence: tuple[CandidateEvidence, ...] = ()
@@ -128,6 +148,7 @@ class _AdaptiveSession:
     lock: Lock = field(default_factory=Lock)
     action_history: list[AdaptiveActionRecord] = field(default_factory=list)
     profile_update: ProfileUpdate | None = None
+    exploratory_intent_epoch: int | None = None
 
 
 class AdaptiveHybridAgent:
@@ -419,6 +440,9 @@ class AdaptiveHybridAgent:
             profile_overlay_epoch=(
                 overlay.intent_epoch if overlay is not None else None
             ),
+            exploratory_intent=(
+                session.exploratory_intent_epoch == session.state.intent_epoch
+            ),
         )
 
     @staticmethod
@@ -470,12 +494,7 @@ class AdaptiveHybridAgent:
                 source_text=message,
                 provenance="explicit",
             )
-            for value in re.findall(
-                r"\b(?:not|avoid|without|exclude)\s+([^.;,]+)",
-                message,
-                flags=re.IGNORECASE,
-            )
-            if normalize_value(value)
+            for value in _explicit_exclusion_values(message)
         ]
         state.observe(
             message,
@@ -544,6 +563,10 @@ class AdaptiveHybridAgent:
         with session.lock:
             state = session.state
             self._observe_state(state, user_message, turn)
+            if self.router.browsing_marker(user_message) is not None:
+                session.exploratory_intent_epoch = state.intent_epoch
+            elif session.exploratory_intent_epoch != state.intent_epoch:
+                session.exploratory_intent_epoch = None
             query = state.build_coverage_adaptive_query() or user_message
             view = self._turn_context(
                 session, query=query, message=user_message, turn=turn
@@ -866,8 +889,16 @@ class AdaptiveHybridAgent:
                     ranking, optional_reasons = self._apply_optional_rankers(
                         ranking, view
                     )
+                    candidate_snapshot = replace(
+                        candidate_snapshot,
+                        pre_semantic_candidates=tuple(ranking),
+                    )
                     semantic = self._semantic_rank(
                         query, ranking, route, view, overloaded=False
+                    )
+                    candidate_snapshot = replace(
+                        candidate_snapshot,
+                        post_semantic_candidates=semantic.ranking,
                     )
                     semantic_decision_reached = True
                     semantic_executed = not semantic.backend.startswith("skipped:")

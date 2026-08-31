@@ -151,6 +151,24 @@ def test_router_reaches_both_tracks_from_observable_state() -> None:
     assert router.decide(view, state.messages[-1]).route == "buying"
 
 
+def test_clarified_exploratory_intent_remains_browsing() -> None:
+    router = DualTrackRouter(AdaptiveHybridConfig().router)
+    state = StateBaselineV2("s", {})
+    state.observe("I'm looking for shoes, but I'm still exploring.", 1)
+    state.asked_attributes.append("style")
+    state.observe("Something comfortable and informal.", 2)
+    view = V2SessionController(state).snapshot(
+        query_text=state.build_coverage_adaptive_query(),
+        turn=2,
+        exploratory_intent=True,
+    )
+
+    decision = router.decide(view, state.messages[-1])
+
+    assert decision.route == "browsing"
+    assert decision.reason.startswith("clarified_exploratory_intent:")
+
+
 def test_router_uses_current_query_specificity_not_only_accumulated_state() -> None:
     router = DualTrackRouter(AdaptiveHybridConfig().router)
     accumulated = (
@@ -247,6 +265,56 @@ def test_complete_runtime_executes_buying_and_browsing(tmp_path: Path) -> None:
         "high_confidence_buying",
         "browsing_semantic_retrieval",
     }
+
+
+def test_runtime_uses_semantic_ranker_after_browsing_clarification(
+    tmp_path: Path,
+) -> None:
+    agent, _, semantic, _ = _agent(tmp_path)
+    agent.reset("browse", {})
+    agent.respond(
+        "browse", "I'm looking for running shoes, but I'm still exploring.", 1, 10
+    )
+    first_calls = semantic.calls
+
+    agent.respond("browse", "Something comfortable and informal.", 2, 10)
+
+    trace = agent.traces[-1]
+    assert trace.route == "browsing"
+    assert trace.route_reason.startswith("clarified_exploratory_intent:")
+    assert trace.semantic_executed
+    assert semantic.calls == first_calls + 1
+    snapshot = agent.candidate_snapshots[-1]
+    assert snapshot.pre_semantic_candidates
+
+
+def test_exclusion_parser_ignores_descriptive_and_feedback_negation() -> None:
+    state = StateBaselineV2("s", {})
+
+    AdaptiveHybridAgent._observe_state(
+        state,
+        "A key requirement is: total length (not including buckle): 200mm.",
+        1,
+    )
+    AdaptiveHybridAgent._observe_state(
+        state,
+        "Those options are not quite right yet. Ask one specific question.",
+        2,
+    )
+
+    assert state.constraint_values(polarity="exclude") == []
+
+
+def test_exclusion_parser_keeps_explicit_product_exclusion() -> None:
+    state = StateBaselineV2("s", {})
+
+    AdaptiveHybridAgent._observe_state(
+        state,
+        "I'm looking for dresses, but I'm still exploring and not formal.",
+        1,
+    )
+
+    assert state.constraint_values(polarity="exclude") == ["formal"]
 
 
 def test_promotable_optional_rankers_execute_at_the_declared_hook(

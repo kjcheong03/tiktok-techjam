@@ -72,6 +72,14 @@ class DualTrackRouter:
     def __init__(self, config: DualTrackRouterConfig) -> None:
         self.config = config
 
+    def browsing_marker(self, message: str) -> str | None:
+        """Return observable evidence that the user is still exploring."""
+
+        lowered = message.casefold()
+        return next(
+            (item for item in self.config.browsing_markers if item in lowered), None
+        )
+
     def _constraint_specificity(
         self, constraints: Sequence[ConstraintView]
     ) -> tuple[float, int, int, int, int]:
@@ -99,9 +107,7 @@ class DualTrackRouter:
         lowered = current_message.casefold()
         query_tokens = re.findall(r"[a-z0-9]+", lowered)
         query_token_set = frozenset(query_tokens)
-        marker = next(
-            (item for item in self.config.browsing_markers if item in lowered), None
-        )
+        marker = self.browsing_marker(current_message)
 
         def mentioned_now(item: ConstraintView) -> bool:
             if item.source_turn == view.turn:
@@ -148,13 +154,8 @@ class DualTrackRouter:
         category_only = (
             current_has_category and current_positive == 0 and current_exclusions == 0
         )
-        browsing_evidence = (
-            (self.config.browsing_marker_weight if marker else 0.0)
-            + (
-                self.config.category_only_browsing_weight
-                if category_only
-                else 0.0
-            )
+        browsing_evidence = (self.config.browsing_marker_weight if marker else 0.0) + (
+            self.config.category_only_browsing_weight if category_only else 0.0
         )
         evidence = (
             f"current={current_score:.2f}:history={historical_score:.2f}:"
@@ -165,6 +166,15 @@ class DualTrackRouter:
             float(self.config.buying_min_specific_constraints),
             self.config.buying_specificity_threshold,
         )
+        if view.exploratory_intent and view.asked_attributes:
+            return RouteDecision(
+                "browsing",
+                0.9,
+                (
+                    "clarified_exploratory_intent:"
+                    f"asked={view.asked_attributes[-1]}:{evidence}"
+                ),
+            )
         if browsing_evidence > 0.0 and browsing_evidence >= specificity:
             confidence = min(0.95, 0.6 + 0.1 * (browsing_evidence - specificity + 1.0))
             return RouteDecision(
@@ -202,9 +212,7 @@ class DualTrackRouter:
             return RouteDecision(
                 "buying", 1.0 - confidence, "low_confidence_precision_abstention", True
             )
-        return RouteDecision(
-            "buying", confidence, f"specificity_threshold:{evidence}"
-        )
+        return RouteDecision("buying", confidence, f"specificity_threshold:{evidence}")
 
 
 @dataclass(frozen=True)
@@ -689,7 +697,7 @@ class SemanticActivationPolicy:
         return SemanticActivationDecision(False, "high_confidence_buying")
 
 
-def causal_chat_template_options(model_id: str) -> dict[str, object]:
+def causal_chat_template_options(model_id: str) -> dict[str, Any]:
     """Return model-family options required by direct next-token scoring."""
 
     normalized = model_id.lower().replace("-", "")
@@ -956,9 +964,7 @@ class BoundedLocalLLMSemanticRanker:
                 else None
             ),
             "thinking_mode": getattr(scorer, "thinking_mode", "not_loaded"),
-            "chat_template_options": dict(
-                getattr(scorer, "chat_template_options", {})
-            ),
+            "chat_template_options": dict(getattr(scorer, "chat_template_options", {})),
         }
 
 
