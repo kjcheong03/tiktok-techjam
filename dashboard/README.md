@@ -13,8 +13,10 @@ Then open <http://127.0.0.1:8787/dashboard/>. Stop the server with `Ctrl+C`.
 
 The dashboard loads three stable systems automatically: **Organizer BM25 Starter**,
 **Fixed Adaptive Architecture**, and **GhostLab Champion**. When a fair comparison
-report is available, the systems resolve to its matching rows. The leaderboard appears
-first and includes TechnicalScore, Hit Rate@10, MRR, normalized efficiency, and MTTC.
+report is available, the systems resolve to its matching rows. The Champion slot follows
+`configs/active_candidate.json` and its recorded comparison evidence, so refreshing the
+page reflects a newly activated, evaluated champion. The leaderboard appears first and
+includes TechnicalScore, Hit Rate@10, MRR, normalized efficiency, and MTTC.
 Click a system name to inspect its detailed results. You can still use **Import JSON** or
 drag files anywhere onto the page; imported files are parsed only in the browser and are
 not uploaded.

@@ -21,6 +21,7 @@ MODEL_LABELS = {
     "C": "Fixed Adaptive Architecture",
     "D": "GhostLab Champion",
 }
+ACTIVE_CANDIDATE = PROJECT_ROOT / "configs" / "active_candidate.json"
 COMPARISON_REPORTS = (
     PROJECT_ROOT / "artifacts" / "reports" / "adaptive_final_holdout.json",
     PROJECT_ROOT / "artifacts" / "reports" / "adaptive_system_comparison_1650.json",
@@ -82,8 +83,13 @@ def _model_descriptor(
     }
 
 
-def _select_comparison_systems(payload: object) -> dict[str, dict[str, object]]:
-    """Resolve one canonical row per A/B/C/D slot from a comparison report."""
+def _select_comparison_systems(
+    payload: object,
+    *,
+    active_preset_path: str | None = None,
+    preferred_system_id: str | None = None,
+) -> dict[str, dict[str, object]]:
+    """Resolve the baseline, adaptive control, and active champion rows."""
     if not isinstance(payload, dict) or not isinstance(payload.get("systems"), list):
         return {}
     systems = [item for item in payload["systems"] if isinstance(item, dict)]
@@ -100,23 +106,36 @@ def _select_comparison_systems(payload: object) -> dict[str, dict[str, object]]:
         if match is not None:
             selected[model_id] = match
 
-    selected_system_id = str(payload.get("selected_system_id") or "")
+    selected_system_id = preferred_system_id or str(
+        payload.get("selected_system_id") or ""
+    )
     challenger_rows = [
         item
         for item in systems
         if str(item.get("system_id", "")).startswith("D")
         or "challenger" in str(item.get("role", "")).lower()
+        or "champion" in str(item.get("role", "")).lower()
     ]
     selected_challenger = next(
         (
             item
-            for item in systems
-            if selected_system_id
-            and not selected_system_id.startswith(("A_", "B_", "C_"))
-            and str(item.get("system_id", "")) == selected_system_id
+            for item in challenger_rows
+            if active_preset_path
+            and str(item.get("config_path", "")) == active_preset_path
         ),
         None,
     )
+    if selected_challenger is None:
+        selected_challenger = next(
+            (
+                item
+                for item in systems
+                if selected_system_id
+                and not selected_system_id.startswith(("A_", "B_", "C_"))
+                and str(item.get("system_id", "")) == selected_system_id
+            ),
+            None,
+        )
     if selected_challenger is None and challenger_rows:
         # D1 is the frozen top-ranked challenger when no final selection exists yet.
         selected_challenger = min(
@@ -125,6 +144,54 @@ def _select_comparison_systems(payload: object) -> dict[str, dict[str, object]]:
     if selected_challenger is not None:
         selected["D"] = selected_challenger
     return selected
+
+
+def _repository_path(value: object) -> Path | None:
+    if not isinstance(value, str) or not value:
+        return None
+    candidate = (PROJECT_ROOT / value).resolve()
+    try:
+        candidate.relative_to(PROJECT_ROOT.resolve())
+    except ValueError:
+        return None
+    return candidate if candidate.is_file() else None
+
+
+def _active_champion_context() -> tuple[str | None, str | None, list[Path]]:
+    """Read the active preset and its canonical comparison evidence."""
+    try:
+        pointer = json.loads(ACTIVE_CANDIDATE.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None, None, []
+    if not isinstance(pointer, dict):
+        return None, None, []
+
+    preset_path = pointer.get("preset_path")
+    active_preset_path = preset_path if isinstance(preset_path, str) else None
+    system_id = pointer.get("champion_system_id")
+    preferred_system_id = system_id if isinstance(system_id, str) else None
+    report_paths: list[Path] = []
+
+    comparison_path = _repository_path(pointer.get("comparison_report_path"))
+    if comparison_path is not None:
+        report_paths.append(comparison_path)
+
+    adjudication_path = _repository_path(pointer.get("adjudication_path"))
+    if adjudication_path is not None:
+        try:
+            adjudication = json.loads(adjudication_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            adjudication = None
+        if isinstance(adjudication, dict):
+            evidence = adjudication.get("evidence")
+            if isinstance(evidence, dict):
+                evidence_path = _repository_path(
+                    evidence.get("final_holdout_report_path")
+                )
+                if evidence_path is not None:
+                    report_paths.append(evidence_path)
+
+    return active_preset_path, preferred_system_id, list(dict.fromkeys(report_paths))
 
 
 def discover_models() -> list[dict[str, object]]:
@@ -148,13 +215,31 @@ def discover_models() -> list[dict[str, object]]:
         ),
     }
 
-    comparison_path = next((path for path in COMPARISON_REPORTS if path.is_file()), None)
-    if comparison_path is not None:
+    active_preset_path, preferred_system_id, active_reports = (
+        _active_champion_context()
+    )
+    comparison_candidates = list(dict.fromkeys([*active_reports, *COMPARISON_REPORTS]))
+    comparison_path: Path | None = None
+    selected_systems: dict[str, dict[str, object]] = {}
+    for path in comparison_candidates:
+        if not path.is_file():
+            continue
         try:
-            comparison = json.loads(comparison_path.read_text(encoding="utf-8"))
+            comparison = json.loads(path.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError):
-            comparison = None
-        for model_id, system in _select_comparison_systems(comparison).items():
+            continue
+        selected = _select_comparison_systems(
+            comparison,
+            active_preset_path=active_preset_path,
+            preferred_system_id=preferred_system_id,
+        )
+        if set(selected) == {"A", "C", "D"}:
+            comparison_path = path
+            selected_systems = selected
+            break
+
+    if comparison_path is not None:
+        for model_id, system in selected_systems.items():
             system_id = system.get("system_id")
             if isinstance(system_id, str) and system_id:
                 models[model_id] = _model_descriptor(

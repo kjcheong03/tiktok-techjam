@@ -113,6 +113,30 @@ class ReportDiscoveryTests(unittest.TestCase):
         self.assertEqual(set(selected), {"A", "C", "D"})
         self.assertEqual(selected["D"]["system_id"], "champion_latest")
 
+    def test_active_preset_overrides_stale_report_decision(self) -> None:
+        payload = {
+            "selected_system_id": "C_adaptive",
+            "systems": [
+                {"system_id": "A_bm25"},
+                {"system_id": "C_adaptive"},
+                {
+                    "system_id": "old_challenger",
+                    "role": "ghostlab_challenger",
+                    "config_path": "configs/old.json",
+                },
+                {
+                    "system_id": "new_champion",
+                    "role": "ghostlab_challenger",
+                    "config_path": "configs/new.json",
+                },
+            ],
+        }
+        selected = _select_comparison_systems(
+            payload, active_preset_path="configs/new.json"
+        )
+        self.assertEqual(set(selected), {"A", "C", "D"})
+        self.assertEqual(selected["D"]["system_id"], "new_champion")
+
 
 if __name__ == "__main__":
     unittest.main()
