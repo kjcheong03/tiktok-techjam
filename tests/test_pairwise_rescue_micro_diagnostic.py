@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from ghostlab.state.v2_view import ConstraintView, V2StateView
 from scripts.run_pairwise_rescue_micro_diagnostic import (
     EXPECTED_OPPORTUNITIES,
     BatchPairwiseScorer,
@@ -10,6 +11,7 @@ from scripts.run_pairwise_rescue_micro_diagnostic import (
     TurnPoint,
     matched_negative_eligible,
     select_micro_cases,
+    structured_shopper_context,
 )
 
 
@@ -53,6 +55,40 @@ class ScriptedScorer(BatchPairwiseScorer):
 
 def ranking():
     return tuple(f"P{rank}" for rank in range(1, 15))
+
+
+def test_structured_context_labels_positive_and_negative_state() -> None:
+    def constraint(attribute: str, value: str, polarity: str) -> ConstraintView:
+        return ConstraintView(
+            attribute=attribute,
+            values=(value,),
+            relation="equals",
+            polarity=polarity,
+            strength="hard",
+            operator="equals",
+            source_turn=1,
+            provenance="explicit",
+        )
+
+    view = V2StateView(
+        query_text="blue wedding dress not formal",
+        active_constraints=(
+            constraint("category", "dress", "include"),
+            constraint("occasion", "summer wedding", "include"),
+            constraint("style", "breathable", "include"),
+            constraint("style", "formal", "exclude"),
+        ),
+        intent_epoch=0,
+        shown_ids=frozenset(),
+        asked_attributes=(),
+        no_preference_attributes=frozenset(),
+        turn=2,
+    )
+    context = structured_shopper_context(view.query_text, view)
+    assert "Category: dress" in context
+    assert "Intended use: summer wedding" in context
+    assert "Positive preferences: style=breathable" in context
+    assert "Explicit exclusions: style=formal" in context
 
 
 def test_protocol_has_exactly_twelve_order_balanced_comparisons() -> None:

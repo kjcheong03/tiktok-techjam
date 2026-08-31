@@ -102,7 +102,12 @@ class CatalogOntology:
                 confidence += 0.01
             if category_match:
                 confidence += 0.01
-            return (-min(confidence, 0.99), -entry.frequency, entry.attribute, entry.canonical)
+            return (
+                -min(confidence, 0.99),
+                -entry.frequency,
+                entry.attribute,
+                entry.canonical,
+            )
 
         selected = min(matches, key=score)
         confidence = -score(selected)[0]
@@ -127,7 +132,18 @@ class CatalogOntology:
             raise ValueError("unsupported catalog ontology schema")
         return cls(
             catalog_sha256=str(payload["catalog_sha256"]),
-            entries=tuple(OntologyEntry(**item) for item in payload["entries"]),
+            entries=tuple(
+                OntologyEntry(
+                    attribute=str(item["attribute"]),
+                    canonical=str(item["canonical"]),
+                    aliases=tuple(str(value) for value in item["aliases"]),
+                    frequency=int(item["frequency"]),
+                    category_support=tuple(
+                        str(value) for value in item.get("category_support", ())
+                    ),
+                )
+                for item in payload["entries"]
+            ),
         )
 
 
@@ -202,7 +218,9 @@ def build_catalog_ontology(
             continue
         per_attribute[attribute] += 1
         aliases = {canonical}
-        aliases.update(alias for alias, target in ALIASES.items() if target == canonical)
+        aliases.update(
+            alias for alias, target in ALIASES.items() if target == canonical
+        )
         entries.append(
             OntologyEntry(
                 attribute=attribute,

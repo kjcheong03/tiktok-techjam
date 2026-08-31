@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, model_validator
 
 from ghostlab.campaign.bindings import default_binding_registry
 from ghostlab.campaign.catalog import TechniqueCatalog
@@ -25,6 +25,7 @@ AdaptiveRole = Literal[
     "research_only",
     "unavailable",
 ]
+AdaptiveControlClass = Literal["direct", "absorbed_dependency", "replacement_only"]
 AdaptiveStage = Literal[
     "state",
     "routing",
@@ -56,10 +57,28 @@ class AdaptiveTechniqueBinding(BaseModel):
     patch: AdaptiveTechniquePatch | None = None
     fit_required: bool = False
     override_priority: int = 0
+    control_class: AdaptiveControlClass = "direct"
+    absorbed_by: str | None = None
 
     @property
     def selectable(self) -> bool:
         return self.role == "promotable"
+
+    @property
+    def absorbed(self) -> bool:
+        return self.control_class == "absorbed_dependency"
+
+    @model_validator(mode="after")
+    def control_detail_is_consistent(self) -> AdaptiveTechniqueBinding:
+        if self.control_class != "direct" and self.role != "control_only":
+            raise ValueError(
+                "only control-only techniques have control classifications"
+            )
+        if (self.control_class == "absorbed_dependency") != (
+            self.absorbed_by is not None
+        ):
+            raise ValueError("absorbed dependencies must name exactly one parent")
+        return self
 
 
 @dataclass(frozen=True)
@@ -182,27 +201,70 @@ def _patch(*updates: tuple[str, object]) -> AdaptiveTechniquePatch:
 
 
 def _promotable_patches(project_root: Path) -> dict[str, AdaptiveTechniquePatch]:
-    def learned(
-        backend: Literal["gbdt", "rank_ensemble"], relative: str
+    def auxiliary_learned(
+        technique_id: str, backend: Literal["gbdt", "rank_ensemble"], relative: str
     ) -> AdaptiveTechniquePatch:
         path = project_root / relative
         if not path.is_file():
             return _patch()
         return _patch(
-            ("union_ranker.backend", backend),
-            ("union_ranker.model_path", relative),
-            ("union_ranker.model_sha256", _sha256(path)),
+            ("union_ranker.auxiliary_technique_id", technique_id),
+            ("union_ranker.auxiliary_backend", backend),
+            ("union_ranker.auxiliary_model_path", relative),
+            ("union_ranker.auxiliary_model_sha256", _sha256(path)),
+            ("union_ranker.auxiliary_weight", 0.1),
+            ("union_ranker.auxiliary_rerank_k", 50),
         )
 
+    ontology = project_root / "artifacts/assets/catalog_ontology_v1.json"
+    ontology_patch = (
+        _patch(
+            ("state.catalog_normalizer_enabled", True),
+            (
+                "state.catalog_ontology_path",
+                "artifacts/assets/catalog_ontology_v1.json",
+            ),
+            ("state.catalog_ontology_sha256", _sha256(ontology)),
+            ("state.constraint_normalization_confidence", 0.9),
+        )
+        if ontology.is_file()
+        else _patch()
+    )
+
     return {
-        "fusion.weighted": _patch(("merger.strategy", "weighted")),
+        # The control already uses weighted fusion, so this optional seed must
+        # change the evidence allocation as well as name the strategy. HPO can
+        # then tune the route shares from this deliberately less extreme seed.
+        "fusion.weighted": _patch(
+            ("merger.strategy", "weighted"),
+            ("merger.buying_keyword_weight", 0.8),
+            ("merger.buying_category_weight", 0.1),
+            ("merger.buying_vector_weight", 0.1),
+            ("merger.browsing_keyword_weight", 0.15),
+            ("merger.browsing_category_weight", 0.15),
+            ("merger.browsing_vector_weight", 0.7),
+        ),
         "fusion.rrf": _patch(("merger.strategy", "rrf")),
         "fusion.sparse_first_union": _patch(("merger.strategy", "sparse_first_union")),
         "prior.quality": _patch(("extensions.quality_prior_weight", 0.2)),
         "query.catalog_prf.v1": _patch(("extensions.query_prf_enabled", True)),
+        "state.catalog_normalizer.v1": ontology_patch,
+        "retrieval.minilm": _patch(
+            ("extensions.minilm_dense_view_enabled", True),
+            (
+                "extensions.minilm_dense_model_path",
+                "artifacts/cache/models/all-MiniLM-L6-v2",
+            ),
+            ("extensions.minilm_dense_retrieval_k", 80),
+            ("extensions.minilm_dense_weight", 0.15),
+        ),
         "ranking.facet_diversity.v1": _patch(
             ("extensions.facet_diversity_enabled", True)
         ),
+        # Planning switch only. The candidate technique ID dispatches a fresh
+        # fold-local fit during evaluation; no historical residual asset or new
+        # AdaptiveHybridConfig field is materialized here.
+        "ranking.top10_residual_reranker.v2": _patch(),
         "retrieval.dense_view_balanced.v1": _patch(
             ("browsing.selection", "view_balanced")
         ),
@@ -219,29 +281,127 @@ def _promotable_patches(project_root: Path) -> dict[str, AdaptiveTechniquePatch]
             ("runtime_adaptation.union_profile_feature_enabled", True)
         ),
         "ranking.fixed_lexical": _patch(
-            ("union_ranker.backend", "deterministic"),
-            ("union_ranker.model_path", None),
-            ("union_ranker.model_sha256", None),
+            ("union_ranker.auxiliary_technique_id", "ranking.fixed_lexical"),
+            ("union_ranker.auxiliary_backend", "fixed_lexical"),
+            ("union_ranker.auxiliary_weight", 0.1),
+            ("union_ranker.auxiliary_rerank_k", 50),
         ),
-        "ranking.metadata_gbdt": learned(
-            "gbdt", "artifacts/models/gbdt_reranker_v2_round56.json"
+        "ranking.metadata_gbdt": auxiliary_learned(
+            "ranking.metadata_gbdt",
+            "gbdt",
+            "artifacts/models/gbdt_reranker_v2_round56.json",
         ),
-        "ranking.reward_lambdamart.v1": learned(
+        "ranking.reward_lambdamart.v1": auxiliary_learned(
+            "ranking.reward_lambdamart.v1",
             "gbdt",
             "artifacts/models/w2_ranking_v1/reward_lambdamart_v1.json",
         ),
-        "ranking.turn_aware_lambdamart.v1": learned(
+        "ranking.turn_aware_lambdamart.v1": auxiliary_learned(
+            "ranking.turn_aware_lambdamart.v1",
             "gbdt",
             "artifacts/models/w2_ranking_v1/turn_aware_lambdamart_v1.json",
         ),
-        "ranking.fold_ensemble.v1": learned(
+        "ranking.fold_ensemble.v1": auxiliary_learned(
+            "ranking.fold_ensemble.v1",
             "rank_ensemble",
             "artifacts/models/w2_ranking_v1/fold_ensemble.json",
         ),
-        "fusion.rank_stack.v1": learned(
-            "rank_ensemble", "artifacts/models/w2_ranking_v1/rank_stack.json"
+        "fusion.rank_stack.v1": auxiliary_learned(
+            "fusion.rank_stack.v1",
+            "rank_ensemble",
+            "artifacts/models/w2_ranking_v1/rank_stack.json",
         ),
     }
+
+
+_ABSORBED_CONTROLS: dict[str, tuple[str, str]] = {
+    "query.expansion_guard.v1": (
+        "query.catalog_prf.v1",
+        "the promotable catalog-PRF hook already applies its bounded overload and drift guard",
+    ),
+    "ranking.mmr_early.v1": (
+        "ranking.facet_diversity.v1",
+        "the promotable facet-diversity hook owns bounded early-turn MMR activation",
+    ),
+    "state.attribute_ontology.v1": (
+        "state.catalog_normalizer.v1",
+        "the pinned ontology is the intrinsic asset dependency of catalog normalization",
+    ),
+    "state.confidence_gated_constraints.v1": (
+        "state.catalog_normalizer.v1",
+        "the promotable normalizer applies the confidence threshold before changing State V2 constraints",
+    ),
+}
+
+_REPLACEMENT_ONLY_CONTROLS: dict[str, str] = {
+    "policy.joint_observable.v1": (
+        "joint action selection would replace the fixed router/guidance coordination contract"
+    ),
+    "query.structured": (
+        "it replaces the compulsory coverage-adaptive State V2 query projection"
+    ),
+    "question.adaptive_heuristic": (
+        "it replaces the compulsory candidate-EIG guidance implementation"
+    ),
+    "question.fixed": (
+        "it replaces the compulsory candidate-EIG guidance implementation"
+    ),
+    "question.learned_linear": (
+        "it replaces candidate-EIG and also requires a new fold-fitted policy asset"
+    ),
+    "question.other_always": (
+        "it replaces candidate-EIG with an unconditional fixed question policy"
+    ),
+    "ranking.constraint_gbdt": (
+        "it is a historical whole-ranker anchor that replaces source-aware union ranking"
+    ),
+    "ranking.deep_dense_gbdt": (
+        "it is a historical whole-ranker anchor that replaces source-aware union ranking"
+    ),
+    "ranking.neural_gbdt": (
+        "it is a historical whole-ranker anchor that replaces source-aware union ranking"
+    ),
+    "ranking.pairwise_linear": (
+        "it is a historical whole-ranker anchor that replaces source-aware union ranking"
+    ),
+    "routing.decision_list": (
+        "it replaces the compulsory observable Buying/Browsing dual-track router"
+    ),
+    "routing.joint_route.v1": (
+        "joint routing replaces the compulsory observable dual-track router"
+    ),
+    "routing.observable_stump": (
+        "it is a historical routing anchor that replaces the dual-track router"
+    ),
+    "routing.route_table": (
+        "it is a historical routing anchor that replaces the dual-track router"
+    ),
+    "state.compressed": "it replaces compulsory State V2 memory semantics",
+    "state.current": "it replaces compulsory State V2 memory semantics",
+    "state.multi": "it replaces compulsory State V2 memory semantics",
+    "state.raw_history": "it replaces compulsory State V2 memory semantics",
+}
+
+
+def _adaptive_catalog_view(catalog: TechniqueCatalog) -> TechniqueCatalog:
+    """Rebind legacy replacement metadata for fixed-architecture additive hooks.
+
+    The source catalog records MiniLM and E5 as alternative dense backends. In the
+    adaptive runtime E5 remains compulsory and MiniLM contributes only an auxiliary
+    bounded view, so their historical exclusive-group relationship no longer applies.
+    The source content hash is retained for evidence lineage.
+    """
+
+    techniques = dict(catalog.techniques)
+    minilm = techniques.get("retrieval.minilm")
+    if minilm is not None:
+        techniques["retrieval.minilm"] = minilm.model_copy(
+            update={
+                "config_binding": "extensions.minilm_dense_view_enabled=true",
+                "exclusive_group": None,
+            }
+        )
+    return TechniqueCatalog(catalog.schema_version, techniques, catalog.content_hash)
 
 
 class AdaptiveTechniqueRegistry:
@@ -257,7 +417,7 @@ class AdaptiveTechniqueRegistry:
         catalog: TechniqueCatalog,
         bindings: Iterable[AdaptiveTechniqueBinding],
     ) -> None:
-        self.catalog = catalog
+        self.catalog = _adaptive_catalog_view(catalog)
         self.bindings: dict[str, AdaptiveTechniqueBinding] = {}
         for binding in bindings:
             if binding.technique_id in self.bindings:
@@ -287,14 +447,23 @@ class AdaptiveTechniqueRegistry:
         bindings: list[AdaptiveTechniqueBinding] = []
         for technique_id, technique in sorted(catalog.techniques.items()):
             stage = _stage_for_family(technique.family)
+            control_class: AdaptiveControlClass = "direct"
+            absorbed_by: str | None = None
             if technique_id in _COMPULSORY:
                 stage, reason = _COMPULSORY[technique_id]
                 role: AdaptiveRole = "compulsory"
                 patch = None
-            elif technique_id in promotable and promotable[technique_id].updates:
+            elif technique_id in promotable and (
+                promotable[technique_id].updates
+                or technique_id == "ranking.top10_residual_reranker.v2"
+            ):
                 role = "promotable"
                 patch = promotable[technique_id]
-                reason = "architecture-safe implementation or additive hook"
+                reason = (
+                    "fresh fold-fitted additive dispatched by technique ID"
+                    if technique_id == "ranking.top10_residual_reranker.v2"
+                    else "architecture-safe implementation or additive hook"
+                )
             else:
                 patch = None
                 old = legacy.get(technique_id)
@@ -312,11 +481,21 @@ class AdaptiveTechniqueRegistry:
                     reason = "offline search/evaluation procedure, not a runtime switch"
                 else:
                     role = "control_only"
-                    reason = (
-                        "retained for ablation or adaptation research; its current "
-                        "binding cannot be promoted without replacing/bypassing a "
-                        "required 1A-3B capability"
-                    )
+                    absorbed = _ABSORBED_CONTROLS.get(technique_id)
+                    replacement = _REPLACEMENT_ONLY_CONTROLS.get(technique_id)
+                    if absorbed is not None:
+                        control_class = "absorbed_dependency"
+                        absorbed_by, detail = absorbed
+                        reason = f"absorbed by {absorbed_by}: {detail}"
+                    elif replacement is not None:
+                        control_class = "replacement_only"
+                        reason = f"replacement-only control: {replacement}"
+                    else:
+                        reason = (
+                            "retained for ablation or adaptation research; its current "
+                            "binding cannot be promoted without replacing/bypassing a "
+                            "required 1A-3B capability"
+                        )
             bindings.append(
                 AdaptiveTechniqueBinding(
                     technique_id=technique_id,
@@ -325,6 +504,8 @@ class AdaptiveTechniqueRegistry:
                     reason=reason,
                     patch=patch,
                     fit_required=technique.fit_required,
+                    control_class=control_class,
+                    absorbed_by=absorbed_by,
                     override_priority=(
                         20
                         if technique_id == "fusion.rank_stack.v1"
@@ -473,6 +654,7 @@ class AdaptiveTechniqueRegistry:
             "query_prf_max_terms",
             "query_prf_max_added_ratio",
             "dense_mmr_relevance_weight",
+            "union_auxiliary_weight",
         }
         if "prior.quality" in selected:
             names.update(("quality_prior_weight", "quality_rerank_k"))
@@ -499,10 +681,20 @@ class AdaptiveTechniqueRegistry:
             )
         if "retrieval.dense_embedding_mmr.v1" in selected:
             names.add("dense_mmr_relevance_weight")
+        if selected & {
+            "ranking.fixed_lexical",
+            "ranking.metadata_gbdt",
+            "ranking.reward_lambdamart.v1",
+            "ranking.turn_aware_lambdamart.v1",
+            "ranking.fold_ensemble.v1",
+            "fusion.rank_stack.v1",
+        }:
+            names.add("union_auxiliary_weight")
         return frozenset(names)
 
 
 __all__ = [
+    "AdaptiveControlClass",
     "AdaptiveRole",
     "AdaptiveStage",
     "AdaptiveTechniqueBinding",

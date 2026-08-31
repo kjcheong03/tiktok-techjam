@@ -10,7 +10,14 @@ from typing import Any
 from baseline.state import classify_constraint
 from ghostlab.competition.contract import AskAttribute
 from ghostlab.policy.signals import RetrievalSignals, retrieval_signals
+from ghostlab.retrieval.adaptive_residual import (
+    AdaptiveResidualPolicy,
+    AdaptiveTop10ResidualReranker,
+    parent_config_sha256,
+    sha256_file,
+)
 from ghostlab.retrieval.category import CategoryCandidateIndex, CategoryHit
+from ghostlab.retrieval.dense import MINILM_CONTROL, DenseIndex
 from ghostlab.retrieval.diversify import DiversificationContext, FacetMMRDiversifier
 from ghostlab.retrieval.multi_route import (
     CandidateEvidence,
@@ -46,6 +53,8 @@ from ghostlab.state.baseline_v2 import (
     StructuredConstraint,
     normalize_value,
 )
+from ghostlab.state.catalog_ontology import CatalogOntology
+from ghostlab.state.normalization import CatalogStateNormalizer
 from ghostlab.state.v2_view import AdaptiveTurnContext, V2SessionController, V2StateView
 
 _DIRECT_EXCLUSION_RE = re.compile(
@@ -142,6 +151,8 @@ class AdaptiveCandidateSnapshot:
     unknown_constraint_count: dict[str, int] = field(default_factory=dict)
     soft_preference_count: dict[str, int] = field(default_factory=dict)
     profile_terms: frozenset[str] = frozenset()
+    pre_residual_top10: tuple[str, ...] = ()
+    post_residual_top10: tuple[str, ...] = ()
 
 
 @dataclass
@@ -165,6 +176,7 @@ class AdaptiveHybridAgent:
         project_root: str | Path,
         dense_track: DiverseDenseTrack | None = None,
         semantic_ranker: BoundedLocalLLMSemanticRanker | None = None,
+        minilm_dense_index: DenseIndex | None = None,
     ) -> None:
         self.catalog_path = Path(catalog_path)
         self.project_root = Path(project_root).resolve()
@@ -226,6 +238,65 @@ class AdaptiveHybridAgent:
             if config.extensions.facet_diversity_enabled
             else None
         )
+        self.catalog_normalizer: CatalogStateNormalizer | None = None
+        if config.state.catalog_normalizer_enabled:
+            ontology_path = self.project_root / str(config.state.catalog_ontology_path)
+            expected_ontology_hash = str(config.state.catalog_ontology_sha256)
+            if sha256_file(ontology_path) != expected_ontology_hash:
+                raise ValueError("catalog ontology asset hash mismatch")
+            ontology = CatalogOntology.from_path(ontology_path)
+            if ontology.catalog_sha256 != sha256_file(self.catalog_path):
+                raise ValueError("catalog ontology was built for another catalog")
+            self.catalog_normalizer = CatalogStateNormalizer(
+                ontology,
+                confidence_threshold=(config.state.constraint_normalization_confidence),
+            )
+        self.minilm_dense: DenseIndex | None = None
+        if config.extensions.minilm_dense_view_enabled:
+            if config.extensions.minilm_dense_model_revision != MINILM_CONTROL.revision:
+                raise ValueError("auxiliary MiniLM revision is not the pinned control")
+            self.minilm_dense = minilm_dense_index or DenseIndex(
+                self.catalog_path,
+                MINILM_CONTROL,
+                cache_dir=self.project_root / config.extensions.minilm_dense_cache_dir,
+                model_path=self.project_root
+                / config.extensions.minilm_dense_model_path,
+                local_files_only=True,
+            )
+        residual_config = config.extensions
+        self.top10_residual: AdaptiveTop10ResidualReranker | None = None
+        if residual_config.top10_residual_enabled:
+            required = (
+                residual_config.top10_residual_model_path,
+                residual_config.top10_residual_model_sha256,
+                residual_config.top10_residual_fit_receipt_path,
+                residual_config.top10_residual_fit_receipt_sha256,
+            )
+            if any(value is None for value in required):
+                raise ValueError(
+                    "enabled Top-10 residual requires a freshly fitted asset and receipt"
+                )
+            self.top10_residual = AdaptiveTop10ResidualReranker.from_verified_asset(
+                self.catalog_path,
+                self.project_root / str(required[0]),
+                self.project_root / str(required[2]),
+                expected_asset_sha256=str(required[1]),
+                expected_receipt_sha256=str(required[3]),
+                expected_parent_config_sha256=parent_config_sha256(config),
+                policy=AdaptiveResidualPolicy(
+                    rerank_depth=residual_config.top10_residual_rerank_depth,
+                    model_weight=residual_config.top10_residual_model_weight,
+                    minimum_expected_gain=(
+                        residual_config.top10_residual_minimum_expected_gain
+                    ),
+                    minimum_probability_margin=(
+                        residual_config.top10_residual_minimum_probability_margin
+                    ),
+                    maximum_moved_ids=(
+                        residual_config.top10_residual_maximum_moved_ids
+                    ),
+                ),
+            )
         self.sessions: dict[str, _AdaptiveSession] = {}
         self._sessions_lock = Lock()
         self.traces: list[AdaptiveTurnTrace] = []
@@ -291,6 +362,43 @@ class AdaptiveHybridAgent:
             if "overloaded" not in str(error):
                 raise
             return self.dense.search(context)
+
+    @staticmethod
+    def _blend_minilm_dense_view(
+        identifiers: list[str],
+        scores: dict[str, float],
+        auxiliary: Any,
+        *,
+        weight: float,
+    ) -> tuple[list[str], dict[str, float], int]:
+        """Blend scores over E5 membership; MiniLM can never add/remove an ID."""
+
+        original = tuple(identifiers)
+        auxiliary_scores = {
+            item.parent_asin: float(item.normalized_score or 0.0)
+            for item in auxiliary.items
+        }
+        blended = {
+            identifier: (
+                (1.0 - weight) * float(scores.get(identifier, 0.0))
+                + weight
+                * auxiliary_scores.get(identifier, float(scores.get(identifier, 0.0)))
+            )
+            for identifier in original
+        }
+        positions = {identifier: index for index, identifier in enumerate(original)}
+        ordered = sorted(
+            original,
+            key=lambda identifier: (
+                -blended[identifier],
+                positions[identifier],
+                identifier,
+            ),
+        )
+        if len(ordered) != len(original) or set(ordered) != set(original):
+            raise RuntimeError("auxiliary MiniLM changed compulsory E5 membership")
+        overlap = sum(identifier in auxiliary_scores for identifier in original)
+        return ordered, blended, overlap
 
     def _merge(
         self,
@@ -506,9 +614,7 @@ class AdaptiveHybridAgent:
         ]
         if not head:
             return None
-        scores = sorted(
-            (float(item.aggregate_score) for item in head), reverse=True
-        )
+        scores = sorted((float(item.aggregate_score) for item in head), reverse=True)
         sparse_ids = [
             item.parent_asin
             for item in sorted(
@@ -530,7 +636,12 @@ class AdaptiveHybridAgent:
         )
 
     @staticmethod
-    def _observe_state(state: StateBaselineV2, message: str, turn: int) -> None:
+    def _observe_state(
+        state: StateBaselineV2,
+        message: str,
+        turn: int,
+        catalog_normalizer: CatalogStateNormalizer | None = None,
+    ) -> str | None:
         parsed = LegacyConstraintAdapter().parse_result(
             message, turn, last_asked_attribute=state.last_asked_attribute
         )
@@ -546,12 +657,71 @@ class AdaptiveHybridAgent:
             )
             for value in _explicit_exclusion_values(message)
         ]
+        incoming = [*parsed.constraints, *exclusions]
+        normalized_count = 0
+        if catalog_normalizer is not None:
+            normalized: list[StructuredConstraint] = []
+            try:
+                for constraint in incoming:
+                    resolutions = [
+                        catalog_normalizer.normalize(
+                            constraint.attribute, value, state.active_category
+                        )
+                        for value in constraint.values
+                    ]
+                    resolved_attributes = {
+                        item.attribute for item in resolutions if item is not None
+                    }
+                    all_resolved = all(item is not None for item in resolutions)
+                    target_attribute = (
+                        next(iter(resolved_attributes))
+                        if all_resolved and len(resolved_attributes) == 1
+                        else constraint.attribute
+                    )
+                    values = [
+                        (
+                            resolution.canonical
+                            if resolution is not None
+                            and resolution.attribute == target_attribute
+                            else value
+                        )
+                        for value, resolution in zip(
+                            constraint.values, resolutions, strict=True
+                        )
+                    ]
+                    normalized_count += target_attribute != constraint.attribute
+                    normalized_count += sum(
+                        left != right
+                        for left, right in zip(constraint.values, values, strict=True)
+                    )
+                    normalized.append(
+                        replace(
+                            constraint,
+                            attribute=target_attribute,  # type: ignore[arg-type]
+                            values=values,
+                        )
+                    )
+                incoming = normalized
+            except Exception as error:  # noqa: BLE001 - optional state hook fails open
+                incoming = [*parsed.constraints, *exclusions]
+                normalization_reason = (
+                    "optional:state.catalog_normalizer.v1:failure:"
+                    f"{type(error).__name__}"
+                )
+            else:
+                normalization_reason = (
+                    "optional:state.catalog_normalizer.v1:"
+                    f"normalized_{normalized_count}"
+                )
+        else:
+            normalization_reason = None
         state.observe(
             message,
             turn,
-            parsed_constraints=(*parsed.constraints, *exclusions),
+            parsed_constraints=incoming,
             no_preference_attributes=parsed.no_preference_attributes,
         )
+        return normalization_reason
 
     def _commit(
         self,
@@ -612,7 +782,9 @@ class AdaptiveHybridAgent:
         session = self._session(session_id)
         with session.lock:
             state = session.state
-            self._observe_state(state, user_message, turn)
+            normalization_reason = self._observe_state(
+                state, user_message, turn, self.catalog_normalizer
+            )
             if self.router.browsing_marker(user_message) is not None:
                 session.exploratory_intent_epoch = state.intent_epoch
             elif session.exploratory_intent_epoch != state.intent_epoch:
@@ -643,6 +815,8 @@ class AdaptiveHybridAgent:
                 )
                 fallback_reason = f"router:{type(error).__name__}"
             reason_codes = [f"route:{route.route}", route.reason]
+            if normalization_reason is not None:
+                reason_codes.append(normalization_reason)
             query_views: tuple[str, ...] = ()
             semantic = SemanticRankingResult(
                 ranking=(), changed=False, elapsed_ms=0.0, backend="not_run"
@@ -730,6 +904,29 @@ class AdaptiveHybridAgent:
                     dense_requested_per_view = dense.requested_per_view
                     dense_output_k = dense.output_k
                     dense_selection = dense.selection
+                    if self.minilm_dense is not None and not preview.overloaded:
+                        try:
+                            auxiliary = self.minilm_dense.search(
+                                query,
+                                self.config.extensions.minilm_dense_retrieval_k,
+                            )
+                            vector_ids, vector_scores, overlap = (
+                                self._blend_minilm_dense_view(
+                                    vector_ids,
+                                    vector_scores,
+                                    auxiliary,
+                                    weight=(self.config.extensions.minilm_dense_weight),
+                                )
+                            )
+                            reason_codes.append(
+                                "optional:retrieval.minilm_dense_view.v1:"
+                                f"scored_{overlap}"
+                            )
+                        except Exception as error:  # noqa: BLE001 - additive fail-open
+                            reason_codes.append(
+                                "optional:retrieval.minilm_dense_view.v1:failure:"
+                                f"{type(error).__name__}"
+                            )
                 except Exception as error:  # noqa: BLE001 - required safe fallback
                     fallback_reason = f"dense:{type(error).__name__}"
 
@@ -967,6 +1164,13 @@ class AdaptiveHybridAgent:
                         (
                             f"merge:{active_sources}",
                             "rank:union_aware",
+                            *(
+                                (
+                                    f"optional:{self.config.union_ranker.auxiliary_technique_id}:bounded_union_auxiliary",
+                                )
+                                if self.config.union_ranker.auxiliary_technique_id
+                                else ()
+                            ),
                             *optional_reasons,
                             f"semantic:{semantic.backend}",
                         )
@@ -994,6 +1198,44 @@ class AdaptiveHybridAgent:
                 "constraints:route_independent:"
                 f"removed_{final_authority.violation_count}"
             )
+            before_residual = tuple(ranking[:10])
+            after_residual = before_residual
+            if self.top10_residual is not None:
+                residual = self.top10_residual.rerank(
+                    query,
+                    before_residual,
+                    turn=turn,
+                    route=route.route,
+                    candidate_pool_size=len(ranking),
+                    confirmed_match_count=(
+                        candidate_snapshot.confirmed_match_count
+                        if candidate_snapshot is not None
+                        else {}
+                    ),
+                    unknown_constraint_count=(
+                        candidate_snapshot.unknown_constraint_count
+                        if candidate_snapshot is not None
+                        else {}
+                    ),
+                    soft_preference_count=(
+                        candidate_snapshot.soft_preference_count
+                        if candidate_snapshot is not None
+                        else {}
+                    ),
+                )
+                after_residual = residual.ranking
+                if set(after_residual) != set(before_residual):
+                    raise RuntimeError("Top-10 residual changed C membership")
+                ranking = [*after_residual, *ranking[10:]]
+                reason_codes.append(
+                    f"optional:ranking.top10_residual_reranker.v2:{residual.reason}"
+                )
+            if candidate_snapshot is not None:
+                candidate_snapshot = replace(
+                    candidate_snapshot,
+                    pre_residual_top10=before_residual,
+                    post_residual_top10=after_residual,
+                )
             response = normalize_response(
                 {
                     "message": self._question_message(guidance.ask_attribute),

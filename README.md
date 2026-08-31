@@ -371,6 +371,14 @@ matched control/semantic calibration (all 1,650 development sessions). The 550-s
 final-selection set remains untouched until finalists are
 frozen.
 
+Both focused warm-start and fresh exhaustive search use the same adaptive technique
+registry. Each covers every currently promotable safe optional. In particular, the
+historical lexical, metadata-GBDT, reward/turn-aware LambdaMART, fold ensemble and rank
+stack options now run only as bounded secondary signals after the compulsory
+source-aware union GBDT; none can replace it or change candidate membership. Warm start
+reduces search breadth and evaluates the translated quality-plus-residual seed first;
+it does not hide those adapted alternatives.
+
 ```bash
 nohup caffeinate -dimsu env PYTHONPATH=. PYTHONUNBUFFERED=1 \
   .venv/bin/python scripts/run_adaptive_hybrid_pipeline.py \
@@ -381,11 +389,13 @@ nohup caffeinate -dimsu env PYTHONPATH=. PYTHONUNBUFFERED=1 \
   > artifacts/logs/adaptive_hybrid_warm_start_pipeline.log 2>&1 &
 ```
 
-The focused profile searches at most 36 initial candidates with an eight-candidate beam,
-one higher-order expansion round, six F1 survivors, five F2 evaluation slots and one HPO trial
-per surviving structure. These are evaluation budgets rather than a wall-clock kill
-switch. The existing per-evaluation checkpoint is reused only when a candidate's full
-payload matches, so completed compatible F0 work is retained safely.
+The focused profile searches at most 36 structural candidates in total. It first covers
+every safe add-one plus the warm seed and its ablations, then reserves up to an
+eight-candidate beam for one evidence-guided higher-order expansion round. Six F1
+survivors, five F2 evaluation slots and one HPO trial per surviving structure complete
+the budget. These are evaluation budgets rather than a wall-clock kill switch. The
+existing per-evaluation checkpoint is reused only when a candidate's full payload
+matches, so completed compatible F0 work is retained safely.
 
 The development output is `artifacts/reports/adaptive_hybrid_top3.json`. It contains up to
 three F2-evaluated non-control challengers, their Hit@10/MRR/MTTC/technical score,

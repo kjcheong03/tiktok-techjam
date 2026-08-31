@@ -1,12 +1,13 @@
 {
   "schema_version": 1,
-  "warm_start_id": "d4e040a07e6d-translated-v1",
+  "warm_start_id": "d4e040a07e6d-translated-v2",
   "source_candidate_id": "challenger-d4e040a07e6d",
   "source_preset": "artifacts/proposals/adaptive_autonomous_augment_v2/score_leader.json",
   "source_preset_sha256": "14dc81219cedaaf301da6e83b1e0f551d0be04ca26b2dd7e69b5b3342b25b8d0",
   "architecture": "adaptive_hybrid_1a_3b_v1",
   "techniques": [
-    "prior.quality"
+    "prior.quality",
+    "ranking.top10_residual_reranker.v2"
   ],
   "parameters": {
     "quality_prior_weight": 0.2,
@@ -16,12 +17,12 @@
     "State V2 query coverage is already compulsory in the new baseline",
     "correction-scoped recommendation history is already compulsory",
     "the new source-aware union GBDT replaces the historical metadata ranker",
-    "the validated quality prior remains an architecture-safe additive seed"
+    "the validated quality prior remains an architecture-safe additive seed",
+    "the membership-preserving residual technique transfers by ID and requires a fresh fold-safe fit against C; no historical fitted asset is reused"
   ],
   "excluded_source_techniques": {
     "question.fixed+question.other_always": "replaced by compulsory candidate-EIG guidance",
     "retrieval.sparse_only": "replaced by the compulsory Buying/Browsing dual track",
-    "ranking.fixed_lexical+ranking.metadata_gbdt": "replaced by the newly fitted source-aware union GBDT",
-    "ranking.top10_residual_reranker.v2": "historical fitted asset is incompatible with the new feature contract and is not reused"
+    "ranking.fixed_lexical+ranking.metadata_gbdt": "replaced by the newly fitted source-aware union GBDT"
   }
 }

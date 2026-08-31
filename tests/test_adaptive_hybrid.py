@@ -5,6 +5,7 @@ from pathlib import Path
 
 import pytest
 
+from ghostlab.policy.models import RankedCandidate, RankedCandidates
 from ghostlab.retrieval.category import CategoryCandidateIndex
 from ghostlab.retrieval.multi_route import merge_candidate_routes
 from ghostlab.runtime.adaptive_components import (
@@ -70,6 +71,30 @@ class DenseStub:
         )
 
 
+class AuxiliaryDenseStub:
+    def __init__(self, identifiers: list[str]) -> None:
+        self.identifiers = identifiers
+        self.calls: list[tuple[str, int]] = []
+
+    def search(self, query: str, limit: int) -> RankedCandidates:
+        self.calls.append((query, limit))
+        selected = self.identifiers[:limit]
+        return RankedCandidates(
+            items=tuple(
+                RankedCandidate(
+                    parent_asin=identifier,
+                    route="dense",
+                    rank=rank,
+                    normalized_score=1.0 - (rank - 1) / max(1, len(selected)),
+                )
+                for rank, identifier in enumerate(selected, 1)
+            ),
+            route="dense",
+            requested_k=limit,
+            elapsed_ms=1.0,
+        )
+
+
 class SemanticStub:
     def __init__(self, *, fail: bool = False) -> None:
         self.fail = fail
@@ -130,6 +155,28 @@ def _agent(
     return agent, dense, semantic, identifiers
 
 
+def _agent_with_auxiliary_minilm(
+    tmp_path: Path, *, overload_min_candidates: int
+) -> tuple[AdaptiveHybridAgent, AuxiliaryDenseStub, list[str]]:
+    tmp_path.mkdir(parents=True, exist_ok=True)
+    catalog = tmp_path / "catalog.jsonl"
+    identifiers = _catalog(catalog)
+    dense = DenseStub(list(reversed(identifiers)))
+    auxiliary = AuxiliaryDenseStub([*identifiers, "MINILM-ONLY"])
+    agent = AdaptiveHybridAgent(
+        catalog,
+        _config(
+            overload_min_candidates=overload_min_candidates,
+            extensions=AdaptiveExtensionsConfig(minilm_dense_view_enabled=True),
+        ),
+        project_root=tmp_path,
+        dense_track=dense,  # type: ignore[arg-type]
+        semantic_ranker=SemanticStub(),  # type: ignore[arg-type]
+        minilm_dense_index=auxiliary,  # type: ignore[arg-type]
+    )
+    return agent, auxiliary, identifiers
+
+
 def test_config_has_no_disabled_submission_slot() -> None:
     with pytest.raises(ValueError):
         AdaptiveHybridConfig.model_validate(
@@ -137,6 +184,49 @@ def test_config_has_no_disabled_submission_slot() -> None:
         )
     with pytest.raises(ValueError):
         AdaptiveHybridConfig.model_validate({"browsing": {"component": "off"}})
+
+
+def test_auxiliary_minilm_runs_only_on_normal_browsing_and_keeps_e5_membership(
+    tmp_path: Path,
+) -> None:
+    browsing, browsing_auxiliary, identifiers = _agent_with_auxiliary_minilm(
+        tmp_path / "normal", overload_min_candidates=1000
+    )
+    browsing.reset("browse", {})
+    browsing.respond(
+        "browse", "I'm looking for running shoes, but I'm still exploring.", 1, 10
+    )
+    assert len(browsing_auxiliary.calls) == 1
+    assert any(
+        item.startswith("optional:retrieval.minilm_dense_view.v1:scored_")
+        for item in browsing.traces[-1].reason_codes
+    )
+    snapshot = browsing.candidate_snapshots[-1]
+    assert set(snapshot.candidates) <= set(identifiers)
+    assert "MINILM-ONLY" not in snapshot.candidates
+
+    buying, buying_auxiliary, _ = _agent_with_auxiliary_minilm(
+        tmp_path / "buying", overload_min_candidates=1000
+    )
+    buying.reset("buy", {})
+    buying.respond(
+        "buy",
+        "I'm looking for running shoes. A key requirement is: black.",
+        1,
+        10,
+    )
+    assert buying.traces[-1].route == "buying"
+    assert buying_auxiliary.calls == []
+
+    overloaded, overloaded_auxiliary, _ = _agent_with_auxiliary_minilm(
+        tmp_path / "overload", overload_min_candidates=10
+    )
+    overloaded.reset("overload", {})
+    overloaded.respond(
+        "overload", "I'm looking for running shoes, but I'm still exploring.", 1, 10
+    )
+    assert overloaded.traces[-1].overloaded
+    assert overloaded_auxiliary.calls == []
 
 
 def test_router_reaches_both_tracks_from_observable_state() -> None:

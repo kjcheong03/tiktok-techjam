@@ -358,6 +358,37 @@ This is one user-facing command, not one mixed statistical fit. Each stage remai
 isolated so models are frozen before selection, failures are attributable, and runtime
 labels cannot leak backward into training.
 
+### Focused architecture-safe warm start
+
+When the full combinatorial campaign is too slow, use the translated historical seed
+and a focused successive-halving budget. The historical runtime is never executed:
+compulsory 1A-3B stages remain fixed, while only compatible optional settings seed the
+race. F0 evaluates the translated seed, all important standalone additions, selected
+pairs and a global exploration reserve on 330 development sessions. Only gated
+survivors reach F1 (825 sessions), one conditional HPO trial is allocated per surviving
+structure, and F2 reserves enough capacity for three structural D finalists plus the
+matched control/semantic calibration (all 1,650 development sessions). The 550-session
+final-selection set remains untouched until finalists are
+frozen.
+
+```bash
+nohup caffeinate -dimsu env PYTHONPATH=. PYTHONUNBUFFERED=1 \
+  .venv/bin/python scripts/run_adaptive_hybrid_pipeline.py \
+  --from-stage campaign \
+  --campaign-search-profile focused_warm_start \
+  --campaign-warm-start \
+    configs/warm_starts/adaptive_d4e040a07e6d_to_1a_3b_v1.json \
+  > artifacts/logs/adaptive_hybrid_warm_start_pipeline.log 2>&1 &
+```
+
+The focused profile searches at most 36 structural candidates in total. It first covers
+every safe add-one plus the warm seed and its ablations, then reserves up to an
+eight-candidate beam for one evidence-guided higher-order expansion round. Six F1
+survivors, five F2 evaluation slots and one HPO trial per surviving structure complete
+the budget. These are evaluation budgets rather than a wall-clock kill switch. The
+existing per-evaluation checkpoint is reused only when a candidate's full payload
+matches, so completed compatible F0 work is retained safely.
+
 The development output is `artifacts/reports/adaptive_hybrid_top3.json`. It contains up to
 three F2-evaluated non-control challengers, their Hit@10/MRR/MTTC/technical score,
 paired delta, latency, gates, materialized config hashes, and exact commands to evaluate,

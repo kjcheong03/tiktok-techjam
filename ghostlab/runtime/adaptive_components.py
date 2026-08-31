@@ -545,6 +545,9 @@ class UnionAwareRanker:
         self.filter = CoverageAwareFilter(catalog_path)
         self.union_features = UnionFeatureStore(GBDTFeatureStore(catalog_path))
         self.reranker: LambdaMARTReranker | ModelRankEnsembleReranker | None = None
+        self.auxiliary_reranker: (
+            LambdaMARTReranker | ModelRankEnsembleReranker | None
+        ) = None
         if config.backend == "gbdt":
             assert config.model_path is not None
             assert config.model_sha256 is not None
@@ -574,6 +577,84 @@ class UnionAwareRanker:
                 RankEnsembleAsset.load(path),
                 project_root=project_root,
             )
+        if config.auxiliary_backend in {"gbdt", "rank_ensemble"}:
+            assert config.auxiliary_model_path is not None
+            assert config.auxiliary_model_sha256 is not None
+            auxiliary_path = project_root / config.auxiliary_model_path
+            if not auxiliary_path.is_file():
+                raise FileNotFoundError(
+                    f"missing auxiliary ranker asset: {auxiliary_path}"
+                )
+            if _sha256(auxiliary_path) != config.auxiliary_model_sha256:
+                raise ValueError("auxiliary ranker asset hash mismatch")
+            if config.auxiliary_backend == "gbdt":
+                self.auxiliary_reranker = LambdaMARTReranker(
+                    GBDTFeatureStore(catalog_path),
+                    LambdaMARTModel.load(auxiliary_path),
+                )
+            else:
+                self.auxiliary_reranker = ModelRankEnsembleReranker.from_asset(
+                    GBDTFeatureStore(catalog_path),
+                    RankEnsembleAsset.load(auxiliary_path),
+                    project_root=project_root,
+                )
+
+    def _apply_auxiliary(
+        self,
+        query: str,
+        ranking: list[str],
+        pool: MergedCandidatePool,
+    ) -> list[str]:
+        """Blend one historical ranker as a bounded secondary signal.
+
+        The source-aware union GBDT has already produced ``ranking``.  The
+        auxiliary implementation can only influence its bounded head and
+        cannot alter membership, hard-constraint filtering, or the compulsory
+        primary model.
+        """
+        if self.config.auxiliary_backend == "none" or not ranking:
+            return ranking
+        head_size = min(self.config.auxiliary_rerank_k, len(ranking))
+        head = ranking[:head_size]
+        if self.config.auxiliary_backend == "fixed_lexical":
+            evidence = {item.parent_asin: item for item in pool.retain(head).candidates}
+            positions = {identifier: index for index, identifier in enumerate(head)}
+            auxiliary_order = sorted(
+                head,
+                key=lambda identifier: (
+                    evidence[identifier].keyword_rank is None,
+                    evidence[identifier].keyword_rank
+                    if evidence[identifier].keyword_rank is not None
+                    else len(head) + 1,
+                    -float(evidence[identifier].keyword_score or 0.0),
+                    positions[identifier],
+                    identifier,
+                ),
+            )
+        else:
+            assert self.auxiliary_reranker is not None
+            auxiliary_order = self.auxiliary_reranker.rerank(
+                query,
+                head,
+                rerank_k=head_size,
+            )
+        if set(auxiliary_order) != set(head) or len(auxiliary_order) != len(head):
+            raise ValueError("auxiliary ranker changed candidate membership")
+        auxiliary_positions = {
+            identifier: index for index, identifier in enumerate(auxiliary_order)
+        }
+        auxiliary_scores = tuple(
+            1.0
+            if head_size == 1
+            else 1.0 - auxiliary_positions[identifier] / max(1, head_size - 1)
+            for identifier in head
+        )
+        blended = blend_ranking(
+            head,
+            auxiliary_scores,
+            weight=self.config.auxiliary_weight,
+        )
+        return [*blended, *ranking[head_size:]]
 
     def rank(
         self,
@@ -653,7 +734,7 @@ class UnionAwareRanker:
             ranking = self.reranker.rerank(
                 query, ranking, rerank_k=min(self.config.rerank_k, len(ranking))
             )
-        return ranking
+        return self._apply_auxiliary(query, ranking, pool)
 
 
 @dataclass(frozen=True)

@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import hashlib
+import json
 import statistics
 from collections.abc import Callable
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import Literal
 
 from ghostlab.campaign.interaction_search import (
@@ -207,6 +208,20 @@ def _adaptive_search_space() -> ConditionalSearchSpace:
     )
     optional: tuple[ConditionalParameter, ...] = (
         ConditionalParameter(
+            name="union_auxiliary_weight",
+            kind="float",
+            low=0.02,
+            high=0.25,
+            requires_any=(
+                "ranking.fixed_lexical",
+                "ranking.metadata_gbdt",
+                "ranking.reward_lambdamart.v1",
+                "ranking.turn_aware_lambdamart.v1",
+                "ranking.fold_ensemble.v1",
+                "fusion.rank_stack.v1",
+            ),
+        ),
+        ConditionalParameter(
             name="dense_mmr_relevance_weight",
             kind="float",
             low=0.5,
@@ -355,22 +370,167 @@ class AdaptiveGhostLabEngine:
             if self.warm_start.baseline_id != baseline.policy_id:
                 raise ValueError("warm-start baseline ID does not match the control")
             if not self.warm_start.candidate_id.startswith("warm-start-"):
-                raise ValueError("warm-start candidate ID must use the warm-start prefix")
+                raise ValueError(
+                    "warm-start candidate ID must use the warm-start prefix"
+                )
             self.registry.validate_candidate(self.warm_start)
-            materialized = self.registry.materialize(
-                self.baseline, self.warm_start
-            )
+            materialized = self.registry.materialize(self.baseline, self.warm_start)
             if materialized.architecture != self.baseline.architecture:
                 raise ValueError("warm start changed the fixed architecture")
 
+    def _execution_identity(self, candidate: CandidateSpec) -> str:
+        """Hash runtime behavior plus fit-dispatch IDs, excluding provenance."""
+
+        config = self.materialize(candidate).model_dump(mode="json")
+        config.pop("policy_id", None)
+        fit_required = tuple(
+            sorted(
+                technique_id
+                for technique_id in candidate.techniques
+                if self.registry.bindings[technique_id].fit_required
+            )
+        )
+        encoded = json.dumps(
+            {"config": config, "fit_required": fit_required},
+            sort_keys=True,
+            separators=(",", ":"),
+        )
+        return hashlib.sha256(encoded.encode()).hexdigest()
+
+    def _warm_start_drop_one_ablations(self) -> tuple[CandidateSpec, ...]:
+        if self.warm_start is None:
+            return ()
+        compulsory = set(self.registry.inventory().compulsory)
+        additions = tuple(sorted(set(self.warm_start.techniques) - compulsory))
+        results: list[CandidateSpec] = []
+        for removed in additions:
+            techniques = tuple(
+                item for item in self.warm_start.techniques if item != removed
+            )
+            active_parameters = self.registry.parameter_names_for(techniques)
+            parameters = tuple(
+                item
+                for item in self.warm_start.parameters
+                if item[0] in active_parameters
+            )
+            candidate = CandidateSpec(
+                candidate_id=f"{self.warm_start.candidate_id}-without-{removed}",
+                baseline_id=self.warm_start.baseline_id,
+                techniques=techniques,
+                parameters=parameters,
+                complexity=len(additions) - 1,
+                generation="ablation",
+            )
+            self.registry.validate_candidate(candidate)
+            self.registry.materialize(self.baseline, candidate)
+            results.append(candidate)
+        return tuple(results)
+
+    def plan_coverage(self, candidates: tuple[CandidateSpec, ...]) -> dict[str, object]:
+        """Return explicit C/add-one/warm-ablation coverage evidence."""
+
+        inventory = self.registry.inventory()
+        compulsory = set(inventory.compulsory)
+        controls = tuple(item for item in candidates if item.generation == "control")
+        clean_control = (
+            len(controls) == 1
+            and set(controls[0].techniques) == compulsory
+            and not controls[0].parameters
+        )
+
+        def dependency_closure(technique_id: str) -> set[str]:
+            selected = set(compulsory) | {technique_id}
+            pending = [technique_id]
+            while pending:
+                technique = self.registry.catalog.techniques.get(pending.pop())
+                if technique is None:
+                    continue
+                for required in technique.requires:
+                    if required not in selected:
+                        selected.add(required)
+                        pending.append(required)
+            return selected
+
+        add_one = {
+            technique_id
+            for technique_id in inventory.promotable
+            if any(
+                item.generation in {"single", "ablation"}
+                and set(item.techniques) == dependency_closure(technique_id)
+                for item in candidates
+            )
+        }
+        missing_add_one = tuple(sorted(set(inventory.promotable) - add_one))
+        selected_control_only = tuple(
+            sorted(
+                {
+                    technique_id
+                    for item in candidates
+                    for technique_id in item.techniques
+                    if technique_id in set(inventory.control_only)
+                }
+            )
+        )
+        absorbed_controls = {
+            technique_id: binding.absorbed_by
+            for technique_id, binding in self.registry.bindings.items()
+            if binding.role == "control_only"
+            and getattr(binding, "absorbed", False)
+            and binding.absorbed_by is not None
+        }
+        missing_absorbed_parents = tuple(
+            sorted(
+                technique_id
+                for technique_id, parent in absorbed_controls.items()
+                if parent not in add_one
+            )
+        )
+        warm_additions: tuple[str, ...] = ()
+        expected_drop_one_ids: tuple[str, ...] = ()
+        missing_drop_one_ids: tuple[str, ...] = ()
+        if self.warm_start is not None:
+            warm_additions = tuple(sorted(set(self.warm_start.techniques) - compulsory))
+            expected_drop_one_ids = tuple(
+                f"{self.warm_start.candidate_id}-without-{item}"
+                for item in warm_additions
+            )
+            planned_ids = {item.candidate_id for item in candidates}
+            missing_drop_one_ids = tuple(
+                item for item in expected_drop_one_ids if item not in planned_ids
+            )
+        return {
+            "clean_control_verified": clean_control,
+            "control_candidate_ids": tuple(item.candidate_id for item in controls),
+            "promotable_safe_optionals": inventory.promotable,
+            "add_one_covered": tuple(sorted(add_one)),
+            "missing_add_one": missing_add_one,
+            "add_one_coverage_complete": not missing_add_one,
+            "control_only_explicitly_excluded": inventory.control_only,
+            "control_only_selected": selected_control_only,
+            "absorbed_control_dependencies": absorbed_controls,
+            "missing_absorbed_control_parents": missing_absorbed_parents,
+            "absorbed_control_coverage_complete": not missing_absorbed_parents,
+            "warm_start_additions": warm_additions,
+            "expected_warm_drop_one_candidate_ids": expected_drop_one_ids,
+            "missing_warm_drop_one_candidate_ids": missing_drop_one_ids,
+            "warm_drop_one_coverage_complete": not missing_drop_one_ids,
+        }
+
     def initial_plan(self) -> InteractionSearchPlan:
         inventory = self.registry.inventory()
+        # Reserve one beam for evidence-guided higher-order expansion. Without
+        # this split, standalone/pair enumeration consumes the complete focused
+        # budget and the advertised warm-start combination round can never run.
+        initial_limits = replace(
+            self.limits,
+            max_candidates=max(1, self.limits.max_candidates - self.limits.beam_width),
+        )
         plan = plan_standalones_and_pairs(
             self.registry.catalog,
             baseline_id=self.baseline.policy_id,
             baseline_techniques=inventory.compulsory,
             technique_ids=inventory.promotable,
-            limits=self.limits,
+            limits=initial_limits,
         )
         accepted: list[CandidateSpec] = []
         skipped = list(plan.skipped)
@@ -400,27 +560,54 @@ class AdaptiveGhostLabEngine:
         )
         candidates = [*accepted]
         if self.warm_start is not None:
-            warm_config_hash = self.materialize(self.warm_start).canonical_hash()
-            equivalent_index = next(
-                (
-                    index
-                    for index, item in enumerate(candidates)
-                    if self.materialize(item).canonical_hash() == warm_config_hash
-                ),
-                None,
+            provenance_candidates = (
+                self.warm_start,
+                *self._warm_start_drop_one_ablations(),
             )
-            if equivalent_index is None:
-                candidates.append(self.warm_start)
-            else:
-                # Preserve the historical provenance and early evaluation order while
-                # avoiding payment for an identical ordinary standalone candidate.
-                candidates[equivalent_index] = self.warm_start
+            provenance_identities = {
+                self._execution_identity(item) for item in provenance_candidates
+            }
+            controls = [item for item in candidates if item.generation == "control"]
+            ordinary = [
+                item
+                for item in candidates
+                if item.generation != "control"
+                and self._execution_identity(item) not in provenance_identities
+            ]
+            # A warm start is useful only if it is evaluated before the broad
+            # add-one/pair field. Keep C first, then D0 and its drop-one
+            # ablations, while removing execution-equivalent ordinary entries.
+            candidates = [*controls, *provenance_candidates, *ordinary]
         candidates.extend(semantic_calibration)
-        return InteractionSearchPlan(
+        result = InteractionSearchPlan(
             candidates=tuple(candidates),
             skipped=tuple(skipped),
             cap_exhausted=plan.cap_exhausted,
         )
+        coverage = self.plan_coverage(result.candidates)
+        if not coverage["clean_control_verified"]:
+            raise RuntimeError("adaptive plan contaminated the fixed C control")
+        if not coverage["add_one_coverage_complete"]:
+            raise RuntimeError(
+                "adaptive plan omitted promotable add-one candidates: "
+                f"{coverage['missing_add_one']}"
+            )
+        if coverage["control_only_selected"]:
+            raise RuntimeError(
+                "adaptive plan selected control-only techniques: "
+                f"{coverage['control_only_selected']}"
+            )
+        if not coverage["absorbed_control_coverage_complete"]:
+            raise RuntimeError(
+                "adaptive plan omitted add-one parents for absorbed control-only "
+                f"dependencies: {coverage['missing_absorbed_control_parents']}"
+            )
+        if not coverage["warm_drop_one_coverage_complete"]:
+            raise RuntimeError(
+                "adaptive plan omitted warm-seed drop-one ablations: "
+                f"{coverage['missing_warm_drop_one_candidate_ids']}"
+            )
+        return result
 
     def materialize(self, candidate: CandidateSpec) -> AdaptiveHybridConfig:
         self.registry.validate_candidate(candidate)

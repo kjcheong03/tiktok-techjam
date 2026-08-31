@@ -58,6 +58,7 @@ def test_adaptive_registry_is_exhaustive_and_preserves_every_catalog_record() ->
     assert "retrieval.sparse" in inventory.compulsory
     assert "retrieval.e5" in inventory.compulsory
     assert "prior.quality" in inventory.promotable
+    assert "ranking.top10_residual_reranker.v2" in inventory.promotable
     assert "query.catalog_prf.v1" in inventory.promotable
     assert "ranking.metadata_gbdt" in inventory.promotable
     assert "state.current" in inventory.control_only

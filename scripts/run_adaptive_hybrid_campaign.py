@@ -9,7 +9,7 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Any, cast
 
-from evaluator.local_evaluator import catalog_index, evaluate
+from evaluator.local_evaluator import catalog_index, evaluate, metric_summary
 from ghostlab.campaign.catalog import load_catalog
 from ghostlab.campaign.models import CandidateSpec
 from ghostlab.optimization.adaptive_campaign import (
@@ -18,6 +18,7 @@ from ghostlab.optimization.adaptive_campaign import (
 )
 from ghostlab.optimization.adaptive_techniques import AdaptiveTechniqueRegistry
 from ghostlab.optimization.adaptive_warm_start import load_adaptive_warm_start
+from ghostlab.retrieval.residual import TECHNIQUE_ID as RESIDUAL_TECHNIQUE_ID
 from ghostlab.runtime.adaptive_factory import load_adaptive_hybrid_config
 from ghostlab.runtime.adaptive_hybrid import AdaptiveHybridAgent
 from ghostlab.training.adaptive_datasets import (
@@ -25,13 +26,32 @@ from ghostlab.training.adaptive_datasets import (
     progressive_stratified_samples,
 )
 from ghostlab.training.adaptive_lineage import (
+    AdaptiveLineageManifest,
     cluster_ids_for_samples,
     load_lineage_manifest,
     subset_corpus,
 )
+from ghostlab.training.adaptive_residual import (
+    collect_adaptive_residual_turns,
+    config_with_adaptive_residual_asset,
+    fit_adaptive_residual_asset,
+    lineage_outer_folds,
+)
 from starter.agent import Agent
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def _float_value(value: object) -> float:
+    if not isinstance(value, (int, float)):
+        raise TypeError("campaign metric must be numeric")
+    return float(value)
+
+
+def _int_value(value: object) -> int:
+    if not isinstance(value, (int, float)):
+        raise TypeError("campaign count must be numeric")
+    return int(value)
 
 
 def _session_reward(session: dict[str, object]) -> float:
@@ -136,6 +156,152 @@ def _semantic_evidence(
     }
 
 
+def _technical_result(sessions: list[dict[str, object]]) -> dict[str, object]:
+    metrics = metric_summary(cast(list[dict], sessions))
+    efficiency = max(0.0, min(1.0, (11.0 - float(metrics["mttc"])) / 10.0))
+    return {
+        **metrics,
+        "recommended_technical_score": (
+            0.50 * float(metrics["hit_rate_at_10"])
+            + 0.30 * float(metrics["mrr"])
+            + 0.20 * efficiency
+        ),
+        "sessions": sessions,
+    }
+
+
+def _evaluate_fold_safe_residual(
+    *,
+    config,
+    candidate: CandidateSpec,
+    fidelity: str,
+    selected_samples: list[dict[str, Any]],
+    lineage_manifest: AdaptiveLineageManifest,
+    catalog_path: Path,
+    identifiers: set[str],
+    categories: dict[str, list[str]],
+    products: dict[str, dict],
+    seed: int,
+) -> tuple[
+    dict[str, object],
+    dict[str, object],
+    list[dict[str, Any]],
+    int,
+    tuple[dict[str, object], ...],
+]:
+    """Fresh-fit and evaluate D out of fold; C is only used as the collector."""
+
+    turns, collection = collect_adaptive_residual_turns(
+        config,
+        selected_samples,
+        catalog_path=catalog_path,
+        project_root=ROOT,
+    )
+    selected_by_id = {str(item["sample_id"]): item for item in selected_samples}
+    selected_ids = set(selected_by_id)
+    folds = lineage_outer_folds(lineage_manifest, selected_ids)
+    if len(folds) < 2:
+        raise ValueError("residual OOF evaluation requires at least two lineage folds")
+    token = hashlib.sha256(
+        f"{candidate.candidate_id}\0{fidelity}\0{seed}".encode()
+    ).hexdigest()[:16]
+    sessions: list[dict[str, object]] = []
+    evaluated_samples: list[dict[str, Any]] = []
+    agents: list[AdaptiveHybridAgent] = []
+    receipts: list[dict[str, object]] = []
+    for fold_index, validation_ids in enumerate(folds):
+        training_ids = selected_ids - validation_ids
+        artifact = fit_adaptive_residual_asset(
+            turns,
+            config=config,
+            training_ids=training_ids,
+            validation_ids=validation_ids,
+            group_by_sample=lineage_manifest.group_by_sample,
+            outer_fold=fold_index,
+            seed=seed,
+            project_root=ROOT,
+            output_prefix=(
+                f"artifacts/models/adaptive_top10_residual/{token}/{fidelity}"
+            ),
+        )
+        fold_config = config_with_adaptive_residual_asset(config, artifact)
+        fold_samples = [
+            item
+            for item in selected_samples
+            if str(item["sample_id"]) in validation_ids
+        ]
+        agent = AdaptiveHybridAgent(catalog_path, fold_config, project_root=ROOT)
+        fold_result = evaluate(
+            cast(Agent, agent),
+            fold_samples,
+            identifiers,
+            categories,
+            products,
+        )
+        agents.append(agent)
+        sessions.extend(cast(list[dict[str, object]], fold_result["sessions"]))
+        evaluated_samples.extend(fold_samples)
+        receipts.append(
+            {
+                "outer_fold": artifact.outer_fold,
+                "asset_path": artifact.asset_path,
+                "asset_sha256": artifact.asset_sha256,
+                "receipt_path": artifact.receipt_path,
+                "receipt_sha256": artifact.receipt_sha256,
+                "training_sample_ids_sha256": (artifact.training_sample_ids_sha256),
+                "validation_sample_ids_sha256": (artifact.validation_sample_ids_sha256),
+            }
+        )
+    semantic_latencies = [
+        trace.semantic_elapsed_ms
+        for agent in agents
+        for trace in agent.traces
+        if trace.semantic_executed
+    ]
+    semantic_activations = 0
+    opportunities = rescues = regressions = 0
+    routes: list[str] = []
+    for agent, fold_samples in zip(
+        agents,
+        (
+            [
+                item
+                for item in selected_samples
+                if str(item["sample_id"]) in validation_ids
+            ]
+            for validation_ids in folds
+        ),
+        strict=True,
+    ):
+        evidence = _semantic_evidence(
+            agent, cast(list[dict[str, object]], fold_samples), rerank_k=10
+        )
+        semantic_activations += _int_value(evidence["semantic_activations"])
+        opportunities += _int_value(evidence["semantic_rescue_opportunities"])
+        rescues += _int_value(evidence["semantic_rescues"])
+        regressions += _int_value(evidence["semantic_regressions"])
+        routes.extend(cast(tuple[str, ...], evidence["routes"]))
+    semantic = {
+        "semantic_latency_p95_ms": _p95(semantic_latencies),
+        "semantic_activations": semantic_activations,
+        "semantic_rescue_opportunities": opportunities,
+        "semantic_rescues": rescues,
+        "semantic_regressions": regressions,
+        "routes": tuple(routes),
+        "residual_collection": collection,
+    }
+    violations = sum(
+        trace.output_constraint_violations for agent in agents for trace in agent.traces
+    )
+    return (
+        _technical_result(sessions),
+        semantic,
+        evaluated_samples,
+        violations,
+        tuple(receipts),
+    )
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description=(
@@ -220,6 +386,7 @@ def main() -> None:
     )
     inventory = registry.inventory()
     initial_plan = engine.initial_plan()
+    planning_coverage = engine.plan_coverage(initial_plan.candidates)
     if args.plan_only:
         report: dict[str, Any] = {
             "schema_version": 2,
@@ -238,6 +405,7 @@ def main() -> None:
             "initial_candidates": [
                 _candidate_payload(item) for item in initial_plan.candidates
             ],
+            "planning_coverage": planning_coverage,
             "skipped": [
                 {"roots": item.roots, "reasons": item.reasons}
                 for item in initial_plan.skipped
@@ -260,7 +428,9 @@ def main() -> None:
                     "specification": args.warm_start,
                     "warm_start_id": warm_start_spec.warm_start_id,
                     "source_candidate_id": warm_start_spec.source_candidate_id,
-                    "candidate": _candidate_payload(warm_start_candidate),
+                    "candidate": _candidate_payload(
+                        cast(CandidateSpec, warm_start_candidate)
+                    ),
                     "historical_runtime_executed": False,
                 }
             ),
@@ -402,27 +572,54 @@ def main() -> None:
                 flush=True,
             )
             started = time.perf_counter()
-            agent = AdaptiveHybridAgent(catalog_path, config, project_root=ROOT)
-            result = evaluate(
-                cast(Agent, agent),
-                samples[:count],
-                identifiers,
-                categories,
-                products,
-            )
+            selected_samples = cast(list[dict[str, Any]], samples[:count])
+            residual_fit_receipts: tuple[dict[str, object], ...] = ()
+            if RESIDUAL_TECHNIQUE_ID in candidate.techniques:
+                (
+                    result,
+                    semantic_evidence,
+                    selected_samples,
+                    constraint_violations,
+                    residual_fit_receipts,
+                ) = _evaluate_fold_safe_residual(
+                    config=config,
+                    candidate=candidate,
+                    fidelity=fidelity,
+                    selected_samples=selected_samples,
+                    lineage_manifest=lineage_manifest,
+                    catalog_path=catalog_path,
+                    identifiers=identifiers,
+                    categories=categories,
+                    products=products,
+                    seed=args.seed,
+                )
+                fit_verified = bool(residual_fit_receipts)
+            else:
+                agent = AdaptiveHybridAgent(catalog_path, config, project_root=ROOT)
+                result = evaluate(
+                    cast(Agent, agent),
+                    selected_samples,
+                    identifiers,
+                    categories,
+                    products,
+                )
+                semantic_evidence = _semantic_evidence(
+                    agent,
+                    cast(list[dict[str, object]], selected_samples),
+                    rerank_k=config.semantic_ranker.rerank_k,
+                )
+                constraint_violations = sum(
+                    trace.output_constraint_violations for trace in agent.traces
+                )
+                fit_verified = _fit_verified(config, candidate, registry)
             elapsed_ms = (time.perf_counter() - started) * 1000.0
-            sessions = result["sessions"]
-            selected_samples = samples[:count]
-            semantic_evidence = _semantic_evidence(
-                agent,
-                selected_samples,
-                rerank_k=config.semantic_ranker.rerank_k,
-            )
+            sessions = cast(list[dict[str, object]], result["sessions"])
+            semantic_routes = cast(tuple[str, ...], semantic_evidence["routes"])
             grouped_rewards: dict[str, list[float]] = defaultdict(list)
             for sample, session, route in zip(
                 selected_samples,
                 sessions,
-                semantic_evidence["routes"],
+                semantic_routes,
                 strict=True,
             ):
                 reward = _session_reward(session)
@@ -435,31 +632,32 @@ def main() -> None:
                 for name, values in sorted(grouped_rewards.items())
                 if values
             )
-            constraint_violations = sum(
-                trace.output_constraint_violations for trace in agent.traces
-            )
             evaluation = AdaptiveEvaluation(
                 candidate_id=candidate.candidate_id,
                 fidelity=cast(Any, fidelity),
-                score=float(result["recommended_technical_score"]),
+                score=_float_value(result["recommended_technical_score"]),
                 session_rewards=tuple(_session_reward(item) for item in sessions),
                 behavior_novelty=0.0,
                 latency_p95_ms=elapsed_ms / count,
-                semantic_latency_p95_ms=float(
+                semantic_latency_p95_ms=_float_value(
                     semantic_evidence["semantic_latency_p95_ms"]
                 ),
-                semantic_activations=int(semantic_evidence["semantic_activations"]),
-                semantic_rescue_opportunities=int(
+                semantic_activations=_int_value(
+                    semantic_evidence["semantic_activations"]
+                ),
+                semantic_rescue_opportunities=_int_value(
                     semantic_evidence["semantic_rescue_opportunities"]
                 ),
-                semantic_rescues=int(semantic_evidence["semantic_rescues"]),
-                semantic_regressions=int(semantic_evidence["semantic_regressions"]),
-                fit_verified=_fit_verified(config, candidate, registry),
+                semantic_rescues=_int_value(semantic_evidence["semantic_rescues"]),
+                semantic_regressions=_int_value(
+                    semantic_evidence["semantic_regressions"]
+                ),
+                fit_verified=fit_verified,
                 gate_metrics=gate_metrics,
                 constraint_violations=constraint_violations,
-                hit_rate_at_10=float(result["hit_rate_at_10"]),
-                mrr=float(result["mrr"]),
-                mttc=float(result["mttc"]),
+                hit_rate_at_10=_float_value(result["hit_rate_at_10"]),
+                mrr=_float_value(result["mrr"]),
+                mttc=_float_value(result["mttc"]),
                 lineage_cluster_ids=cluster_ids_for_samples(
                     lineage_manifest,
                     [str(item["sample_id"]) for item in selected_samples],
@@ -486,6 +684,7 @@ def main() -> None:
                 "mttc": evaluation.mttc,
                 "lineage_cluster_ids": list(evaluation.lineage_cluster_ids),
                 "sample_count": count,
+                "residual_fit_receipts": list(residual_fit_receipts),
                 "completed_at_unix": time.time(),
             }
             save_checkpoint()
@@ -559,10 +758,10 @@ def main() -> None:
                     "specification": args.warm_start,
                     "warm_start_id": warm_start_spec.warm_start_id,
                     "source_candidate_id": warm_start_spec.source_candidate_id,
-                    "candidate": _candidate_payload(warm_start_candidate),
-                    "inherited_mechanisms": list(
-                        warm_start_spec.inherited_mechanisms
+                    "candidate": _candidate_payload(
+                        cast(CandidateSpec, warm_start_candidate)
                     ),
+                    "inherited_mechanisms": list(warm_start_spec.inherited_mechanisms),
                     "excluded_source_techniques": dict(
                         warm_start_spec.excluded_source_techniques
                     ),

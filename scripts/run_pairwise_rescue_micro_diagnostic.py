@@ -59,6 +59,70 @@ MINILM = {
 }
 
 
+def structured_shopper_context(query: str, view: V2StateView) -> str:
+    """Render only observable State V2 evidence with explicit semantic roles."""
+
+    positive = view.positive_constraints()
+    negative = view.negative_constraints()
+
+    def values(attributes: Sequence[str]) -> tuple[str, ...]:
+        return tuple(
+            dict.fromkeys(
+                value
+                for attribute in attributes
+                for value in positive.get(attribute, ())
+                if value
+            )
+        )
+
+    categories = values(("category",))
+    intended_use = values(("occasion", "use_case"))
+    reserved = {"category", "occasion", "use_case"}
+    preferences = tuple(
+        (attribute, tuple(dict.fromkeys(value for value in items if value)))
+        for attribute, items in sorted(positive.items())
+        if attribute not in reserved and any(items)
+    )
+    exclusions = tuple(
+        (attribute, tuple(dict.fromkeys(value for value in items if value)))
+        for attribute, items in sorted(negative.items())
+        if any(items)
+    )
+
+    lines = [f"Current request: {query}"]
+    if categories:
+        lines.append(f"Category: {', '.join(categories)}")
+    if intended_use:
+        lines.append(f"Intended use: {', '.join(intended_use)}")
+    if preferences:
+        lines.append(
+            "Positive preferences: "
+            + "; ".join(
+                f"{attribute}={', '.join(items)}"
+                for attribute, items in preferences
+            )
+        )
+    if exclusions:
+        lines.append(
+            "Explicit exclusions: "
+            + "; ".join(
+                f"{attribute}={', '.join(items)}"
+                for attribute, items in exclusions
+            )
+        )
+    else:
+        lines.append("Explicit exclusions: none")
+    return "\n".join(lines)
+
+
+def shopper_context(query: str, view: V2StateView, mode: str) -> str:
+    if mode == "flattened":
+        return query
+    if mode == "structured":
+        return structured_shopper_context(query, view)
+    raise ValueError(f"unknown shopper-context mode: {mode}")
+
+
 def canonical_sha256(value: object) -> str:
     encoded = json.dumps(value, sort_keys=True, separators=(",", ":")).encode()
     return hashlib.sha256(encoded).hexdigest()
@@ -411,10 +475,15 @@ class RecordingNoopAgent(AdaptiveHybridAgent):
 
 class PairwiseExperimentalAgent(AdaptiveHybridAgent):
     def __init__(
-        self, *args: object, promoter: PairwiseBoundaryPromoter, **kwargs: object
+        self,
+        *args: object,
+        promoter: PairwiseBoundaryPromoter,
+        context_mode: str = "flattened",
+        **kwargs: object,
     ) -> None:
         super().__init__(*args, **kwargs)  # type: ignore[arg-type]
         self.promoter = promoter
+        self.context_mode = context_mode
         self.promotion_results: dict[tuple[str, int], PromotionResult] = {}
 
     def _semantic_rank(
@@ -426,7 +495,8 @@ class PairwiseExperimentalAgent(AdaptiveHybridAgent):
         **kwargs: object,
     ) -> SemanticRankingResult:
         del route, kwargs
-        result = self.promoter.promote(query, ranking, view)
+        context = shopper_context(query, view, self.context_mode)
+        result = self.promoter.promote(context, ranking, view)
         self.promotion_results[(view.session_id, view.turn)] = result
         return SemanticRankingResult(
             result.ranking,
@@ -683,6 +753,8 @@ def evaluate_micro_arm(
     catalog_path: Path,
     authority: CoverageAwareFilter,
     documents: Mapping[str, str],
+    *,
+    context_mode: str = "flattened",
 ) -> tuple[dict[str, object], BatchPairwiseScorer | None]:
     if model_id == "no-op":
         results = [PromotionResult(item.ranking, None, (), 0.0) for item in cases]
@@ -697,10 +769,19 @@ def evaluate_micro_arm(
         scorer = DirectLogitPairwiseScorer(model_id, documents)
     initialization_ms = (time.perf_counter() - started) * 1000.0
     promoter = PairwiseBoundaryPromoter(scorer, authority)
-    results = [promoter.promote(item.query, item.ranking, item.view) for item in cases]
-    return summarize_micro_arm(
+    results = [
+        promoter.promote(
+            shopper_context(item.query, item.view, context_mode),
+            item.ranking,
+            item.view,
+        )
+        for item in cases
+    ]
+    summary = summarize_micro_arm(
         model_id, cases, results, initialization_ms=initialization_ms
-    ), scorer
+    )
+    summary["shopper_context_mode"] = context_mode
+    return summary, scorer
 
 
 def full_replay_summary(
@@ -710,6 +791,8 @@ def full_replay_summary(
     base_config: Path,
     catalog_path: Path,
     baseline_result: Mapping[str, object],
+    *,
+    context_mode: str = "flattened",
 ) -> dict[str, object]:
     identifiers, categories, products = catalog_index(catalog_path)
     authority = CoverageAwareFilter(catalog_path)
@@ -718,6 +801,7 @@ def full_replay_summary(
         load_adaptive_hybrid_config(base_config),
         project_root=ROOT,
         promoter=PairwiseBoundaryPromoter(scorer, authority),
+        context_mode=context_mode,
     )
     started = time.perf_counter()
     result = evaluate(
@@ -772,6 +856,7 @@ def full_replay_summary(
         "mean_turn_latency_ms": statistics.fmean(item.elapsed_ms for item in decisions)
         if decisions
         else 0.0,
+        "shopper_context_mode": context_mode,
         "elapsed_seconds": elapsed,
     }
 
@@ -816,6 +901,11 @@ def main() -> None:
     )
     parser.add_argument("--stage-one-only", action="store_true")
     parser.add_argument("--plan-only", action="store_true")
+    parser.add_argument(
+        "--shopper-context",
+        choices=("flattened", "structured"),
+        default="flattened",
+    )
     args = parser.parse_args()
 
     os.environ["HF_HUB_OFFLINE"] = "1"
@@ -836,6 +926,7 @@ def main() -> None:
         "orders": ["A/B", "B/A"],
         "max_promotions_per_turn": 1,
         "grid_search": False,
+        "shopper_context": args.shopper_context,
         "stage_gate": (
             "Run both LLMs on the six-case micro-set; stop if neither rescues. "
             "If at least one rescues, replay only the best rescuing LLM on all 60 "
@@ -892,7 +983,12 @@ def main() -> None:
         "smollm2-1.7b-instruct",
     ):
         summary, scorer = evaluate_micro_arm(
-            model_id, cases, catalog_path, authority, documents
+            model_id,
+            cases,
+            catalog_path,
+            authority,
+            documents,
+            context_mode=args.shopper_context,
         )
         arms.append(summary)
         if scorer is not None:
@@ -927,6 +1023,7 @@ def main() -> None:
                 base_config,
                 catalog_path,
                 baseline_result,
+                context_mode=args.shopper_context,
             )
             release_model(winner_scorer)
 

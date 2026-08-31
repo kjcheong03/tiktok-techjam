@@ -15,6 +15,25 @@ class _RequiredConfig(BaseModel):
 
 class StateV2Config(_RequiredConfig):
     component: Literal["state_v2"] = "state_v2"
+    catalog_normalizer_enabled: bool = False
+    catalog_ontology_path: str | None = None
+    catalog_ontology_sha256: str | None = Field(default=None, pattern=r"^[0-9a-f]{64}$")
+    constraint_normalization_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
+
+    @model_validator(mode="after")
+    def normalizer_asset_is_pinned(self) -> StateV2Config:
+        declared = (self.catalog_ontology_path, self.catalog_ontology_sha256)
+        if any(item is not None for item in declared) and not all(
+            item is not None for item in declared
+        ):
+            raise ValueError(
+                "catalog ontology path and SHA256 must be declared together"
+            )
+        if self.catalog_normalizer_enabled and not all(
+            item is not None for item in declared
+        ):
+            raise ValueError("catalog normalization requires a pinned ontology asset")
+        return self
 
 
 class DualTrackRouterConfig(_RequiredConfig):
@@ -168,6 +187,14 @@ class UnionRankerConfig(_RequiredConfig):
         "sparse_dominant_residual"
     )
     buying_residual_weight: float = Field(default=0.25, ge=0.0, le=0.49)
+    auxiliary_technique_id: str | None = None
+    auxiliary_backend: Literal["none", "fixed_lexical", "gbdt", "rank_ensemble"] = (
+        "none"
+    )
+    auxiliary_model_path: str | None = None
+    auxiliary_model_sha256: str | None = Field(default=None, pattern=r"^[a-f0-9]{64}$")
+    auxiliary_weight: float = Field(default=0.1, ge=0.0, le=0.25)
+    auxiliary_rerank_k: int = Field(default=50, ge=10, le=200)
 
     @model_validator(mode="after")
     def gbdt_asset_is_declared(self) -> UnionRankerConfig:
@@ -175,6 +202,20 @@ class UnionRankerConfig(_RequiredConfig):
             not self.model_path or not self.model_sha256
         ):
             raise ValueError("learned union ranking requires a pinned local model")
+        learned_auxiliary = self.auxiliary_backend in {"gbdt", "rank_ensemble"}
+        if learned_auxiliary and (
+            not self.auxiliary_model_path or not self.auxiliary_model_sha256
+        ):
+            raise ValueError("learned auxiliary ranking requires a pinned local model")
+        if self.auxiliary_backend in {"none", "fixed_lexical"} and (
+            self.auxiliary_model_path is not None
+            or self.auxiliary_model_sha256 is not None
+        ):
+            raise ValueError("non-learned auxiliary ranking cannot declare a model")
+        if self.auxiliary_backend == "none" and self.auxiliary_technique_id is not None:
+            raise ValueError("disabled auxiliary ranking cannot declare a technique")
+        if self.auxiliary_backend != "none" and not self.auxiliary_technique_id:
+            raise ValueError("enabled auxiliary ranking must declare its technique")
         return self
 
 
@@ -194,11 +235,50 @@ class AdaptiveExtensionsConfig(_RequiredConfig):
     facet_output_k: int = Field(default=10, ge=2, le=50)
     facet_max_turn: int = Field(default=2, ge=1, le=9)
     facet_max_constraints: int = Field(default=1, ge=0, le=10)
+    minilm_dense_view_enabled: bool = False
+    minilm_dense_model_path: str = "artifacts/cache/models/all-MiniLM-L6-v2"
+    minilm_dense_model_revision: str = Field(
+        default="1110a243fdf4706b3f48f1d95db1a4f5529b4d41", min_length=1
+    )
+    minilm_dense_cache_dir: str = "artifacts/cache/dense"
+    minilm_dense_retrieval_k: int = Field(default=80, ge=10, le=400)
+    minilm_dense_weight: float = Field(default=0.15, gt=0.0, le=0.35)
+    top10_residual_enabled: bool = False
+    top10_residual_model_path: str | None = None
+    top10_residual_model_sha256: str | None = Field(
+        default=None, pattern=r"^[0-9a-f]{64}$"
+    )
+    top10_residual_fit_receipt_path: str | None = None
+    top10_residual_fit_receipt_sha256: str | None = Field(
+        default=None, pattern=r"^[0-9a-f]{64}$"
+    )
+    top10_residual_rerank_depth: int = Field(default=10, ge=2, le=10)
+    top10_residual_model_weight: float = Field(default=1.0, ge=0.0, le=1.0)
+    top10_residual_minimum_expected_gain: float = Field(default=0.0, ge=0.0, le=1.0)
+    top10_residual_minimum_probability_margin: float = Field(
+        default=0.0, ge=0.0, le=1.0
+    )
+    top10_residual_maximum_moved_ids: int = Field(default=10, ge=2, le=10)
 
     @model_validator(mode="after")
     def valid_depths(self) -> AdaptiveExtensionsConfig:
         if self.facet_output_k > self.facet_rerank_k:
             raise ValueError("facet output depth cannot exceed its rerank depth")
+        pairs = (
+            (
+                self.top10_residual_model_path,
+                self.top10_residual_model_sha256,
+                "residual model",
+            ),
+            (
+                self.top10_residual_fit_receipt_path,
+                self.top10_residual_fit_receipt_sha256,
+                "residual fit receipt",
+            ),
+        )
+        for path, digest, label in pairs:
+            if (path is None) != (digest is None):
+                raise ValueError(f"{label} path and SHA256 must be declared together")
         return self
 
 

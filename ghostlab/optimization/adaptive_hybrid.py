@@ -17,9 +17,7 @@ class AdaptiveHybridTrial(BaseModel):
     router_history_specificity_weight: float = Field(default=0.5, ge=0.0, le=1.0)
     router_current_attribute_weight: float = Field(default=0.25, ge=0.0, le=1.0)
     router_query_length_weight: float = Field(default=0.1, ge=0.0, le=0.5)
-    router_category_only_browsing_weight: float = Field(
-        default=0.75, ge=0.0, le=4.0
-    )
+    router_category_only_browsing_weight: float = Field(default=0.75, ge=0.0, le=4.0)
     buying_retrieval_k: int = Field(default=200, ge=50, le=500)
     dense_retrieval_per_view: int = Field(default=400, ge=100, le=800)
     dense_output_k: int = Field(default=200, ge=50, le=400)
@@ -35,6 +33,7 @@ class AdaptiveHybridTrial(BaseModel):
     merger_rrf_constant: int = Field(default=60, ge=1, le=200)
     union_rerank_k: int = Field(default=320, ge=10, le=1000)
     buying_residual_weight: float = Field(default=0.25, ge=0.0, le=0.49)
+    union_auxiliary_weight: float = Field(default=0.1, ge=0.0, le=0.25)
     semantic_weight: float = Field(default=0.5, gt=0.0, le=0.75)
     semantic_rerank_k: int = Field(default=10, ge=5, le=50)
     semantic_fallback_weight: float = Field(default=0.5, gt=0.0, le=0.75)
@@ -63,9 +62,7 @@ class AdaptiveHybridTrial(BaseModel):
                 config.router.buying_min_specific_constraints
             ),
             router_abstain_confidence=config.router.abstain_confidence,
-            router_specificity_threshold=(
-                config.router.buying_specificity_threshold
-            ),
+            router_specificity_threshold=(config.router.buying_specificity_threshold),
             router_history_specificity_weight=(
                 config.router.historical_specificity_weight
             ),
@@ -93,6 +90,7 @@ class AdaptiveHybridTrial(BaseModel):
             merger_rrf_constant=config.merger.rrf_constant,
             union_rerank_k=config.union_ranker.rerank_k,
             buying_residual_weight=config.union_ranker.buying_residual_weight,
+            union_auxiliary_weight=config.union_ranker.auxiliary_weight,
             semantic_weight=config.semantic_ranker.weight,
             semantic_rerank_k=config.semantic_ranker.rerank_k,
             semantic_fallback_weight=config.semantic_ranker.fallback_weight,
@@ -155,6 +153,10 @@ class AdaptiveArchitectureAudit:
             "local_causal_relevance",
         }:
             raise ValueError("submission trial requires a literal local LLM")
+        if config.union_ranker.backend != "gbdt":
+            raise ValueError(
+                "the compulsory source-aware union GBDT must remain the primary ranker"
+            )
         if not config.semantic_ranker.activate_for_browsing:
             raise ValueError("adaptive trial disabled the semantic LLM capability")
         if (
@@ -228,9 +230,7 @@ class AdaptiveHybridBinding:
                     trial.buying_min_specific_constraints
                 ),
                 "abstain_confidence": trial.router_abstain_confidence,
-                "buying_specificity_threshold": (
-                    trial.router_specificity_threshold
-                ),
+                "buying_specificity_threshold": (trial.router_specificity_threshold),
                 "historical_specificity_weight": (
                     trial.router_history_specificity_weight
                 ),
@@ -281,6 +281,7 @@ class AdaptiveHybridBinding:
             update={
                 "rerank_k": trial.union_rerank_k,
                 "buying_residual_weight": trial.buying_residual_weight,
+                "auxiliary_weight": trial.union_auxiliary_weight,
             }
         )
         semantic = baseline.semantic_ranker.model_copy(
