@@ -10,6 +10,8 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import shutil
+import textwrap
 from collections.abc import Callable, Mapping
 from pathlib import Path
 
@@ -39,6 +41,9 @@ DEFAULT_LINEAGE_MANIFEST = "data/splits/adaptive_hybrid_lineage_75_25_v1.json"
 DEFAULT_OUTPUT_DIR = "artifacts/demo_replay"
 JSON_FILENAME = "demo_replay.json"
 MARKDOWN_FILENAME = "demo_replay.md"
+DEFAULT_CONSOLE_WIDTH = 112
+MIN_CONSOLE_WIDTH = 72
+MAX_CONSOLE_WIDTH = 120
 
 
 def _resolve_path(root: Path, raw_path: str | Path) -> Path:
@@ -443,14 +448,102 @@ def _state_changes(
     return changes or ["no material state or routing change"]
 
 
-def _console_text(payload: Mapping[str, object]) -> str:
-    lines = [
-        f"Adaptive demo replay: sample {payload['sample_id']}",
-        (
-            "(Evaluator-only fields are printed for the replay operator and are "
-            "not agent-visible.)"
-        ),
-    ]
+def _console_width(width: int | None = None) -> int:
+    """Choose a stable, readable width for plain-terminal output."""
+
+    if width is None:
+        width = shutil.get_terminal_size(fallback=(DEFAULT_CONSOLE_WIDTH, 24)).columns
+    return max(
+        MIN_CONSOLE_WIDTH, min(MAX_CONSOLE_WIDTH, _as_int(width, DEFAULT_CONSOLE_WIDTH))
+    )
+
+
+def _wrapped(value: object, width: int, indent: str = "  ") -> list[str]:
+    """Render one value with continuation lines aligned under its value."""
+
+    text = str(value if value is not None else "none").replace("\n", " ").strip()
+    if not text:
+        text = "none"
+    available = max(1, width - len(indent))
+    wrapped = textwrap.wrap(
+        text,
+        width=available,
+        break_long_words=False,
+        break_on_hyphens=False,
+    )
+    return [f"{indent}{line}" for line in wrapped] or [f"{indent}none"]
+
+
+def _stage(lines: list[str], title: str) -> None:
+    """Append a named stage with visual separation from the previous stage."""
+
+    if lines and lines[-1] != "":
+        lines.append("")
+    lines.append(f"{title}:")
+
+
+def _append_value(
+    lines: list[str], title: str, value: object, width: int, *, indent: str = "  "
+) -> None:
+    lines.extend(_wrapped(value, width, indent=f"{indent}{title}: "))
+
+
+def _append_labelled(
+    lines: list[str], title: str, value: object, width: int, *, indent: str = "  "
+) -> None:
+    lines.append(f"{indent}{title}:")
+    lines.extend(_wrapped(value, width, indent=f"{indent}  "))
+
+
+def _readable_route_reason(value: object) -> str:
+    """Keep the observable evidence while making its fields easy to scan."""
+
+    reason = str(value if value is not None else "not reported")
+    if reason.startswith("observable_evidence:"):
+        fields = reason.split(":")
+        return "observable evidence · " + " · ".join(fields[1:])
+    return reason
+
+
+def _console_header(sample_id: object, width: int | None = None) -> str:
+    terminal_width = _console_width(width)
+    lines = [f"Adaptive demo replay: sample {sample_id}"]
+    lines.extend(
+        _wrapped(
+            "(Evaluator-only fields are shown to the replay operator and are "
+            "never passed to the agent.)",
+            terminal_width,
+            "",
+        )
+    )
+    return "\n".join(lines) + "\n"
+
+
+def _console_result(result: object, width: int | None = None) -> str:
+    terminal_width = _console_width(width)
+    lines = ["Evaluator result:"]
+    lines.extend(_wrapped(result, terminal_width, "  "))
+    return "\n".join(lines) + "\n"
+
+
+def _console_text(
+    payload: Mapping[str, object],
+    *,
+    verbose: bool = False,
+    width: int | None = None,
+    include_header: bool = True,
+) -> str:
+    """Format an operator-facing trace without changing persisted evidence.
+
+    The payload remains the source of truth for JSON/Markdown artifacts.  This
+    renderer intentionally omits raw runtime diagnostics unless ``verbose`` is
+    requested so the default output can be read during a live replay.
+    """
+
+    terminal_width = _console_width(width)
+    lines: list[str] = []
+    if include_header:
+        lines.extend(_console_header(payload["sample_id"], terminal_width).splitlines())
     agent_visible = payload["agent_visible"]
     evaluator_only = payload["evaluator_only"]
     agent_turns = (
@@ -471,94 +564,184 @@ def _console_text(payload: Mapping[str, object]) -> str:
         constraints = visible.get("constraints", {})
         response = visible.get("response", {})
         runtime = visible.get("runtime", {})
+        if lines:
+            lines.append("")
         lines.extend(
             [
-                "",
                 f"=== Turn {visible.get('turn')} ===",
-                f"Evaluator message: {visible.get('evaluator_message', '')}",
-                (
-                    "Dynamic conversation state: "
-                    f"query={state.get('query', '')!r}; "
-                    f"intent_epoch={state.get('intent_epoch')}; "
-                    "active_constraints="
-                    f"{_format_constraint_list(state.get('active_constraints'))}"
-                ),
-                "Changes since previous turn: "
-                + "; ".join(_as_strings(visible.get("changes", ()))),
-                (
-                    f"Route: {route.get('name')} "
-                    f"(confidence={route.get('confidence')}; "
-                    f"reason={route.get('reason')})"
-                ),
-                (
-                    "Preview/overload: "
-                    f"candidates={preview.get('candidate_count')}; "
-                    f"overloaded={preview.get('overloaded')}; "
-                    f"flatness={preview.get('score_flatness')}; "
-                    f"reason={preview.get('reason')}"
-                ),
-                f"Bounded-vs-full path: {path.get('label')}",
-                (
-                    "Evidence contribution counts: "
-                    f"keyword={visible.get('contributions', {}).get('keyword', 0)}; "
-                    f"category={visible.get('contributions', {}).get('category', 0)}; "
-                    f"vector={visible.get('contributions', {}).get('vector', 0)}"
-                ),
-                (
-                    f"Union: status={'executed' if union.get('executed') else 'skipped'}; "
-                    f"candidates={union.get('candidate_count')}; "
-                    f"reason={union.get('reason')}"
-                ),
-                (
-                    f"Semantic: status={semantic.get('status')}; "
-                    f"backend={semantic.get('backend')}; "
-                    f"reason={semantic.get('activation_reason')}; "
-                    f"failure={semantic.get('failure_reason')}"
-                ),
-                (
-                    "Constraints: "
-                    f"counts={constraints.get('counts', {})}; "
-                    f"removed={constraints.get('removed_ids', [])}; "
-                    f"violations={constraints.get('output_violations')}"
-                ),
-                (
-                    f"Question: attribute={response.get('question')}; "
-                    f"message={response.get('message', '')}"
-                ),
-                "Top 10:",
+                "-" * min(terminal_width, 72),
             ]
         )
+
+        _stage(lines, "Evaluator message")
+        lines.extend(
+            _wrapped(visible.get("evaluator_message", ""), terminal_width, "  ")
+        )
+
+        _stage(lines, "Dynamic conversation state")
+        _append_labelled(lines, "Query", state.get("query", ""), terminal_width)
+        _append_value(lines, "Intent epoch", state.get("intent_epoch"), terminal_width)
+        _append_labelled(
+            lines,
+            "Active constraints",
+            _format_constraint_list(state.get("active_constraints")),
+            terminal_width,
+        )
+
+        _stage(lines, "Changes since previous turn")
+        changes = _as_strings(visible.get("changes", ()))
+        for change in changes or ["no material state or routing change"]:
+            lines.extend(_wrapped(f"- {change}", terminal_width, "  "))
+
+        _stage(lines, "Route")
+        _append_value(lines, "Name", route.get("name"), terminal_width)
+        _append_value(lines, "Confidence", route.get("confidence"), terminal_width)
+        _append_labelled(
+            lines,
+            "Reason",
+            _readable_route_reason(route.get("reason")),
+            terminal_width,
+        )
+
+        _stage(lines, "Preview/overload")
+        _append_value(
+            lines, "Candidates", preview.get("candidate_count"), terminal_width
+        )
+        _append_value(lines, "Overloaded", preview.get("overloaded"), terminal_width)
+        _append_value(
+            lines, "Score flatness", preview.get("score_flatness"), terminal_width
+        )
+        _append_labelled(lines, "Reason", preview.get("reason"), terminal_width)
+
+        _stage(lines, "Bounded-vs-full path")
+        _append_labelled(lines, "Mode", path.get("label"), terminal_width)
+
+        _stage(lines, "Evidence contribution counts")
+        contributions = visible.get("contributions", {})
+        for source in ("keyword", "category", "vector"):
+            value = (
+                contributions.get(source, 0)
+                if isinstance(contributions, Mapping)
+                else 0
+            )
+            _append_value(lines, source.title(), value, terminal_width)
+
+        _stage(lines, "Union")
+        _append_value(
+            lines,
+            "Status",
+            "executed" if union.get("executed") else "skipped",
+            terminal_width,
+        )
+        _append_value(lines, "Candidates", union.get("candidate_count"), terminal_width)
+        _append_labelled(lines, "Reason", union.get("reason"), terminal_width)
+
+        _stage(lines, "Semantic")
+        _append_value(lines, "Status", semantic.get("status"), terminal_width)
+        _append_value(lines, "Backend", semantic.get("backend"), terminal_width)
+        _append_labelled(
+            lines,
+            "Activation reason",
+            semantic.get("activation_reason"),
+            terminal_width,
+        )
+        if semantic.get("failure_reason") not in (None, ""):
+            _append_labelled(
+                lines, "Failure", semantic.get("failure_reason"), terminal_width
+            )
+
+        _stage(lines, "Constraints")
+        _append_labelled(lines, "Counts", constraints.get("counts", {}), terminal_width)
+        _append_labelled(
+            lines, "Removed", constraints.get("removed_ids", []), terminal_width
+        )
+        _append_value(
+            lines,
+            "Output violations",
+            constraints.get("output_violations"),
+            terminal_width,
+        )
+
+        _stage(lines, "Question")
+        _append_value(lines, "Attribute", response.get("question"), terminal_width)
+        _append_labelled(lines, "Message", response.get("message", ""), terminal_width)
+
+        _stage(lines, "Top 10")
         top = response.get("top_10", [])
         if isinstance(top, list) and top:
-            lines.extend(
-                f"  {item.get('rank')}. {item.get('title')} [{item.get('asin')}]"
-                for item in top
-                if isinstance(item, Mapping)
-            )
+            for item in top:
+                if isinstance(item, Mapping):
+                    lines.extend(
+                        _wrapped(
+                            f"{item.get('rank')}. {item.get('title')} [{item.get('asin')}]",
+                            terminal_width,
+                            "  ",
+                        )
+                    )
         else:
             lines.append("  (none)")
-        lines.extend(
-            [
-                (
-                    "Runtime trace: "
-                    f"state_query={runtime.get('state_query')!r}; "
-                    f"intent_epoch={runtime.get('intent_epoch')}; "
-                    f"reason_codes={runtime.get('reason_codes', [])}"
-                ),
-                (
-                    "Evaluator-only: "
-                    f"{'HIT' if hidden.get('hit') else 'MISS'}; rank={hidden.get('rank')}; "
-                    f"next reply={hidden.get('next_reply')!r}"
-                ),
-            ]
+
+        if verbose:
+            _stage(lines, "Runtime trace")
+            _append_labelled(
+                lines, "state_query", runtime.get("state_query"), terminal_width
+            )
+            _append_value(
+                lines, "intent_epoch", runtime.get("intent_epoch"), terminal_width
+            )
+            _append_value(
+                lines, "query_sha256", runtime.get("query_sha256"), terminal_width
+            )
+            _append_labelled(
+                lines, "query_views", runtime.get("query_views", []), terminal_width
+            )
+            _append_value(
+                lines,
+                "dense_requested_per_view",
+                runtime.get("dense_requested_per_view"),
+                terminal_width,
+            )
+            _append_value(
+                lines, "dense_output_k", runtime.get("dense_output_k"), terminal_width
+            )
+            _append_value(
+                lines, "dense_selection", runtime.get("dense_selection"), terminal_width
+            )
+            _append_labelled(
+                lines, "reason_codes", runtime.get("reason_codes", []), terminal_width
+            )
+
+            _stage(lines, "Path diagnostics")
+            for key in (
+                "safe_merge_executed",
+                "safe_ranker_executed",
+                "normal_union_executed",
+                "semantic_decision_reached",
+                "semantic_executed",
+                "fallback_reason",
+            ):
+                _append_value(lines, key, path.get(key), terminal_width)
+            _append_value(
+                lines, "semantic_changed", semantic.get("changed"), terminal_width
+            )
+            _append_value(
+                lines, "semantic_elapsed_ms", semantic.get("elapsed_ms"), terminal_width
+            )
+
+        _stage(lines, "Evaluator-only")
+        lines.append(f"  Status: {'HIT' if hidden.get('hit') else 'MISS'}")
+        lines.append(
+            f"  Rank: {hidden.get('rank') if hidden.get('rank') is not None else '—'}"
         )
+        _append_labelled(lines, "Next reply", hidden.get("next_reply"), terminal_width)
     result = (
         evaluator_only.get("session_result")
         if isinstance(evaluator_only, Mapping)
         else None
     )
     if result is not None:
-        lines.extend(["", f"Evaluator result: {result}"])
+        _stage(lines, "Evaluator result")
+        lines.extend(_wrapped(result, terminal_width, "  "))
     return "\n".join(lines) + "\n"
 
 
@@ -742,6 +925,7 @@ def replay_one_sample(
     output_dir: str | Path | None = None,
     metadata: Mapping[str, object] | None = None,
     print_fn: Callable[[str], object] = print,
+    verbose: bool = False,
 ) -> dict[str, object]:
     """Run exactly one sample through the canonical evaluator transition."""
 
@@ -752,11 +936,7 @@ def replay_one_sample(
     agent.reset(observation.session_id, runtime_profile(sample))
     visible_turns: list[dict[str, object]] = []
     evaluator_turns: list[dict[str, object]] = []
-    print_fn(
-        f"Adaptive demo replay: sample {sample['sample_id']}\n"
-        "(Evaluator-only fields are shown to the replay operator and are never "
-        "passed to the agent.)\n"
-    )
+    print_fn(_console_header(sample["sample_id"]))
     while not environment.done:
         response = _valid_response(agent, observation)
         state = _state_evidence(agent, observation.session_id, observation.user_message)
@@ -809,8 +989,13 @@ def replay_one_sample(
             "agent_visible": {"turns": [visible_turn]},
             "evaluator_only": {"turns": [evaluator_turn]},
         }
-        turn_lines = _console_text(turn_payload).splitlines()
-        print_fn("\n".join(turn_lines[2:]).strip() + "\n")
+        print_fn(
+            _console_text(
+                turn_payload,
+                verbose=verbose,
+                include_header=False,
+            )
+        )
         if next_observation is not None:
             observation = next_observation
     payload: dict[str, object] = {
@@ -825,7 +1010,7 @@ def replay_one_sample(
     }
     if output_dir is not None:
         write_demo_artifacts(payload, output_dir)
-    print_fn(f"Evaluator result: {environment.session_result()}\n")
+    print_fn("\n" + _console_result(environment.session_result()))
     return payload
 
 
@@ -871,6 +1056,7 @@ def run_demo_session(
     project_root: str | Path = ROOT,
     agent: AgentProtocol | None = None,
     print_fn: Callable[[str], object] = print,
+    verbose: bool = False,
 ) -> dict[str, object]:
     """Load one development sample and produce the deterministic demo files."""
 
@@ -924,6 +1110,7 @@ def run_demo_session(
         output_dir=_resolve_path(root, output_dir),
         metadata=metadata,
         print_fn=print_fn,
+        verbose=verbose,
     )
 
 
@@ -943,6 +1130,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--lineage-manifest", default=DEFAULT_LINEAGE_MANIFEST)
     parser.add_argument("--output-dir", default=DEFAULT_OUTPUT_DIR)
+    parser.add_argument(
+        "--verbose",
+        action="store_true",
+        help="include full runtime state and low-level diagnostics in console output",
+    )
     return parser
 
 
@@ -957,6 +1149,7 @@ def main(argv: list[str] | None = None) -> int:
             datasets=tuple(args.datasets or DEFAULT_DATASETS),
             lineage_manifest=args.lineage_manifest,
             output_dir=args.output_dir,
+            verbose=args.verbose,
         )
     except (FileNotFoundError, TypeError, ValueError) as error:
         parser.error(str(error))

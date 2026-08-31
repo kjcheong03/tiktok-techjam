@@ -325,6 +325,99 @@ def test_demo_artifacts_and_console_have_readable_consistent_stages(
     assert "`B`" in markdown
 
 
+def test_console_default_is_staged_wrapped_and_hides_raw_runtime_lists(
+    tmp_path: Path,
+) -> None:
+    catalog_ids, categories, products = _products()
+    output: list[str] = []
+    payload = demo.replay_one_sample(
+        _sample(),
+        agent=_FakeAgent(),
+        categories=categories,
+        products=products,
+        catalog_ids=catalog_ids,
+        output_dir=tmp_path,
+        print_fn=output.append,
+    )
+    console = "".join(output)
+    assert "Runtime trace:" not in console
+    assert "state_query" not in console
+    assert "reason_codes" not in console
+    assert "=== Turn 1 ===" in console
+    assert "=== Turn 2 ===" in console
+    assert "\n\nDynamic conversation state:\n" in console
+    assert "\n\nChanges since previous turn:\n" in console
+    assert "\n\nTop 10:\n" in console
+    assert "Evaluator-only:" in console
+    assert "Status: MISS" in console
+    assert "Status: HIT" in console
+    assert "Rank: 1" in console
+    assert "Next reply:" in console
+
+    long_payload = json.loads(json.dumps(payload))
+    long_message = "customer requirement " * 20
+    long_reason = "reason detail " * 20
+    first_turn = long_payload["agent_visible"]["turns"][0]
+    first_turn["evaluator_message"] = long_message
+    first_turn["route"]["reason"] = long_reason
+    wrapped = demo._console_text(long_payload, width=80)
+    assert max(len(line) for line in wrapped.splitlines()) <= 80
+    assert wrapped.count("customer requirement") > 1
+    assert wrapped.count("reason detail") > 1
+
+    first_turn["route"]["reason"] = (
+        "observable_evidence:buying=1.45:browsing=0.00:category_only=false"
+    )
+    readable = demo._console_text(long_payload, width=80)
+    assert "observable evidence · buying=1.45 · browsing=0.00 ·" in readable
+    assert "category_only=false" in readable
+
+
+def test_console_verbose_includes_full_runtime_diagnostics(
+    tmp_path: Path,
+) -> None:
+    catalog_ids, categories, products = _products()
+    output: list[str] = []
+    payload = demo.replay_one_sample(
+        _sample(),
+        agent=_FakeAgent(),
+        categories=categories,
+        products=products,
+        catalog_ids=catalog_ids,
+        output_dir=tmp_path,
+        print_fn=output.append,
+        verbose=True,
+    )
+    console = "".join(output)
+    assert "Runtime trace:" in console
+    assert "state_query:" in console
+    assert "query_views:" in console
+    assert "reason_codes:" in console
+    assert "route:buying" in console
+    assert "dense_requested_per_view:" in console
+    assert "safe_merge_executed:" in console
+    artifact = json.loads((tmp_path / demo.JSON_FILENAME).read_text(encoding="utf-8"))
+    assert artifact == payload
+    assert artifact["agent_visible"]["turns"][0]["runtime"]["reason_codes"]
+
+
+def test_verbose_flag_is_parsed_and_propagated(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    parsed = demo.build_parser().parse_args(["--sample-id", "demo", "--verbose"])
+    assert parsed.verbose is True
+
+    captured: dict[str, object] = {}
+
+    def fake_run_demo_session(**kwargs: object) -> dict[str, object]:
+        captured.update(kwargs)
+        return {}
+
+    monkeypatch.setattr(demo, "run_demo_session", fake_run_demo_session)
+    assert demo.main(["--sample-id", "demo", "--verbose"]) == 0
+    assert captured["verbose"] is True
+
+
 def test_missing_config_fails_instead_of_silently_using_baseline(
     tmp_path: Path,
 ) -> None:

@@ -347,6 +347,9 @@ HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 \
   --output-dir artifacts/demo_replay
 ```
 
+See [the CLI demo runbook](docs/demo_cli_runbook.md) for the complete runtime,
+optimizer and final-results recording sequence.
+
 ### 3.2 Verify the recorded 550-session final-selection result
 
 The 550-session partition was intentionally accessed once. Reproducibility therefore
