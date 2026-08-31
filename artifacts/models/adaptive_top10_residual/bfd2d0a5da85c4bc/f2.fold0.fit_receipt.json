@@ -1,0 +1,32 @@
+{
+  "feature_names": [
+    "original_rank",
+    "reciprocal_rank",
+    "turn_fraction",
+    "route_is_browsing",
+    "query_document_overlap",
+    "confirmed_match_count",
+    "unknown_constraint_count",
+    "soft_preference_count",
+    "candidate_pool_size_fraction"
+  ],
+  "fit_nonce": 1788191525621320000,
+  "fresh_fit": true,
+  "holdout_accessed": false,
+  "model_path": "artifacts/models/adaptive_top10_residual/bfd2d0a5da85c4bc/f2.fold0.joblib",
+  "model_sha256": "d38077a41225a7d938032a37a3ba7e5bd8adf95522ee1d14b3de63ae5c5cb927",
+  "outer_fold": 0,
+  "parent_config_sha256": "ddede4f2c480d076b6c5f5bc8f650eed583be985156649c0ecd6d4b2f8f25694",
+  "runtime_family": "adaptive_hybrid_top10_v1",
+  "schema_version": 2,
+  "seed": 20260826,
+  "selected_by_oof": true,
+  "technique_id": "ranking.top10_residual_reranker.v2",
+  "training_lineage_groups_sha256": "b2fd6b436b975f833509dae1f57ed236861efa7a422fa338287cde1bf31f2257",
+  "training_row_count": 36100,
+  "training_sample_count": 1315,
+  "training_sample_ids_sha256": "d8cd04acf09b1f9917ea3aab0e6ab8e70c042e07e18f2e042f9bc2af947a5bc4",
+  "validation_lineage_groups_sha256": "61fcb75515149965b14262b03319c07f3699184dacf7109537e9710b54d41435",
+  "validation_sample_count": 335,
+  "validation_sample_ids_sha256": "bf8401ead75d995a4c8b7c565b27b4bd3198811201923cd9916f5a44f1526436"
+}

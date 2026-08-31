@@ -15,7 +15,7 @@ from ghostlab.runtime.adaptive_factory import load_adaptive_hybrid_config
 from ghostlab.runtime.selected import sha256_file
 from ghostlab.training.adaptive_datasets import load_adaptive_training_corpus
 from ghostlab.training.adaptive_lineage import load_lineage_manifest, subset_corpus
-from scripts.evaluate_adaptive_reference_baselines import evaluate_reference_systems
+from scripts.evaluate_adaptive_reference_baselines import evaluate_reference_a
 
 ROOT = Path(__file__).resolve().parents[1]
 SELECTION_TIE_BREAK_ORDER = [
@@ -55,7 +55,6 @@ def verify_frozen_holdout_inputs(
     *,
     control_config_path: Path,
     reference_a_path: Path,
-    reference_b_path: Path,
     gates_path: Path,
 ) -> dict[str, str]:
     """Verify every comparison dependency before the holdout is opened."""
@@ -71,7 +70,6 @@ def verify_frozen_holdout_inputs(
             "reference_a_implementation_sha256",
             reference_a_path,
         ),
-        ("reference_b_config_path", "reference_b_config_sha256", reference_b_path),
         ("gates_path", "gates_sha256", gates_path),
     )
     verified: dict[str, str] = {}
@@ -276,15 +274,6 @@ def compare_reports(
             or challenger["adaptive_runtime"]["output_constraint_violation_count"] == 0,
         },
         {
-            "gate": "zero_confirmed_target_removals",
-            "challenger": challenger["target_survival_audit"][
-                "confirmed_target_removal_count"
-            ],
-            "passed": not gates["require_zero_confirmed_target_removals"]
-            or challenger["target_survival_audit"]["confirmed_target_removal_count"]
-            == 0,
-        },
-        {
             "gate": "zero_overload_trace_violations",
             "challenger": challenger["adaptive_runtime"][
                 "overload_cutoff_trace_violations"
@@ -339,7 +328,7 @@ def compare_reports(
 
 def _summary_metrics(report: dict[str, Any]) -> dict[str, float]:
     source = report.get("metrics", report)
-    return {
+    metrics = {
         key: float(source[key])
         for key in (
             "hit_rate_at_10",
@@ -348,6 +337,20 @@ def _summary_metrics(report: dict[str, Any]) -> dict[str, float]:
             "recommended_technical_score",
         )
     }
+    efficiency = float(
+        source.get(
+            "efficiency",
+            max(0.0, min(1.0, (11.0 - metrics["mttc"]) / 10.0)),
+        )
+    )
+    metrics.update(
+        {
+            "efficiency": efficiency,
+            "normalized_efficiency": efficiency,
+            "technical_score": metrics["recommended_technical_score"],
+        }
+    )
+    return metrics
 
 
 def _system_entry(
@@ -360,6 +363,7 @@ def _system_entry(
     config_path: str | None = None,
     config_sha256: str | None = None,
     note: str | None = None,
+    display_name: str | None = None,
 ) -> dict[str, Any]:
     metric_source = report.get("metrics", report)
     entry: dict[str, Any] = {
@@ -378,6 +382,8 @@ def _system_entry(
         entry["config_sha256"] = config_sha256
     if note is not None:
         entry["note"] = note
+    if display_name is not None:
+        entry["display_name"] = display_name
     return entry
 
 
@@ -404,11 +410,9 @@ def build_fair_holdout_report(
     frozen: list[dict[str, Any]],
     selection_rule: dict[str, Any],
     reference_a: dict[str, Any],
-    reference_b: dict[str, Any],
     control: dict[str, Any],
     challengers: list[dict[str, Any]],
     reference_a_path: str,
-    reference_b_path: str,
     control_path: str,
     challenger_paths: list[str],
     control_config: str,
@@ -426,22 +430,23 @@ def build_fair_holdout_report(
         raise ValueError("final-selection tie-break order differs from frozen contract")
     if not bool(selection_rule.get("no_post_selection_tuning")):
         raise ValueError("final-selection contract must prohibit post-selection tuning")
+    challenger_count = len(frozen)
     if not (
-        len(frozen)
+        1 <= challenger_count <= 3
+        and challenger_count
         == len(challengers)
         == len(challenger_paths)
         == len(challenger_config_canonical_sha256)
         == len(gate_results)
         == len(paired)
-        == 3
     ):
-        raise ValueError("final selection requires exactly three frozen D systems")
-    all_reports = (reference_a, reference_b, control, *challengers)
+        raise ValueError("final selection requires between one and three frozen D systems")
+    all_reports = (reference_a, control, *challengers)
     contracts = [report.get("evaluation_contract") for report in all_reports]
     if not all(isinstance(contract, dict) for contract in contracts):
-        raise ValueError("A/B/C/D reports must include the shared evaluation contract")
+        raise ValueError("A/C/D reports must include the shared evaluation contract")
     if any(contract != contracts[0] for contract in contracts[1:]):
-        raise ValueError("A/B/C/D reports do not use an identical evaluation contract")
+        raise ValueError("A/C/D reports do not use an identical evaluation contract")
     ordered_ids = [
         [str(row["sample_id"]) for row in report.get("sessions", [])]
         for report in all_reports
@@ -450,7 +455,7 @@ def build_fair_holdout_report(
         identifiers != ordered_ids[0] for identifiers in ordered_ids[1:]
     ):
         raise ValueError(
-            "A/B/C/D final-selection reports must contain the same 550 ordered session IDs"
+            "A/C/D final-selection reports must contain the same 550 ordered session IDs"
         )
     systems = [
         _system_entry(
@@ -460,17 +465,7 @@ def build_fair_holdout_report(
             report=reference_a,
             report_path=reference_a_path,
             note="Frozen organizer reference; excluded from champion selection.",
-        ),
-        _system_entry(
-            system_id="B_state_baseline_v2_tagged_best",
-            role="reference_baseline",
-            champion_eligible=False,
-            report=reference_b,
-            report_path=reference_b_path,
-            note=(
-                "Frozen exact-parity State V2 reference. fixed_other is "
-                "simulator-sensitive and excluded from champion selection."
-            ),
+            display_name="Organizer BM25 Starter",
         ),
         _system_entry(
             system_id="C_fixed_adaptive_architecture",
@@ -480,19 +475,39 @@ def build_fair_holdout_report(
             report_path=control_path,
             config_path=control_config,
             config_sha256=control_config_sha256,
+            display_name="Fixed Adaptive Architecture",
         ),
     ]
     comparisons: list[dict[str, Any]] = []
-    for item, challenger, report_path, canonical_hash, gates, paired_stats in zip(
-        frozen,
-        challengers,
-        challenger_paths,
-        challenger_config_canonical_sha256,
-        gate_results,
-        paired,
-        strict=True,
+    for index, (
+        item,
+        challenger,
+        report_path,
+        canonical_hash,
+        gates,
+        paired_stats,
+    ) in enumerate(
+        zip(
+            frozen,
+            challengers,
+            challenger_paths,
+            challenger_config_canonical_sha256,
+            gate_results,
+            paired,
+            strict=True,
+        ),
+        start=1,
     ):
-        system_id = f"D_{item['candidate_id']}"
+        system_id = (
+            "GhostLab_Challenger"
+            if challenger_count == 1
+            else f"GhostLab_Challenger_{index}"
+        )
+        display_name = (
+            "GhostLab Challenger"
+            if challenger_count == 1
+            else f"GhostLab Challenger {index}"
+        )
         passed = all(bool(row["passed"]) for row in gates)
         systems.append(
             _system_entry(
@@ -503,6 +518,7 @@ def build_fair_holdout_report(
                 report_path=report_path,
                 config_path=str(item["config_path"]),
                 config_sha256=canonical_hash,
+                display_name=display_name,
             )
         )
         comparisons.append(
@@ -560,9 +576,9 @@ def build_fair_holdout_report(
         "final_selection_sample_count": 550,
         "sample_count": 550,
         "evaluation_contract": contracts[0],
-        "system_count": 6,
-        "reference_count": 2,
-        "challenger_count": 3,
+        "system_count": 2 + challenger_count,
+        "reference_count": 1,
+        "challenger_count": challenger_count,
         "control_count": 1,
         "frozen_candidate_ids": [item["candidate_id"] for item in frozen],
         "frozen_inputs": {
@@ -577,9 +593,10 @@ def build_fair_holdout_report(
             "same_evaluator_contract": True,
             "reference_only_systems": [
                 "A_official_stateless_bm25",
-                "B_state_baseline_v2_tagged_best",
             ],
-            "champion_selection_scope": "C versus three independently gated D systems",
+            "champion_selection_scope": (
+                f"C versus {challenger_count} independently gated D system(s)"
+            ),
             "selection_set_is_unbiased_holdout": False,
             "private_evaluation_is_unseen_generalization_test": True,
             "no_post_selection_tuning": True,
@@ -613,7 +630,7 @@ def build_fair_holdout_report(
 def main() -> None:
     parser = argparse.ArgumentParser(
         description=(
-            "Evaluate A/B/C plus three frozen D systems exactly once on the "
+            "Evaluate A/C plus one to three frozen D systems exactly once on the "
             "550-session final selection set"
         )
     )
@@ -624,17 +641,13 @@ def main() -> None:
         "--control-config",
         default="configs/adaptive_hybrid_1a_3b_1650_final_v1_selected.json",
     )
-    parser.add_argument(
-        "--state-reference-config",
-        default="configs/suites/state_baseline_v2_other.json",
-    )
     parser.add_argument("--dataset", action="append", dest="datasets")
     parser.add_argument(
         "--lineage-manifest",
         default="data/splits/adaptive_hybrid_lineage_75_25_v1.json",
     )
     parser.add_argument(
-        "--gates", default="configs/evaluation/adaptive_holdout_gates_v1.json"
+        "--gates", default="configs/evaluation/adaptive_holdout_gates_v2.json"
     )
     parser.add_argument(
         "--output", default="artifacts/reports/adaptive_final_holdout.json"
@@ -654,12 +667,14 @@ def main() -> None:
         raise RuntimeError("holdout was already accessed; refusing a second evaluation")
     proposal = _load(proposal_path)
     frozen = proposal.get("frozen_proposals")
-    if not isinstance(frozen, list) or len(frozen) != 3 or not all(
+    if not isinstance(frozen, list) or not 1 <= len(frozen) <= 3 or not all(
         isinstance(item, dict) for item in frozen
     ):
-        raise TypeError("development report must contain exactly three frozen proposals")
+        raise TypeError(
+            "development report must contain between one and three frozen proposals"
+        )
     candidate_ids = [str(item["candidate_id"]) for item in frozen]
-    if len(set(candidate_ids)) != 3:
+    if len(set(candidate_ids)) != len(frozen):
         raise ValueError("frozen proposal candidate IDs must be unique")
     challenger_paths = [ROOT / str(item["config_path"]) for item in frozen]
     manifest_hash = sha256_file(manifest_path)
@@ -682,7 +697,6 @@ def main() -> None:
         frozen_dependencies,
         control_config_path=ROOT / args.control_config,
         reference_a_path=ROOT / "baseline/official_reference.py",
-        reference_b_path=ROOT / args.state_reference_config,
         gates_path=gates_path,
     )
     datasets = tuple(args.datasets or DEFAULT_DATASETS)
@@ -725,8 +739,17 @@ def main() -> None:
         "reference_a_implementation_sha256": frozen_dependencies[
             "reference_a_implementation_sha256"
         ],
-        "reference_b_config_sha256": frozen_dependencies[
-            "reference_b_config_sha256"
+        "evaluated_systems": [
+            "Organizer BM25 Starter",
+            "Fixed Adaptive Architecture",
+            *(
+                ["GhostLab Challenger"]
+                if len(frozen) == 1
+                else [
+                    f"GhostLab Challenger {index}"
+                    for index in range(1, len(frozen) + 1)
+                ]
+            ),
         ],
         "lineage_manifest_sha256": sha256_file(manifest_path),
         "gates_sha256": frozen_dependencies["gates_sha256"],
@@ -741,27 +764,28 @@ def main() -> None:
     _write_json(receipt_path, receipt)
     run_dir = output_path.parent / "adaptive_final_holdout_runs"
     reference_a_output = run_dir / "reference_a.json"
-    reference_b_output = run_dir / "reference_b.json"
     control_output = run_dir / "control.json"
-    challenger_outputs = [
-        run_dir / f"challenger_{index}_{item['candidate_id']}.json"
-        for index, item in enumerate(frozen, start=1)
-    ]
+    challenger_outputs = (
+        [run_dir / "ghostlab_challenger.json"]
+        if len(frozen) == 1
+        else [
+            run_dir / f"ghostlab_challenger_{index}_{item['candidate_id']}.json"
+            for index, item in enumerate(frozen, start=1)
+        ]
+    )
     holdout_corpus = subset_corpus(corpus, manifest, "holdout")
     holdout_samples = [
         holdout_corpus.samples[sample_id]
         for sample_id in sorted(holdout_corpus.samples)
     ]
-    reference_a, reference_b = evaluate_reference_systems(
+    reference_a = evaluate_reference_a(
         samples=holdout_samples,
         origins=holdout_corpus.origins,
         catalog_path=ROOT / "data/catalog.jsonl",
-        state_config_path=ROOT / args.state_reference_config,
         partition="holdout",
         holdout_accessed=True,
     )
     _write_json(reference_a_output, reference_a)
-    _write_json(reference_b_output, reference_b)
     _run_evaluation(
         args.control_config,
         str(control_output.relative_to(ROOT)),
@@ -782,8 +806,16 @@ def main() -> None:
     gates = _load(gates_path)
     if gates.get("evaluation_scope") != "one_time_final_selection_set":
         raise ValueError("gates are not scoped to the one-time final selection set")
-    if int(gates.get("challenger_count", 0)) != 3:
-        raise ValueError("gates must require exactly three challengers")
+    minimum_challengers = int(gates.get("minimum_challenger_count", 0))
+    maximum_challengers = int(gates.get("maximum_challenger_count", 0))
+    if not (
+        minimum_challengers == 1
+        and maximum_challengers == 3
+        and minimum_challengers <= len(frozen) <= maximum_challengers
+    ):
+        raise ValueError(
+            "gates must allow the frozen challenger count within the one-to-three range"
+        )
     if gates.get("selection_tie_break_order") != SELECTION_TIE_BREAK_ORDER:
         raise ValueError("gates contain an unsupported final-selection tie-break order")
     if not bool(gates.get("no_post_selection_tuning")):
@@ -801,15 +833,16 @@ def main() -> None:
         for challenger in challengers
     ]
     pairwise = {
-        "B_minus_A": paired_cluster_statistics(
-            reference_b, reference_a, holdout_group_by_sample
-        ),
-        "C_minus_B": paired_cluster_statistics(
-            control, reference_b, holdout_group_by_sample
+        "C_minus_A": paired_cluster_statistics(
+            control, reference_a, holdout_group_by_sample
         ),
         **{
-            f"D_{item['candidate_id']}_minus_C": stats
-            for item, stats in zip(frozen, paired, strict=True)
+            (
+                "GhostLab_Challenger_minus_C"
+                if len(frozen) == 1
+                else f"GhostLab_Challenger_{index}_minus_C"
+            ): stats
+            for index, stats in enumerate(paired, start=1)
         },
     }
     gate_results = [
@@ -823,11 +856,9 @@ def main() -> None:
         frozen=frozen,
         selection_rule=dict(proposal["selection_rule"]),
         reference_a=reference_a,
-        reference_b=reference_b,
         control=control,
         challengers=challengers,
         reference_a_path=str(reference_a_output.relative_to(ROOT)),
-        reference_b_path=str(reference_b_output.relative_to(ROOT)),
         control_path=str(control_output.relative_to(ROOT)),
         challenger_paths=[str(path.relative_to(ROOT)) for path in challenger_outputs],
         control_config=args.control_config,

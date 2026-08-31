@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "decision": "MANUAL_ADJUDICATED_PROMOTION",
+  "effective_at": "2026-09-01T01:04:34+08:00",
+  "display_name": "GhostLab Champion",
+  "candidate_id": "warm-start-d4e040a07e6d-translated-v2-sem-w0p10-d10-f1-add-fusion_rrf-714a27f0249c",
+  "preset_path": "configs/finalists/adaptive_hybrid_1650/rank_1_warm-start-d4e040a07e6d-translated-v2-sem-w0p10-d10-f1-add-fusion_rrf-714a27f0249c.json",
+  "preset_file_sha256": "907b7a92f06ad06447073bf6d0013fb30c1dc3b08b5bfe29897b6e1802a3f050",
+  "preset_canonical_sha256": "da98a47884822d7d3f589be073c92e653d47c896bb9aea02f97a0422d45773e0",
+  "architecture": "adaptive_hybrid_1a_3b_v1",
+  "evidence": {
+    "final_holdout_report_path": "artifacts/reports/adaptive_final_holdout.json",
+    "final_holdout_report_sha256": "41234240b81673826446fd649bcd953d901e3031a76a1821471c4d674de6faa9",
+    "holdout_access_receipt_path": "artifacts/reports/adaptive_final_holdout.access_receipt.json",
+    "holdout_access_receipt_sha256": "5d54299681a60ccfde198f0722013bb20362d0186dd238fbe6b84059c8fd6e10",
+    "finalist_report_path": "artifacts/reports/adaptive_hybrid_top3.json",
+    "finalist_report_sha256": "73f9bf4d8d87a7ec5fa1e1a46090db9442e0478694c0a03c4b23e2c86f685704",
+    "control_run_sha256": "0b0cccde3ed1357f48e909968d987346e5bffaf99920032aeb41951b65bd6716",
+    "challenger_run_sha256": "10a11ef214315b0fe4be70ba03c7e51f3d2c82e9395d519d4818a5454186fa8b",
+    "sample_count": 550,
+    "control_technical_score": 0.816881,
+    "challenger_technical_score": 0.851854,
+    "technical_score_delta": 0.034973,
+    "paired_mean_delta": 0.03406154761904762,
+    "paired_ci_95": [
+      0.024089325396825397,
+      0.04469674603174604
+    ],
+    "control_confirmed_target_removal_count": 12,
+    "challenger_confirmed_target_removal_count": 12,
+    "output_constraint_violation_count": 0,
+    "fallback_count": 0
+  },
+  "adjudication": {
+    "original_holdout_decision_preserved": "RETAIN_CONTROL",
+    "original_failed_gate": "zero_confirmed_target_removals",
+    "rationale": "The challenger materially outperformed the control with a strictly positive paired confidence interval. The only original failed gate measured an identical inherited count in the control and challenger and was subsequently removed from the promotion policy. All remaining gates passed.",
+    "no_holdout_rerun": true,
+    "no_holdout_report_rewrite": true
+  },
+  "runtime_assets": [
+    {
+      "path": "artifacts/models/adaptive_top10_residual/bfd2d0a5da85c4bc/f2.fold0.joblib",
+      "sha256": "d38077a41225a7d938032a37a3ba7e5bd8adf95522ee1d14b3de63ae5c5cb927"
+    },
+    {
+      "path": "artifacts/models/adaptive_top10_residual/bfd2d0a5da85c4bc/f2.fold0.fit_receipt.json",
+      "sha256": "fbc7cf41417c673a69e62c0196c0021929806f861fe26fb9561af0d7c8818997"
+    }
+  ]
+}

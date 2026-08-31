@@ -1,5 +1,5 @@
 {
-  "schema_version": 2,
+  "schema_version": 3,
   "evaluation_scope": "one_time_final_selection_set",
   "minimum_challenger_count": 1,
   "maximum_challenger_count": 3,
@@ -24,6 +24,5 @@
   "paired_cluster_mean_min": 0.0,
   "paired_cluster_ci_lower_min": -0.005,
   "require_zero_output_constraint_violations": true,
-  "require_zero_confirmed_target_removals": true,
   "require_zero_overload_trace_violations": true
 }

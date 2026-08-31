@@ -48,10 +48,10 @@ def main() -> None:
         None,
     )
     if finalist is None or not finalist.get("promotion_eligible"):
-        raise ValueError("preset is not an eligible finalist in the Top-3 report")
+        raise ValueError("preset is not an eligible finalist in the finalist report")
     frozen = top3.get("frozen_proposals")
-    if not isinstance(frozen, list) or len(frozen) != 3:
-        raise ValueError("Top-3 report did not freeze exactly three challengers")
+    if not isinstance(frozen, list) or not 1 <= len(frozen) <= 3:
+        raise ValueError("finalist report did not freeze between one and three challengers")
     frozen_item = next(
         (
             item
@@ -63,7 +63,7 @@ def main() -> None:
         None,
     )
     if frozen_item is None:
-        raise ValueError("preset is not one of the three frozen challengers")
+        raise ValueError("preset is not one of the frozen challengers")
     if holdout.get("decision") != "PROMOTE" or not holdout.get("all_gates_passed"):
         raise ValueError("one-time final selection did not authorize promotion")
     challenger = holdout.get("challenger")
@@ -76,16 +76,19 @@ def main() -> None:
     if set(holdout.get("frozen_candidate_ids", [])) != {
         str(item["candidate_id"]) for item in frozen
     }:
-        raise ValueError("final-selection report used a different frozen Top 3")
-    if holdout.get("challenger_count") != 3 or holdout.get("control_count") != 1:
+        raise ValueError("final-selection report used a different frozen finalist set")
+    if (
+        holdout.get("challenger_count") != len(frozen)
+        or holdout.get("control_count") != 1
+    ):
         raise ValueError(
-            "final-selection report did not compare exactly three challengers and C"
+            "final-selection report did not compare every frozen challenger and C"
         )
     frozen_inputs = holdout.get("frozen_inputs")
     if not isinstance(frozen_inputs, dict) or frozen_inputs.get(
         "proposal_report_sha256"
     ) != sha256_file(_resolve(args.top3_report)):
-        raise ValueError("final-selection report belongs to a different Top-3 package")
+        raise ValueError("final-selection report belongs to a different finalist package")
 
     payload = {
         "schema_version": 1,

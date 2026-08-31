@@ -32,9 +32,9 @@ This implementation uses the practical competition protocol selected by the team
 1. Fit and tune only on the 1,650-session development partition.
 2. Compare four genuine local LLM families and the MiniLM non-LLM control on
    lineage-safe development folds.
-3. Freeze the Top 3 complete GhostLab D configurations, together with A, B, C,
+3. Freeze every eligible complete GhostLab D configuration up to three, together with A, C,
    the lineage manifest, evaluation contract, gates and tie-break order.
-4. Evaluate A, B, C and all three frozen D configurations exactly once on the
+4. Evaluate A, C and every available frozen D configuration (one to three) exactly once on the
    550-session final selection partition.
 5. Apply only the predeclared gates and tie-breaks. No post-selection tuning,
    model replacement, threshold change or second access is permitted.
@@ -127,11 +127,11 @@ quality/safety/reliability ordering. Both Qwen variants remain independent
 candidates. The report may rank the best complete configurations, but it cannot
 access the 550 sessions or activate a model.
 
-## 4. Freezing the Top 3 D configurations
+## 4. Freezing up to three D configurations
 
 After the GhostLab development race:
 
-- require exactly three development-eligible D finalists;
+- require at least one and at most three development-eligible D finalists;
 - materialize each complete configuration;
 - freeze each file hash, canonical configuration hash, candidate ID, techniques,
   parameters and development evidence;
@@ -139,7 +139,7 @@ After the GhostLab development race:
   lineage manifest, gates and tie-break specification;
 - set `final_selection_accessed=false`.
 
-The package must expose `frozen_proposals` containing exactly three entries. A
+The package must expose `frozen_proposals` containing between one and three entries. A
 single `frozen_proposal` is no longer a valid protocol artifact.
 
 ## 5. One-time 550-session final selection
@@ -151,9 +151,8 @@ path and hash.
 It then evaluates, through one shared harness and in the same ordered session list:
 
 1. A: official stateless BM25;
-2. B: Dynamic Conversation State reference;
-3. C: fixed adaptive architecture control;
-4. D1, D2 and D3: the three frozen GhostLab finalists.
+2. C: fixed adaptive architecture control;
+3. D1, D2 and D3: the available one to three frozen GhostLab finalists.
 
 Each D is gated against C. Among D configurations that pass every gate, select the
 winner using the immutable tie-break order:
@@ -166,7 +165,7 @@ winner using the immutable tie-break order:
 6. lower development rank;
 7. lexicographically smaller candidate ID.
 
-If no D passes, retain C. A and B remain references and are never champion-eligible.
+If no D passes, retain C. A remains a reference and is never champion-eligible.
 The report must retain every system's metrics and every D-versus-C gate result; it
 must not hide losing finalists.
 
@@ -174,11 +173,11 @@ must not hide losing finalists.
 
 Activation remains manual. It is permitted only when:
 
-- the requested preset is one of the three frozen configurations;
+- the requested preset is one of the available one to three frozen configurations;
 - the final-selection report names that exact candidate as the winner;
 - its file and canonical hashes still match;
 - all gates for the selected D passed; and
-- the report proves that exactly three D configurations and one C control were
+- the report proves that every frozen D configuration (one to three) and one C control were
   evaluated on the same 550 ordered sessions.
 
 If C is retained, no D activation command is valid.
@@ -201,8 +200,8 @@ If C is retained, no D activation command is valid.
 - record failed/time-out trials as attempted but promotion-ineligible;
 - prove Qwen3 direct scoring uses `enable_thinking=False`;
 - reject mismatched paired candidate-pool hashes;
-- reject fewer or more than three frozen D configurations;
-- reject changed A/B/C/D/gates/manifest hashes before final selection;
+- reject fewer than one or more than three frozen D configurations;
+- reject changed A/C/D/gates/manifest hashes before final selection;
 - reject mismatched evaluator contracts or session order;
 - prove that gates are applied separately to every D;
 - prove deterministic winner selection and C retention;

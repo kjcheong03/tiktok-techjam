@@ -18,15 +18,15 @@ same required capability, and add compatible optional techniques.
 - Worktree: `techjam-adaptive-optimizer`
 - Branch: `feat/adaptive-hybrid-1a-3b`
 - Required architecture: implemented and operational
-- Current active runtime: legacy frozen guarded champion until explicit activation
-- Adaptive candidate: architecture-complete but not automatically activated
-- Protected F3/private holdout: not accessed
-- Latest regression result: 464 passed, 1 skipped; Ruff and focused mypy checks clean
+- Current active runtime: hash-bound GhostLab Champion (adaptive D + RRF)
+- Adaptive candidate: manually adjudicated and explicitly activated
+- One-time 550-session final selection: accessed once; organizer-private evaluation remains unseen
+- Latest regression result: 525 passed, 1 skipped before final documentation synchronization
 
 The legacy guarded champion remains a deployment fallback, not the matched control for
 the new architecture. C (the fixed adaptive architecture) is the GhostLab promotion
-control; D1-D3 are the three frozen finalists. A GhostLab result never changes the
-active agent automatically.
+control; D1-D3 denote the available one to three frozen finalists. A GhostLab result
+never changes the active agent without an explicit activation decision.
 
 ## Challenge contract
 
@@ -267,11 +267,12 @@ uv run python dashboard/server.py
 
 Open <http://127.0.0.1:8787/dashboard/>. The dashboard discovers compatible reports in
 `artifacts/reports/` automatically and also accepts JSON files by import or drag-and-drop.
-When the final fair-comparison report exists, the dashboard features six systems on one
-shared evaluation ground: A/B are reference-only, C is the control, and D1-D3 are the
-frozen challengers. A, B and C stay pinned while the displayed D is selected from the
-dropdown; the final-selection result identifies the one selected passing D, or retains
-C. Only a D-versus-C gate result can change the champion.
+When the final fair-comparison report exists, the dashboard shows A, C and the available
+one to three D finalists on one shared evaluation ground. A is the organizer reference,
+C is the fixed adaptive control, and D1-D3 are frozen GhostLab challengers. A and C stay
+pinned while the displayed D is selected from the dropdown; the final-selection result
+identifies the selected D, or retains C. Only a D-versus-C decision can change the
+champion.
 See `dashboard/README.md` for supported report shapes and port configuration.
 
 The protected F3/private data must never be used for routing, ranking, HPO, selection or
@@ -316,9 +317,9 @@ lineage reconstruction and 1,650-session development fit
   -> full public evaluation
   -> end-to-end validation
   -> resumable GhostLab F0/F1/F2 campaign
-  -> freeze exactly three development-selected D configurations
-  -> matched full-development evaluation of D1-D3
-  -> fair A/B/C plus selectable-D comparison
+  -> freeze every development-eligible D configuration, capped at three
+  -> matched full-development evaluation of the available D1-D3
+  -> fair A/C plus selectable-finalist comparison
 ```
 
 Inspect the exact commands and outputs without running anything:
@@ -405,38 +406,37 @@ champion automatically.
 
 The final `compare` stage writes
 `artifacts/reports/adaptive_system_comparison_1650.json` and the matching Markdown
-table. It shows A (official stateless BM25), B (the tagged-best State Baseline V2 native
-reproduction), C (the fixed adaptive architecture), and the available D1-D3 GhostLab
-finalists on the same 1,650 development sessions. A and B are explanatory baselines;
-only C and D participate in champion selection.
+table. It shows A (official stateless BM25), C (the fixed adaptive architecture), and
+the available one to three D GhostLab finalists on the same 1,650 development sessions.
+A is the organizer reference; only C and D participate in champion selection.
 
 Before `compare`, the `finalists` stage re-evaluates each packaged D1-D3 configuration
 on the exact same ordered 1,650-session development partition and shared evaluator
-contract as A/B/C. GhostLab's fold/racing metrics remain recorded separately as
+contract as A/C. GhostLab's fold/racing metrics remain recorded separately as
 selection evidence; they are never substituted for the matched leaderboard metrics.
 
-All four systems use `ghostlab.research.replay.evaluate_shared` as the common research
+All compared systems use `ghostlab.research.replay.evaluate_shared` as the common research
 harness. It freezes ordered session IDs, catalog, evaluator code, deterministic seed,
 profile/response handling, Top-K and turn limits in a hash-bound evaluation contract.
 The published `evaluator.local_evaluator.evaluate` remains unchanged as the reference,
 with parity tests proving that the shared harness produces identical core outcomes.
 
-Top-3 numbers are development selection evidence. The one-time 550-session final
-selection run evaluates frozen A and B reference arms, C, and all three frozen D
-configurations on the same ordered sessions, catalog and evaluator contract. A and B
-are explanatory only. Each D is independently gated against C, and the winner is chosen
-only by the frozen tie-break order. The 550 is therefore a final selection set, not an
-unbiased holdout, and its result must never be fed back into GhostLab for more tuning.
+Finalist numbers are development selection evidence. The one-time 550-session final
+selection run evaluates frozen A, C, and every available D configuration (one to three)
+on the same ordered sessions, catalog and evaluator contract. A is explanatory only.
+Each D is independently compared against C, and the winner is chosen only by the frozen
+tie-break order. The 550 is therefore a final selection set, not an unbiased holdout,
+and its result must never be fed back into GhostLab for more tuning.
 
-After reviewing the frozen Top-3 package, run the one-time comparison. Activation
-accepts only the selected, passing D from a matching report containing A/B, C, and all
-three frozen challengers:
+After reviewing the frozen finalist package, run the one-time comparison. Activation
+accepts only the selected D from a matching report containing A, C, and every frozen
+challenger:
 
 ```bash
 PYTHONPATH=. .venv/bin/python scripts/evaluate_adaptive_holdout.py
 ```
 
-Then use the frozen finalist's `activate_after_validation` command from the Top-3
+Then use the frozen finalist's `activate_after_validation` command from the finalist
 report. Roll back with:
 
 ```bash
@@ -592,8 +592,8 @@ gates in addition to the combined paired session reward:
 - latency must remain within the predefined bound unless paired quality or an actual
   Top-10 rescue justifies the extra cost;
 - sparse F0 Boundary evidence must produce `HOLD_MORE_DATA`, not permanent rejection;
-- exactly three challengers are frozen from F2 over all 1,650 development sessions;
-- frozen A/B references, C, and all three D finalists may access the 550-session final
+- one to three eligible challengers are frozen from F2 over all 1,650 development sessions;
+- frozen A, C, and every available D finalist (one to three) may access the 550-session final
   selection set once; each D is gated against C before immutable tie-breaking.
 
 The exhaustive default campaign is expected to take hours on one Mac. Retrieval/LLM
@@ -690,11 +690,11 @@ actually sent to the user.
 | `ghostlab/training/adaptive_datasets.py` | Multi-source loading and balanced folds |
 | `ghostlab/training/adaptive_lineage.py` | Cross-source lineage reconstruction and group-safe partitions |
 | `scripts/run_adaptive_hybrid_pipeline.py` | One-command checkpointed fit/selection/validation/campaign wrapper |
-| `scripts/evaluate_adaptive_reference_baselines.py` | Like-for-like development evaluation of A and B |
-| `scripts/build_adaptive_system_comparison.py` | Unified A/B/C and optional D1-D3 report |
+| `scripts/evaluate_adaptive_reference_baselines.py` | Development evaluation of A; optional research-only B audit |
+| `scripts/build_adaptive_system_comparison.py` | Unified A/C and optional D1-D3 report |
 | `scripts/train_adaptive_hybrid.py` | Development-only source-aware union ranker trainer |
 | `scripts/run_adaptive_hybrid_campaign.py` | Architecture-safe GhostLab runner |
-| `scripts/evaluate_adaptive_holdout.py` | Guarded one-time A/B/C plus three-D final selection |
+| `scripts/evaluate_adaptive_holdout.py` | Guarded one-time A/C plus one-to-three-D final selection |
 | `docs/adaptive_hybrid_1a_3b_implementation_process.md` | Detailed process |
 | `docs/adaptive_hybrid_1a_3b_implementation_report.md` | Evidence and decisions |
 

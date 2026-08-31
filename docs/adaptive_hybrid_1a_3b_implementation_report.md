@@ -45,7 +45,7 @@ Ask-only deferral is not the default architecture.
 | Paired-pool evidence included random evaluator session IDs and pre-union order | Hashes now exclude runtime UUIDs and use the first actual ordered pre-semantic pool per session | Two independent 60-session replays produced the identical pool hash and 58 paired semantic cases |
 | Descriptive negation became a hard exclusion | Restricted exclusion extraction so phrases such as `not including buckle` and `not quite right yet` are not product prohibitions while genuine exclusions such as `not formal` remain authoritative | Confirmed target removals on the paired smoke dropped from 8 to 0; focused adversarial tests and the complete suite pass |
 | GhostLab could reject required architecture | Added compulsory/adaptive classifications, preflight architecture audit, fit receipts, resumable checkpoints and source/scenario/constraint gates | Plan contains all 19 compulsory capabilities in every one of 28 initial candidates |
-| Final comparison could drift after development | Finalist validation uses the shared 1,650-session evaluator; packaging freezes D1-D3, C, A/B definitions, gates, tie-breaks and lineage hashes before final selection | Tests reject changed paths/hashes and mismatched evaluation contracts/session order before any access receipt is written |
+| Final comparison could drift after development | Finalist validation uses the shared 1,650-session evaluator; packaging freezes the available D1-D3, C, A, gates, tie-breaks and lineage hashes before final selection | Tests reject changed paths/hashes and mismatched evaluation contracts/session order before any access receipt is written |
 
 ## Post-fix local-LLM activation smoke
 
@@ -159,7 +159,7 @@ deferred optimization. No partial campaign is presented as a completed result.
    weight grid; MiniLM remains the non-LLM control/fallback.
 3. Use the emitted selected LLM config for a full public run and validation.
 4. Run the resumable F0/F1/F2 GhostLab campaign with grouped source/scenario gates.
-5. Package exactly three eligible development finalists, freeze D1-D3 plus A/B/C,
+5. Package every eligible development finalist up to three, freeze D1-D3 as available plus A/C,
    gates and tie-breaks, then run the 550-session final selection once.
 6. Review the final champion manually; do not auto-write the active-candidate pointer.
 

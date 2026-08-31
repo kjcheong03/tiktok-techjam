@@ -33,7 +33,7 @@ def evaluate_finalists(top_three_path: Path, output_path: Path) -> dict[str, Any
     top_three = _load(top_three_path)
     finalists = top_three.get("finalists")
     if not isinstance(finalists, list) or not finalists:
-        raise ValueError("Top-3 report contains no packaged finalists")
+        raise ValueError("finalist report contains no packaged finalists")
     if len(finalists) > 3:
         raise ValueError("development comparison supports at most three finalists")
 
@@ -119,7 +119,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(
         description=(
             "Re-evaluate packaged GhostLab finalists on the same shared 1,650-session "
-            "development ground used by A/B/C"
+            "development ground used by A/C"
         )
     )
     parser.add_argument(
