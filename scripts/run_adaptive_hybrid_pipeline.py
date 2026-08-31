@@ -349,10 +349,7 @@ def stage_specs(args: argparse.Namespace) -> tuple[StageSpec, ...]:
         StageSpec(
             "compare",
             (python, "scripts/build_adaptive_system_comparison.py"),
-            (
-                "artifacts/reports/adaptive_system_comparison_1650.json",
-                "artifacts/reports/adaptive_system_comparison_1650.md",
-            ),
+            ("artifacts/reports/adaptive_system_comparison_1650.json",),
         ),
     )
 

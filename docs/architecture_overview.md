@@ -14,4 +14,4 @@ Model fitting and GhostLab configuration search happen offline. The reviewed ada
 
 ![Adaptive Hybrid retrieval and ranking architecture](hybrid_retrieval_ranking_architecture.svg)
 
-This detailed view expands the runtime's three retrieval channels, evidence-preserving union, route-specific fusion, Buying constraint guard, GBDT reranking, selective Qwen semantic stage, MiniLM fallback, and final Top-K validation.
+This detailed view expands the runtime's three retrieval channels, evidence-preserving union, route-specific fusion, Buying constraint guard, GBDT reranking, selective SmolLM2 semantic stage, MiniLM fallback, optional hash-bound Top-10 residual reranking, and final Top-K validation. The frozen champion also enables RRF fusion without changing the required stage order.

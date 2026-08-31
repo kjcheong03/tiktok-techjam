@@ -73,6 +73,10 @@ def main() -> None:
     parser.add_argument("--catalog", default="data/catalog.jsonl")
     parser.add_argument("--dataset", default="data/public_set.jsonl")
     parser.add_argument("--output", default="artifacts/baseline_results.json")
+    parser.add_argument(
+        "--markdown",
+        help="optional human-readable Markdown output; JSON is canonical",
+    )
     args = parser.parse_args()
 
     samples = load_jsonl(args.dataset)
@@ -118,10 +122,13 @@ def main() -> None:
     output = Path(args.output)
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(results, indent=2) + "\n", encoding="utf-8")
-    output.with_suffix(".md").write_text(
-        _table(results, len(samples)), encoding="utf-8"
-    )
-    print(f"Wrote {output} and {output.with_suffix('.md')}")
+    written = [str(output)]
+    if args.markdown:
+        markdown = Path(args.markdown)
+        markdown.parent.mkdir(parents=True, exist_ok=True)
+        markdown.write_text(_table(results, len(samples)), encoding="utf-8")
+        written.append(str(markdown))
+    print(f"Wrote {', '.join(written)}")
 
 
 if __name__ == "__main__":

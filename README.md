@@ -455,11 +455,14 @@ reports under `artifacts/reports/` and accepts imported evaluator JSON files.
 
 ### Important references
 
-- [Detailed adaptive implementation process](docs/adaptive_hybrid_1a_3b_implementation_process.md)
-- [Adaptive implementation report](docs/adaptive_hybrid_1a_3b_implementation_report.md)
+- [Complete optimization engine guide](docs/engine_guide.md)
+- [Runtime architecture overview](docs/architecture_overview.md)
+- [Offline training and optimization pipeline](docs/offline_training_optimization_pipeline.md)
+- [Results dashboard](dashboard/README.md)
 - [Competition specification](docs/competition_specification.md)
 - [Agent API contract](docs/agent_api_contract.json)
 - [Submission rules](docs/submission_rules.md)
+- [Competition data layout](data/README.md)
 - [Data attribution](DATA_ATTRIBUTION.md)
 
 The catalog and development data are derived from Amazon Reviews 2023 by McAuley Lab,

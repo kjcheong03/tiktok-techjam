@@ -26,7 +26,7 @@ class DecisionLedgerTest(unittest.TestCase):
             hypothesis="Example hypothesis.",
             mechanism="Example mechanism.",
             diagnosis="Not run.",
-            evidence_refs=("docs/champion_checkpoint.md",),
+            evidence_refs=("docs/engine_guide.md",),
             decided_at="2026-08-26",
         )
         with tempfile.TemporaryDirectory() as directory:
