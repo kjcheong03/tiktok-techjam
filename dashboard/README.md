@@ -1,7 +1,7 @@
 # GhostLab results dashboard
 
 A dependency-free local dashboard for evaluator, unified preset, baseline-comparison,
-fair A/B/C/D system-comparison, and adaptive campaign result JSON files.
+three-system comparison, and adaptive campaign result JSON files.
 
 From the repository root, start it with:
 
@@ -11,13 +11,13 @@ uv run python dashboard/server.py
 
 Then open <http://127.0.0.1:8787/dashboard/>. Stop the server with `Ctrl+C`.
 
-The model selector intentionally exposes only four stable slots: **A: BM25**,
-**B: BM25 + teammate State V2**, **C: adaptive control**, and **D: frozen GhostLab
-champion / challenger**. When a fair comparison report is available, those slots resolve
-to its matching system rows. D uses the selected champion or the top frozen challenger,
-so a promoted challenger is never listed twice. You can still use **Import JSON** or drag
-files anywhere onto the page; imported files are parsed only in the browser and are not
-uploaded.
+The dashboard loads three stable systems automatically: **Organizer BM25 Starter**,
+**Fixed Adaptive Architecture**, and **GhostLab Champion**. When a fair comparison
+report is available, the systems resolve to its matching rows. The leaderboard appears
+first and includes TechnicalScore, Hit Rate@10, MRR, normalized efficiency, and MTTC.
+Click a system name to inspect its detailed results. You can still use **Import JSON** or
+drag files anywhere onto the page; imported files are parsed only in the browser and are
+not uploaded.
 
 Supported result shapes include:
 
@@ -27,15 +27,9 @@ Supported result shapes include:
 - fair comparison reports with a top-level `systems` list; and
 - campaign reports containing metric-bearing `records`.
 
-For a fair comparison report, all displayed A/B/C/D numbers must come from the same
-ordered sample IDs, catalog and evaluator contract. The dashboard labels A/B as
-reference-only and C/D as the promotion control/challenger; it does not infer champion
-eligibility from the highest raw score.
-
-A, B and C remain pinned in the leaderboard. When a development report contains D1-D3,
-choose the displayed D from the challenger dropdown. A final holdout report contains
-only the single frozen D, so the dropdown is fixed and cannot be used for post-holdout
-selection.
+For a fair comparison report, all displayed numbers must come from the same ordered
+sample IDs, catalog, and evaluator contract. The dashboard presents the frozen selected
+champion rather than exposing internal campaign labels or post-holdout selection controls.
 
 Use a different port if `8787` is already occupied:
 

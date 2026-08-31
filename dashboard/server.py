@@ -17,10 +17,9 @@ METRIC_KEYS = {
     "recommended_technical_score",
 }
 MODEL_LABELS = {
-    "A": "A: BM25",
-    "B": "B: BM25 + teammate State V2",
-    "C": "C: adaptive control",
-    "D": "D: frozen GhostLab champion / challenger",
+    "A": "Organizer BM25 Starter",
+    "C": "Fixed Adaptive Architecture",
+    "D": "GhostLab Champion",
 }
 COMPARISON_REPORTS = (
     PROJECT_ROOT / "artifacts" / "reports" / "adaptive_final_holdout.json",
@@ -73,13 +72,13 @@ def _model_descriptor(
         "system_id": system_id,
         "role": (
             "explanatory_baseline"
-            if model_id in {"A", "B"}
+            if model_id == "A"
             else "ghostlab_control"
             if model_id == "C"
-            else "ghostlab_champion_or_challenger"
+            else "ghostlab_champion"
         ),
         "champion_eligible": model_id in {"C", "D"},
-        "featured": model_id == "D",
+        "default": True,
     }
 
 
@@ -89,7 +88,7 @@ def _select_comparison_systems(payload: object) -> dict[str, dict[str, object]]:
         return {}
     systems = [item for item in payload["systems"] if isinstance(item, dict)]
     selected: dict[str, dict[str, object]] = {}
-    for model_id in ("A", "B", "C"):
+    for model_id in ("A", "C"):
         match = next(
             (
                 item
@@ -129,11 +128,10 @@ def _select_comparison_systems(payload: object) -> dict[str, dict[str, object]]:
 
 
 def discover_models() -> list[dict[str, object]]:
-    """Return the four stable dashboard model slots, never raw experiment reports."""
+    """Return the three stable dashboard systems, never raw experiment reports."""
     baseline = PROJECT_ROOT / "artifacts" / "baseline_results.json"
     models = {
         "A": _model_descriptor("A", baseline, run_key="official_keyword"),
-        "B": _model_descriptor("B", baseline, run_key="keyword_state"),
         "C": _model_descriptor(
             "C",
             PROJECT_ROOT
@@ -163,7 +161,7 @@ def discover_models() -> list[dict[str, object]]:
                     model_id, comparison_path, system_id=system_id
                 )
 
-    return [models[model_id] for model_id in ("A", "B", "C", "D")]
+    return [models[model_id] for model_id in ("A", "C", "D")]
 
 
 def discover_reports() -> list[dict[str, object]]:
