@@ -1,0 +1,22 @@
+{
+  "comparison_contract": "A/C/GhostLab Champion",
+  "evaluations": {
+    "final_selection_550": {
+      "adjudication_path": "configs/champion_adjudications/ghostlab_challenger_manual_v1.json",
+      "adjudication_sha256": "e230ea78866c96875d0e2d03121c8a41aeefac8a787ff5bcd1f480e1cb478127",
+      "receipt_path": "artifacts/reports/adaptive_final_holdout.access_receipt.json",
+      "receipt_sha256": "5d54299681a60ccfde198f0722013bb20362d0186dd238fbe6b84059c8fd6e10",
+      "report_path": "artifacts/reports/adaptive_final_holdout.json",
+      "report_sha256": "41234240b81673826446fd649bcd953d901e3031a76a1821471c4d674de6faa9",
+      "rerun_performed": false,
+      "sample_count": 550
+    },
+    "official_public_200": {
+      "independent_holdout": false,
+      "report_path": "artifacts/reports/adaptive_public_200.json",
+      "report_sha256": "643d26d5ee0267222cff27070be4abdb05ad4db607418e11766a43689587caea",
+      "sample_count": 200
+    }
+  },
+  "schema_version": 1
+}
