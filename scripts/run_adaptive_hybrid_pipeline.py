@@ -52,7 +52,7 @@ class StageSpec:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
-            "Run the adaptive structural fit, bounded LLM selection, public "
+            "Run the adaptive structural fit, fixed semantic control, public "
             "evaluation, validation, GhostLab campaign and Top-3 packaging as one "
             "resumable pipeline"
         )
@@ -85,7 +85,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--campaign-max-samples",
         type=int,
-        help="optional bounded campaign prefix; omit for all 2,200 sessions",
+        help="optional bounded development prefix; omit for all 1,650 sessions",
     )
     return parser
 
@@ -178,9 +178,9 @@ def stage_specs(args: argparse.Namespace) -> tuple[StageSpec, ...]:
         ),
         StageSpec(
             "llm",
-            (python, "scripts/compare_local_llm_rankers.py"),
+            (python, "scripts/prepare_adaptive_semantic_control.py"),
             (
-                "artifacts/reports/local_llm_ranker_comparison_v2.json",
+                "artifacts/reports/adaptive_semantic_control_v1.json",
                 selected_config,
             ),
         ),
@@ -402,24 +402,28 @@ def main() -> None:
     first = STAGE_ORDER.index(args.from_stage)
     last = STAGE_ORDER.index(args.through_stage)
     selected = stage_specs(args)[first : last + 1]
-    plan = [
-        {
-            "stage": stage.name,
-            "status": (
-                "skip_complete" if _completed(stage, checkpoint, forced) else "run"
-            ),
-            "command": list(stage.command),
-            "outputs": list(stage.outputs),
-            "log": str((log_dir / f"{stage.name}.log").relative_to(ROOT)),
-        }
-        for stage in selected
-    ]
+    plan: list[dict[str, object]] = []
+    upstream_will_run = False
+    for stage in selected:
+        complete = _completed(stage, checkpoint, forced)
+        status = "skip_complete" if complete and not upstream_will_run else "run"
+        upstream_will_run = upstream_will_run or status == "run"
+        plan.append(
+            {
+                "stage": stage.name,
+                "status": status,
+                "command": list(stage.command),
+                "outputs": list(stage.outputs),
+                "log": str((log_dir / f"{stage.name}.log").relative_to(ROOT)),
+            }
+        )
     if args.show_plan:
         print(json.dumps({"schema_version": 1, "stages": plan}, indent=2))
         return
     print(json.dumps({"event": "pipeline_plan", "stages": plan}), flush=True)
+    upstream_ran = False
     for stage in selected:
-        if _completed(stage, checkpoint, forced):
+        if not upstream_ran and _completed(stage, checkpoint, forced):
             print(f"SKIP stage={stage.name} reason=checkpoint_complete", flush=True)
             continue
         _run_stage(
@@ -428,6 +432,7 @@ def main() -> None:
             checkpoint=checkpoint,
             log_dir=log_dir,
         )
+        upstream_ran = True
     print("PIPELINE COMPLETE", flush=True)
 
 

@@ -1,0 +1,149 @@
+{
+  "architecture": "adaptive_hybrid_1a_3b_v1",
+  "browsing": {
+    "cache_dir": "artifacts/cache/dense",
+    "component": "diverse_e5_multiview",
+    "mmr_relevance_weight": 0.85,
+    "model_path": "artifacts/cache/models/e5-small-v2",
+    "output_k": 200,
+    "overload_output_k": 80,
+    "overload_retrieval_per_view": 80,
+    "profile_query_view_enabled": false,
+    "retrieval_per_view": 400,
+    "safe_ranker_backend": "deterministic",
+    "safe_ranker_model_path": null,
+    "safe_ranker_model_sha256": null,
+    "safe_ranker_weight": 0.0,
+    "safe_rerank_k": 200,
+    "selection": "multiview_max_relevance"
+  },
+  "buying": {
+    "component": "field_bm25_precision",
+    "field_weights": [
+      2.0,
+      8.0,
+      4.0,
+      2.5,
+      1.5,
+      1.0
+    ],
+    "retrieval_k": 200
+  },
+  "extensions": {
+    "facet_diversity_enabled": false,
+    "facet_max_constraints": 1,
+    "facet_max_turn": 2,
+    "facet_output_k": 10,
+    "facet_relevance_weight": 0.85,
+    "facet_rerank_k": 30,
+    "quality_prior_weight": 0.0,
+    "quality_rerank_k": 50,
+    "query_prf_enabled": false,
+    "query_prf_feedback_k": 5,
+    "query_prf_max_added_ratio": 0.5,
+    "query_prf_max_terms": 4,
+    "query_prf_minimum_support": 0.4
+  },
+  "guidance": {
+    "broad_discovery_turns": 2,
+    "component": "over_generality_guidance",
+    "max_question_turn": 8,
+    "overload_max_specific_constraints": 0,
+    "overload_min_candidates": 180,
+    "preview_category_k": 30,
+    "preview_keyword_k": 40,
+    "preview_min_candidates": 30,
+    "preview_score_flatness": 0.65,
+    "question_candidate_k": 100,
+    "question_value_margin": 0.0
+  },
+  "merger": {
+    "browsing_category_weight": 0.1,
+    "browsing_keyword_support_k": 40,
+    "browsing_keyword_weight": 0.1,
+    "browsing_vector_weight": 0.8,
+    "buying_category_weight": 0.05,
+    "buying_keyword_weight": 0.9,
+    "buying_vector_support_k": 40,
+    "buying_vector_weight": 0.05,
+    "category_k": 120,
+    "component": "keyword_category_vector_merge",
+    "merged_k": 320,
+    "rrf_constant": 60,
+    "strategy": "weighted"
+  },
+  "orchestration": {
+    "atomic_commit": true,
+    "component": "fixed_adaptive_coordinator",
+    "emit_reason_codes": true,
+    "fallback": "complete_precision_path",
+    "max_recommendations": 10
+  },
+  "policy_id": "adaptive_hybrid_1a_3b_1650_final_v1",
+  "router": {
+    "abstain_confidence": 0.6,
+    "browsing_marker_weight": 2.5,
+    "browsing_markers": [
+      "still exploring",
+      "browsing",
+      "ideas",
+      "not sure",
+      "use your judgment",
+      "recommend something"
+    ],
+    "buying_min_specific_constraints": 1,
+    "buying_specificity_threshold": 1.0,
+    "category_only_browsing_weight": 0.75,
+    "component": "buying_browsing_router",
+    "correction_confidence_penalty": 0.1,
+    "current_attribute_coverage_weight": 0.25,
+    "current_query_length_cap": 12,
+    "current_query_length_weight": 0.1,
+    "exclusion_specificity_weight": 0.25,
+    "explicit_specificity_weight": 0.1,
+    "hard_specificity_weight": 0.25,
+    "historical_specificity_weight": 0.5
+  },
+  "runtime_adaptation": {
+    "component": "conflict_safe_context_distillation",
+    "maximum_explicit_constraints_for_profile": 2,
+    "profile_confidence": 0.6,
+    "profile_question_suppression_enabled": false,
+    "profile_weight": 0.02,
+    "union_profile_feature_enabled": false
+  },
+  "schema_version": 1,
+  "semantic_ranker": {
+    "activate_for_browsing": true,
+    "activation_policy": "browsing_only",
+    "backend": "qwen_causal_relevance",
+    "batch_size": 8,
+    "component": "bounded_local_llm_semantic_ranker",
+    "device": "auto",
+    "fallback_cache_dir": "artifacts/cache/cross_encoder",
+    "fallback_model_path": "artifacts/cache/models/ms-marco-MiniLM-L6-v2",
+    "fallback_model_revision": "c5ee24cb16019beea089334287d17c69e06eb577",
+    "fallback_weight": 0.5,
+    "max_length": 256,
+    "model_id": "qwen_causal_relevance",
+    "model_path": "artifacts/cache/models/qwen2.5-0.5b-instruct",
+    "model_revision": "7ae557604adf67be50417f59c2c2f167def9a775",
+    "model_sha256": "31b07963d699962dbbc9fdcb9d4cfaa496f5e56abc29c8e597e18195b87ebe77",
+    "rerank_k": 10,
+    "timeout_ms": 30000,
+    "weight": 0.5
+  },
+  "state": {
+    "component": "state_v2"
+  },
+  "submission_eligible": true,
+  "union_ranker": {
+    "backend": "gbdt",
+    "buying_mode": "sparse_dominant_residual",
+    "buying_residual_weight": 0.25,
+    "component": "union_aware_ranker",
+    "model_path": "artifacts/models/adaptive_union_gbdt_1650_final_v1.json",
+    "model_sha256": "8edca6d86af14167c0af91e9f8be163164e1b0d4585769abd52fbd18fa8cbd41",
+    "rerank_k": 320
+  }
+}

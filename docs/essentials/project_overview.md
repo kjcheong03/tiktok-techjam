@@ -124,8 +124,9 @@ scored. A submission-eligible configuration has no `off` value for a required sl
 - **Merge:** keyword/category/vector weighted union; Buying weights `0.90/0.05/0.05`,
   Browsing weights `0.10/0.10/0.80`.
 - **Union ranking:** hash-bound GBDT over the complete merged pool.
-- **Semantic ranking:** pinned Qwen2.5-0.5B-Instruct for Browsing; deterministic skip for
-  high-confidence Buying. Qwen may reorder only supplied catalog IDs.
+- **Semantic ranking:** pinned SmolLM2-1.7B-Instruct for Browsing, starting at depth
+  `10` and weight `0.05`; deterministic skip for Buying and overload cutoff. The LLM
+  may reorder only supplied catalog IDs.
 - **Guidance:** recommend-and-ask under overload; ask-only deferral is not promoted.
 - **Profile adaptation:** conflict-safe supplied/session profile influence with current
   weight `0.02`, confidence, provenance, intent epoch and conflicts.
@@ -311,7 +312,7 @@ The recommended entrypoint runs every dependent stage in the safe order:
 ```text
 lineage reconstruction and 1,650-session development fit
   -> identical-pool dense diversity validation
-  -> bounded local-LLM selection
+  -> freeze the fixed SmolLM2 semantic control
   -> full public evaluation
   -> end-to-end validation
   -> resumable GhostLab F0/F1/F2 campaign
@@ -467,24 +468,16 @@ The union model is bound into the output configuration only if it passes out-of-
 Hit@10 non-regression, strict MRR improvement, and protected-slice gates. Rejected
 evidence is retained in the training report.
 
-After the structural fit succeeds, run the symmetric bounded model-family comparison:
+The one-command pipeline no longer reopens model-family research. After the structural
+fit succeeds it freezes the selected SmolLM2 control reproducibly:
 
 ```bash
-PYTHONPATH=. .venv/bin/python scripts/compare_local_llm_rankers.py
+PYTHONPATH=. .venv/bin/python scripts/prepare_adaptive_semantic_control.py
 ```
 
-Qwen2.5-0.5B, Qwen3-0.6B, Gemma 3 1B IT and SmolLM2-1.7B each receive the same
-Top-10/20/30 depth and bounded-weight grid on paired development candidate pools.
-MiniLM is the non-LLM control/fallback. Each family chooses its own best setting. The
-command emits a report and separate hash-bound candidate configurations; it does not
-overwrite the trained base config.
-
-The command refuses to start unless all five pinned assets verify completely. A model
-directory created by a partial download is not sufficient. Selection and candidate
-configuration emission require every configured `(model, depth, weight)` trial to have
-been attempted exactly once; failed or timed-out trials stay in the report but are not
-eligible. Qwen3 is rendered with `enable_thinking=False` so its immediate yes/no logits
-match the scorer contract.
+The command verifies the pinned SmolLM2 asset and emits C at Browsing-only depth `10`,
+weight `0.05`, with MiniLM retained only as the failure fallback. The earlier four-model
+comparison remains an evidence artifact, not a stage that is rerun during final training.
 
 ## Run the architecture-safe GhostLab campaign
 
@@ -555,14 +548,25 @@ gates in addition to the combined paired session reward:
 
 - official-public performance must not materially regress;
 - Buying, Browsing and Intent Override must not materially regress;
+- Hit@10 and MRR may not regress against matched C;
+- confirmed output-constraint violations must remain zero;
+- latency must remain within the predefined bound unless paired quality or an actual
+  Top-10 rescue justifies the extra cost;
 - sparse F0 Boundary evidence must produce `HOLD_MORE_DATA`, not permanent rejection;
 - exactly three challengers are frozen from F2 over all 1,650 development sessions;
 - frozen A/B references, C, and all three D finalists may access the 550-session final
   selection set once; each D is gated against C before immutable tie-breaking.
 
-The exhaustive default campaign is expected to take hours on one Mac. Retrieval/Qwen
+The exhaustive default campaign is expected to take hours on one Mac. Retrieval/LLM
 caching and lower early candidate caps are valid engineering optimizations only when they
 preserve paired behavior and the fixed architecture.
+
+The semantic lane is deliberately small: F0 compares weights `0.05`, `0.10`, `0.15`
+and `0.20` at depth `10`; rejected weights are pruned. F1 evaluates depth `20` only for
+the selected surviving weight. Depth `20` is retained only with a Hit@10/MRR improvement
+or a measured Top-10 rescue that also passes latency and route/scenario gates. Depths
+`30` and `50`, new model families, pairwise ranking and listwise ranking are outside the
+final campaign.
 
 ## Profile awareness
 
@@ -584,12 +588,12 @@ conflict-safe runtime stage is authoritative.
 |---|---:|---:|---:|---:|
 | Guarded champion | 0.980000 | 0.774839 | 2.280000 | 0.896852 |
 | State V2 precision control | 0.990000 | 0.746895 | 2.185000 | 0.895369 |
-| Adaptive Hybrid, Browsing-only Qwen | 0.985000 | 0.578286 | 2.045000 | 0.845086 |
+| Historical Adaptive Hybrid, Browsing-only Qwen | 0.985000 | 0.578286 | 2.045000 | 0.845086 |
 
 The adaptive candidate improves Hit@10 and MTTC relative to the champion but loses MRR.
 It is the architecture-complete optimization base, not the active winner.
 
-The semantic activation study used the same 200 public sessions:
+The historical semantic activation study used the same 200 public sessions:
 
 | Policy | Qwen activations / 406 turns | TechnicalScore | Decision |
 |---|---:|---:|---|

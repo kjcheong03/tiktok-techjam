@@ -169,8 +169,8 @@ artifacts/models/adaptive_union_gbdt_1650_final_v1.fit_receipt.json
 artifacts/reports/adaptive_hybrid_training_1650_final_v1.json
 ```
 
-After bounded LLM selection, GhostLab races architecture-valid additions and
-combinations only on development. The F0/F1/F2 populations use 20%, 50% and 100% of
+After the fixed SmolLM2 semantic control is frozen, GhostLab races architecture-valid
+additions and combinations only on development. The F0/F1/F2 populations use 20%, 50% and 100% of
 development—330, 825 and 1,650 sessions before any explicit resource cap. Up to three
 finalists are re-evaluated on the identical ordered development ground. Exactly three D
 configurations are then frozen together with control C, A/B reference definitions,
@@ -233,7 +233,7 @@ side-effect-free interfaces:
 | `DiverseDenseTrack` | Produce E5 semantic Browsing candidates | Required; views/depth optimizable |
 | `MultiRouteMerger` | Combine keyword/category/vector evidence with provenance | Required; budgets/scoring optimizable |
 | `UnionRanker` | Score every executable merged candidate | Required; model/features optimizable |
-| `LocalLLMSemanticRanker` | Bounded semantic reorder of the preliminary head | Required; model/prompt/depth optimizable |
+| `LocalLLMSemanticRanker` | Bounded semantic reorder of the preliminary head | Required; SmolLM2/Browsing policy fixed, bounded weight/depth schedule optimizable |
 | `OverGeneralityGuidance` | Decide cutoff and highest-value unresolved question | Required; signals/value model optimizable |
 | `AdaptiveCoordinator` | Execute the canonical workflow, fallback and commit | Ordering fixed; activation thresholds optimizable |
 | `ResidualTop10Reranker` | Optionally reorder identical Top-10 membership | Entirely optional and evidence-gated |
@@ -377,8 +377,9 @@ ranking.
 
 ### What GhostLab may optimize
 
-Candidate depths, category expansion, E5 views, union budget, union ranker,
-features, local model, prompt, semantic depth and score weight.
+Candidate depths, category expansion, E5 views, union budget, union ranker and features.
+For the compulsory semantic slot, the model, prompt and activation policy are fixed;
+GhostLab may tune only the declared weight/depth schedule.
 
 ### Required proof
 
@@ -675,7 +676,7 @@ submission.
 ### 5. Run bounded joint optimization
 
 After individual slots work, GhostLab may search compatible combinations of route
-thresholds, candidate budgets, ranking weights, semantic depth, question thresholds
+thresholds, candidate budgets, ranking weights, the bounded semantic schedule, question thresholds
 and profile confidence. The search space is generated from the required adaptive
 schema, so no trial can silently collapse the architecture.
 
@@ -939,14 +940,14 @@ it to remove a required architectural capability.
 
 ## Execution status
 
-The complete selective-LLM implementation and bounded activation study are
-finished. The static 1A-3B workflow remains unchanged: every successful
-non-fallback turn executes keyword/category/vector merge and reaches the required
-semantic-ranking slot. The promoted gate invokes literal local Qwen for Browsing
-and deterministically skips it for precision-oriented Buying. All operational
-gates pass and the public development score is `0.845086`. The outcome remains
-**architecture complete, optimization required** because the candidate is below
-both precision controls and is not activated. See
+The complete selective-LLM implementation and bounded model study are finished. The
+static 1A-3B workflow remains unchanged: every successful non-fallback turn executes
+keyword/category/vector merge and reaches the required semantic-ranking slot. The final
+control invokes pinned SmolLM2 for Browsing at depth `10`, weight `0.05`, and
+deterministically skips it for Buying and overload cutoff. GhostLab tests weights
+`0.05/0.10/0.15/0.20` at F0 and only the selected survivor at depth `20` in F1, with
+Hit@10, MRR, constraint, route/scenario and latency gates. The protected 550 sessions
+remain inaccessible until exactly three D finalists and C are frozen. See
 [`adaptive_hybrid_1a_3b_implementation_report.md`](adaptive_hybrid_1a_3b_implementation_report.md)
 for the exact implementation map, retraining evidence, full-engine metrics and next
 optimization work.

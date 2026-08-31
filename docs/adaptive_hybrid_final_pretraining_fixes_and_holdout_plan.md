@@ -1,5 +1,18 @@
 # Adaptive Hybrid Final Pre-Training Fixes and Holdout Plan
 
+## Final semantic-ranking decision
+
+The earlier broad model-family study in this plan is complete and is not reopened by
+the final pipeline. The production control is pinned SmolLM2-1.7B-Instruct, pointwise
+yes/no scoring, Browsing-only activation, depth `10` and weight `0.05`, with MiniLM only
+as the failure fallback. GhostLab evaluates weights `0.05`, `0.10`, `0.15` and `0.20`
+at F0, prunes regressions, and evaluates depth `20` only for the selected surviving
+weight at F1. Depth `20` must add Hit@10/MRR or a measured rescue and pass constraint,
+route/scenario and latency gates. No depth `30/50`, new model family, pairwise or
+listwise experiment is part of final training. All tuning remains within the 1,650
+development partition; the 550-session protected set stays untouched until C and
+exactly three D finalists are frozen.
+
 ## Status and purpose
 
 This document is the authoritative plan for the last structural corrections,

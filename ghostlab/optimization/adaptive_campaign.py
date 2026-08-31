@@ -27,6 +27,9 @@ from ghostlab.optimization.racing import Decision, racing_decide
 from ghostlab.runtime.adaptive_config import AdaptiveHybridConfig
 
 Fidelity = Literal["f0", "f1", "f2"]
+SEMANTIC_WEIGHT_GRID = (0.05, 0.10, 0.15, 0.20)
+SEMANTIC_F0_DEPTH = 10
+SEMANTIC_F1_DEPTH = 20
 
 
 @dataclass(frozen=True)
@@ -37,6 +40,11 @@ class AdaptiveEvaluation:
     session_rewards: tuple[float, ...]
     behavior_novelty: float = 0.0
     latency_p95_ms: float = 0.0
+    semantic_latency_p95_ms: float = 0.0
+    semantic_activations: int = 0
+    semantic_rescue_opportunities: int = 0
+    semantic_rescues: int = 0
+    semantic_regressions: int = 0
     fit_verified: bool = False
     gate_metrics: tuple[tuple[str, float], ...] = ()
     constraint_violations: int = 0
@@ -74,6 +82,9 @@ class AdaptiveCampaignResult:
     stages: dict[Fidelity, tuple[AdaptiveRaceRecord, ...]]
     architecture_rejections: tuple[tuple[str, str], ...]
     search_rounds: tuple[InteractionSearchPlan, ...]
+    selected_semantic_weight: float
+    selected_semantic_depth: int
+    semantic_weight_survivors: tuple[float, ...]
 
 
 Evaluator = Callable[
@@ -169,12 +180,13 @@ def _adaptive_search_space() -> ConditionalSearchSpace:
         ConditionalParameter(
             name="buying_residual_weight", kind="float", low=0.0, high=0.49
         ),
-        ConditionalParameter(name="semantic_weight", kind="float", low=0.05, high=0.75),
         ConditionalParameter(
-            name="semantic_rerank_k", kind="categorical", choices=(5, 10, 20, 30, 50)
+            name="semantic_weight", kind="categorical", choices=SEMANTIC_WEIGHT_GRID
         ),
         ConditionalParameter(
-            name="semantic_fallback_weight", kind="float", low=0.05, high=0.75
+            name="semantic_rerank_k",
+            kind="categorical",
+            choices=(SEMANTIC_F0_DEPTH, SEMANTIC_F1_DEPTH),
         ),
         ConditionalParameter(
             name="overload_min_candidates", kind="int", low=50, high=400
@@ -302,6 +314,17 @@ class AdaptiveGhostLabEngine:
         max_extra_techniques: int | None = None,
         seed: int = 20260826,
     ) -> None:
+        semantic = baseline.semantic_ranker
+        if (
+            semantic.model_id != "smollm2-1.7b-instruct"
+            or semantic.activation_policy != "browsing_only"
+            or semantic.weight != SEMANTIC_WEIGHT_GRID[0]
+            or semantic.rerank_k != SEMANTIC_F0_DEPTH
+        ):
+            raise ValueError(
+                "GhostLab requires the frozen SmolLM2 Browsing-only control at "
+                "weight 0.05 and depth 10"
+            )
         inventory = registry.inventory()
         maximum = len(inventory.promotable)
         if max_extra_techniques is not None and max_extra_techniques <= 0:
@@ -358,8 +381,12 @@ class AdaptiveGhostLabEngine:
                 )
             else:
                 accepted.append(candidate)
+        semantic_calibration = tuple(
+            self.semantic_candidate(weight=weight, depth=SEMANTIC_F0_DEPTH, suffix="f0")
+            for weight in SEMANTIC_WEIGHT_GRID[1:]
+        )
         return InteractionSearchPlan(
-            candidates=tuple(accepted),
+            candidates=(*tuple(accepted), *semantic_calibration),
             skipped=tuple(skipped),
             cap_exhausted=plan.cap_exhausted,
         )
@@ -367,6 +394,72 @@ class AdaptiveGhostLabEngine:
     def materialize(self, candidate: CandidateSpec) -> AdaptiveHybridConfig:
         self.registry.validate_candidate(candidate)
         return self.registry.materialize(self.baseline, candidate)
+
+    @staticmethod
+    def _semantic_parameters(candidate: CandidateSpec) -> tuple[float, int]:
+        parameters = dict(candidate.parameters)
+        return (
+            float(parameters.get("semantic_weight", SEMANTIC_WEIGHT_GRID[0])),
+            int(parameters.get("semantic_rerank_k", SEMANTIC_F0_DEPTH)),
+        )
+
+    @staticmethod
+    def _is_semantic_calibration(candidate: CandidateSpec) -> bool:
+        return candidate.candidate_id.startswith("semantic-calibration-")
+
+    def semantic_candidate(
+        self,
+        *,
+        weight: float,
+        depth: int,
+        suffix: str,
+    ) -> CandidateSpec:
+        if weight not in SEMANTIC_WEIGHT_GRID:
+            raise ValueError(f"semantic weight is outside the fixed grid: {weight}")
+        if depth not in {SEMANTIC_F0_DEPTH, SEMANTIC_F1_DEPTH}:
+            raise ValueError(f"semantic depth is outside the staged grid: {depth}")
+        rendered_weight = f"{weight:.2f}".replace(".", "p")
+        candidate = CandidateSpec(
+            candidate_id=(f"semantic-calibration-w{rendered_weight}-d{depth}-{suffix}"),
+            baseline_id=self.baseline.policy_id,
+            techniques=self.incumbent.techniques,
+            parameters=(
+                ("semantic_rerank_k", depth),
+                ("semantic_weight", weight),
+            ),
+            complexity=0,
+            generation="ablation",
+        )
+        self.materialize(candidate)
+        return candidate
+
+    def _with_semantic_policy(
+        self,
+        candidate: CandidateSpec,
+        *,
+        weight: float,
+        depth: int,
+        suffix: str,
+    ) -> CandidateSpec:
+        if candidate.generation == "control":
+            return candidate
+        parameters = {
+            name: value
+            for name, value in candidate.parameters
+            if name not in {"semantic_weight", "semantic_rerank_k"}
+        }
+        parameters.update({"semantic_weight": weight, "semantic_rerank_k": depth})
+        rendered_weight = f"{weight:.2f}".replace(".", "p")
+        result = candidate.model_copy(
+            update={
+                "candidate_id": (
+                    f"{candidate.candidate_id}-sem-w{rendered_weight}-d{depth}-{suffix}"
+                ),
+                "parameters": tuple(sorted(parameters.items())),
+            }
+        )
+        self.materialize(result)
+        return result
 
     def hpo_candidate(
         self,
@@ -415,17 +508,25 @@ class AdaptiveGhostLabEngine:
         attempts = 0
         while len(results) < count and attempts < count * 8:
             attempts += 1
-            suggestion = suggest_for_combination(
-                self.search_space,
-                candidate.techniques,
-                observations,
-                context=TuningContext(outer_fold=0, inner_fold=0),
-                seed=self.seed + attempts,
-                center=center,
-                max_changes=3,
-                trust_region=0.2,
-                block_index=attempts - 1,
+            suggestion = dict(
+                suggest_for_combination(
+                    self.search_space,
+                    candidate.techniques,
+                    observations,
+                    context=TuningContext(outer_fold=0, inner_fold=0),
+                    seed=self.seed + attempts,
+                    center=center,
+                    max_changes=3,
+                    trust_region=0.2,
+                    block_index=attempts - 1,
+                )
             )
+            # Semantic weight/depth are tuned by the explicit F0 -> F1 lane below.
+            # Ordinary HPO remains free to tune every other active parameter but
+            # cannot bypass the staged grid or re-open arbitrary semantic depths.
+            suggestion.pop("semantic_weight", None)
+            suggestion.pop("semantic_rerank_k", None)
+            suggestion.pop("semantic_fallback_weight", None)
             parameters = dict(candidate.parameters)
             parameters.update(suggestion)
             try:
@@ -532,8 +633,16 @@ class AdaptiveGhostLabEngine:
         )
         f0 = self._evaluate_stage(plan.candidates, "f0", evaluator)
         search_rounds: list[InteractionSearchPlan] = [plan]
-        all_candidates = list(plan.candidates)
-        f0_by_id = {item.candidate.candidate_id: item for item in f0}
+        all_candidates = [
+            candidate
+            for candidate in plan.candidates
+            if not self._is_semantic_calibration(candidate)
+        ]
+        f0_by_id = {
+            item.candidate.candidate_id: item
+            for item in f0
+            if not self._is_semantic_calibration(item.candidate)
+        }
         for _ in range(higher_order_rounds):
             expansion = self.higher_order_plan(
                 tuple(all_candidates),
@@ -550,15 +659,85 @@ class AdaptiveGhostLabEngine:
             f0 = (*f0, *new_records)
             all_candidates.extend(expansion.candidates)
             f0_by_id.update({item.candidate.candidate_id: item for item in new_records})
-        f1_roots = self._survivors(f0, f1_candidates)
+
+        control_f0 = next(item for item in f0 if item.candidate.generation == "control")
+        semantic_f0 = tuple(
+            item for item in f0 if self._is_semantic_calibration(item.candidate)
+        )
+        semantic_survivors = [SEMANTIC_WEIGHT_GRID[0]]
+        semantic_survivors.extend(
+            self._semantic_parameters(item.candidate)[0]
+            for item in semantic_f0
+            if item.decision != "REJECT"
+        )
+        semantic_survivors = sorted(set(semantic_survivors))
+        semantic_records = (control_f0, *semantic_f0)
+        eligible_semantic_records = [
+            item
+            for item in semantic_records
+            if item.candidate.generation == "control" or item.decision != "REJECT"
+        ]
+        selected_semantic_weight = self._semantic_parameters(
+            min(
+                eligible_semantic_records,
+                key=lambda item: (
+                    -item.evaluation.score,
+                    -item.evaluation.hit_rate_at_10,
+                    -item.evaluation.mrr,
+                    item.evaluation.latency_p95_ms,
+                    self._semantic_parameters(item.candidate)[0],
+                ),
+            ).candidate
+        )[0]
+
+        structural_f0 = tuple(
+            item for item in f0 if not self._is_semantic_calibration(item.candidate)
+        )
+        raw_f1_roots = self._survivors(
+            structural_f0,
+            max(2, f1_candidates - 2),
+        )
+        f1_roots = tuple(
+            root
+            if root.generation == "control"
+            else self._with_semantic_policy(
+                root,
+                weight=selected_semantic_weight,
+                depth=SEMANTIC_F0_DEPTH,
+                suffix="f1",
+            )
+            for root in raw_f1_roots
+        )
+        semantic_depth_10 = (
+            None
+            if selected_semantic_weight == SEMANTIC_WEIGHT_GRID[0]
+            else self.semantic_candidate(
+                weight=selected_semantic_weight,
+                depth=SEMANTIC_F0_DEPTH,
+                suffix="f1",
+            )
+        )
+        semantic_depth_20 = self.semantic_candidate(
+            weight=selected_semantic_weight,
+            depth=SEMANTIC_F1_DEPTH,
+            suffix="f1",
+        )
         hpo: list[CandidateSpec] = []
         if hpo_trials_per_structure < 0:
             raise ValueError("HPO trial count cannot be negative")
-        f0_scores = {item.candidate.candidate_id: item.evaluation.score for item in f0}
+        f0_scores = {
+            item.candidate.candidate_id: item.evaluation.score for item in structural_f0
+        }
         for root in f1_roots:
             if root.generation == "control":
                 continue
-            observations = (Observation(root.parameters, f0_scores[root.candidate_id]),)
+            original_id = root.candidate_id.split("-sem-w", maxsplit=1)[0]
+            observations = (
+                Observation(
+                    root.parameters,
+                    f0_scores.get(original_id, control_f0.evaluation.score),
+                ),
+            )
             hpo.extend(
                 self.suggest_hpo_candidates(
                     root,
@@ -566,9 +745,72 @@ class AdaptiveGhostLabEngine:
                     observations=observations,
                 )
             )
-        f1 = self._evaluate_stage((*f1_roots, *hpo), "f1", evaluator)
-        f2_roots = self._survivors(f1, f2_candidates)
-        f2 = self._evaluate_stage(f2_roots, "f2", evaluator)
+        f1_candidates_to_run = [*f1_roots]
+        if semantic_depth_10 is not None:
+            f1_candidates_to_run.append(semantic_depth_10)
+        f1_candidates_to_run.extend((semantic_depth_20, *hpo))
+        f1 = self._evaluate_stage(tuple(f1_candidates_to_run), "f1", evaluator)
+
+        depth_10_record = (
+            next(
+                item
+                for item in f1
+                if semantic_depth_10 is not None
+                and item.candidate.candidate_id == semantic_depth_10.candidate_id
+            )
+            if semantic_depth_10 is not None
+            else next(item for item in f1 if item.candidate.generation == "control")
+        )
+        depth_20_record = next(
+            item
+            for item in f1
+            if item.candidate.candidate_id == semantic_depth_20.candidate_id
+        )
+        depth_20_has_value = (
+            depth_20_record.evaluation.hit_rate_at_10
+            > depth_10_record.evaluation.hit_rate_at_10 + 1e-12
+            or depth_20_record.evaluation.mrr > depth_10_record.evaluation.mrr + 1e-6
+            or depth_20_record.evaluation.semantic_rescues
+            > depth_10_record.evaluation.semantic_rescues
+        )
+        selected_semantic_depth = (
+            SEMANTIC_F1_DEPTH
+            if depth_20_record.decision != "REJECT" and depth_20_has_value
+            else SEMANTIC_F0_DEPTH
+        )
+
+        structural_f1 = tuple(
+            item for item in f1 if not self._is_semantic_calibration(item.candidate)
+        )
+        raw_f2_roots = self._survivors(structural_f1, f2_candidates)
+        f2_candidates_to_run: list[CandidateSpec] = [self.incumbent]
+        if (
+            selected_semantic_weight != SEMANTIC_WEIGHT_GRID[0]
+            or selected_semantic_depth != SEMANTIC_F0_DEPTH
+        ):
+            f2_candidates_to_run.append(
+                self.semantic_candidate(
+                    weight=selected_semantic_weight,
+                    depth=selected_semantic_depth,
+                    suffix="f2",
+                )
+            )
+        for root in raw_f2_roots:
+            if root.generation == "control":
+                continue
+            candidate = self._with_semantic_policy(
+                root,
+                weight=selected_semantic_weight,
+                depth=selected_semantic_depth,
+                suffix="f2",
+            )
+            if candidate.canonical_hash() not in {
+                item.canonical_hash() for item in f2_candidates_to_run
+            }:
+                f2_candidates_to_run.append(candidate)
+            if len(f2_candidates_to_run) >= f2_candidates:
+                break
+        f2 = self._evaluate_stage(tuple(f2_candidates_to_run), "f2", evaluator)
         eligible = [
             item
             for item in f2
@@ -593,6 +835,9 @@ class AdaptiveGhostLabEngine:
             stages={"f0": tuple(f0), "f1": tuple(f1), "f2": tuple(f2)},
             architecture_rejections=architecture_rejections,
             search_rounds=tuple(search_rounds),
+            selected_semantic_weight=selected_semantic_weight,
+            selected_semantic_depth=selected_semantic_depth,
+            semantic_weight_survivors=tuple(semantic_survivors),
         )
 
     def _evaluate_stage(
@@ -670,6 +915,24 @@ class AdaptiveGhostLabEngine:
                 gate_failures.append(
                     f"constraint_violations:{evaluation.constraint_violations}"
                 )
+            control_evaluation = matched_control.evaluation
+            if (
+                candidate.generation != "control"
+                and evaluation.hit_rate_at_10 + 1e-12
+                < control_evaluation.hit_rate_at_10
+            ):
+                gate_failures.append(
+                    "hit_at_10_regression:"
+                    f"{evaluation.hit_rate_at_10:.6f}<"
+                    f"{control_evaluation.hit_rate_at_10:.6f}"
+                )
+            if (
+                candidate.generation != "control"
+                and evaluation.mrr + 1e-12 < control_evaluation.mrr
+            ):
+                gate_failures.append(
+                    f"mrr_regression:{evaluation.mrr:.6f}<{control_evaluation.mrr:.6f}"
+                )
             control_metrics = dict(matched_control.evaluation.gate_metrics)
             for name, value in evaluation.gate_metrics:
                 if name in control_metrics and value < control_metrics[name] - 0.02:
@@ -677,6 +940,45 @@ class AdaptiveGhostLabEngine:
                         f"non_regression:{name}:{value:.6f}<"
                         f"{control_metrics[name]:.6f}-0.02"
                     )
+            quality_or_rescue_gain = (
+                evaluation.hit_rate_at_10 > control_evaluation.hit_rate_at_10 + 1e-12
+                or evaluation.mrr > control_evaluation.mrr + 1e-6
+                or evaluation.semantic_rescues > control_evaluation.semantic_rescues
+            )
+            if (
+                candidate.generation != "control"
+                and control_evaluation.latency_p95_ms > 0
+            ):
+                latency_ratio = (
+                    evaluation.latency_p95_ms / control_evaluation.latency_p95_ms
+                )
+                latency_limit = 2.5 if quality_or_rescue_gain else 1.5
+                if latency_ratio > latency_limit:
+                    gate_failures.append(
+                        f"latency_ratio:{latency_ratio:.3f}>{latency_limit:.3f}"
+                    )
+            if (
+                candidate.generation != "control"
+                and control_evaluation.semantic_latency_p95_ms > 0
+                and evaluation.semantic_activations > 0
+            ):
+                semantic_latency_ratio = (
+                    evaluation.semantic_latency_p95_ms
+                    / control_evaluation.semantic_latency_p95_ms
+                )
+                semantic_latency_limit = 2.25 if quality_or_rescue_gain else 1.5
+                if semantic_latency_ratio > semantic_latency_limit:
+                    gate_failures.append(
+                        "semantic_latency_ratio:"
+                        f"{semantic_latency_ratio:.3f}>{semantic_latency_limit:.3f}"
+                    )
+            _, semantic_depth = self._semantic_parameters(candidate)
+            if (
+                candidate.generation != "control"
+                and semantic_depth == SEMANTIC_F1_DEPTH
+                and not quality_or_rescue_gain
+            ):
+                gate_failures.append("depth20_without_quality_or_rescue_gain")
             if candidate.generation != "control" and gate_failures:
                 decision = "REJECT"
             fit_required = tuple(

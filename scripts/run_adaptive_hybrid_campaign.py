@@ -80,6 +80,61 @@ def _fit_verified(config, candidate: CandidateSpec, registry) -> bool:  # type: 
     )
 
 
+def _p95(values: list[float]) -> float:
+    if not values:
+        return 0.0
+    ordered = sorted(values)
+    index = min(len(ordered) - 1, max(0, int(0.95 * len(ordered) + 0.999999) - 1))
+    return float(ordered[index])
+
+
+def _semantic_evidence(
+    agent: AdaptiveHybridAgent,
+    selected_samples: list[dict[str, object]],
+    *,
+    rerank_k: int,
+) -> dict[str, object]:
+    """Measure semantic work and Top-10 movement strictly offline."""
+
+    session_ids = list(agent.sessions)
+    target_by_session = {
+        session_id: str(sample["ground_truth"]["parent_asin"])  # type: ignore[index]
+        for session_id, sample in zip(session_ids, selected_samples, strict=True)
+    }
+    opportunities = 0
+    rescues = 0
+    regressions = 0
+    for snapshot in agent.candidate_snapshots:
+        target = target_by_session.get(snapshot.session_id)
+        if target is None or not snapshot.pre_semantic_candidates:
+            continue
+        before = snapshot.pre_semantic_candidates
+        after = snapshot.post_semantic_candidates
+        if target not in before[:10] and target in before[:rerank_k]:
+            opportunities += 1
+        if target not in before[:10] and target in after[:10]:
+            rescues += 1
+        if target in before[:10] and target not in after[:10]:
+            regressions += 1
+    semantic_traces = [trace for trace in agent.traces if trace.semantic_executed]
+    final_route_by_session: dict[str, str] = {}
+    for trace in agent.traces:
+        final_route_by_session[trace.session_id] = trace.route
+    return {
+        "semantic_latency_p95_ms": _p95(
+            [trace.semantic_elapsed_ms for trace in semantic_traces]
+        ),
+        "semantic_activations": len(semantic_traces),
+        "semantic_rescue_opportunities": opportunities,
+        "semantic_rescues": rescues,
+        "semantic_regressions": regressions,
+        "routes": tuple(
+            final_route_by_session.get(session_id, "unknown")
+            for session_id in session_ids
+        ),
+    }
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description=(
@@ -87,7 +142,10 @@ def main() -> None:
             "the fixed adaptive 1A-3B workflow"
         )
     )
-    parser.add_argument("--config", default="configs/adaptive_hybrid_1a_3b_v1.json")
+    parser.add_argument(
+        "--config",
+        default="configs/adaptive_hybrid_1a_3b_1650_final_v1_selected.json",
+    )
     parser.add_argument(
         "--technique-catalog", default="configs/techniques/catalog_v2.json"
     )
@@ -169,6 +227,14 @@ def main() -> None:
             "maximum_extra_techniques": engine.limits.max_order,
             "fixed_six_capability_limit": False,
             "hpo_trials_per_surviving_structure": args.hpo_trials_per_structure,
+            "semantic_tuning": {
+                "model_fixed": "smollm2-1.7b-instruct",
+                "activation_policy_fixed": "browsing_only",
+                "f0_weight_grid": [0.05, 0.10, 0.15, 0.20],
+                "f0_depth": 10,
+                "f1_survivor_depth": 20,
+                "depth_30_or_50_tested": False,
+            },
         }
     else:
         dataset_paths = tuple(
@@ -191,7 +257,7 @@ def main() -> None:
         evaluation_ordinal = 0
         checkpoint_path = ROOT / args.checkpoint
         checkpoint_signature = {
-            "evaluation_schema": 3,
+            "evaluation_schema": 4,
             "config_sha256": baseline.canonical_hash(),
             "datasets": list(dataset_paths),
             "lineage_manifest_sha256": _sha256(lineage_manifest_path),
@@ -207,10 +273,22 @@ def main() -> None:
         if checkpoint_path.is_file():
             loaded = json.loads(checkpoint_path.read_text(encoding="utf-8"))
             if loaded.get("signature") != checkpoint_signature:
-                raise ValueError(
-                    "campaign checkpoint signature does not match this invocation"
+                archive = checkpoint_path.with_name(
+                    f"{checkpoint_path.stem}.incompatible-{int(time.time())}.json"
                 )
-            checkpoint = loaded
+                checkpoint_path.replace(archive)
+                print(
+                    json.dumps(
+                        {
+                            "event": "incompatible_checkpoint_archived",
+                            "archive": str(archive.relative_to(ROOT)),
+                        },
+                        sort_keys=True,
+                    ),
+                    flush=True,
+                )
+            else:
+                checkpoint = loaded
 
         def save_checkpoint() -> None:
             checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
@@ -253,6 +331,15 @@ def main() -> None:
                     ),
                     behavior_novelty=float(cached.get("behavior_novelty", 0.0)),
                     latency_p95_ms=float(cached.get("latency_p95_ms", 0.0)),
+                    semantic_latency_p95_ms=float(
+                        cached.get("semantic_latency_p95_ms", 0.0)
+                    ),
+                    semantic_activations=int(cached.get("semantic_activations", 0)),
+                    semantic_rescue_opportunities=int(
+                        cached.get("semantic_rescue_opportunities", 0)
+                    ),
+                    semantic_rescues=int(cached.get("semantic_rescues", 0)),
+                    semantic_regressions=int(cached.get("semantic_regressions", 0)),
                     fit_verified=bool(cached.get("fit_verified", False)),
                     gate_metrics=tuple(
                         (str(name), float(value))
@@ -293,12 +380,23 @@ def main() -> None:
             elapsed_ms = (time.perf_counter() - started) * 1000.0
             sessions = result["sessions"]
             selected_samples = samples[:count]
+            semantic_evidence = _semantic_evidence(
+                agent,
+                selected_samples,
+                rerank_k=config.semantic_ranker.rerank_k,
+            )
             grouped_rewards: dict[str, list[float]] = defaultdict(list)
-            for sample, session in zip(selected_samples, sessions, strict=True):
+            for sample, session, route in zip(
+                selected_samples,
+                sessions,
+                semantic_evidence["routes"],
+                strict=True,
+            ):
                 reward = _session_reward(session)
                 sample_id = str(sample["sample_id"])
                 grouped_rewards[f"scenario:{sample['scenario_type']}"].append(reward)
                 grouped_rewards[f"source:{corpus.origins[sample_id]}"].append(reward)
+                grouped_rewards[f"route:{route}"].append(reward)
             gate_metrics = tuple(
                 (name, sum(values) / len(values))
                 for name, values in sorted(grouped_rewards.items())
@@ -314,6 +412,15 @@ def main() -> None:
                 session_rewards=tuple(_session_reward(item) for item in sessions),
                 behavior_novelty=0.0,
                 latency_p95_ms=elapsed_ms / count,
+                semantic_latency_p95_ms=float(
+                    semantic_evidence["semantic_latency_p95_ms"]
+                ),
+                semantic_activations=int(semantic_evidence["semantic_activations"]),
+                semantic_rescue_opportunities=int(
+                    semantic_evidence["semantic_rescue_opportunities"]
+                ),
+                semantic_rescues=int(semantic_evidence["semantic_rescues"]),
+                semantic_regressions=int(semantic_evidence["semantic_regressions"]),
                 fit_verified=_fit_verified(config, candidate, registry),
                 gate_metrics=gate_metrics,
                 constraint_violations=constraint_violations,
@@ -331,6 +438,13 @@ def main() -> None:
                 "session_rewards": list(evaluation.session_rewards),
                 "behavior_novelty": evaluation.behavior_novelty,
                 "latency_p95_ms": evaluation.latency_p95_ms,
+                "semantic_latency_p95_ms": evaluation.semantic_latency_p95_ms,
+                "semantic_activations": evaluation.semantic_activations,
+                "semantic_rescue_opportunities": (
+                    evaluation.semantic_rescue_opportunities
+                ),
+                "semantic_rescues": evaluation.semantic_rescues,
+                "semantic_regressions": evaluation.semantic_regressions,
                 "fit_verified": evaluation.fit_verified,
                 "gate_metrics": list(evaluation.gate_metrics),
                 "constraint_violations": evaluation.constraint_violations,
@@ -393,6 +507,18 @@ def main() -> None:
             "incumbent": _candidate_payload(result.incumbent),
             "selected": _candidate_payload(result.selected),
             "promoted": result.promoted,
+            "semantic_tuning": {
+                "model_fixed": "smollm2-1.7b-instruct",
+                "activation_policy_fixed": "browsing_only",
+                "f0_weight_grid": [0.05, 0.10, 0.15, 0.20],
+                "f0_depth": 10,
+                "f0_surviving_weights": list(result.semantic_weight_survivors),
+                "selected_weight": result.selected_semantic_weight,
+                "f1_survivor_depth": 20,
+                "selected_depth": result.selected_semantic_depth,
+                "depth_30_or_50_tested": False,
+                "model_family_search_reopened": False,
+            },
             "stage_counts": {
                 fidelity: len(records) for fidelity, records in result.stages.items()
             },
@@ -408,6 +534,15 @@ def main() -> None:
                         "mean_paired_delta": sum(item.paired_deltas)
                         / len(item.paired_deltas),
                         "latency_p95_ms": item.evaluation.latency_p95_ms,
+                        "semantic_latency_p95_ms": (
+                            item.evaluation.semantic_latency_p95_ms
+                        ),
+                        "semantic_activations": (item.evaluation.semantic_activations),
+                        "semantic_rescue_opportunities": (
+                            item.evaluation.semantic_rescue_opportunities
+                        ),
+                        "semantic_rescues": item.evaluation.semantic_rescues,
+                        "semantic_regressions": (item.evaluation.semantic_regressions),
                         "hit_rate_at_10": item.evaluation.hit_rate_at_10,
                         "mrr": item.evaluation.mrr,
                         "mttc": item.evaluation.mttc,
