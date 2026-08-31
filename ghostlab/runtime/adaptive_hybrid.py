@@ -92,6 +92,8 @@ class AdaptiveTurnTrace:
     policy_id: str
     config_sha256: str
     query_sha256: str
+    state_query: str
+    intent_epoch: int
     route: str
     route_confidence: float
     route_reason: str
@@ -1277,6 +1279,8 @@ class AdaptiveHybridAgent:
                     policy_id=self.config.policy_id,
                     config_sha256=self.config_sha256,
                     query_sha256=hashlib.sha256(query.encode()).hexdigest(),
+                    state_query=state.build_coverage_adaptive_query(),
+                    intent_epoch=state.intent_epoch,
                     route=route.route,
                     route_confidence=route.confidence,
                     route_reason=route.reason,

@@ -331,6 +331,25 @@ PYTHONPATH=. .venv/bin/python \
   scripts/evaluate_ac_finalist_public_200.py --reuse-existing
 ```
 
+### Demo one evaluator-driven session
+
+Replay one development-partition session turn by turn with the frozen GhostLab
+champion. The terminal view summarizes each architecture stage; add `--verbose` to
+include the raw runtime diagnostics. Machine-readable JSON and a presentation-ready
+Markdown trace are written to `artifacts/demo_replay/`.
+
+```bash
+HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 \
+  PYTHONPATH=. .venv/bin/python scripts/replay_demo_session.py \
+  --sample-id public_0001 \
+  --config configs/finalists/adaptive_hybrid_1650/rank_1_warm-start-d4e040a07e6d-translated-v2-sem-w0p10-d10-f1-add-fusion_rrf-714a27f0249c.json \
+  --catalog data/catalog.jsonl \
+  --output-dir artifacts/demo_replay
+```
+
+See [the CLI demo runbook](docs/demo_cli_runbook.md) for the complete runtime,
+optimizer and final-results recording sequence.
+
 ### 3.2 Verify the recorded 550-session final-selection result
 
 The 550-session partition was intentionally accessed once. Reproducibility therefore
