@@ -256,6 +256,27 @@ HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 \
   --output artifacts/reports/adaptive_hybrid_structural_e2e_smoke.json
 ```
 
+### Replay the demonstrated session
+
+Replay one development-partition session turn by turn and write the readable
+console trace plus deterministic `demo_replay.json` and `demo_replay.md` files:
+
+```bash
+HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 \
+  PYTHONPATH=. .venv/bin/python scripts/replay_demo_session.py \
+  --sample-id public_0001 \
+  --config configs/adaptive_hybrid_1a_3b_v1.json \
+  --catalog data/catalog.jsonl \
+  --lineage-manifest data/splits/adaptive_hybrid_lineage_75_25_v1.json \
+  --output-dir artifacts/demo_replay
+```
+
+The command is a demonstrated-session replay, not a reproduction of aggregate
+metrics. It accepts repeatable `--dataset` arguments (defaulting to the three
+project datasets), rejects holdout or unknown IDs, and fails clearly if the
+requested configuration is unavailable. Use the baseline config while the final
+fitted configuration is still being produced, then pass the frozen finalist path.
+
 ### Results dashboard
 
 Visualize and compare existing or newly generated evaluation reports with the local
