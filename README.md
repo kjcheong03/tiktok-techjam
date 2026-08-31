@@ -221,13 +221,26 @@ published SHA-256 value. Fetch the pinned optional assets:
 
 ```bash
 uv run python -m scripts.fetch_optional_assets e5
+uv run python -m scripts.fetch_optional_assets minilm
 uv run python -m scripts.fetch_optional_assets cross_encoder
 uv run python -m scripts.fetch_optional_assets qwen_ranker
 uv run python -m scripts.fetch_optional_assets smollm2_ranker
 uv run python -m scripts.fetch_optional_assets qwen3_ranker
+uv run python -m scripts.fetch_dense_index_asset
 ```
 
-Runtime loading is forced offline after assets are present.
+The last command downloads the versioned 50,000-product E5 and MiniLM embedding
+indexes from a GitHub Release. It verifies the archive and every extracted file by
+SHA-256, then validates the catalog hash, model revisions, row counts, dimensions and
+dtypes before installation. To check an existing installation without downloading:
+
+```bash
+uv run python -m scripts.fetch_dense_index_asset --verify-only
+```
+
+Runtime loading is forced offline after assets are present. If the released dense-index
+asset is unavailable, the content-addressed indexes can still be rebuilt locally from
+the pinned models and matching catalog when the dense runtime is first initialized.
 
 ## Validation
 
