@@ -29,7 +29,23 @@ CAMPAIGN_SEARCH_PROFILES = {
         "f2_candidates": 5,
         "hpo_trials": 1,
     },
+    "additive_warm_start": {
+        "candidate_limit": 14,
+        "beam_width": 3,
+        "higher_order_rounds": 2,
+        "f1_candidates": 6,
+        "f2_candidates": 3,
+        "hpo_trials": 1,
+    },
 }
+ADDITIVE_WARM_START_TECHNIQUES = (
+    "fusion.rrf",
+    "fusion.sparse_first_union",
+    "prior.profile_union_feature.v1",
+    "ranking.facet_diversity.v1",
+    "retrieval.dense_embedding_mmr.v1",
+    "retrieval.dense_view_balanced.v1",
+)
 STAGE_ORDER = (
     "split",
     "fit",
@@ -132,10 +148,13 @@ def _validate_args(args: argparse.Namespace) -> None:
     if args.campaign_max_samples is not None and args.campaign_max_samples <= 0:
         raise ValueError("campaign-max-samples must be positive")
     if (
-        args.campaign_search_profile == "focused_warm_start"
+        args.campaign_search_profile
+        in {"focused_warm_start", "additive_warm_start"}
         and not args.campaign_warm_start
     ):
-        raise ValueError("focused_warm_start requires --campaign-warm-start")
+        raise ValueError(
+            f"{args.campaign_search_profile} requires --campaign-warm-start"
+        )
 
 
 def _campaign_budget(args: argparse.Namespace) -> dict[str, int]:
@@ -159,8 +178,22 @@ def stage_specs(args: argparse.Namespace) -> tuple[StageSpec, ...]:
     validation_report = (
         "artifacts/reports/adaptive_hybrid_structural_v2_validation.json"
     )
-    campaign_report = "artifacts/reports/adaptive_hybrid_campaign_1650.json"
-    campaign_checkpoint = "artifacts/campaigns/adaptive_hybrid_1650_v1/checkpoint.json"
+    additive_mode = args.campaign_search_profile == "additive_warm_start"
+    campaign_report = (
+        "artifacts/reports/adaptive_hybrid_additive_warm_start_1650.json"
+        if additive_mode
+        else "artifacts/reports/adaptive_hybrid_campaign_1650.json"
+    )
+    campaign_checkpoint = (
+        "artifacts/campaigns/adaptive_hybrid_additive_warm_start_1650_v1/checkpoint.json"
+        if additive_mode
+        else "artifacts/campaigns/adaptive_hybrid_1650_v1/checkpoint.json"
+    )
+    package_report = (
+        "artifacts/reports/adaptive_hybrid_additive_warm_start_top3.json"
+        if additive_mode
+        else "artifacts/reports/adaptive_hybrid_top3.json"
+    )
     budget = _campaign_budget(args)
     campaign_command = [
         python,
@@ -192,6 +225,20 @@ def stage_specs(args: argparse.Namespace) -> tuple[StageSpec, ...]:
     ]
     if args.campaign_warm_start:
         campaign_command.extend(("--warm-start", args.campaign_warm_start))
+    if additive_mode:
+        campaign_command.extend(
+            (
+                "--search-mode",
+                "additive_warm_start",
+                "--max-additive-techniques",
+                "3",
+                "--freeze-warm-semantic",
+                "--reuse-checkpoint",
+                "artifacts/campaigns/adaptive_hybrid_1650_v1/checkpoint.json",
+            )
+        )
+        for technique_id in ADDITIVE_WARM_START_TECHNIQUES:
+            campaign_command.extend(("--additive-technique", technique_id))
     if args.campaign_max_samples is not None:
         campaign_command.extend(("--max-samples", str(args.campaign_max_samples)))
     return (
@@ -288,9 +335,9 @@ def stage_specs(args: argparse.Namespace) -> tuple[StageSpec, ...]:
                 "--base-config",
                 selected_config,
                 "--output",
-                "artifacts/reports/adaptive_hybrid_top3.json",
+                package_report,
             ),
-            ("artifacts/reports/adaptive_hybrid_top3.json",),
+            (package_report,),
         ),
         StageSpec(
             "finalists",

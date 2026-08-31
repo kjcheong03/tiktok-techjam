@@ -344,6 +344,28 @@ def main() -> None:
             "the historical runtime is never executed directly"
         ),
     )
+    parser.add_argument(
+        "--search-mode",
+        choices=("broad", "additive_warm_start"),
+        default="broad",
+        help="broad search or monotonic additions rooted at --warm-start",
+    )
+    parser.add_argument(
+        "--additive-technique",
+        action="append",
+        default=[],
+        help="allowed additive root; repeat to freeze the focused inventory",
+    )
+    parser.add_argument("--max-additive-techniques", type=int, default=3)
+    parser.add_argument(
+        "--freeze-warm-semantic",
+        action="store_true",
+        help="retain the warm seed's development-selected semantic depth/weight",
+    )
+    parser.add_argument(
+        "--reuse-checkpoint",
+        help="read-only source of exact matching evaluations for a new checkpoint",
+    )
     parser.add_argument("--seed", type=int, default=20260826)
     parser.add_argument(
         "--plan-only",
@@ -379,6 +401,10 @@ def main() -> None:
         baseline=baseline,
         registry=registry,
         warm_start=warm_start_candidate,
+        search_mode=args.search_mode,
+        additive_technique_ids=tuple(args.additive_technique),
+        max_additive_techniques=args.max_additive_techniques,
+        tune_semantic=not args.freeze_warm_semantic,
         candidate_limit=args.candidate_limit,
         beam_width=args.beam_width,
         max_extra_techniques=args.max_extra_techniques,
@@ -393,6 +419,8 @@ def main() -> None:
             "mode": "plan_only",
             "architecture": baseline.architecture,
             "workflow_static": True,
+            "search_mode": args.search_mode,
+            "reuse_checkpoint": args.reuse_checkpoint,
             "catalog_total": inventory.total,
             "inventory": {
                 "compulsory": inventory.compulsory,
@@ -411,14 +439,21 @@ def main() -> None:
                 for item in initial_plan.skipped
             ],
             "maximum_extra_techniques": engine.limits.max_order,
+            "max_additive_techniques": args.max_additive_techniques,
+            "additive_technique_ids": list(args.additive_technique),
             "fixed_six_capability_limit": False,
             "hpo_trials_per_surviving_structure": args.hpo_trials_per_structure,
             "semantic_tuning": {
                 "model_fixed": "smollm2-1.7b-instruct",
                 "activation_policy_fixed": "browsing_only",
-                "f0_weight_grid": [0.05, 0.10, 0.15, 0.20],
+                "frozen_from_warm_start": args.freeze_warm_semantic,
+                "f0_weight_grid": (
+                    [] if args.freeze_warm_semantic else [0.05, 0.10, 0.15, 0.20]
+                ),
                 "f0_depth": 10,
-                "f1_survivor_depth": 20,
+                "f1_survivor_depth": (
+                    None if args.freeze_warm_semantic else 20
+                ),
                 "depth_30_or_50_tested": False,
             },
             "warm_start": (
@@ -469,6 +504,17 @@ def main() -> None:
             "signature": checkpoint_signature,
             "evaluations": {},
         }
+        reusable_evaluations: dict[str, Any] = {}
+        if args.reuse_checkpoint:
+            reuse_path = (ROOT / args.reuse_checkpoint).resolve()
+            if ROOT not in reuse_path.parents or not reuse_path.is_file():
+                raise ValueError("reuse checkpoint must be a repository file")
+            if reuse_path == checkpoint_path.resolve():
+                raise ValueError("reuse checkpoint must differ from output checkpoint")
+            reuse_payload = json.loads(reuse_path.read_text(encoding="utf-8"))
+            if reuse_payload.get("signature") != checkpoint_signature:
+                raise ValueError("reuse checkpoint evaluation contract does not match")
+            reusable_evaluations = dict(reuse_payload.get("evaluations", {}))
         if checkpoint_path.is_file():
             loaded = json.loads(checkpoint_path.read_text(encoding="utf-8"))
             if loaded.get("signature") != checkpoint_signature:
@@ -511,11 +557,25 @@ def main() -> None:
                 candidate
             ):
                 cached = None
+            imported = False
+            if cached is None:
+                reusable = reusable_evaluations.get(checkpoint_key)
+                if reusable is not None and reusable.get(
+                    "candidate"
+                ) == _candidate_payload(candidate):
+                    cached = reusable
+                    checkpoint["evaluations"][checkpoint_key] = reusable
+                    save_checkpoint()
+                    imported = True
             if cached is not None:
                 print(
                     json.dumps(
                         {
-                            "event": "evaluation_resumed",
+                            "event": (
+                                "evaluation_imported"
+                                if imported
+                                else "evaluation_resumed"
+                            ),
                             "ordinal": evaluation_ordinal,
                             "candidate_id": candidate.candidate_id,
                             "fidelity": fidelity,
@@ -718,6 +778,8 @@ def main() -> None:
             "mode": "race",
             "architecture": baseline.architecture,
             "workflow_static": True,
+            "search_mode": args.search_mode,
+            "reuse_checkpoint": args.reuse_checkpoint,
             "catalog_total": inventory.total,
             "compulsory_count": len(inventory.compulsory),
             "promotable_count": len(inventory.promotable),
@@ -737,16 +799,22 @@ def main() -> None:
                 for fidelity, fraction in {"f0": 0.2, "f1": 0.5, "f2": 1.0}.items()
             },
             "incumbent": _candidate_payload(result.incumbent),
+            "phase_control": _candidate_payload(result.phase_control),
             "selected": _candidate_payload(result.selected),
             "promoted": result.promoted,
             "semantic_tuning": {
                 "model_fixed": "smollm2-1.7b-instruct",
                 "activation_policy_fixed": "browsing_only",
-                "f0_weight_grid": [0.05, 0.10, 0.15, 0.20],
+                "frozen_from_warm_start": args.freeze_warm_semantic,
+                "f0_weight_grid": (
+                    [] if args.freeze_warm_semantic else [0.05, 0.10, 0.15, 0.20]
+                ),
                 "f0_depth": 10,
                 "f0_surviving_weights": list(result.semantic_weight_survivors),
                 "selected_weight": result.selected_semantic_weight,
-                "f1_survivor_depth": 20,
+                "f1_survivor_depth": (
+                    None if args.freeze_warm_semantic else 20
+                ),
                 "selected_depth": result.selected_semantic_depth,
                 "depth_30_or_50_tested": False,
                 "model_family_search_reopened": False,

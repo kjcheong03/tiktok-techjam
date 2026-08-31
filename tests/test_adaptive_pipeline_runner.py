@@ -118,3 +118,46 @@ def test_focused_profile_requires_explicit_warm_start() -> None:
     )
     assert completed.returncode != 0
     assert "requires --campaign-warm-start" in completed.stderr
+
+
+def test_additive_warm_start_profile_is_monotonic_and_isolated() -> None:
+    warm_start = (
+        "configs/warm_starts/"
+        "adaptive_d4e040a07e6d_to_1a_3b_f1_selected_v1.json"
+    )
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "scripts/run_adaptive_hybrid_pipeline.py",
+            "--from-stage",
+            "campaign",
+            "--through-stage",
+            "package",
+            "--campaign-search-profile",
+            "additive_warm_start",
+            "--campaign-warm-start",
+            warm_start,
+            "--show-plan",
+        ],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    stages = json.loads(completed.stdout)["stages"]
+    campaign = stages[0]
+    command = campaign["command"]
+
+    def value(flag: str) -> str:
+        return command[command.index(flag) + 1]
+
+    assert value("--search-mode") == "additive_warm_start"
+    assert value("--candidate-limit") == "14"
+    assert value("--higher-order-rounds") == "2"
+    assert value("--max-additive-techniques") == "3"
+    assert value("--warm-start") == warm_start
+    assert "--freeze-warm-semantic" in command
+    assert command.count("--additive-technique") == 6
+    assert "additive_warm_start" in value("--checkpoint")
+    assert "additive_warm_start" in value("--output")
+    assert "additive_warm_start" in stages[1]["outputs"][0]

@@ -59,7 +59,6 @@ button, select { cursor: pointer; }
 
 .brand { display: flex; gap: 10px; align-items: center; color: var(--text); text-decoration: none; }
 .brand strong { font-size: 15px; letter-spacing: .02em; }
-.brand-logo { width: 46px; height: 46px; display: block; object-fit: cover; border-radius: 10px; }
 
 .header-actions { display: flex; gap: 12px; align-items: center; }
 

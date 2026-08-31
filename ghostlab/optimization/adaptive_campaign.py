@@ -28,6 +28,7 @@ from ghostlab.optimization.racing import Decision, racing_decide
 from ghostlab.runtime.adaptive_config import AdaptiveHybridConfig
 
 Fidelity = Literal["f0", "f1", "f2"]
+AdaptiveSearchMode = Literal["broad", "additive_warm_start"]
 SEMANTIC_WEIGHT_GRID = (0.05, 0.10, 0.15, 0.20)
 SEMANTIC_F0_DEPTH = 10
 SEMANTIC_F1_DEPTH = 20
@@ -78,6 +79,7 @@ class AdaptiveRaceRecord:
 @dataclass(frozen=True)
 class AdaptiveCampaignResult:
     incumbent: CandidateSpec
+    phase_control: CandidateSpec
     selected: CandidateSpec
     promoted: bool
     stages: dict[Fidelity, tuple[AdaptiveRaceRecord, ...]]
@@ -324,6 +326,10 @@ class AdaptiveGhostLabEngine:
         baseline: AdaptiveHybridConfig,
         registry: AdaptiveTechniqueRegistry,
         warm_start: CandidateSpec | None = None,
+        search_mode: AdaptiveSearchMode = "broad",
+        additive_technique_ids: tuple[str, ...] = (),
+        max_additive_techniques: int = 3,
+        tune_semantic: bool = True,
         candidate_limit: int = 500,
         beam_width: int = 24,
         exploration_fraction: float = 0.2,
@@ -343,16 +349,39 @@ class AdaptiveGhostLabEngine:
             )
         inventory = registry.inventory()
         maximum = len(inventory.promotable)
+        if search_mode == "additive_warm_start" and warm_start is None:
+            raise ValueError("additive warm-start search requires a warm start")
+        if max_additive_techniques <= 0:
+            raise ValueError("max_additive_techniques must be positive")
         if max_extra_techniques is not None and max_extra_techniques <= 0:
             raise ValueError("max_extra_techniques must be positive or None")
         self.baseline = baseline
         self.registry = registry
         self.warm_start = warm_start
+        self.search_mode = search_mode
+        requested_additive = tuple(dict.fromkeys(additive_technique_ids))
+        unknown_additive = set(requested_additive) - set(inventory.promotable)
+        if unknown_additive:
+            raise ValueError(
+                "additive roots must be promotable techniques: "
+                f"{sorted(unknown_additive)}"
+            )
+        self.additive_technique_ids = requested_additive
+        self.max_additive_techniques = max_additive_techniques
+        self.tune_semantic = tune_semantic
         self.candidate_limit = candidate_limit
         self.seed = seed
         self.search_space = _adaptive_search_space()
+        maximum_order = min(maximum, max_extra_techniques or maximum) or 1
+        if search_mode == "additive_warm_start" and warm_start is not None:
+            inherited_count = len(
+                set(warm_start.techniques) - set(inventory.compulsory)
+            )
+            maximum_order = min(
+                maximum, inherited_count + max_additive_techniques
+            )
         self.limits = SearchLimits(
-            max_order=min(maximum, max_extra_techniques or maximum) or 1,
+            max_order=maximum_order,
             max_candidates=candidate_limit,
             beam_width=beam_width,
             exploration_fraction=exploration_fraction,
@@ -377,6 +406,45 @@ class AdaptiveGhostLabEngine:
             materialized = self.registry.materialize(self.baseline, self.warm_start)
             if materialized.architecture != self.baseline.architecture:
                 raise ValueError("warm start changed the fixed architecture")
+        if self.search_mode == "additive_warm_start":
+            assert self.warm_start is not None
+            repeated = set(self.warm_start.techniques) & set(
+                self.additive_technique_ids
+            )
+            if repeated:
+                raise ValueError(
+                    "additive roots already present in the warm start: "
+                    f"{sorted(repeated)}"
+                )
+
+    @property
+    def phase_control(self) -> CandidateSpec:
+        """Candidate that additions must beat at every fidelity."""
+
+        if self.search_mode == "additive_warm_start":
+            assert self.warm_start is not None
+            return self.warm_start
+        return self.incumbent
+
+    def _is_phase_control_structure(self, candidate: CandidateSpec) -> bool:
+        return set(candidate.techniques) == set(self.phase_control.techniques)
+
+    def _assert_additive_candidate(self, candidate: CandidateSpec) -> None:
+        if self.search_mode != "additive_warm_start":
+            return
+        inherited = set(self.phase_control.techniques)
+        selected = set(candidate.techniques)
+        if not inherited.issubset(selected):
+            raise ValueError(
+                "additive candidate removed warm-start techniques: "
+                f"{tuple(sorted(inherited - selected))}"
+            )
+        added = selected - inherited
+        if len(added) > self.max_additive_techniques:
+            raise ValueError(
+                "additive candidate exceeds configured delta order: "
+                f"{len(added)}>{self.max_additive_techniques}"
+            )
 
     def _execution_identity(self, candidate: CandidateSpec) -> str:
         """Hash runtime behavior plus fit-dispatch IDs, excluding provenance."""
@@ -425,6 +493,110 @@ class AdaptiveGhostLabEngine:
             self.registry.materialize(self.baseline, candidate)
             results.append(candidate)
         return tuple(results)
+
+    def _additive_roots(self) -> tuple[str, ...]:
+        if self.search_mode != "additive_warm_start":
+            return ()
+        inherited = set(self.phase_control.techniques)
+        requested = self.additive_technique_ids or tuple(
+            item
+            for item in self.registry.inventory().promotable
+            if item not in inherited
+        )
+        return tuple(item for item in requested if item not in inherited)
+
+    def _with_additive_root(self, technique_id: str) -> CandidateSpec:
+        inherited = set(self.phase_control.techniques)
+        selected = set(inherited) | {technique_id}
+        pending = [technique_id]
+        while pending:
+            current = self.registry.catalog.techniques.get(pending.pop())
+            if current is None:
+                continue
+            for required in current.requires:
+                if required not in selected:
+                    selected.add(required)
+                    pending.append(required)
+        optional = selected - set(self.registry.inventory().compulsory)
+        candidate = CandidateSpec(
+            candidate_id="pending",
+            baseline_id=self.baseline.policy_id,
+            techniques=tuple(sorted(selected)),
+            parameters=self.phase_control.parameters,
+            complexity=len(optional),
+            generation="beam",
+        )
+        candidate = candidate.model_copy(
+            update={
+                "candidate_id": (
+                    f"{self.phase_control.candidate_id}-add-"
+                    f"{technique_id.replace('.', '_')}-"
+                    f"{_candidate_hash(candidate.baseline_id, candidate.techniques, candidate.parameters)}"
+                )
+            }
+        )
+        self.registry.validate_candidate(candidate)
+        self.registry.materialize(self.baseline, candidate)
+        self._assert_additive_candidate(candidate)
+        return candidate
+
+    def _additive_initial_plan(self) -> InteractionSearchPlan:
+        from ghostlab.campaign.planner import SkippedCandidate
+
+        roots = self._additive_roots()
+        semantic_slots = len(SEMANTIC_WEIGHT_GRID[1:]) if self.tune_semantic else 0
+        minimum = 2 + len(roots) + semantic_slots
+        if self.candidate_limit < minimum:
+            raise ValueError(
+                "additive candidate limit cannot fit C, D, every requested add-one, "
+                f"and semantic calibration ({self.candidate_limit}<{minimum})"
+            )
+        accepted: list[CandidateSpec] = [self.incumbent, self.phase_control]
+        skipped: list[SkippedCandidate] = []
+        identities = {self._execution_identity(item) for item in accepted}
+        for technique_id in roots:
+            try:
+                candidate = self._with_additive_root(technique_id)
+                identity = self._execution_identity(candidate)
+                if identity in identities:
+                    raise ValueError("execution-equivalent additive candidate")
+            except Exception as error:  # noqa: BLE001 - preflight evidence boundary
+                skipped.append(
+                    SkippedCandidate(
+                        self.baseline.policy_id,
+                        (technique_id,),
+                        (f"additive_preflight:{type(error).__name__}:{error}",),
+                    )
+                )
+            else:
+                identities.add(identity)
+                accepted.append(candidate)
+        if self.tune_semantic:
+            for weight in SEMANTIC_WEIGHT_GRID[1:]:
+                candidate = self.semantic_candidate(
+                    weight=weight, depth=SEMANTIC_F0_DEPTH, suffix="f0"
+                )
+                identity = self._execution_identity(candidate)
+                if identity not in identities:
+                    identities.add(identity)
+                    accepted.append(candidate)
+        result = InteractionSearchPlan(
+            candidates=tuple(accepted),
+            skipped=tuple(skipped),
+            cap_exhausted=len(accepted) >= self.candidate_limit,
+        )
+        coverage = self.plan_coverage(result.candidates)
+        if not coverage["warm_monotonic_verified"]:
+            raise RuntimeError(
+                "additive plan removed inherited techniques: "
+                f"{coverage['non_monotonic_candidate_ids']}"
+            )
+        if coverage["missing_additive_roots"]:
+            raise RuntimeError(
+                "additive plan omitted requested roots: "
+                f"{coverage['missing_additive_roots']}"
+            )
+        return result
 
     def plan_coverage(self, candidates: tuple[CandidateSpec, ...]) -> dict[str, object]:
         """Return explicit C/add-one/warm-ablation coverage evidence."""
@@ -498,6 +670,25 @@ class AdaptiveGhostLabEngine:
             missing_drop_one_ids = tuple(
                 item for item in expected_drop_one_ids if item not in planned_ids
             )
+        additive_candidates = tuple(
+            item
+            for item in candidates
+            if item.generation != "control"
+            and not self._is_semantic_calibration(item)
+        )
+        inherited = set(self.phase_control.techniques)
+        non_monotonic = tuple(
+            item.candidate_id
+            for item in additive_candidates
+            if not inherited.issubset(item.techniques)
+        )
+        covered_additive_roots = tuple(
+            sorted(
+                root
+                for root in self._additive_roots()
+                if any(root in item.techniques for item in additive_candidates)
+            )
+        )
         return {
             "clean_control_verified": clean_control,
             "control_candidate_ids": tuple(item.candidate_id for item in controls),
@@ -514,9 +705,22 @@ class AdaptiveGhostLabEngine:
             "expected_warm_drop_one_candidate_ids": expected_drop_one_ids,
             "missing_warm_drop_one_candidate_ids": missing_drop_one_ids,
             "warm_drop_one_coverage_complete": not missing_drop_one_ids,
+            "search_mode": self.search_mode,
+            "broad_add_one_coverage_applicable": self.search_mode == "broad",
+            "warm_drop_one_ablations_enabled": self.search_mode == "broad",
+            "phase_control_candidate_id": self.phase_control.candidate_id,
+            "requested_additive_roots": self._additive_roots(),
+            "covered_additive_roots": covered_additive_roots,
+            "missing_additive_roots": tuple(
+                sorted(set(self._additive_roots()) - set(covered_additive_roots))
+            ),
+            "non_monotonic_candidate_ids": non_monotonic,
+            "warm_monotonic_verified": not non_monotonic,
         }
 
     def initial_plan(self) -> InteractionSearchPlan:
+        if self.search_mode == "additive_warm_start":
+            return self._additive_initial_plan()
         inventory = self.registry.inventory()
         # Reserve one beam for evidence-guided higher-order expansion. Without
         # this split, standalone/pair enumeration consumes the complete focused
@@ -610,6 +814,8 @@ class AdaptiveGhostLabEngine:
         return result
 
     def materialize(self, candidate: CandidateSpec) -> AdaptiveHybridConfig:
+        if candidate.generation != "control":
+            self._assert_additive_candidate(candidate)
         self.registry.validate_candidate(candidate)
         return self.registry.materialize(self.baseline, candidate)
 
@@ -637,15 +843,21 @@ class AdaptiveGhostLabEngine:
         if depth not in {SEMANTIC_F0_DEPTH, SEMANTIC_F1_DEPTH}:
             raise ValueError(f"semantic depth is outside the staged grid: {depth}")
         rendered_weight = f"{weight:.2f}".replace(".", "p")
+        semantic_base = self.phase_control
+        parameters = {
+            name: value
+            for name, value in semantic_base.parameters
+            if name not in {"semantic_weight", "semantic_rerank_k"}
+        }
+        parameters.update(
+            {"semantic_rerank_k": depth, "semantic_weight": weight}
+        )
         candidate = CandidateSpec(
             candidate_id=(f"semantic-calibration-w{rendered_weight}-d{depth}-{suffix}"),
             baseline_id=self.baseline.policy_id,
-            techniques=self.incumbent.techniques,
-            parameters=(
-                ("semantic_rerank_k", depth),
-                ("semantic_weight", weight),
-            ),
-            complexity=0,
+            techniques=semantic_base.techniques,
+            parameters=tuple(sorted(parameters.items())),
+            complexity=semantic_base.complexity,
             generation="ablation",
         )
         self.materialize(candidate)
@@ -660,6 +872,11 @@ class AdaptiveGhostLabEngine:
         suffix: str,
     ) -> CandidateSpec:
         if candidate.generation == "control":
+            return candidate
+        if self._semantic_parameters(candidate) == (weight, depth):
+            # Preserve the candidate identity when the frozen semantic policy
+            # is already present. This avoids redundant evaluations and lets a
+            # matching prior-fidelity checkpoint be reused safely.
             return candidate
         parameters = {
             name: value
@@ -769,7 +986,15 @@ class AdaptiveGhostLabEngine:
         consumed_wall_seconds: float,
         estimated_candidate_seconds: float,
     ) -> InteractionSearchPlan:
-        control = records.get(self.incumbent.candidate_id)
+        phase_control_record = next(
+            (
+                item
+                for item in records.values()
+                if self._is_phase_control_structure(item.candidate)
+                and item.decision == "HOLD_MORE_DATA"
+            ),
+            records.get(self.incumbent.candidate_id),
+        )
         evidence: dict[str, CandidateEvidence] = {}
         for candidate in evaluated:
             record = records.get(candidate.candidate_id)
@@ -785,22 +1010,82 @@ class AdaptiveGhostLabEngine:
                 confidence_lower=mean - radius,
                 confidence_upper=mean + radius,
                 repeated_evaluations=1,
-                invalid_reason=("matched control missing" if control is None else None),
+                invalid_reason=(
+                    "matched phase control missing"
+                    if phase_control_record is None
+                    else "failed additive promotion gates"
+                    if self.search_mode == "additive_warm_start"
+                    and record.decision == "REJECT"
+                    else None
+                ),
+            )
+        baseline_techniques = self.registry.inventory().compulsory
+        technique_ids = self.registry.inventory().promotable
+        eligible_evaluated = evaluated
+        if self.search_mode == "additive_warm_start":
+            baseline_techniques = self.phase_control.techniques
+            technique_ids = self._additive_roots()
+            inherited = set(self.phase_control.techniques)
+            additive_descendants = tuple(
+                item
+                for item in evaluated
+                if inherited.issubset(item.techniques)
+                and set(item.techniques) != inherited
+                and not self._is_semantic_calibration(item)
+            )
+            # Expand one monotonic order at a time. Otherwise the generic
+            # diversity beam can repeatedly select D or an earlier singleton,
+            # producing already-evaluated structures and never reaching the
+            # requested D+A+B / D+A+B+C combinations.
+            if additive_descendants:
+                highest_order = max(
+                    len(set(item.techniques) - inherited)
+                    for item in additive_descendants
+                )
+                eligible_evaluated = tuple(
+                    item
+                    for item in additive_descendants
+                    if len(set(item.techniques) - inherited) == highest_order
+                )
+            else:
+                eligible_evaluated = ()
+        search_limits = self.limits
+        if self.search_mode == "additive_warm_start":
+            search_limits = replace(
+                self.limits,
+                max_order=self.max_additive_techniques,
+                max_candidates=min(
+                    self.limits.max_candidates,
+                    len(eligible_evaluated) + self.limits.beam_width,
+                ),
             )
         plan = plan_higher_order_round(
             self.registry.catalog,
-            evaluated_candidates=evaluated,
+            evaluated_candidates=eligible_evaluated,
             evidence=evidence,
-            technique_ids=self.registry.inventory().promotable,
-            baseline_techniques=self.registry.inventory().compulsory,
-            limits=self.limits,
+            technique_ids=technique_ids,
+            baseline_techniques=baseline_techniques,
+            limits=search_limits,
             consumed_wall_seconds=consumed_wall_seconds,
             estimated_candidate_seconds=estimated_candidate_seconds,
         )
         accepted: list[CandidateSpec] = []
         skipped = list(plan.skipped)
         for candidate in plan.candidates:
+            # The generic interaction planner measures complexity relative to
+            # its supplied baseline. In additive mode that baseline is D,
+            # while the adaptive registry validates complexity against the
+            # architecture's compulsory technique set. Translate only that
+            # accounting convention before registry preflight.
+            if self.search_mode == "additive_warm_start":
+                optional = set(candidate.techniques) - set(
+                    self.registry.inventory().compulsory
+                )
+                candidate = candidate.model_copy(
+                    update={"complexity": len(optional)}
+                )
             try:
+                self._assert_additive_candidate(candidate)
                 self.materialize(candidate)
             except Exception as error:  # noqa: BLE001 - preflight evidence boundary
                 from ghostlab.campaign.planner import SkippedCandidate
@@ -861,6 +1146,17 @@ class AdaptiveGhostLabEngine:
             for item in f0
             if not self._is_semantic_calibration(item.candidate)
         }
+        phase_control_f0 = next(
+            item
+            for item in f0
+            if (
+                item.candidate.generation == "control"
+                if self.search_mode == "broad"
+                else item.candidate.generation != "control"
+                and self._is_phase_control_structure(item.candidate)
+                and not self._is_semantic_calibration(item.candidate)
+            )
+        )
         for _ in range(higher_order_rounds):
             expansion = self.higher_order_plan(
                 tuple(all_candidates),
@@ -872,28 +1168,31 @@ class AdaptiveGhostLabEngine:
             if not expansion.candidates:
                 break
             new_records = self._evaluate_stage(
-                expansion.candidates, "f0", evaluator, control=f0[0]
+                expansion.candidates, "f0", evaluator, control=phase_control_f0
             )
             f0 = (*f0, *new_records)
             all_candidates.extend(expansion.candidates)
             f0_by_id.update({item.candidate.candidate_id: item for item in new_records})
 
-        control_f0 = next(item for item in f0 if item.candidate.generation == "control")
         semantic_f0 = tuple(
             item for item in f0 if self._is_semantic_calibration(item.candidate)
         )
-        semantic_survivors = [SEMANTIC_WEIGHT_GRID[0]]
+        semantic_survivors = [
+            self._semantic_parameters(phase_control_f0.candidate)[0]
+        ]
         semantic_survivors.extend(
             self._semantic_parameters(item.candidate)[0]
             for item in semantic_f0
             if item.decision != "REJECT"
         )
         semantic_survivors = sorted(set(semantic_survivors))
-        semantic_records = (control_f0, *semantic_f0)
+        semantic_records = (phase_control_f0, *semantic_f0)
         eligible_semantic_records = [
             item
             for item in semantic_records
-            if item.candidate.generation == "control" or item.decision != "REJECT"
+            if item.candidate.candidate_id
+            == phase_control_f0.candidate.candidate_id
+            or item.decision != "REJECT"
         ]
         selected_semantic_weight = self._semantic_parameters(
             min(
@@ -929,16 +1228,21 @@ class AdaptiveGhostLabEngine:
         semantic_depth_10 = (
             None
             if selected_semantic_weight == SEMANTIC_WEIGHT_GRID[0]
+            or self.search_mode == "additive_warm_start"
             else self.semantic_candidate(
                 weight=selected_semantic_weight,
                 depth=SEMANTIC_F0_DEPTH,
                 suffix="f1",
             )
         )
-        semantic_depth_20 = self.semantic_candidate(
-            weight=selected_semantic_weight,
-            depth=SEMANTIC_F1_DEPTH,
-            suffix="f1",
+        semantic_depth_20 = (
+            self.semantic_candidate(
+                weight=selected_semantic_weight,
+                depth=SEMANTIC_F1_DEPTH,
+                suffix="f1",
+            )
+            if self.tune_semantic
+            else None
         )
         hpo: list[CandidateSpec] = []
         if hpo_trials_per_structure < 0:
@@ -946,14 +1250,22 @@ class AdaptiveGhostLabEngine:
         f0_scores = {
             item.candidate.candidate_id: item.evaluation.score for item in structural_f0
         }
-        for root in f1_roots:
+        hpo_roots = f1_roots
+        if self.search_mode == "additive_warm_start":
+            hpo_roots = tuple(
+                root
+                for root in f1_roots
+                if root.generation != "control"
+                and not self._is_phase_control_structure(root)
+            )[:1]
+        for root in hpo_roots:
             if root.generation == "control":
                 continue
             original_id = root.candidate_id.split("-sem-w", maxsplit=1)[0]
             observations = (
                 Observation(
                     root.parameters,
-                    f0_scores.get(original_id, control_f0.evaluation.score),
+                    f0_scores.get(original_id, phase_control_f0.evaluation.score),
                 ),
             )
             hpo.extend(
@@ -966,7 +1278,9 @@ class AdaptiveGhostLabEngine:
         f1_candidates_to_run = [*f1_roots]
         if semantic_depth_10 is not None:
             f1_candidates_to_run.append(semantic_depth_10)
-        f1_candidates_to_run.extend((semantic_depth_20, *hpo))
+        if semantic_depth_20 is not None:
+            f1_candidates_to_run.append(semantic_depth_20)
+        f1_candidates_to_run.extend(hpo)
         f1 = self._evaluate_stage(tuple(f1_candidates_to_run), "f1", evaluator)
 
         depth_10_record = (
@@ -977,57 +1291,91 @@ class AdaptiveGhostLabEngine:
                 and item.candidate.candidate_id == semantic_depth_10.candidate_id
             )
             if semantic_depth_10 is not None
-            else next(item for item in f1 if item.candidate.generation == "control")
+            else next(
+                item
+                for item in f1
+                if (
+                    item.candidate.generation == "control"
+                    if self.search_mode == "broad"
+                    else item.candidate.generation != "control"
+                    and self._is_phase_control_structure(item.candidate)
+                    and "-hpo-" not in item.candidate.candidate_id
+                )
+            )
         )
-        depth_20_record = next(
-            item
-            for item in f1
-            if item.candidate.candidate_id == semantic_depth_20.candidate_id
-        )
-        depth_20_has_value = (
-            depth_20_record.evaluation.hit_rate_at_10
-            > depth_10_record.evaluation.hit_rate_at_10 + 1e-12
-            or depth_20_record.evaluation.mrr > depth_10_record.evaluation.mrr + 1e-6
-            or depth_20_record.evaluation.semantic_rescues
-            > depth_10_record.evaluation.semantic_rescues
-        )
-        selected_semantic_depth = (
-            SEMANTIC_F1_DEPTH
-            if depth_20_record.decision != "REJECT" and depth_20_has_value
-            else SEMANTIC_F0_DEPTH
-        )
+        if semantic_depth_20 is not None:
+            depth_20_record = next(
+                item
+                for item in f1
+                if item.candidate.candidate_id == semantic_depth_20.candidate_id
+            )
+            depth_20_has_value = (
+                depth_20_record.evaluation.hit_rate_at_10
+                > depth_10_record.evaluation.hit_rate_at_10 + 1e-12
+                or depth_20_record.evaluation.mrr
+                > depth_10_record.evaluation.mrr + 1e-6
+                or depth_20_record.evaluation.semantic_rescues
+                > depth_10_record.evaluation.semantic_rescues
+            )
+            selected_semantic_depth = (
+                SEMANTIC_F1_DEPTH
+                if depth_20_record.decision != "REJECT" and depth_20_has_value
+                else SEMANTIC_F0_DEPTH
+            )
+        else:
+            selected_semantic_depth = self._semantic_parameters(
+                depth_10_record.candidate
+            )[1]
 
         structural_f1 = tuple(
             item for item in f1 if not self._is_semantic_calibration(item.candidate)
         )
         raw_f2_roots = self._survivors(structural_f1, f2_candidates)
-        f2_candidates_to_run: list[CandidateSpec] = [self.incumbent]
-        if (
-            selected_semantic_weight != SEMANTIC_WEIGHT_GRID[0]
-            or selected_semantic_depth != SEMANTIC_F0_DEPTH
-        ):
-            f2_candidates_to_run.append(
-                self.semantic_candidate(
+        if self.search_mode == "additive_warm_start":
+            f2_candidates_to_run = [self.incumbent]
+            for root in raw_f2_roots:
+                if root.generation == "control":
+                    continue
+                candidate = self._with_semantic_policy(
+                    root,
                     weight=selected_semantic_weight,
                     depth=selected_semantic_depth,
                     suffix="f2",
                 )
-            )
-        for root in raw_f2_roots:
-            if root.generation == "control":
-                continue
-            candidate = self._with_semantic_policy(
-                root,
-                weight=selected_semantic_weight,
-                depth=selected_semantic_depth,
-                suffix="f2",
-            )
-            if candidate.canonical_hash() not in {
-                item.canonical_hash() for item in f2_candidates_to_run
-            }:
-                f2_candidates_to_run.append(candidate)
-            if len(f2_candidates_to_run) >= f2_candidates:
-                break
+                if self._execution_identity(candidate) not in {
+                    self._execution_identity(item) for item in f2_candidates_to_run
+                }:
+                    f2_candidates_to_run.append(candidate)
+                if len(f2_candidates_to_run) >= f2_candidates:
+                    break
+        else:
+            f2_candidates_to_run = [self.incumbent]
+            if (
+                selected_semantic_weight != SEMANTIC_WEIGHT_GRID[0]
+                or selected_semantic_depth != SEMANTIC_F0_DEPTH
+            ):
+                f2_candidates_to_run.append(
+                    self.semantic_candidate(
+                        weight=selected_semantic_weight,
+                        depth=selected_semantic_depth,
+                        suffix="f2",
+                    )
+                )
+            for root in raw_f2_roots:
+                if root.generation == "control":
+                    continue
+                candidate = self._with_semantic_policy(
+                    root,
+                    weight=selected_semantic_weight,
+                    depth=selected_semantic_depth,
+                    suffix="f2",
+                )
+                if candidate.canonical_hash() not in {
+                    item.canonical_hash() for item in f2_candidates_to_run
+                }:
+                    f2_candidates_to_run.append(candidate)
+                if len(f2_candidates_to_run) >= f2_candidates:
+                    break
         f2 = self._evaluate_stage(tuple(f2_candidates_to_run), "f2", evaluator)
         eligible = [
             item
@@ -1045,9 +1393,19 @@ class AdaptiveGhostLabEngine:
             ),
             default=None,
         )
-        selected = winner.candidate if winner is not None else self.incumbent
+        if self.search_mode == "additive_warm_start":
+            fallback = next(
+                item.candidate
+                for item in f2
+                if item.candidate.generation != "control"
+                and self._is_phase_control_structure(item.candidate)
+            )
+        else:
+            fallback = self.incumbent
+        selected = winner.candidate if winner is not None else fallback
         return AdaptiveCampaignResult(
             incumbent=self.incumbent,
+            phase_control=fallback,
             selected=selected,
             promoted=winner is not None,
             stages={"f0": tuple(f0), "f1": tuple(f1), "f2": tuple(f2)},
@@ -1089,15 +1447,28 @@ class AdaptiveGhostLabEngine:
             evaluations.append((candidate, evaluation))
         matched_control = control
         if matched_control is None:
-            control_pair = next(
-                (pair for pair in evaluations if pair[0].generation == "control"),
-                None,
-            )
+            control_pair = None
+            if self.search_mode == "additive_warm_start":
+                control_pair = next(
+                    (
+                        pair
+                        for pair in evaluations
+                        if self._is_phase_control_structure(pair[0])
+                        and not self._is_semantic_calibration(pair[0])
+                        and "-hpo-" not in pair[0].candidate_id
+                    ),
+                    None,
+                )
+            if control_pair is None:
+                control_pair = next(
+                    (pair for pair in evaluations if pair[0].generation == "control"),
+                    None,
+                )
             if control_pair is None:
                 baseline_evaluation = evaluator(
-                    self.materialize(self.incumbent), self.incumbent, fidelity
+                    self.materialize(self.phase_control), self.phase_control, fidelity
                 )
-                control_pair = (self.incumbent, baseline_evaluation)
+                control_pair = (self.phase_control, baseline_evaluation)
             matched_control = AdaptiveRaceRecord(
                 candidate=control_pair[0],
                 evaluation=control_pair[1],
@@ -1109,6 +1480,9 @@ class AdaptiveGhostLabEngine:
         control_rewards = matched_control.evaluation.session_rewards
         records: list[AdaptiveRaceRecord] = []
         for candidate, evaluation in evaluations:
+            is_phase_control = (
+                candidate.candidate_id == matched_control.candidate.candidate_id
+            )
             if len(evaluation.session_rewards) != len(control_rewards):
                 raise ValueError("candidate/control session rewards are not paired")
             deltas = tuple(
@@ -1119,7 +1493,7 @@ class AdaptiveGhostLabEngine:
             )
             decision: Decision = (
                 "HOLD_MORE_DATA"
-                if candidate.generation == "control"
+                if candidate.generation == "control" or is_phase_control
                 else racing_decide(
                     list(deltas),
                     fidelity=fidelity,
@@ -1140,6 +1514,7 @@ class AdaptiveGhostLabEngine:
             control_evaluation = matched_control.evaluation
             if (
                 candidate.generation != "control"
+                and not is_phase_control
                 and evaluation.hit_rate_at_10 + 1e-12
                 < control_evaluation.hit_rate_at_10
             ):
@@ -1150,6 +1525,7 @@ class AdaptiveGhostLabEngine:
                 )
             if (
                 candidate.generation != "control"
+                and not is_phase_control
                 and evaluation.mrr + 1e-12 < control_evaluation.mrr
             ):
                 gate_failures.append(
@@ -1157,7 +1533,12 @@ class AdaptiveGhostLabEngine:
                 )
             control_metrics = dict(matched_control.evaluation.gate_metrics)
             for name, value in evaluation.gate_metrics:
-                if name in control_metrics and value < control_metrics[name] - 0.02:
+                if (
+                    candidate.generation != "control"
+                    and not is_phase_control
+                    and name in control_metrics
+                    and value < control_metrics[name] - 0.02
+                ):
                     gate_failures.append(
                         f"non_regression:{name}:{value:.6f}<"
                         f"{control_metrics[name]:.6f}-0.02"
@@ -1169,6 +1550,7 @@ class AdaptiveGhostLabEngine:
             )
             if (
                 candidate.generation != "control"
+                and not is_phase_control
                 and control_evaluation.latency_p95_ms > 0
             ):
                 latency_ratio = (
@@ -1181,6 +1563,7 @@ class AdaptiveGhostLabEngine:
                     )
             if (
                 candidate.generation != "control"
+                and not is_phase_control
                 and control_evaluation.semantic_latency_p95_ms > 0
                 and evaluation.semantic_activations > 0
             ):
@@ -1197,11 +1580,16 @@ class AdaptiveGhostLabEngine:
             _, semantic_depth = self._semantic_parameters(candidate)
             if (
                 candidate.generation != "control"
+                and not is_phase_control
                 and semantic_depth == SEMANTIC_F1_DEPTH
                 and not quality_or_rescue_gain
             ):
                 gate_failures.append("depth20_without_quality_or_rescue_gain")
-            if candidate.generation != "control" and gate_failures:
+            if (
+                candidate.generation != "control"
+                and not is_phase_control
+                and gate_failures
+            ):
                 decision = "REJECT"
             fit_required = tuple(
                 technique_id
@@ -1231,6 +1619,38 @@ class AdaptiveGhostLabEngine:
             ),
             self.incumbent,
         )
+        if self.search_mode == "additive_warm_start":
+            phase_control = next(
+                (
+                    item.candidate
+                    for item in records
+                    if item.decision == "HOLD_MORE_DATA"
+                    and item.candidate.generation != "control"
+                    and self._is_phase_control_structure(item.candidate)
+                    and not self._is_semantic_calibration(item.candidate)
+                ),
+                self.phase_control,
+            )
+            eligible = [
+                item
+                for item in records
+                if item.candidate.generation != "control"
+                and item.candidate.candidate_id != phase_control.candidate_id
+                and not self._is_phase_control_structure(item.candidate)
+                and item.decision != "REJECT"
+            ]
+            eligible.sort(
+                key=lambda item: (
+                    -item.evaluation.score,
+                    item.candidate.complexity,
+                    item.candidate.candidate_id,
+                )
+            )
+            return (
+                control,
+                phase_control,
+                *(item.candidate for item in eligible[: max(0, limit - 2)]),
+            )
         eligible = [
             item
             for item in records
