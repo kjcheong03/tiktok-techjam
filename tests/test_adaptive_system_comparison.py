@@ -51,7 +51,6 @@ def test_comparison_keeps_baselines_out_of_champion_selection() -> None:
         ]
     }
     report_a = _report(0.6, 3)
-    report_b = _report(0.7, 2)
     report_c = _report(0.8, 1)
     finalist_evaluations = {
         "evaluations": [
@@ -65,7 +64,6 @@ def test_comparison_keeps_baselines_out_of_champion_selection() -> None:
     }
     report = build_comparison(
         report_a,
-        report_b,
         report_c,
         top_three,
         finalist_evaluations,
@@ -76,12 +74,11 @@ def test_comparison_keeps_baselines_out_of_champion_selection() -> None:
     assert (
         report["comparison_semantics"]["champion_selection_scope"] == "C versus D only"
     )
-    assert [item["champion_eligible"] for item in report["systems"][:3]] == [
-        False,
+    assert [item["champion_eligible"] for item in report["systems"][:2]] == [
         False,
         True,
     ]
-    assert report["systems"][3]["system_id"] == "D1_challenger-test"
-    assert report["systems"][3]["sessions"]
-    assert report["systems"][3]["ghostlab_selection_metrics"]["score"] == 0.9
+    assert report["systems"][2]["system_id"] == "D1_challenger-test"
+    assert report["systems"][2]["sessions"]
+    assert report["systems"][2]["ghostlab_selection_metrics"]["score"] == 0.9
     assert report["ghostlab_status"] == "top_three_available"

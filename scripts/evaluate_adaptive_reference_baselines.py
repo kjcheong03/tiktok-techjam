@@ -86,28 +86,14 @@ def evaluate_reference_systems(
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     """Evaluate frozen A/B references on one identical ordered sample population."""
 
-    _, categories, products = catalog_index(catalog_path)
-    started = time.perf_counter()
-    result_a = evaluate_shared(
-        OfficialKeywordAgent(catalog_path),
-        samples,
-        categories,
-        products,
-        catalog_path=catalog_path,
-    )
-    report_a = _report(
-        system_id="A_official_stateless_bm25",
-        result=result_a,
+    report_a = evaluate_reference_a(
+        samples=samples,
         origins=origins,
-        elapsed_seconds=time.perf_counter() - started,
-        provenance={
-            "implementation": "baseline/official_reference.py",
-            "description": "organizer stateless SQLite FTS5/BM25 reference",
-        },
+        catalog_path=catalog_path,
         partition=partition,
         holdout_accessed=holdout_accessed,
     )
-
+    _, categories, products = catalog_index(catalog_path)
     state_config = load_suite_config(state_config_path)
     started = time.perf_counter()
     result_b = evaluate_shared(
@@ -138,18 +124,52 @@ def evaluate_reference_systems(
         partition=partition,
         holdout_accessed=holdout_accessed,
     )
-    if [row["sample_id"] for row in result_a["sessions"]] != [
-        row["sample_id"] for row in result_b["sessions"]
+    if [row["sample_id"] for row in report_a["sessions"]] != [
+        row["sample_id"] for row in report_b["sessions"]
     ]:
         raise RuntimeError("A and B did not evaluate identical ordered sample IDs")
     return report_a, report_b
 
 
+def evaluate_reference_a(
+    *,
+    samples: list[dict[str, Any]],
+    origins: dict[str, str],
+    catalog_path: Path,
+    partition: str,
+    holdout_accessed: bool,
+) -> dict[str, Any]:
+    """Evaluate only the frozen organizer BM25 reference."""
+
+    _, categories, products = catalog_index(catalog_path)
+    started = time.perf_counter()
+    result_a = evaluate_shared(
+        OfficialKeywordAgent(catalog_path),
+        samples,
+        categories,
+        products,
+        catalog_path=catalog_path,
+    )
+    report_a = _report(
+        system_id="A_official_stateless_bm25",
+        result=result_a,
+        origins=origins,
+        elapsed_seconds=time.perf_counter() - started,
+        provenance={
+            "implementation": "baseline/official_reference.py",
+            "description": "organizer stateless SQLite FTS5/BM25 reference",
+        },
+        partition=partition,
+        holdout_accessed=holdout_accessed,
+    )
+    return report_a
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description=(
-            "Evaluate stateless organizer BM25 (A) and the native exact-parity "
-            "State Baseline V2 tagged-best reproduction (B) on development only"
+            "Evaluate stateless organizer BM25 (A) on development; optionally "
+            "evaluate the research-only State Baseline V2 reproduction"
         )
     )
     parser.add_argument("--dataset", action="append", dest="datasets")
@@ -170,6 +190,11 @@ def main() -> None:
         "--output-b",
         default="artifacts/reports/adaptive_baseline_b_development_1650.json",
     )
+    parser.add_argument(
+        "--include-state-v2-reference",
+        action="store_true",
+        help="also evaluate research-only State Baseline V2 (not part of A/C/D)",
+    )
     args = parser.parse_args()
     if args.max_samples is not None and args.max_samples <= 0:
         raise ValueError("max-samples must be positive")
@@ -188,11 +213,10 @@ def main() -> None:
         if sample_id in selected_ids
     }
     catalog_path = ROOT / args.catalog
-    report_a, report_b = evaluate_reference_systems(
+    report_a = evaluate_reference_a(
         samples=samples,
         origins=origins,
         catalog_path=catalog_path,
-        state_config_path=ROOT / args.state_config,
         partition="development",
         holdout_accessed=False,
     )
@@ -202,12 +226,21 @@ def main() -> None:
         f"score={report_a['metrics']['recommended_technical_score']:.6f}",
         flush=True,
     )
-    _write_json(ROOT / args.output_b, report_b)
-    print(
-        f"DONE B samples={len(samples)} "
-        f"score={report_b['metrics']['recommended_technical_score']:.6f}",
-        flush=True,
-    )
+    if args.include_state_v2_reference:
+        _, report_b = evaluate_reference_systems(
+            samples=samples,
+            origins=origins,
+            catalog_path=catalog_path,
+            state_config_path=ROOT / args.state_config,
+            partition="development",
+            holdout_accessed=False,
+        )
+        _write_json(ROOT / args.output_b, report_b)
+        print(
+            f"DONE research-only B samples={len(samples)} "
+            f"score={report_b['metrics']['recommended_technical_score']:.6f}",
+            flush=True,
+        )
 
 
 if __name__ == "__main__":

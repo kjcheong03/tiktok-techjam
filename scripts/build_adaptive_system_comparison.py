@@ -43,7 +43,7 @@ def _paired_delta(candidate: dict[str, Any], control: dict[str, Any]) -> float:
     candidate_rows = _session_index(candidate)
     control_rows = _session_index(control)
     if set(candidate_rows) != set(control_rows):
-        raise ValueError("A/B/C reports do not contain identical sample IDs")
+        raise ValueError("A/C/finalist reports do not contain identical sample IDs")
     return statistics.fmean(
         session_reward(candidate_rows[sample_id])
         - session_reward(control_rows[sample_id])
@@ -53,25 +53,24 @@ def _paired_delta(candidate: dict[str, Any], control: dict[str, Any]) -> float:
 
 def build_comparison(
     report_a: dict[str, Any],
-    report_b: dict[str, Any],
     report_c: dict[str, Any],
     top_three: dict[str, Any] | None = None,
     finalist_evaluations: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    ordered_ids = [_session_ids(report) for report in (report_a, report_b, report_c)]
+    ordered_ids = [_session_ids(report) for report in (report_a, report_c)]
     if any(identifiers != ordered_ids[0] for identifiers in ordered_ids[1:]):
-        raise ValueError("A/B/C reports do not contain identical ordered sample IDs")
+        raise ValueError("A/C reports do not contain identical ordered sample IDs")
     if len(ordered_ids[0]) != 1650:
         raise ValueError(
             f"final comparison requires 1650 development IDs, got {len(ordered_ids[0])}"
         )
     contracts = [
-        report.get("evaluation_contract") for report in (report_a, report_b, report_c)
+        report.get("evaluation_contract") for report in (report_a, report_c)
     ]
     if not all(isinstance(contract, dict) for contract in contracts):
-        raise ValueError("A/B/C reports must include the shared evaluation contract")
+        raise ValueError("A/C reports must include the shared evaluation contract")
     if any(contract != contracts[0] for contract in contracts[1:]):
-        raise ValueError("A/B/C reports do not use an identical evaluation contract")
+        raise ValueError("A/C reports do not use an identical evaluation contract")
 
     systems: list[dict[str, Any]] = [
         {
@@ -84,17 +83,6 @@ def build_comparison(
             ),
             "source_metrics": report_a.get("source_metrics", {}),
             "sessions": report_a["sessions"],
-        },
-        {
-            "system_id": "B_state_baseline_v2_tagged_best",
-            "role": "explanatory_baseline",
-            "champion_eligible": False,
-            "metrics": _metrics(report_b),
-            "scenario_metrics": report_b.get("metrics", report_b).get(
-                "scenario_metrics", {}
-            ),
-            "source_metrics": report_b.get("source_metrics", {}),
-            "sessions": report_b["sessions"],
         },
         {
             "system_id": "C_fixed_adaptive_architecture",
@@ -156,9 +144,7 @@ def build_comparison(
             )
     systems.extend(finalists)
     paired_deltas = {
-        "B_minus_A": _paired_delta(report_b, report_a),
         "C_minus_A": _paired_delta(report_c, report_a),
-        "C_minus_B": _paired_delta(report_c, report_b),
     }
     paired_deltas.update(
         {
@@ -178,13 +164,13 @@ def build_comparison(
             "same_catalog": True,
             "same_evaluator_contract": True,
             "A": "official stateless organizer BM25",
-            "B": "tagged-best State Baseline V2 native exact-parity reproduction",
             "C": "fixed compulsory adaptive 1A-3B architecture before GhostLab search",
             "D": "GhostLab challengers built on C",
             "champion_selection_scope": "C versus D only",
-            "A_and_B_purpose": "explanatory reference baselines only",
-            "top_three_purpose": (
-                "development finalists; freeze exactly three before final selection"
+            "A_purpose": "organizer reference baseline only",
+            "finalist_purpose": (
+                "development finalists; freeze every eligible finalist up to three "
+                "before final selection"
             ),
         },
         "paired_reward_deltas": paired_deltas,
@@ -227,7 +213,7 @@ def _markdown(report: dict[str, Any]) -> str:
             ],
             "",
             (
-                "A and B explain system gains but cannot become champion. GhostLab "
+                "A explains the gain over the organizer starter but cannot become champion. GhostLab "
                 "promotion compares the fixed C control only with D challengers."
             ),
             "",
@@ -238,15 +224,11 @@ def _markdown(report: dict[str, Any]) -> str:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Build the unified A/B/C and optional D1-D3 comparison"
+        description="Build the unified A/C and optional D1-D3 comparison"
     )
     parser.add_argument(
         "--report-a",
         default="artifacts/reports/adaptive_baseline_a_development_1650.json",
-    )
-    parser.add_argument(
-        "--report-b",
-        default="artifacts/reports/adaptive_baseline_b_development_1650.json",
     )
     parser.add_argument(
         "--report-c", default="artifacts/reports/adaptive_hybrid_development_1650.json"
@@ -269,7 +251,6 @@ def main() -> None:
     finalist_evaluations_path = ROOT / args.finalist_evaluations
     report = build_comparison(
         _load(ROOT / args.report_a),
-        _load(ROOT / args.report_b),
         _load(ROOT / args.report_c),
         _load(top_three_path) if top_three_path.is_file() else None,
         (

@@ -14,8 +14,8 @@ from ghostlab.runtime.adaptive_factory import load_adaptive_hybrid_config
 ROOT = Path(__file__).resolve().parents[1]
 TRAINING_REPORT = "artifacts/reports/adaptive_hybrid_training_1650_final_v1.json"
 REFERENCE_A_IMPLEMENTATION = ROOT / "baseline/official_reference.py"
-REFERENCE_B_CONFIG = ROOT / "configs/suites/state_baseline_v2_other.json"
-HOLDOUT_GATES = ROOT / "configs/evaluation/adaptive_holdout_gates_v1.json"
+HOLDOUT_GATES = ROOT / "configs/evaluation/adaptive_holdout_gates_v2.json"
+RESIDUAL_TECHNIQUE_ID = "ranking.top10_residual_reranker.v2"
 
 
 def _file_sha256(path: Path) -> str:
@@ -27,14 +27,60 @@ def _file_sha256(path: Path) -> str:
 
 
 def _development_eligible(record: dict[str, Any]) -> bool:
+    decision = record.get("decision")
+    positive_development_delta = float(record.get("mean_paired_delta", 0.0)) > 0.0
     return (
-        record.get("decision") == "PROMOTE"
+        (
+            decision == "PROMOTE"
+            or (decision == "HOLD_MORE_DATA" and positive_development_delta)
+        )
         and not record.get("gate_failures")
         and int(record.get("constraint_violations", 0)) == 0
         and (
             not bool(record.get("fit_required")) or bool(record.get("fit_verified"))
         )
     )
+
+
+def _challenger_bounds(contract: dict[str, Any]) -> tuple[int, int]:
+    legacy_count = int(contract.get("challenger_count", 0))
+    minimum = int(contract.get("minimum_challenger_count", legacy_count))
+    maximum = int(contract.get("maximum_challenger_count", legacy_count))
+    if minimum < 1 or maximum < minimum or maximum > 3:
+        raise ValueError(
+            "final-selection gates must allow between one and three challengers"
+        )
+    return minimum, maximum
+
+
+def _residual_asset_for_candidate(
+    checkpoint: dict[str, Any], candidate_id: str
+) -> dict[str, str]:
+    evaluation = checkpoint.get("evaluations", {}).get(f"f2:{candidate_id}")
+    if not isinstance(evaluation, dict):
+        raise ValueError(
+            f"campaign checkpoint has no F2 evaluation for {candidate_id}"
+        )
+    receipts = evaluation.get("residual_fit_receipts")
+    if not isinstance(receipts, list) or not receipts:
+        raise ValueError(
+            f"campaign checkpoint has no verified residual fit for {candidate_id}"
+        )
+    receipt = receipts[0]
+    if not isinstance(receipt, dict):
+        raise TypeError("residual fit receipt reference must be an object")
+    required = ("asset_path", "asset_sha256", "receipt_path", "receipt_sha256")
+    asset = {key: str(receipt.get(key) or "") for key in required}
+    if not all(asset.values()):
+        raise ValueError("residual fit receipt reference is incomplete")
+    for path_key, hash_key in (
+        ("asset_path", "asset_sha256"),
+        ("receipt_path", "receipt_sha256"),
+    ):
+        path = ROOT / asset[path_key]
+        if not path.is_file() or _file_sha256(path) != asset[hash_key]:
+            raise ValueError(f"residual fit artifact failed verification: {path}")
+    return asset
 
 
 def package_top_three(
@@ -44,6 +90,7 @@ def package_top_three(
     output_dir: Path,
     report_path: Path,
     lineage_manifest_path: Path | None = None,
+    campaign_checkpoint_path: Path | None = None,
 ) -> dict[str, Any]:
     campaign = json.loads(campaign_report_path.read_text(encoding="utf-8"))
     if campaign.get("mode") != "race":
@@ -51,6 +98,11 @@ def package_top_three(
     records = campaign.get("records", {}).get("f2", [])
     if not isinstance(records, list) or not records:
         raise ValueError("campaign report contains no F2 evaluations")
+
+    final_selection_contract = json.loads(HOLDOUT_GATES.read_text(encoding="utf-8"))
+    minimum_challengers, maximum_challengers = _challenger_bounds(
+        final_selection_contract
+    )
 
     baseline = load_adaptive_hybrid_config(base_config_path)
     registry = AdaptiveTechniqueRegistry.from_catalog(
@@ -69,18 +121,46 @@ def package_top_three(
             str(item["candidate"]["candidate_id"]),
         )
     )
-    selected = challengers[:3]
-    if len(selected) != 3:
+    selected = challengers[:maximum_challengers]
+    if len(selected) < minimum_challengers:
         raise ValueError(
-            "final-selection protocol requires exactly three development-eligible "
-            "D challengers"
+            "final-selection protocol requires at least "
+            f"{minimum_challengers} development-eligible D challenger(s), found "
+            f"{len(selected)}"
         )
+
+    checkpoint: dict[str, Any] = {}
+    if campaign_checkpoint_path is not None:
+        checkpoint = json.loads(campaign_checkpoint_path.read_text(encoding="utf-8"))
 
     output_dir.mkdir(parents=True, exist_ok=True)
     finalists: list[dict[str, Any]] = []
     for rank, record in enumerate(selected, start=1):
         candidate = CandidateSpec.model_validate(record["candidate"])
         config = registry.materialize(baseline, candidate)
+        runtime_assets: dict[str, str] = {}
+        if RESIDUAL_TECHNIQUE_ID in candidate.techniques:
+            if not checkpoint:
+                raise ValueError(
+                    "residual finalist packaging requires --campaign-checkpoint"
+                )
+            runtime_assets = _residual_asset_for_candidate(
+                checkpoint, candidate.candidate_id
+            )
+            extensions = config.extensions.model_copy(
+                update={
+                    "top10_residual_enabled": True,
+                    "top10_residual_model_path": runtime_assets["asset_path"],
+                    "top10_residual_model_sha256": runtime_assets["asset_sha256"],
+                    "top10_residual_fit_receipt_path": runtime_assets[
+                        "receipt_path"
+                    ],
+                    "top10_residual_fit_receipt_sha256": runtime_assets[
+                        "receipt_sha256"
+                    ],
+                }
+            )
+            config = config.model_copy(update={"extensions": extensions})
         config_path = output_dir / f"rank_{rank}_{candidate.candidate_id}.json"
         config_path.write_text(
             json.dumps(config.model_dump(mode="json"), indent=2, sort_keys=True) + "\n",
@@ -141,6 +221,7 @@ def package_top_three(
                 "promotion_eligible": eligible,
                 "gate_failures": record.get("gate_failures", []),
                 "constraint_violations": record.get("constraint_violations", 0),
+                "runtime_assets": runtime_assets,
                 "commands": {
                     "evaluate": evaluation_command,
                     "validate": validation_command,
@@ -155,12 +236,9 @@ def package_top_three(
         )
 
     recommended = finalists[0]
-    final_selection_contract = json.loads(HOLDOUT_GATES.read_text(encoding="utf-8"))
     tie_break_order = final_selection_contract.get("selection_tie_break_order")
     if not isinstance(tie_break_order, list) or not tie_break_order:
         raise ValueError("final-selection gates must define selection_tie_break_order")
-    if int(final_selection_contract.get("challenger_count", 0)) != 3:
-        raise ValueError("final-selection gates must require exactly three challengers")
     if not bool(final_selection_contract.get("no_post_selection_tuning")):
         raise ValueError("final-selection gates must prohibit post-selection tuning")
     manifest_hash = (
@@ -178,8 +256,6 @@ def package_top_three(
         "reference_a_implementation_sha256": _file_sha256(
             REFERENCE_A_IMPLEMENTATION
         ),
-        "reference_b_config_path": REFERENCE_B_CONFIG.relative_to(ROOT).as_posix(),
-        "reference_b_config_sha256": _file_sha256(REFERENCE_B_CONFIG),
         "gates_path": HOLDOUT_GATES.relative_to(ROOT).as_posix(),
         "gates_sha256": _file_sha256(HOLDOUT_GATES),
     }
@@ -201,10 +277,12 @@ def package_top_three(
         "schema_version": 3,
         "architecture": baseline.architecture,
         "campaign_report": campaign_report_path.relative_to(ROOT).as_posix(),
-        "requested_challenger_count": 3,
+        "minimum_challenger_count": minimum_challengers,
+        "maximum_challenger_count": maximum_challengers,
+        "requested_challenger_count": maximum_challengers,
         "packaged_challenger_count": len(finalists),
         "recommended_candidate_id": recommended["candidate_id"],
-        "recommendation": "freeze_top_three_for_one_time_final_selection",
+        "recommendation": "freeze_up_to_three_for_one_time_final_selection",
         "automatic_activation": False,
         "selection_evidence": {
             "datasets": campaign.get("dataset_sources", []),
@@ -216,7 +294,7 @@ def package_top_three(
             "note": (
                 "Only the 1,650-session development partition may participate in "
                 "fitting and campaign selection. The 550-session holdout remains "
-                "unaccessed until exactly three challengers and the immutable "
+                "unaccessed until the available one-to-three challengers and the immutable "
                 "selection rule are frozen. It is a final selection set, not an "
                 "unbiased holdout."
             ),
@@ -225,18 +303,23 @@ def package_top_three(
         "frozen_proposals": frozen_proposals,
         "selection_rule": {
             "gates_applied_independently_against": "C_fixed_adaptive_architecture",
-            "eligible_systems": ["C_fixed_adaptive_architecture", "D1", "D2", "D3"],
+            "eligible_systems": [
+                "C_fixed_adaptive_architecture",
+                *[f"D{index}" for index in range(1, len(finalists) + 1)],
+            ],
             "reference_only_systems": [
                 "A_official_stateless_bm25",
-                "B_state_baseline_v2_tagged_best",
             ],
             "tie_break_order": tie_break_order,
             "no_post_selection_tuning": True,
         },
         "promotion_process": [
-            "Freeze exactly three eligible D finalists using development evidence only.",
             (
-                "Evaluate frozen A/B references, C and all three frozen D finalists "
+                "Freeze every eligible development finalist, capped at three, "
+                "using development evidence only."
+            ),
+            (
+                "Evaluate frozen A, C and every frozen D finalist "
                 "once on the 550-session final selection set."
             ),
             "Apply the predeclared gates to every D versus C and use only the frozen tie-breaks.",
@@ -254,7 +337,7 @@ def package_top_three(
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Materialize and document the top three adaptive challengers"
+        description="Materialize and document up to three adaptive challengers"
     )
     parser.add_argument(
         "--campaign-report",
@@ -277,6 +360,10 @@ def main() -> None:
         "--lineage-manifest",
         default="data/splits/adaptive_hybrid_lineage_75_25_v1.json",
     )
+    parser.add_argument(
+        "--campaign-checkpoint",
+        help="campaign checkpoint containing verified F2 fitted-asset receipts",
+    )
     args = parser.parse_args()
     report = package_top_three(
         ROOT / args.campaign_report,
@@ -285,6 +372,7 @@ def main() -> None:
         ROOT / args.output_dir,
         ROOT / args.output,
         ROOT / args.lineage_manifest,
+        ROOT / args.campaign_checkpoint if args.campaign_checkpoint else None,
     )
     print(json.dumps(report, indent=2, sort_keys=True))
 

@@ -1,0 +1,8 @@
+{
+  "schema_version": 1,
+  "preset_path": "configs/finalists/adaptive_hybrid_1650/rank_1_warm-start-d4e040a07e6d-translated-v2-sem-w0p10-d10-f1-add-fusion_rrf-714a27f0249c.json",
+  "preset_sha256": "907b7a92f06ad06447073bf6d0013fb30c1dc3b08b5bfe29897b6e1802a3f050",
+  "activation_decision": "MANUAL_ADJUDICATED_PROMOTION",
+  "adjudication_path": "configs/champion_adjudications/ghostlab_challenger_manual_v1.json",
+  "adjudication_sha256": "e230ea78866c96875d0e2d03121c8a41aeefac8a787ff5bcd1f480e1cb478127"
+}

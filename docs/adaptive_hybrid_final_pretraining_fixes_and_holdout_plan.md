@@ -11,7 +11,7 @@ weight at F1. Depth `20` must add Hit@10/MRR or a measured rescue and pass const
 route/scenario and latency gates. No depth `30/50`, new model family, pairwise or
 listwise experiment is part of final training. All tuning remains within the 1,650
 development partition; the 550-session protected set stays untouched until C and
-exactly three D finalists are frozen.
+one to three eligible D finalists are frozen, with three as the upper bound.
 
 ## Status and purpose
 
@@ -57,10 +57,10 @@ The following decisions are fixed before implementation or final training:
 3. Use 1,650 development sessions for every form of fitting and selection.
 4. Keep 550 sessions inaccessible to fitting, LLM selection, HPO, racing, pruning
    and challenger generation.
-5. GhostLab ranks development candidates and freezes exactly three complete D
+5. GhostLab ranks development candidates and freezes every eligible complete D
    configurations before the 550-session final selection set is opened.
-6. Evaluate frozen A/B references, C and all three D configurations once on the same
-   550 ordered sessions. A/B are explanatory only; each D is gated against C.
+6. Evaluate frozen A, C and every available D configuration (one to three) once on the
+   same 550 ordered sessions. A is explanatory only; each D is gated against C.
 7. Choose among passing D configurations only by the frozen tie-break order. If none
    passes, retain C. Do not tune or replace any system after seeing the 550 results.
 8. Never access F3 or organiser-private labels during development.
@@ -151,8 +151,8 @@ six-technique ceiling on the eventual champion.
 | Like-for-like evidence | Some historical reports compare different scopes | Require identical IDs, config and simulator conditions for every reported delta |
 | Final artifacts | Hash and activation mechanisms exist; clean-checkout parity is incomplete | Bind dataset, split, schema, model, config, report and trace hashes and reproduce offline |
 
-The development packager now freezes all three D file and canonical hashes, control C,
-A/B reference hashes, promotion-gate and tie-break contract, and lineage-manifest hash
+The development packager now freezes every eligible D file and canonical hash (capped
+at three), control C, reference A, the promotion-gate and tie-break contract, and lineage-manifest hash
 before final-selection access. The runner verifies all of them before creating its
 access receipt. The generated finalist validator references the current 1,650-development
 training report rather than an obsolete 2,200-session artifact.
@@ -584,24 +584,21 @@ They must reject old 2,200-session checkpoints and any mixed-partition resume.
 
 ## Development comparison hierarchy
 
-All development reporting uses four explicitly different roles:
+All development reporting uses three explicitly different roles:
 
 1. **A — official stateless BM25:** organizer reference and explanatory baseline;
-2. **B — tagged-best State Baseline V2:** native exact-parity reproduction of
-   `coverage_adaptive_state_with_history + fixed_other`, retained as an explanatory,
-   simulator-sensitive baseline;
-3. **C — fixed adaptive architecture:** the complete compulsory 1A-3B workflow after
+2. **C — fixed adaptive architecture:** the complete compulsory 1A-3B workflow after
    its core development-only fit and before GhostLab search; and
-4. **D — GhostLab challengers:** optional techniques, combinations and tuned values
+3. **D — GhostLab challengers:** optional techniques, combinations and tuned values
    materialized on top of C without changing the compulsory workflow.
 
-A, B and C must be evaluated on identical ordered development sample IDs. The final
-development comparison includes A, B, C and the available D1-D3 finalists, but A and B
-cannot be promoted because they do not implement the complete compulsory workflow.
-Champion selection is restricted to C versus D. The one-time final-selection report
-contains A/B/C/D1-D3 on the same ground, but A and B remain reference-only.
+A and C must be evaluated on identical ordered development sample IDs. The final
+development comparison includes A, C and the available D1-D3 finalists, but A cannot
+be promoted because it does not implement the complete compulsory workflow. Champion
+selection is restricted to C versus D. The one-time final-selection report contains
+A/C and every available D on the same ground, with A remaining reference-only.
 
-Every comparable A/B/C/D run uses one shared research evaluator entrypoint. Its report
+Every comparable A/C/D run uses one shared research evaluator entrypoint. Its report
 contract hashes the ordered session IDs, catalog, shared harness, published evaluator,
 seed and fixed turn/Top-K limits, and records the common profile, exception and response
 normalization behavior. The published evaluator remains unchanged and is protected by
@@ -610,7 +607,6 @@ behavioral parity tests. Missing or unequal contracts invalidate the comparison.
 The reproducible outputs are:
 
 - `artifacts/reports/adaptive_baseline_a_development_1650.json`;
-- `artifacts/reports/adaptive_baseline_b_development_1650.json`;
 - `artifacts/reports/adaptive_hybrid_development_1650.json` for C;
 - `artifacts/reports/adaptive_hybrid_top3.json` for D1-D3; and
 - `artifacts/reports/adaptive_system_comparison_1650.json` plus `.md` for the unified
@@ -624,8 +620,8 @@ the verified-lineage level before expanding to sessions. Out-of-fold estimates r
 selection bias inside development but are not called holdout results. Racing confidence
 uses lineage-cluster resampling rather than independent session resampling.
 
-The development campaign applies all predeclared development gates and freezes exactly
-three entries in `frozen_proposals`. Each contains:
+The development campaign applies all predeclared development gates and freezes every
+eligible entry in `frozen_proposals`, capped at three. Each contains:
 
 - immutable materialized config;
 - config SHA-256 and canonical hash;
@@ -637,10 +633,10 @@ three entries in `frozen_proposals`. Each contains:
 - split-manifest development hash.
 
 After packaging, D1-D3 are re-evaluated on the same ordered full-development sessions,
-catalog, seed and shared evaluator contract as A/B/C. These matched runs power the
+catalog, seed and shared evaluator contract as A/C. These matched runs power the
 dashboard challenger dropdown and like-for-like development table. Original GhostLab
 fold/racing metrics remain separate selection evidence. The package also freezes C,
-A/B definitions, gates and the complete tie-break order before any 550 access.
+A, gates and the complete tie-break order before any 550 access.
 
 Proposed path:
 
@@ -650,17 +646,16 @@ Proposed path:
 
 The holdout runner is a separate command and process. It consumes only:
 
-- the frozen Top-3 report;
-- the three hash-bound D configurations;
+- the frozen finalist report;
+- the available one to three hash-bound D configurations;
 - the frozen matched control;
 - the frozen official stateless BM25 reference definition;
-- the frozen tagged-best State Baseline V2 reference definition;
 - the split manifest's 550-session final-selection partition; and
 - a predeclared promotion-gate configuration.
 
 It refuses to run when:
 
-- anything other than exactly three frozen challengers is requested;
+- fewer than one or more than three frozen challengers are requested;
 - any config/model/hash differs from the proposal;
 - the proposal was generated from a different development manifest;
 - any final-selection ID appears in a fit receipt or campaign checkpoint;
@@ -669,9 +664,9 @@ It refuses to run when:
 
 ### Required reports
 
-Report all six frozen systems on identical ordered sessions, with A/B marked
-reference-only, C as control and D1-D3 as challengers. Report per-system metrics and
-paired B-minus-A, C-minus-B and each D-minus-C delta for:
+Report A, C and the available one to three D systems on identical ordered sessions,
+with A marked reference-only, C as control and D1-D3 as challengers. Report per-system
+metrics and paired C-minus-A and each D-minus-C delta for:
 
 1. official public 50;
 2. public-like synthetic 250;
@@ -808,7 +803,7 @@ Implementation after Phases 1-3 pass:
 - run diversity/recall comparison;
 - run bounded LLM selection and rescue audit;
 - run GhostLab racing, pruning, HPO and combinations; and
-- freeze exactly three development-selected complete D configurations.
+- freeze every development-selected eligible complete D configuration, capped at three.
 
 Gate:
 
@@ -818,14 +813,14 @@ Gate:
   lineage;
 - racing confidence intervals use lineage-cluster resampling;
 - protected route gates pass on development;
-- exactly three D proposals plus A/B/C dependencies and tie-breaks are frozen; and
+- one to three eligible D proposals plus A/C dependencies and tie-breaks are frozen; and
 - no final-selection access receipt exists yet.
 
 ### Phase 5: one-time final selection
 
 Implementation:
 
-- evaluate frozen A/B references, C and D1-D3 on identical ordered 550 sessions, one
+- evaluate frozen A, C and D1-D3 on identical ordered 550 sessions, one
   catalog and one evaluator contract;
 - generate per-source, route, combined and macro evidence;
 - apply immutable promotion gates separately to every D versus C and select among
@@ -834,8 +829,8 @@ Implementation:
 
 Gate:
 
-- exactly six frozen systems were evaluated: two ineligible references, one control and
-  three challengers;
+- between three and five frozen systems were evaluated: one ineligible reference, one
+  control and one to three challengers;
 - exactly 50/250/250 sessions were consumed;
 - paired uncertainty uses the verified holdout lineage clusters;
 - no training or tuning occurred;
@@ -879,8 +874,8 @@ Gate:
 | Group-safe nested validation | No lineage crosses outer/inner fitting, OOF, early-stopping, calibration or HPO boundaries |
 | Cluster-aware statistics | Racing and final-selection intervals resample whole lineage groups rather than individual related sessions |
 | Like-for-like | Identical session IDs/configuration for every delta |
-| Freeze Top 3 | Exactly three development-selected D hashes are frozen before final selection |
-| Final selection one-time | Frozen A/B/C/D1-D3, per-D C gates, immutable tie-breaks and access receipt |
+| Freeze finalists | Every eligible development-selected D hash, capped at three, is frozen before final selection |
+| Final selection one-time | Frozen A/C/D1-D3, per-D C gates, immutable tie-breaks and access receipt |
 | Artifact integrity | Clean-checkout hash and offline runtime parity |
 
 ## Required artifacts
@@ -922,7 +917,7 @@ Stop before final training when any of the following is true:
 - fit/runtime feature schemas differ;
 - protected Buying behavior has an unresolved regression;
 - LLM comparison is not like-for-like;
-- the final-selection package does not contain exactly three challengers; or
+- the final-selection package contains fewer than one or more than three challengers; or
 - artifact hashes do not form one reproducible chain.
 
 Stop after final selection and retain C when no frozen D passes. Do not reopen GhostLab,
@@ -939,9 +934,9 @@ This plan is complete only when:
 4. all fitting and GhostLab selection use only development IDs and group-safe
    outer/inner partitions;
 5. the normal architecture and genuine overload exception are behaviorally proven;
-6. exactly three D configurations are frozen using development evidence and
+6. one to three eligible D configurations are frozen using development evidence and
    cluster-aware statistics;
-7. final selection evaluates frozen A/B/C/D1-D3 once, gates every D against C and uses
+7. final selection evaluates frozen A/C/D1-D3 once, gates every D against C and uses
    only the frozen tie-break order;
 8. the predeclared gates produce an auditable promote-or-retain result;
 9. any promoted champion passes the complete suite and clean offline reproduction;

@@ -303,10 +303,7 @@ def stage_specs(args: argparse.Namespace) -> tuple[StageSpec, ...]:
         StageSpec(
             "baselines",
             (python, "scripts/evaluate_adaptive_reference_baselines.py"),
-            (
-                "artifacts/reports/adaptive_baseline_a_development_1650.json",
-                "artifacts/reports/adaptive_baseline_b_development_1650.json",
-            ),
+            ("artifacts/reports/adaptive_baseline_a_development_1650.json",),
         ),
         StageSpec(
             "validate",
@@ -334,6 +331,8 @@ def stage_specs(args: argparse.Namespace) -> tuple[StageSpec, ...]:
                 campaign_report,
                 "--base-config",
                 selected_config,
+                "--campaign-checkpoint",
+                campaign_checkpoint,
                 "--output",
                 package_report,
             ),

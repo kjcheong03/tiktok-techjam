@@ -1,0 +1,60 @@
+{
+  "archive": {
+    "bytes": 142330697,
+    "sha256": "3cace0cb678a07538e783bcdda1135a8c0c8f154db92865cf471bc05c97bce14"
+  },
+  "asset_id": "ghostlab_dense_indexes_50k_v1",
+  "asset_name": "ghostlab-dense-index-50k-da979b05-v1.tar.gz",
+  "download_url": "https://github.com/kjcheong03/tiktok-techjam/releases/download/dense-index-50k-v1/ghostlab-dense-index-50k-da979b05-v1.tar.gz",
+  "indexes": [
+    {
+      "catalog_sha256": "da979b05a68af864cb0dcf9ee6a81c010c7e66a57978ad286c7a2e005fc69a67",
+      "document_format_version": "labeled_catalog_fields_v1",
+      "dtype": "float32",
+      "embedding_dimension": 384,
+      "identifiers_sha256": "dc45d687d956038cf3797947e9ea383e8c2e5c5126ac3cd148ec4d4d5d976694",
+      "key": "e5_small_v2",
+      "matrix": {
+        "bytes": 76800128,
+        "path": "artifacts/cache/dense/e5_small_v2-da979b05a68a-eb21af922f8c.npy",
+        "sha256": "d55a4720d50bf6c73b4772872f62a87b04e9315432118d0e33693b4cce5f70a0"
+      },
+      "metadata": {
+        "bytes": 765,
+        "path": "artifacts/cache/dense/e5_small_v2-da979b05a68a-eb21af922f8c.json",
+        "sha256": "fa254f55ada0ae5a7c1b3dddced9564001612c2952a6e066456a9f79a1be56c2"
+      },
+      "model_name": "intfloat/e5-small-v2",
+      "model_revision": "ffb93f3bd4047442299a41ebb6fa998a38507c52",
+      "model_spec_sha256": "eb21af922f8cef9b7810e7bcc05220c90ad3f06a54626ad99e7473eae2ef649a",
+      "normalized": true,
+      "row_count": 50000
+    },
+    {
+      "catalog_sha256": "da979b05a68af864cb0dcf9ee6a81c010c7e66a57978ad286c7a2e005fc69a67",
+      "document_format_version": "labeled_catalog_fields_v1",
+      "dtype": "float32",
+      "embedding_dimension": 384,
+      "identifiers_sha256": "dc45d687d956038cf3797947e9ea383e8c2e5c5126ac3cd148ec4d4d5d976694",
+      "key": "minilm_control",
+      "matrix": {
+        "bytes": 76800128,
+        "path": "artifacts/cache/dense/minilm_control-da979b05a68a-53441f50d1f0.npy",
+        "sha256": "47c6164cfee01379d6ac68f1f489c420768fe8fd34c820a4a5c72eeff413197b"
+      },
+      "metadata": {
+        "bytes": 770,
+        "path": "artifacts/cache/dense/minilm_control-da979b05a68a-53441f50d1f0.json",
+        "sha256": "f88a754bc0b1058436ed0767b0ca3fa00f458b24ba44bbccc128ffeea97aa177"
+      },
+      "model_name": "sentence-transformers/all-MiniLM-L6-v2",
+      "model_revision": "1110a243fdf4706b3f48f1d95db1a4f5529b4d41",
+      "model_spec_sha256": "53441f50d1f0d2f4f1d4fea64ebae49eb96884a3959dc491a586a91542bdd84d",
+      "normalized": true,
+      "row_count": 50000
+    }
+  ],
+  "release_tag": "dense-index-50k-v1",
+  "repository": "kjcheong03/tiktok-techjam",
+  "schema_version": 1
+}
