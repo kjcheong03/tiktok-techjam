@@ -268,7 +268,20 @@ Both commands must print `"verified": true`. Together they verify the active ada
 configuration, architecture contract, configuration hashes, union GBDT, residual model
 and fit receipt, official-200 reports, and 550-session report/access receipt.
 
-### 2.10 No-training preflight
+### 2.10 Organizer evaluation entrypoint
+
+After completing setup, organizers should use the following submission entrypoint in
+the official private 800-session evaluation harness:
+
+```python
+from starter.agent import Agent
+```
+
+`starter.agent.Agent` implements the required `reset(...)` and `respond(...)` interface. It
+resolves `configs/active_candidate.json` and loads the frozen GhostLab champion verified
+in Section 2.9. No training or optimization is required before private evaluation.
+
+### 2.11 No-training preflight
 
 ```bash
 PYTHONPATH=. .venv/bin/python scripts/train_adaptive_hybrid.py --plan-only
