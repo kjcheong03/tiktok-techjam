@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import unittest
+from pathlib import Path
 
 from server import (
     _select_comparison_systems,
@@ -11,6 +12,22 @@ from server import (
 
 
 class ReportDiscoveryTests(unittest.TestCase):
+    def test_frontend_starts_at_three_system_leaderboard(self) -> None:
+        dashboard = Path(__file__).resolve().parent
+        html = (dashboard / "index.html").read_text(encoding="utf-8")
+        app = (dashboard / "app.js").read_text(encoding="utf-8")
+
+        self.assertIn("Normalized efficiency", html)
+        self.assertNotIn('id="report-select"', html)
+        self.assertNotIn('id="run-tabs"', html)
+        self.assertNotIn('id="empty-state"', html)
+        for label in (
+            "Organizer BM25 Starter",
+            "Fixed Adaptive Architecture",
+            "GhostLab Champion",
+        ):
+            self.assertIn(label, app)
+
     def test_counts_direct_evaluator_report(self) -> None:
         payload = {
             "sample_count": 2,
@@ -59,20 +76,19 @@ class ReportDiscoveryTests(unittest.TestCase):
         self.assertIn("artifacts/reports/unified_champion_verification_v1.json", paths)
         self.assertTrue(all(int(report["run_count"]) > 0 for report in reports))
 
-    def test_discovers_only_four_stable_model_slots(self) -> None:
+    def test_discovers_only_three_stable_systems(self) -> None:
         models = discover_models()
-        self.assertEqual([model["model_id"] for model in models], ["A", "B", "C", "D"])
+        self.assertEqual([model["model_id"] for model in models], ["A", "C", "D"])
         self.assertEqual(
             [model["label"] for model in models],
             [
-                "A: BM25",
-                "B: BM25 + teammate State V2",
-                "C: adaptive control",
-                "D: frozen GhostLab champion / challenger",
+                "Organizer BM25 Starter",
+                "Fixed Adaptive Architecture",
+                "GhostLab Champion",
             ],
         )
-        self.assertEqual(len({model["model_id"] for model in models}), 4)
-        self.assertEqual(sum(bool(model["featured"]) for model in models), 1)
+        self.assertEqual(len({model["model_id"] for model in models}), 3)
+        self.assertTrue(all(bool(model["default"]) for model in models))
 
     def test_promoted_challenger_occupies_one_d_slot(self) -> None:
         payload = {
@@ -94,8 +110,32 @@ class ReportDiscoveryTests(unittest.TestCase):
             ],
         }
         selected = _select_comparison_systems(payload)
-        self.assertEqual(set(selected), {"A", "B", "C", "D"})
+        self.assertEqual(set(selected), {"A", "C", "D"})
         self.assertEqual(selected["D"]["system_id"], "champion_latest")
+
+    def test_active_preset_overrides_stale_report_decision(self) -> None:
+        payload = {
+            "selected_system_id": "C_adaptive",
+            "systems": [
+                {"system_id": "A_bm25"},
+                {"system_id": "C_adaptive"},
+                {
+                    "system_id": "old_challenger",
+                    "role": "ghostlab_challenger",
+                    "config_path": "configs/old.json",
+                },
+                {
+                    "system_id": "new_champion",
+                    "role": "ghostlab_challenger",
+                    "config_path": "configs/new.json",
+                },
+            ],
+        }
+        selected = _select_comparison_systems(
+            payload, active_preset_path="configs/new.json"
+        )
+        self.assertEqual(set(selected), {"A", "C", "D"})
+        self.assertEqual(selected["D"]["system_id"], "new_champion")
 
 
 if __name__ == "__main__":

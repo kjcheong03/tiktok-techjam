@@ -32,8 +32,10 @@ def main() -> None:
     args = parser.parse_args()
 
     preset = _resolve(args.preset)
-    top3 = json.loads(_resolve(args.top3_report).read_text(encoding="utf-8"))
-    holdout = json.loads(_resolve(args.holdout_report).read_text(encoding="utf-8"))
+    top3_path = _resolve(args.top3_report)
+    holdout_path = _resolve(args.holdout_report)
+    top3 = json.loads(top3_path.read_text(encoding="utf-8"))
+    holdout = json.loads(holdout_path.read_text(encoding="utf-8"))
     config = AdaptiveArchitectureAudit.validate(load_adaptive_hybrid_config(preset))
     actual = sha256_file(preset)
     if actual != args.expected_sha256:
@@ -94,6 +96,8 @@ def main() -> None:
         "schema_version": 1,
         "preset_path": preset.relative_to(PROJECT_ROOT).as_posix(),
         "preset_sha256": actual,
+        "comparison_report_path": holdout_path.relative_to(PROJECT_ROOT).as_posix(),
+        "champion_system_id": holdout["selected_system_id"],
     }
     ACTIVE_POINTER.parent.mkdir(parents=True, exist_ok=True)
     temporary = ACTIVE_POINTER.with_suffix(".json.tmp")

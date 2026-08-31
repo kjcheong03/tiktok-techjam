@@ -19,7 +19,9 @@ The governing design rule is:
 > The required adaptive-shopping capabilities remain fixed; GhostLab optimizes how
 > each capability is implemented and may add compatible optional techniques.
 
-### A. Architecture
+### Architecture
+
+![GhostLab adaptive shopping architecture](docs/architecture_diagram.jpg)
 
 | Path | When used | Behavior |
 |---|---|---|
@@ -53,7 +55,7 @@ The active **GhostLab Champion** preserves this architecture and adds RRF fusion
 hash-bound Top-10 residual reranker. Its configuration is selected by
 `configs/active_candidate.json`; `starter.Agent` resolves that pointer at runtime.
 
-### B. Offline optimization
+### Offline optimization
 
 GhostLab keeps the runtime stages fixed while its offline optimizer compares complete
 combinations of routing, retrieval, fusion, diversity, ranking, local-LLM, and
@@ -67,7 +69,9 @@ The current active champion was selected from this process. Running the optimize
 optional for reproducing the published champion and benchmark results; it is included
 below for researchers who want to reproduce the complete search.
 
-### C. Data
+![GhostLab offline training and evaluation workflow](docs/offline_training.jpg)
+
+### Data
 
 | Source | Development | One-time final selection | Total |
 |---|---:|---:|---:|
@@ -88,7 +92,7 @@ is reproducibility and demonstration evidence, not an unseen generalization esti
 The 550-session partition was accessed once for final selection. The organizer's private
 competition evaluation remains separate and unseen.
 
-### D. Evaluation
+### Evaluation
 
 ```text
 TechnicalScore = 0.50 × HitRate@10 + 0.30 × MRR + 0.20 × Efficiency
@@ -102,19 +106,19 @@ as a hit.
 
 | System | Hit Rate@10 | MRR | MTTC | Normalized Efficiency | TechnicalScore |
 |---|---:|---:|---:|---:|---:|
-| Organizer BM25 Starter (A) | 0.125000 | 0.068034 | 9.810000 | 0.119000 | 0.106710 |
-| Fixed Adaptive Architecture (C) | 0.970000 | 0.572325 | 2.775000 | 0.822500 | 0.821197 |
+| Organizer BM25 Starter | 0.125000 | 0.068034 | 9.810000 | 0.119000 | 0.106710 |
+| Fixed Adaptive Architecture | 0.970000 | 0.572325 | 2.775000 | 0.822500 | 0.821197 |
 | **GhostLab Champion** | **0.975000** | **0.688401** | **2.765000** | **0.823500** | **0.858720** |
 
 #### One-time final selection — 550 sessions
 
 | System | Hit Rate@10 | MRR | MTTC | Normalized Efficiency | TechnicalScore |
 |---|---:|---:|---:|---:|---:|
-| Organizer BM25 Starter (A) | 0.190909 | 0.101387 | 9.110909 | 0.188909 | 0.163652 |
-| Fixed Adaptive Architecture (C) | 0.961818 | 0.568150 | 2.723636 | 0.827636 | 0.816881 |
+| Organizer BM25 Starter | 0.190909 | 0.101387 | 9.110909 | 0.188909 | 0.163652 |
+| Fixed Adaptive Architecture | 0.961818 | 0.568150 | 2.723636 | 0.827636 | 0.816881 |
 | **GhostLab Champion** | **0.965455** | **0.676361** | **2.689091** | **0.831091** | **0.851854** |
 
-The A, C, and champion rows in each table use the same ordered sessions, catalog,
+The three system rows in each table use the same ordered sessions, catalog,
 response contract, evaluator semantics, Top-K and turn limits. The repository retains
 the comparison reports, per-system session rows, access receipt, active pointer, and
 selection record as reproducibility evidence.
@@ -218,7 +222,7 @@ The final command must report `artifacts/assets/catalog_ontology_v1.json: OK`.
 
 The published champion needs E5-small-v2, All-MiniLM-L6-v2 as a safe fallback, and
 SmolLM2-1.7B-Instruct. The cross-encoder is also fetched so the complete optimizer can
-evaluate its registered semantic alternative. Gemma, Qwen, and Qwen3 are historical
+evaluate its registered semantic alternative. Gemma 3, Qwen2.5, and Qwen3 are historical
 experiment models and are not required.
 
 ```bash
@@ -290,7 +294,7 @@ partition, or change the active champion.
 
 ## 3. Results reproduction
 
-### 3.1 Re-run A, C, and the GhostLab Champion on the official 200 sessions
+### 3.1 Re-run the three published systems on the official 200 sessions
 
 After completing Section 2, run:
 
@@ -315,7 +319,7 @@ Re-run the bundle verifier afterward:
 PYTHONPATH=. .venv/bin/python scripts/verify_reproduction_bundle.py
 ```
 
-The metric values should match the official-public table in Section 1.D to six decimal
+The metric values should match the official-public table in the Evaluation section to six decimal
 places. Hardware-dependent latency diagnostics may differ, but Hit Rate@10, MRR, MTTC,
 normalized efficiency, and TechnicalScore are evaluator outcomes and must match.
 
@@ -362,7 +366,7 @@ PYTHONPATH=. .venv/bin/python scripts/verify_reproduction_bundle.py
 ```
 
 The two checksum commands must report `OK`, and the verifier prints the 550 metrics in
-Section 1.D. The organizer-private evaluation is not present in this repository.
+the Evaluation section. The organizer-private evaluation is not present in this repository.
 
 ### 3.3 Optional: reproduce training and GhostLab optimization
 
@@ -441,8 +445,7 @@ optional development experiment.
 .venv/bin/python dashboard/server.py
 ```
 
-Open <http://127.0.0.1:8787/dashboard/>. The dashboard discovers compatible JSON
-reports under `artifacts/reports/` and accepts imported evaluator JSON files.
+Open <http://127.0.0.1:8787/dashboard/>.
 
 ## 4. Limitations and future improvements
 
@@ -466,17 +469,21 @@ reports under `artifacts/reports/` and accepts imported evaluator JSON files.
 |---|---|
 | Chloe Chua | Baseline implementation, runtime architecture planning, project documentation, and testing |
 | Cheong Kang Jie | GhostLab optimization engine, adaptive runtime integration, training/evaluation pipeline, champion selection, and reproducibility packaging |
-| Chew En Wei | Contribution summary to be confirmed by the team before submission |
+| Chew En Wei | Training-dataset generation and architecture diagram design |
 | Lucas Sam | Results dashboard and frontend visualization |
 
 ### Important references
 
-- [Detailed adaptive implementation process](docs/adaptive_hybrid_1a_3b_implementation_process.md)
-- [Adaptive implementation report](docs/adaptive_hybrid_1a_3b_implementation_report.md)
+- [Complete optimization engine guide](docs/engine_guide.md)
+- [Runtime architecture overview](docs/architecture_overview.md)
+- [Offline training and optimization pipeline](docs/offline_training_optimization_pipeline.md)
+- [Results dashboard](dashboard/README.md)
 - [Competition specification](docs/competition_specification.md)
 - [Agent API contract](docs/agent_api_contract.json)
 - [Submission rules](docs/submission_rules.md)
-- [Data attribution](DATA_ATTRIBUTION.md)
+- [Competition data layout](data/README.md)
+- [Data and model attribution](DATA_ATTRIBUTION.md)
 
 The catalog and development data are derived from Amazon Reviews 2023 by McAuley Lab,
-UCSD. Review `DATA_ATTRIBUTION.md` before redistribution.
+UCSD. Review `DATA_ATTRIBUTION.md` for dataset and third-party model acknowledgements
+before redistribution.

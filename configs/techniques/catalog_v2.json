@@ -11,7 +11,7 @@
       "config_binding": "state_variant=baseline_v2",
       "mechanism_tags": ["typed_constraints", "targeted_correction", "multi_value"],
       "retest_triggers": ["parser_changed", "question_policy_changed"],
-      "evidence_refs": ["docs/essentials/state_baseline_v2_integration.md"]
+      "evidence_refs": ["docs/engine_guide.md"]
     },
     {
       "id": "query.coverage_adaptive_v2",
@@ -24,7 +24,7 @@
       "exclusive_group": "query_representation",
       "mechanism_tags": ["coverage_gate", "raw_history_fallback"],
       "retest_triggers": ["state_parser_changed", "retriever_changed"],
-      "evidence_refs": ["docs/essentials/state_baseline_v2_integration.md"]
+      "evidence_refs": ["docs/engine_guide.md"]
     },
     {
       "id": "recommendation.correction_scoped_history",
@@ -35,7 +35,7 @@
       "config_binding": "recommendation_history=correction_scoped",
       "mechanism_tags": ["session_novelty", "intent_epoch", "result_rotation"],
       "retest_triggers": ["ranker_changed", "override_parser_changed"],
-      "evidence_refs": ["docs/essentials/state_baseline_v2_integration.md"]
+      "evidence_refs": ["docs/engine_guide.md"]
     },
     {
       "id": "question.other_always",
@@ -47,7 +47,7 @@
       "exclusive_group": "question_policy",
       "mechanism_tags": ["fixed_control", "simulator_sensitive"],
       "retest_triggers": ["simulator_changed", "state_parser_changed"],
-      "evidence_refs": ["docs/essentials/state_baseline_v2_integration.md"]
+      "evidence_refs": ["docs/engine_guide.md"]
     },
     {
       "id": "question.learned_linear",
@@ -465,7 +465,7 @@
         "retriever_changed"
       ],
       "evidence_refs": [
-        "docs/state_v2_adaptive_residual_v2_decision.md",
+        "docs/engine_guide.md",
         "artifacts/reports/state_v2_adaptive_residual_v2.json"
       ],
       "resources": {"cpu": 2, "gpu": 0, "memory_gb": 3, "heavy_model": false}

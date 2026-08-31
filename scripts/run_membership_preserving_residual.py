@@ -53,7 +53,6 @@ from scripts.run_gbdt_reranker import (
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST_PATH = ROOT / "configs/experiments/membership_preserving_residual_v1.json"
 REPORT_PATH = ROOT / "artifacts/reports/membership_preserving_residual_v1.json"
-SUMMARY_PATH = ROOT / "docs/membership_preserving_residual_decision.md"
 PARENT_REPORT_PATH = ROOT / "artifacts/reports/gbdt_constraint_override_guard_v1.json"
 SEED = 20260826
 EXPECTED_PARENT_SCORE = 0.878963
@@ -912,7 +911,6 @@ def main() -> None:
     REPORT_PATH.write_text(
         json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8"
     )
-    SUMMARY_PATH.write_text(_summary_markdown(report), encoding="utf-8")
     print(
         json.dumps(
             {"report": str(REPORT_PATH.relative_to(ROOT)), **report["decision"]},

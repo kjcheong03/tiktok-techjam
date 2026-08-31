@@ -58,7 +58,6 @@ from scripts.run_membership_preserving_residual import (
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST_PATH = ROOT / "configs/experiments/state_v2_adaptive_residual_v2.json"
 REPORT_PATH = ROOT / "artifacts/reports/state_v2_adaptive_residual_v2.json"
-SUMMARY_PATH = ROOT / "docs/state_v2_adaptive_residual_v2_decision.md"
 STATE_V2_REPORT = ROOT / "artifacts/reports/state_baseline_v2_integration.json"
 SEED = 20260826
 
@@ -788,8 +787,6 @@ def main() -> None:
     REPORT_PATH.write_text(
         json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8"
     )
-    if "primary" in report and "secondary" in report:
-        SUMMARY_PATH.write_text(_markdown(report), encoding="utf-8")
     print(
         json.dumps(
             {

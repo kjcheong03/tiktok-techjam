@@ -244,7 +244,8 @@ def main() -> None:
         "--output", default="artifacts/reports/adaptive_system_comparison_1650.json"
     )
     parser.add_argument(
-        "--markdown", default="artifacts/reports/adaptive_system_comparison_1650.md"
+        "--markdown",
+        help="optional human-readable Markdown output; JSON is canonical",
     )
     args = parser.parse_args()
     top_three_path = ROOT / args.top_three
@@ -260,16 +261,19 @@ def main() -> None:
         ),
     )
     output = ROOT / args.output
-    markdown = ROOT / args.markdown
     output.parent.mkdir(parents=True, exist_ok=True)
-    markdown.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(
         json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8"
     )
-    markdown.write_text(_markdown(report), encoding="utf-8")
+    markdown_output = None
+    if args.markdown:
+        markdown = ROOT / args.markdown
+        markdown.parent.mkdir(parents=True, exist_ok=True)
+        markdown.write_text(_markdown(report), encoding="utf-8")
+        markdown_output = args.markdown
     print(
         json.dumps(
-            {"output": args.output, "markdown": args.markdown, **report}, indent=2
+            {"output": args.output, "markdown": markdown_output, **report}, indent=2
         )
     )
 

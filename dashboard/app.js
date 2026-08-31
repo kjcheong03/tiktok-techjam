@@ -3,22 +3,24 @@
 const COLORS = ["#39f0cf", "#ff4f8b", "#9f7aea", "#f5bd5b", "#5da8ff", "#ff8c5a", "#7bdd65", "#d786ff"];
 const SCORE_KEYS = ["recommended_technical_score", "hit_rate_at_10", "mrr", "mttc", "efficiency"];
 const SYSTEM_DISPLAY_NAMES = {
-  B_state_baseline_v2_tagged_best: "B · Dynamic Conversation State",
+  A_official_stateless_bm25: "Organizer BM25 Starter",
+  C_fixed_adaptive_architecture: "Fixed Adaptive Architecture",
+  GhostLab_Challenger: "GhostLab Champion",
 };
+const SYSTEM_SLOT_NAMES = {
+  A: "Organizer BM25 Starter",
+  C: "Fixed Adaptive Architecture",
+  D: "GhostLab Champion",
+};
+const SYSTEM_COLORS = { A: "#39f0cf", C: "#9f7aea", D: "#f5bd5b" };
 
 const state = { reports: [], runs: [], activeId: null, comparisonMeta: null, selectedChallengerId: null };
 const $ = (selector) => document.querySelector(selector);
 const elements = {
-  reportSelect: $("#report-select"), reportHint: $("#report-hint"),
-  loadReport: $("#load-report"), fileInput: $("#file-input"), runTabs: $("#run-tabs"), runCount: $("#run-count"),
-  empty: $("#empty-state"), content: $("#dashboard-content"), selectedName: $("#selected-run-name"),
+  fileInput: $("#file-input"), content: $("#dashboard-content"), selectedName: $("#selected-run-name"),
   selectedSource: $("#selected-run-source"), metricGrid: $("#metric-grid"), comparison: $("#comparison-chart"),
   scenarioMetric: $("#scenario-metric"), scenarioChart: $("#scenario-chart"), rankChart: $("#rank-chart"),
   distributionLabel: $("#distribution-label"), dropOverlay: $("#drop-overlay"), toast: $("#toast"),
-  comparisonContract: $("#comparison-contract"), comparisonContractTitle: $("#comparison-contract-title"),
-  comparisonContractCopy: $("#comparison-contract-copy"), comparisonContractBadges: $("#comparison-contract-badges"),
-  promotionDecision: $("#promotion-decision"),
-  challengerPicker: $("#challenger-picker"), challengerSelect: $("#challenger-select"),
 };
 
 function isNumber(value) { return typeof value === "number" && Number.isFinite(value); }
@@ -39,6 +41,7 @@ function deriveScore(metrics) {
 }
 function normalizeScenario(raw = {}) {
   const metrics = { ...raw };
+  if (!isNumber(metrics.efficiency) && isNumber(metrics.normalized_efficiency)) metrics.efficiency = metrics.normalized_efficiency;
   if (!isNumber(metrics.efficiency) && isNumber(metrics.mttc)) metrics.efficiency = Math.max(0, Math.min(1, (11 - metrics.mttc) / 10));
   metrics.recommended_technical_score = deriveScore(metrics);
   return metrics;
@@ -129,7 +132,7 @@ function addRuns(runs, meta = null) {
   let added = 0;
   for (const run of runs) {
     if (state.runs.some((existing) => existing.id === run.id)) continue;
-    run.color = COLORS[state.runs.length % COLORS.length];
+    run.color = SYSTEM_COLORS[run.systemId] || COLORS[state.runs.length % COLORS.length];
     state.runs.push(run);
     added += 1;
   }
@@ -155,7 +158,7 @@ async function loadReport(report, quiet = false) {
       runs = [runs[0]].map((run) => ({
         ...run,
         id: stableId,
-        name: report.label,
+        name: SYSTEM_SLOT_NAMES[report.model_id] || report.label,
         systemId: report.model_id,
         role: report.role,
         championEligible: report.champion_eligible === true,
@@ -183,18 +186,14 @@ async function discoverReports() {
     if (!response.ok) throw new Error("dashboard server unavailable");
     const payload = await response.json();
     state.reports = payload.models || [];
-    elements.reportSelect.innerHTML = state.reports.map((report, index) =>
-      `<option value="${index}">${escapeHtml(report.label)}</option>`).join("");
-    elements.reportHint.textContent = `${state.reports.length} curated evaluation models available.`;
-    const featured = state.reports.filter((report) => report.featured);
-    const featuredIndex = state.reports.findIndex((report) => report.featured);
-    if (featuredIndex >= 0) elements.reportSelect.value = String(featuredIndex);
-    for (const report of featured) await loadReport(report, true);
-  } catch (_error) {
-    elements.reportSelect.innerHTML = "<option>Start the dashboard server to browse models</option>";
-    elements.reportSelect.disabled = true;
-    elements.loadReport.disabled = true;
-    elements.reportHint.textContent = "You can still import JSON files from your computer.";
+    const defaults = state.reports.filter((report) => Object.hasOwn(SYSTEM_SLOT_NAMES, report.model_id));
+    for (const report of defaults) await loadReport(report, true);
+    const champion = state.runs.find((run) => run.systemId === "D");
+    if (champion) state.activeId = champion.id;
+    render();
+    if (!state.runs.length) showToast("No default evaluation reports were found");
+  } catch (error) {
+    showToast(`Could not load default systems: ${error.message}. Import JSON is still available.`);
   }
 }
 
@@ -232,58 +231,6 @@ function metricDisplay(key, value) {
   return decimal(value);
 }
 
-function renderTabs() {
-  const visible = displayedRuns();
-  const challengerCount = state.runs.filter(isChallenger).length;
-  elements.runCount.textContent = state.comparisonMeta && challengerCount > 1
-    ? `${visible.length} displayed · ${challengerCount} challengers available`
-    : `${visible.length} run${visible.length === 1 ? "" : "s"}`;
-  elements.runTabs.innerHTML = visible.map((run) => `
-    <div class="run-tab ${run.id === state.activeId ? "active" : ""}" style="--run-color:${run.color}" data-run-id="${escapeHtml(run.id)}" role="button" tabindex="0">
-      <i class="run-dot"></i><span class="tab-name" title="${escapeHtml(run.name)}">${escapeHtml(run.name)}</span>
-      ${state.comparisonMeta ? "" : `<button class="remove-run" data-remove-id="${escapeHtml(run.id)}" aria-label="Remove ${escapeHtml(run.name)}">×</button>`}
-    </div>`).join("");
-}
-
-function renderChallengerPicker() {
-  const challengers = state.runs.filter(isChallenger);
-  elements.challengerPicker.hidden = !state.comparisonMeta || challengers.length === 0;
-  if (elements.challengerPicker.hidden) return;
-  if (!challengers.some((run) => run.id === state.selectedChallengerId)) {
-    state.selectedChallengerId = challengers[0].id;
-  }
-  elements.challengerSelect.innerHTML = challengers.map((run) =>
-    `<option value="${escapeHtml(run.id)}" ${run.id === state.selectedChallengerId ? "selected" : ""}>${escapeHtml(run.name)}</option>`).join("");
-  elements.challengerSelect.disabled = challengers.length === 1;
-  elements.challengerPicker.querySelector("span").textContent = challengers.length === 1
-    ? "Frozen challenger"
-    : "Displayed challenger";
-}
-
-function renderComparisonContract() {
-  const meta = state.comparisonMeta;
-  elements.comparisonContract.hidden = !meta;
-  if (!meta) return;
-  const partition = String(meta.partition || "unknown").replaceAll("_", " ");
-  elements.comparisonContractTitle.textContent = meta.fair ? "Fair A/B/C/D comparison" : "Comparison report";
-  elements.comparisonContractCopy.textContent = meta.fair
-    ? `All systems were evaluated on the same ${meta.sampleCount ?? "—"} ordered ${partition} sessions. A and B are references; only ${meta.championScope} determines promotion.`
-    : "This report does not assert that every run used the same evaluation ground.";
-  const badges = [
-    `${partition} partition`, `${meta.sampleCount ?? "—"} shared sessions`,
-    meta.sameOrderedIds ? "same ordered IDs" : "ID parity unknown",
-    meta.sameEvaluator ? "same evaluator" : "evaluator parity unknown",
-    meta.holdoutAccessed
-      ? (partition === "final selection" ? "final selection accessed once" : "holdout accessed once")
-      : (partition === "final selection" ? "final selection sealed" : "holdout sealed"),
-  ];
-  elements.comparisonContractBadges.innerHTML = badges.map((badge, index) =>
-    `<span class="contract-badge ${index >= 2 && meta.fair ? "safe" : ""}">${escapeHtml(badge)}</span>`).join("");
-  const decision = meta.decision || "Development comparison only";
-  elements.promotionDecision.textContent = meta.decision ? `Promotion decision: ${decision.replaceAll("_", " ")}` : decision;
-  elements.promotionDecision.className = `promotion-decision ${decision === "PROMOTE" ? "promote" : decision === "RETAIN_CONTROL" ? "retain" : ""}`;
-}
-
 function renderMetrics(run) {
   const cards = [
     ["Technical score", "recommended_technical_score", "Weighted competition score", "#39f0cf", true],
@@ -317,6 +264,7 @@ function renderComparison() {
       <div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:${width}%"></div></div><strong class="bar-number">${decimal(score)}</strong></div>
       <span class="comparison-stat">${percent(run.metrics.hit_rate_at_10)}</span>
       <span class="comparison-stat">${decimal(run.metrics.mrr)}</span>
+      <span class="comparison-stat">${percent(run.metrics.efficiency)}</span>
       <span class="comparison-stat">${decimal(run.metrics.mttc, 2)}</span>
     </div>`;
   }).join("");
@@ -356,18 +304,12 @@ function renderRankChart(run) {
 }
 
 function render() {
-  renderTabs();
-  renderChallengerPicker();
-  renderComparisonContract();
   const run = activeRun();
   const hasRuns = Boolean(run);
-  elements.empty.hidden = hasRuns;
   elements.content.hidden = !hasRuns;
   if (!run) return;
   elements.selectedName.textContent = run.name;
-  elements.selectedSource.textContent = state.comparisonMeta
-    ? `${run.role.replaceAll("_", " ")} · ${run.source}`
-    : run.source;
+  elements.selectedSource.textContent = run.source;
   renderMetrics(run);
   renderComparison();
   renderScenarios(run);
@@ -383,35 +325,8 @@ function showToast(message) {
 }
 
 function chooseRun(id) { state.activeId = id; render(); }
-function removeRun(id) {
-  state.runs = state.runs.filter((run) => run.id !== id);
-  if (state.activeId === id) state.activeId = state.runs[0]?.id || null;
-  render();
-}
-
-elements.challengerSelect.addEventListener("change", () => {
-  state.selectedChallengerId = elements.challengerSelect.value;
-  state.activeId = state.selectedChallengerId;
-  render();
-});
-
-elements.loadReport.addEventListener("click", () => {
-  const report = state.reports[Number(elements.reportSelect.value)];
-  if (report) loadReport(report);
-});
-elements.reportSelect.addEventListener("change", () => {
-  const report = state.reports[Number(elements.reportSelect.value)];
-  if (report) elements.reportHint.textContent = report.label;
-});
 $("#upload-button").addEventListener("click", () => elements.fileInput.click());
-$("#empty-upload").addEventListener("click", () => elements.fileInput.click());
 elements.fileInput.addEventListener("change", () => { importFiles(elements.fileInput.files); elements.fileInput.value = ""; });
-elements.runTabs.addEventListener("click", (event) => {
-  const remove = event.target.closest("[data-remove-id]");
-  if (remove) { event.stopPropagation(); removeRun(remove.dataset.removeId); return; }
-  const tab = event.target.closest("[data-run-id]");
-  if (tab) chooseRun(tab.dataset.runId);
-});
 elements.comparison.addEventListener("click", (event) => {
   const target = event.target.closest("[data-select-id]");
   if (target) chooseRun(target.dataset.selectId);
